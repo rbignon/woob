@@ -39,10 +39,10 @@ class SwitchingBrowser:
     advance what browser should be used, the SwitchingBrowser can help.
 
     Multiple browsers should be configured in the `BROWSERS` attribute as
-    a dict. When first used, SwitchingBrowser will instanciate the browser
+    a dict. When first used, SwitchingBrowser will instantiate the browser
     class with the `'main'` key and proxy all method calls to it.
     If that browser raises :class:`SiteSwitch` exception, another browser
-    (associated to the exception key parameter) will be instanciated and will
+    (associated to the exception key parameter) will be instantiated and will
     be used to retry the call which failed.
     """
 

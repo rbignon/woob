@@ -242,7 +242,7 @@ class AppRadio(ReplApplication):
         """
         play ID [stream_id]
 
-        Play a radio or a audio file with a found player (optionnaly specify the wanted stream).
+        Play a radio or a audio file with a found player (optionally specify the wanted stream).
         """
         _id, stream_id = self.parse_command_args(line, 2, 1)
         if not _id:

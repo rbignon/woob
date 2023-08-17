@@ -256,7 +256,7 @@ class CapBugTracker(Capability):
 
     def iter_issues(self, query, sortby=SORT_RELEVANCE, ascending=False):
         """
-        Iter issues with optionnal patterns.
+        Iter issues with optional patterns.
 
         :param query: query
         :type query: :class:`Query`

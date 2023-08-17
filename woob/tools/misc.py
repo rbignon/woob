@@ -186,7 +186,7 @@ def find_exe(basename):
     """
     Find the path to an executable by its base name (such as 'gpg').
 
-    The executable can be overriden using an environment variable in the form
+    The executable can be overridden using an environment variable in the form
     `NAME_EXECUTABLE` where NAME is the specified base name in upper case.
 
     If the environment variable is not provided, the PATH will be searched

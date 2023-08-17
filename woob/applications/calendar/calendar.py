@@ -289,7 +289,7 @@ class AppCalendar(ReplApplication):
         """
         load [query name]
         without query name : list loadable queries
-        with query name laod query
+        with query name load query
         """
         queries = self.config.get('queries')
         if not queries:

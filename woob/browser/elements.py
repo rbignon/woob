@@ -133,7 +133,7 @@ class AbstractElement:
         ItemElementFromAbstractPage, in its overridden __new__, removes itself from
         class hierarchy so its __new__ is called only once. In python 3, default
         (object) __new__ is then used for next instantiations but it's a slot/fixed
-        version supporting only one argument (type to instanciate).
+        version supporting only one argument (type to instantiate).
         """
         return object.__new__(cls)
 

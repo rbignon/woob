@@ -112,7 +112,7 @@ class ResultsCondition(IResultsCondition):
                         evalid = functions[condition.op](tocompare, obj.id)
                         myeval = evalfullid or evalid
                     else:
-                        # We have to change the type of v, always gived as string by application
+                        # We have to change the type of v, always given as string by application
                         typed = type(d[condition.left])
                         try:
                             if isinstance(d[condition.left], date_utils.date):

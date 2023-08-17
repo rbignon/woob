@@ -56,7 +56,7 @@ class EnumMeta(type):
             cls.__members__[name] = value
 
     def __call__(cls, *args, **kwargs):
-        raise ValueError("Enum type can't be instanciated")
+        raise ValueError("Enum type can't be instantiated")
 
     @property
     def _items(cls):

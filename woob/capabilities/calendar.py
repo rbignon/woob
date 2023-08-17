@@ -162,7 +162,7 @@ class CapCalendarEvent(CapCollection):
 
         :param _id: id of the event
         :type _id: str
-        :rtype: :class:`BaseCalendarEvent` or None is fot found.
+        :rtype: :class:`BaseCalendarEvent` or ``None`` if not found.
         """
         raise NotImplementedError()
 

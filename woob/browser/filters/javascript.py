@@ -119,7 +119,7 @@ class JSValue(Regexp):
 class JSVar(JSValue):
     r"""
     Get assigned value of a variable, either as an initialisation value, either
-    as an assignement. One can use Regexp's nth parameter to be more specific.
+    as an assignment. One can use Regexp's nth parameter to be more specific.
 
     See JSValue for more details about parsed values.
 

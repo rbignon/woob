@@ -346,7 +346,7 @@ class AppMsg(ReplApplication):
                 self.bcall_errors_handler(errors)
             else:
                 if self.interactive:
-                    print('Message sent sucessfully to %s' % receiver)
+                    print('Message sent successfully to %s' % receiver)
 
     threads = []
     messages = []

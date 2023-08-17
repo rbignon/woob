@@ -233,7 +233,7 @@ class GridVirtKeyboard(VirtKeyboard):
         :meth:`Image.Image.convert` for more information
     """
     symbols = {}
-    """Assocation table between symbols and md5s"""
+    """Association table between symbols and md5s"""
 
     def __init__(self, symbols, cols, rows, image, color, convert=None):
         self.load_image(image, color, convert)

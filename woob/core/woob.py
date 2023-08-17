@@ -57,8 +57,8 @@ class WoobBase:
 
     You should use this class when you want to build an application
     using Woob as a library, without using the standard modules nor
-    the automatic module download and update machanism. When using
-    WoobBase, you have to explicitely provide module paths and deal
+    the automatic module download and update mechanism. When using
+    WoobBase, you have to explicitly provide module paths and deal
     yourself with backend configuration.
 
     :param modules_path: path to directory containing modules.

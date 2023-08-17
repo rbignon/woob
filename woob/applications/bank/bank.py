@@ -845,7 +845,8 @@ class Appbank(CaptchaMixin, ReplApplication):
         """
         transfer [ACCOUNT RECIPIENT AMOUNT [LABEL [EXEC_DATE]]]
 
-        Make a transfer beetwen two accounts
+        Make a transfer between two accounts:
+
         - ACCOUNT    the source account
         - RECIPIENT  the recipient
         - AMOUNT     amount to transfer

@@ -114,7 +114,7 @@ class CapTravel(Capability):
 
         :param station_id: the station ID
         :type station_id: str
-        :param arrival_id: optionnal arrival station ID
+        :param arrival_id: optional arrival station ID
         :type arrival_id: str
         :param date: optional date
         :type date: datetime.datetime

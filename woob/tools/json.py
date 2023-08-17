@@ -37,7 +37,7 @@ from woob.capabilities.base import BaseObject, NotAvailable, NotLoaded
 def mini_jsonpath(node, path):
     """
     Evaluates a dot separated path against JSON data. Path can contains
-    star wilcards. Always returns a generator.
+    star wildcards. Always returns a generator.
 
     Relates to https://goessner.net/articles/JsonPath/ but in a really basic
     and simpler form.

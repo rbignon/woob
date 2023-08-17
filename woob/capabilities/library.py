@@ -48,7 +48,7 @@ class CapBook(CapCollection):
 
     def iter_resources(self, objs, split_path):
         """
-        Iter resources. It retuns :func:`iter_books`.
+        Iter resources. It returns :func:`iter_books`.
         """
         if Book in objs:
             self._restrict_level(split_path)

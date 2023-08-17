@@ -26,7 +26,7 @@ class BaseJobAdvert(BaseObject):
     Represents a job announce.
     """
     publication_date = DateField('Date when the announce has been published')
-    society_name =     StringField('Name of the society taht published the announce')
+    society_name =     StringField('Name of the society that published the announce')
     place =            StringField('Place where the job take place')
     job_name =         StringField('Name of the job')
     title =            StringField('Title of the announce')
@@ -67,7 +67,7 @@ class BaseJobAdvert(BaseObject):
 
 class CapJob(Capability):
     """
-    Capability of job annouce websites.
+    Capability of job announce websites.
     """
 
     def search_job(self, pattern=None):

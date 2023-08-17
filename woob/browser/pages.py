@@ -167,7 +167,7 @@ class Page:
         AbstractPage, in its overridden __new__, removes itself from class hierarchy
         so its __new__ is called only once. In python 3, default (object) __new__ is
         then used for next instantiations but it's a slot/"fixed" version supporting
-        only one argument (type to instanciate).
+        only one argument (type to instantiate).
         """
         return object.__new__(cls)
 
@@ -245,7 +245,7 @@ class Page:
         """
         Abstract method to be implemented by subclasses to build structured
         data (HTML, Json, CSV...) from :attr:`data` property. It also can be
-        overriden in modules pages to preprocess or postprocess data. It must
+        overridden in modules pages to preprocess or postprocess data. It must
         return an object -- that will be assigned to :attr:`doc`.
         """
         raise NotImplementedError()
@@ -601,7 +601,7 @@ class HTMLPage(Page):
 
     FORM_CLASS: ClassVar[Type[Form]] = Form
     """
-    The class to instanciate when using :meth:`HTMLPage.get_form`. Default to :class:`Form`.
+    The class to instantiate when using :meth:`HTMLPage.get_form`. Default to :class:`Form`.
     """
 
     REFRESH_MAX: ClassVar[int | None] = None
@@ -845,12 +845,12 @@ class GWTPage(Page):
     """
     GWT page where the "doc" attribute is a list
 
-    More info about GWT protcol here : https://goo.gl/GP5dv9
+    More info about GWT protocol here : https://goo.gl/GP5dv9
     """
 
     def build_doc(self, content: str | bytes) -> List:
         """
-        Reponse starts with "//" followed by "OK" or "EX".
+        Response starts with "//" followed by "OK" or "EX".
         2 last elements in list are protocol and flag.
         We need to read the list in reversed order.
         """

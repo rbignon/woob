@@ -366,7 +366,7 @@ class Platform(str, enum.Enum):
     """Mobile platform on which the webview can be run.
 
     For instance, this enumeration can be used to represent systems on which
-    the authorization link can be catched by a native application instead of
+    the authorization link can be caught by a native application instead of
     the browser.
     """
 
@@ -622,7 +622,7 @@ class CapTransfer(Capability):
         """
         Ask for the cancellation of a transfer.
 
-        This function is exposed as part of Woob API and should not be overriden
+        This function is exposed as part of Woob API and should not be overridden
         by children modules.
 
         :param transfer: the transfer that should be cancelled

@@ -56,6 +56,6 @@ class CapVideo(CapImage):
 
         :param _id: video file ID
         :type _id: str
-        :rtype: :class:`BaseVideo` or None is fot found.
+        :rtype: :class:`BaseVideo` or ``None`` if not found.
         """
         return self.get_image(_id)

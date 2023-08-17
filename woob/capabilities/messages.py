@@ -37,7 +37,7 @@ class Message(BaseObject):
     IS_RECEIVED = 0x004
     "The receiver has read this message"
     IS_NOT_RECEIVED = 0x008
-    "The receiver hass not read this message"
+    "The receiver has not read this message"
 
     thread =        Field('Reference to the thread', 'Thread')
     title =         StringField('Title of message')

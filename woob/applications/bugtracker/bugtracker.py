@@ -410,7 +410,7 @@ class AppBugTracker(ReplApplication):
     def send_notification(self, email_to, issue):
         text = """Hi,
 
-You have successfuly created this ticket on the Woob tracker:
+You have successfully created this ticket on the Woob tracker:
 
 %s
 
@@ -469,11 +469,12 @@ Woob Team
 
         Edit an issue.
         If you are not in interactive mode, you can use these parameters:
-           --title TITLE
-           --assignee ASSIGNEE
-           --target-version VERSION
-           --category CATEGORY
-           --status STATUS
+
+        --title TITLE
+        --assignee ASSIGNEE
+        --target-version VERSION
+        --category CATEGORY
+        --status STATUS
         """
         _id, key, value = self.parse_command_args(line, 3, 1)
         issue = self.get_object(_id, 'get_issue')

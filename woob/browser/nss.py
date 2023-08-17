@@ -27,7 +27,7 @@ can access to a website the same way than a real browser.
    If there is an issue to access a website, you can override use the
    :class:`woob.browser.adapters.LowSecHTTPAdapter` with the
    :attr:`woob.browser.browsers.Browser.HTTP_ADAPTER_CLASS` attribute to be
-   explicitely more permissive.
+   explicitly more permissive.
 """
 
 # create db:
@@ -360,7 +360,7 @@ def ssl_wrap_socket(sock, *args, **kwargs):
     # the python Socket and the NSS SSLSocket are agnostic of each other's state
     # so the Socket could close the fd, then a file could be opened,
     # obtaining the same file descriptor, then NSS would use the file, thinking
-    # it's a network file descriptor... dup the fd to make it independant
+    # it's a network file descriptor... dup the fd to make it independent
     fileno = sock.fileno()
     if hasattr(sock, 'detach'):
         # socket.detach only exists in py3.

@@ -247,7 +247,7 @@ def link_locator(text, partial=False):
 
 
 class ElementWrapper:
-    """Wrapper to Selenium element to ressemble lxml.
+    """Wrapper to Selenium element to resemble lxml.
 
     Some differences:
     - only a subset of lxml's Element class are available

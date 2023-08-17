@@ -107,7 +107,7 @@ class Browser:
 
     If this is a string, path to the certificate or the CA bundle.
 
-    Note that this value may be overriden by the ``verify`` argument on the
+    Note that this value may be overridden by the ``verify`` argument on the
     constructor.
     """
 
@@ -125,7 +125,7 @@ class Browser:
     """
     Controls how we send the ``Referer`` or not.
 
-    If True, always allows the referers to be sent, False never, and None only
+    If True, always allows the referrers to be sent, False never, and None only
     if it is within the same domain.
     """
 
@@ -156,7 +156,7 @@ class Browser:
         AbstractBrowser, in its overridden __new__, removes itself from class hierarchy
         so its __new__ is called only once. In python 3, default (object) __new__ is
         then used for next instantiations but it's a slot/"fixed" version supporting
-        only one argument (type to instanciate).
+        only one argument (type to instantiate).
         """
         return object.__new__(cls)
 
@@ -215,7 +215,7 @@ class Browser:
         Call it when you stop to use the browser and you don't use it in a
         context manager.
 
-        Can be overrided by any subclass which wants to cleanup after browser
+        Can be overridden by any subclass which wants to cleanup after browser
         usage.
         """
         self.session.close()
@@ -274,7 +274,7 @@ class Browser:
         response_filepath = slug
 
         if os.environ.get('WOOB_USE_OBSOLETE_RESPONSES_DIR') == '1':
-            # get the content-type, remove optionnal charset part
+            # get the content-type, remove optional charset part
             mimetype = response.headers.get('Content-Type', '').split(';')[0]
 
             # try to get an extension (and avoid adding 'None')
@@ -706,7 +706,7 @@ class Browser:
         Reference: https://en.wikipedia.org/wiki/HTTP_referer
 
         The behavior can be controlled through the ALLOW_REFERRER attribute.
-        True always allows the referers
+        True always allows the referrers
         to be sent, False never, and None only if it is within
         the same domain.
 
@@ -952,7 +952,7 @@ class PagesBrowser(DomainBrowser):
 
     def __setattr__(self, key, value):
         if isinstance(self._urls, OrderedDict):
-            # _urls is instanciated, we can now feed it accordingly.
+            # _urls is instantiated, we can now feed it accordingly.
             if isinstance(value, URL):
                 # We want to either replace in-place, or add to the URLs.
                 if key in self._urls:
@@ -1155,7 +1155,7 @@ class StatesMixin:
     Mixin to store states of browser.
 
     It saves and loads a ``state`` dict object. By default it contains the
-    current url and cookies, but may be overriden by the subclass to store its
+    current url and cookies, but may be overridden by the subclass to store its
     specific stuff.
     """
 

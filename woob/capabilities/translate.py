@@ -56,7 +56,7 @@ class CapTranslate(Capability):
 
     def translate(self, source_language, destination_language, request):
         """
-        Perfom a translation.
+        Perform a translation.
 
         :param source_language: language in which the request is written
         :param destination_language: language to translate the request into

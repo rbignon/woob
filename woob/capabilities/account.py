@@ -55,7 +55,7 @@ class StatusField(BaseObject):
     Field of an account staeobjectus.
     """
     FIELD_TEXT    = 0x001     # the value is a long text
-    FIELD_HTML    = 0x002     # the value is HTML formated
+    FIELD_HTML    = 0x002     # the value is HTML formatted
 
     key =           StringField('Key')
     label =         StringField('Label')

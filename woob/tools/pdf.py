@@ -422,7 +422,7 @@ def html_to_pdf(browser, url=None, data=None, extra_options=None):
     Convert html to PDF.
 
     :param browser: browser instance
-    :param url: link to the html ressource
+    :param url: link to the html resource
     :param data: HTML content
     :return: the document converted in PDF
     :rtype: bytes

@@ -916,14 +916,12 @@ class BrowserURL(MultiFilter):
 
     .. code-block:: python
 
-    class MyBrowser:
+        class MyBrowser:
+            mypage = URL('(?P<category>\w+)/(?P<id>\w+)')
 
-        mypage = URL('(?P<category>\w+)/(?P<id>\w+)')
-
-
-    class OnePage(Page):
-        class item(ItemElement):
-            obj_myfield = BrowserURL('mypage', id=Dict('id'), category=Dict('category'))
+        class OnePage(Page):
+            class item(ItemElement):
+                obj_myfield = BrowserURL('mypage', id=Dict('id'), category=Dict('category'))
 
     """
     def __init__(self, url_name, **kwargs):
