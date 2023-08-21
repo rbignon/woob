@@ -45,7 +45,7 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
     VERSION = '3.6'
     DEPENDENCIES = ('bnp',)
     LICENSE = 'AGPLv3+'
-    DESCRIPTION = 'BNP Paribas'
+    DESCRIPTION = 'Hello bank (BNP Paribas)'
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Numéro client', masked=False),
         ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
