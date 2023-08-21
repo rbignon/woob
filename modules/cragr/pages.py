@@ -1208,3 +1208,16 @@ class ConsumerCreditPage(LoggedPage, HTMLPage):
 
     def back_to_home(self):
         self.get_form(name='formulaire').submit()
+
+
+class EntRedirectionPage(LoanRedirectionPage):
+    def get_first_ca_connect_url(self):
+        return Regexp(CleanText('//script'), r'window\.location\.replace\(\"(\w.+)\"\)')(self.doc)
+
+    def get_second_ca_connect_url(self):
+        return Regexp(CleanText('//script'), r'window\.location\.href = \'(\w.+)\'')(self.doc)
+
+
+class JsonRedirectionPage(LoggedPage, JsonPage):
+    def get_from_json(self, json_key):
+        return Dict(json_key)(self.doc)
