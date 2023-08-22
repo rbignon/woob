@@ -18,6 +18,7 @@
 
 import datetime
 from decimal import Decimal
+import pytest
 
 from dateutil.tz import gettz
 from lxml.html import fromstring
@@ -212,6 +213,47 @@ def test_CleanDecimal_strict():
     assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 123,456,789')
     assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 12 3456 bar')
     assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 123-456 bar')
+
+
+@pytest.mark.parametrize(
+    'decimal_filter',
+    (CleanDecimal.SI(), CleanDecimal.French()),
+)
+@pytest.mark.parametrize('input_value, expected_output', (
+    ('4.1e05', Decimal('4.1e05')),
+    ('4.1E05', Decimal('4.1E05')),
+    ('4.1e5', Decimal('4.1e5')),
+    ('4.1E5', Decimal('4.1E5')),
+    ('4.1e+05', Decimal('4.1e+05')),
+    ('4.1E-05', Decimal('4.1E-05')),
+    ('-4.1e+5', Decimal('-4.1e+5')),
+    ('+4.1E-5', Decimal('+4.1E-5')),
+    ('foo 1e1 bar', Decimal('1e1')),
+    ('foo -0e+1 bar', Decimal('-0e+1')),
+    ('foo7719e+05bar', Decimal('7719e+05')),
+    ('foo-1e0bar', Decimal('-1e0')),
+))
+def test_CleanDecimal_scientific_notation(decimal_filter, input_value, expected_output):
+    assert decimal_filter.filter(input_value) == expected_output
+
+
+@pytest.mark.parametrize(
+    'decimal_filter',
+    (CleanDecimal.SI(), CleanDecimal.French()),
+)
+@pytest.mark.parametrize('input_value', (
+    ('4.1e--05'),
+    ('4.1e++05'),
+    ('4.1e+-05'),
+    ('4.1e-+05'),
+    ('4.1ee05'),
+    ('+e-'),
+    ('1+e-1'),
+))
+def test_error_CleanDecimal_scientific_notation(decimal_filter, input_value):
+    with pytest.raises(NumberFormatError):
+        decimal_filter.filter(input_value)
+
 
 def test_Currency():
     assert Currency().filter('\u20AC') == 'EUR'
