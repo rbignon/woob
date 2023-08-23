@@ -1075,6 +1075,32 @@ class DetailsLoanPage(LoggedPage, JsonPage):
                 return NotAvailable
             return int(duration)
 
+        def obj_deferred(self):
+            # No case found yet with these fields filled
+            if (
+                Dict('remboursement/montant_differe', default=None)(self)
+                or Dict('caracteristique_credit/periode_differe_debut', default=None)(self)
+                or Dict('caracteristique_credit/periode_differe_fin', default=None)(self)
+            ):
+                # To throw after being triggered once
+                # And check if the loan is necessarily deferred when at least one of these field is filled
+                self.logger.warning('deferred fields are filled for: %s | id: %s', self.obj.label, self.obj.id)
+            return NotAvailable
+
+        # No case found yet, if an error is raised in the future, it will be easy to fix
+        def obj_start_repayment_date(self):
+            start_repayment_date = Date(
+                Dict('caracteristique_credit/periode_debut_differe', default=None),
+                default=NotAvailable
+            )(self)
+            # To throw after being triggered once
+            # And verify if the key: periode_debut_differe provides the start_repayment_date
+            if start_repayment_date:
+                self.logger.warning(
+                    'start_repayment_date may be available for: %s | id: %s', self.obj.label, self.obj.id
+                )
+            return NotAvailable
+
 
 class RevolvingPage(LoggedPage, HTMLPage):
     @method
