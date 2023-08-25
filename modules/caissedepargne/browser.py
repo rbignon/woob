@@ -199,8 +199,9 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
     def init_login(self):
         self.do_api_pre_login()
-
-        if self.connection_type == 'ent' and not self.browser_switched:
+        if self.connection_type == 'pp' and not self.browser_switched:
+            raise SiteSwitch('old')
+        elif self.connection_type == 'ent' and not self.browser_switched:
             raise SiteSwitch('cenet')
 
         return self.do_api_login()
@@ -832,12 +833,18 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         # determined to enforce the 2FA. For the moment, SCA won't be remembered in any way.
         self.remember_terminal.go(method='PUT', headers=headers, json={})
 
-        if self.connection_type == 'ent':
+        data = {
+            'id_token': self.id_token,
+            'access_token': access_token,
+        }
+
+        if self.connection_type == 'pp':
+            self.location(self.continue_url, data=data)
+            # # Here we should be logged on old pp ("personnes protégées") space
+            return
+
+        elif self.connection_type == 'ent':
             # Fetch data for cenet last authorization
-            data = {
-                'id_token': self.id_token,
-                'access_token': access_token,
-            }
             self.location(self.continue_url, data=data)
             self.js_file.go(js_file_name=self.page.get_main_js_file_url())
             self.third_client_id = self.page.get_third_client_id_for_cenet()
