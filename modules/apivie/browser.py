@@ -65,7 +65,7 @@ class ApivieBrowser(TwoFactorBrowser):
     def generate_jwt(self):
         # We can find this key in the js. As this js url is not
         # consistent in time, it's easier to hardcode the key
-        signature_key = 'VPXQ9L7bsFJ#DR4wWnhyyA0zbb9^BSuCgHSlkQyVPZy^aB!jjZ'
+        signature_key = '742484ee0f879d89ebb57a96c898d53006833bbf7043d64f2b090b3a90eb28efff841f00aeeb2991ac3f125448b7f73dce4923071aff9b31c0026891256ce416'
         jwt_token = jwt.encode(
             {'iat': time(), 'sub': self.username},
             signature_key
