@@ -497,6 +497,12 @@ class AmericanExpressSeleniumFingerprintBrowser(SeleniumBrowser):
     def __init__(self, config, *args, **kwargs):
         super(AmericanExpressSeleniumFingerprintBrowser, self).__init__(*args, **kwargs)
 
+    def _build_options(self, preferences):
+        ops = super(AmericanExpressSeleniumFingerprintBrowser, self)._build_options(preferences)
+        if self.DRIVER is webdriver.Chrome:
+            ops.add_argument('--no-sandbox')
+        return ops
+
     def do_login(self):
         """
         We don't really support login via selenium. We only load the login to execute some
@@ -529,6 +535,12 @@ class AmericanExpressWithSeleniumBrowser(SubSeleniumMixin, AmericanExpressBrowse
 
         self.selenium_user_agent = None
         self.__states__ += ('selenium_user_agent', )
+
+    def _build_options(self, preferences):
+        ops = super(AmericanExpressWithSeleniumBrowser, self)._build_options(preferences)
+        if self.DRIVER is webdriver.Chrome:
+            ops.add_argument('--no-sandbox')
+        return ops
 
     def do_login(self, *args, **kwargs):
         AmericanExpressBrowser.do_login(self, *args, **kwargs)
