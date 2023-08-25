@@ -124,7 +124,7 @@ class TwoFAPage(MyHTMLPage):
             self.browser.login_without_2fa()
 
     def get_auth_method(self):
-        status_message = CleanText('//div[@id="DSP2_A2G_connexion_haut"]//p')(self.doc)
+        status_message = CleanText('//div[contains(@id, "DSP2") and @class="mtm"]')(self.doc)
         if re.search(
                 'avez pas de solution d’authentification forte'
                 + '|une authentification forte est désormais nécessaire'
