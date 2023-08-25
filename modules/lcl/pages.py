@@ -17,7 +17,7 @@
 
 # flake8: compatible
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import re
 import codecs
 
@@ -360,6 +360,13 @@ class ForbiddenLifeInsurancesPage(LoggedPage, HTMLPage):
     pass
 
 
+LOAN_TYPES = {
+    'CPS': Account.TYPE_REVOLVING_CREDIT,
+    'COS': Account.TYPE_CONSUMER_CREDIT,
+    'CIT': Account.TYPE_MORTGAGE,
+}
+
+
 class LoansPage(LoggedPage, JsonPage):
     @method
     class iter_loans(DictElement):
@@ -390,7 +397,14 @@ class LoansPage(LoggedPage, JsonPage):
             obj_label = CleanText(Dict('label'))
             obj_total_amount = CleanDecimal.SI(Dict('amount'))
             obj_currency = Currency(Dict('currency'))
-            obj_type = Account.TYPE_LOAN
+
+            def obj_type(self):
+                loan_type = Map(Field('_source_code'), LOAN_TYPES, Account.TYPE_UNKNOWN)(self)
+                if loan_type == Account.TYPE_UNKNOWN:
+                    self.logger.warning(
+                        'loan _source_code %s is still untyped, please type it.', Field('_source_code')(self)
+                    )
+                return loan_type or Account.TYPE_LOAN
 
             obj__source_code = CleanText(Dict('source_code'))
             obj__product_code = CleanText(Dict('product_code'))
@@ -423,15 +437,34 @@ class LoanDetailsPage(LoggedPage, JsonPage):
     class fill_loan(ItemElement):
         klass = Loan
 
-        obj_balance = CleanDecimal.SI(Dict('outstanding_capital'), sign='-')
-        obj_available_amount = CleanDecimal.SI(Dict('available_amount'))
+        obj_available_amount = CleanDecimal.SI(Dict('available_amount'))  # amount not unlocked yet
+        obj_balance = Eval(
+            lambda x, y: -(x + y),
+            Field('available_amount'),
+            CleanDecimal.SI(Dict('outstanding_capital'))  # unlocked amount
+        )
         obj_rate = CleanDecimal.SI(Dict('eir'))
-        obj_maturity_date = Date(CleanText(Dict('final_due_date', default='')), default=NotAvailable)
-        obj_last_payment_amount = CleanDecimal.SI(Dict('last_due_date_amount'))
-        obj_last_payment_date = Date(CleanText(Dict('last_due_date', default='')), default=NotAvailable)
         obj_next_payment_amount = CleanDecimal.SI(Dict('next_due_date_amount'))
         obj_next_payment_date = Date(CleanText(Dict('next_due_date', default='')), default=NotAvailable)
         obj__iban = CleanText(Dict('iban', default=''), default=NotAvailable)
+
+        def obj_maturity_date(self):
+            maturity_date = Date(CleanText(Dict('final_due_date', default='')), default=NotAvailable)(self)
+            if not maturity_date:
+                # last_due_date acts like final_due_date only when this key is missing in json's response
+                return Date(CleanText(Dict('last_due_date', default='')), default=NotAvailable)(self)
+            return maturity_date
+
+        def obj_last_payment_date(self):
+            last_payment_date = Date(CleanText(Dict('last_due_date', default='')), default=NotAvailable)(self)
+            if not last_payment_date or last_payment_date > date.today():
+                return NotAvailable  # here last_due_date is the date of the very last payment
+            return last_payment_date  # here it's the date of the previous payment
+
+        def obj_last_payment_amount(self):
+            if not Field('last_payment_date')(self):
+                return NotAvailable  # here last_due_date_amount is the very last amount that will be paid
+            return CleanDecimal.SI(Dict('last_due_date_amount'))(self)  # here it's the previous amount paid
 
 
 TRANSACTION_TYPES = {
