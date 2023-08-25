@@ -110,6 +110,7 @@ class DocumentPage(LoggedPage, HTMLPage):
             obj_label = Format('%s du %s', CleanText(TableCell('label')), Field('date'))
             obj_url = Link('./td[6]/a')  # can't use TableCell because this col has no text in its <th>
             obj_type = DocumentTypes.STATEMENT
+            obj_format = 'pdf'
 
         def next_page(self):
             start_date = end_date = Date(
