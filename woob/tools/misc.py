@@ -15,21 +15,35 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
 
 from time import time, sleep
+from typing import Optional, Union
 import itertools
 import locale
 import os
+import re
 import sys
 import traceback
 import types
-
+import unicodedata
+import unidecode
 
 __all__ = [
-    'NO_DEFAULT', 'NoDefaultType', 'get_backtrace', 'get_bytes_size',
-    'iter_fields', 'to_unicode', 'limit', 'find_exe', 'polling_loop',
-    'classproperty'
+    'NO_DEFAULT',
+    'NoDefaultType',
+    'classproperty',
+    'clean_text',
+    'find_exe',
+    'get_backtrace',
+    'get_bytes_size',
+    'iter_fields',
+    'limit',
+    'polling_loop',
+    'to_unicode',
 ]
+
+NEWLINES_RE = re.compile(r'\s+', flags=re.UNICODE)
 
 
 class NoDefaultType:
@@ -205,6 +219,50 @@ def find_exe(basename):
             fpath = os.path.join(path, ex)
             if os.path.exists(fpath) and os.access(fpath, os.X_OK):
                 return fpath
+
+
+def clean_text(
+    text: str,
+    *,
+    remove_newlines: bool = True,
+    normalize: Optional[Union[str, bool]] = 'NFC',
+    transliterate: bool = False,
+) -> str:
+    """Clean a given text.
+
+    This function is used by the
+    :py:class:`woob.browser.filters.standard.CleanText` browser filter.
+
+    :param text: The text to clean.
+    :param remove_newlines: Whether to transform newlines into spaces or not.
+        If this parameter is set to false, newlines will be normalized as
+        UNIX-style newlines (U+000A).
+    :param normalize: The Unicode normalization to apply, if relevant.
+    :param transliterate: Whether to transliterate Unicode characters into
+        ASCII characters, when possible.
+    :return: The cleaned text.
+    """
+    # For compatibility with legacy code that sets ``normalize`` to a boolean,
+    # we bind boolean values for the option to actual, usable values.
+    if normalize is False:
+        normalize = None
+    elif normalize is True:
+        normalize = 'NFC'
+
+    if remove_newlines:
+        text = NEWLINES_RE.sub(' ', text)
+    else:
+        # normalize newlines and clean what is inside
+        text = '\n'.join(clean_text(line) for line in text.splitlines())
+
+    text = text.strip()
+    if normalize is not None:
+        text = unicodedata.normalize(normalize, text)
+
+    if transliterate:
+        text = unidecode.unidecode(text)
+
+    return text
 
 
 def polling_loop(*, count=None, timeout=None, delay=5):

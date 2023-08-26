@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import datetime
 import re
-import unicodedata
 import pycountry
 from typing import Any
 from collections.abc import Iterator
@@ -31,11 +30,11 @@ from urllib.parse import parse_qs, urlparse
 from dateutil.parser import parse as parse_date
 from dateutil.tz import gettz
 from lxml.etree import ElementBase as LXMLElement
-import unidecode
 
 from woob.browser.url import URL
 from woob.capabilities.base import Currency as BaseCurrency
 from woob.capabilities.base import empty
+from woob.tools.misc import clean_text
 
 from .base import _NO_DEFAULT, Filter, FilterError, ItemNotFound, _Filter, debug
 
@@ -288,19 +287,12 @@ class CleanText(Filter):
         elif not isinstance(txt, str):
             txt = ' '.join(txt.itertext())
 
-        if newlines:
-            txt = re.compile(r'\s+', flags=re.UNICODE).sub(' ', txt)  # 'foo bar '
-        else:
-            # normalize newlines and clean what is inside
-            txt = '\n'.join([cls.clean(l) for l in txt.splitlines()])
-
-        txt = txt.strip()
-        # normalize to a standard Unicode form
-        if normalize:
-            txt = unicodedata.normalize(normalize, txt)
-        if transliterate:
-            txt = unidecode.unidecode(txt)
-        return txt
+        return clean_text(
+            txt,
+            remove_newlines=newlines,
+            normalize=normalize,
+            transliterate=transliterate,
+        )
 
     @classmethod
     def remove(cls, txt, symbols):
