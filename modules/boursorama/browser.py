@@ -368,6 +368,22 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # The request does multiple redirect to go on home page
         # after that we are really logged
 
+    def check_security_action_needed(self, error_message):
+        security_message = re.compile(
+            'bonnes pratiques de securite'
+            + '|Protégez-vous contre la fraude'
+        )
+
+        if security_message.search(error_message):
+            # error_message isn't explicit enough for the user to understand he has something to do
+            raise ActionNeeded(
+                locale="fr-FR",
+                message='Un message relatif aux bonnes pratiques de sécurité nécessite une confirmation sur votre espace.',
+                action_type=ActionType.ACKNOWLEDGE,
+            )
+
+        raise AssertionError('Unhandled error message : "%s"' % error_message)
+
     def init_login(self):
         self.start_login()
 
@@ -405,20 +421,12 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 + '|desactive'
             )
 
-            security_message = re.compile(
-                'bonnes pratiques de securite'
-                + '|Protégez-vous contre la fraude'
-            )
             error_message = self.page.get_error_message()
             if messages.search(error_message):
                 raise ActionNeeded(locale="fr-FR", message=error_message)
-            elif security_message.search(error_message):
-                # error_message isn't explicit enough for the user to understand he has something to do
-                raise ActionNeeded(
-                    locale="fr-FR", message='Un message relatif aux bonnes pratiques de sécurité nécessite une confirmation sur votre espace.',
-                    action_type=ActionType.ACKNOWLEDGE,
-                )
-            raise AssertionError('Unhandled error message : "%s"' % error_message)
+
+            self.check_security_action_needed(error_message)
+
         elif self.card_renewal.is_here():
             raise ActionNeeded(
                 locale="fr-FR", message='Une confirmation pour le renouvellement de carte bancaire est nécessaire sur votre espace.',
@@ -545,6 +553,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             if self.pro_accounts.is_here():
                 accounts_list.extend(self.get_filled_accounts(pro=True))
                 has_account = True
+            elif self.error.is_here():
+                self.check_security_action_needed(self.page.get_error_message())
             else:
                 # We dont want to let has_account=False if we landed on an unknown page
                 # it has to be the no_accounts page
