@@ -135,6 +135,11 @@ class LoginPage(JsonPage):
         )
 
 
+class PreAccessPage(LoggedPage, JsonPage):
+    # needs to be a logged page to avoid re-login
+    pass
+
+
 class LaunchRedirectionPage(LoggedPage, HTMLPage):
     def get_message(self):
         return CleanText('//form[@id="mainForm"]/div[1]')(self.doc)

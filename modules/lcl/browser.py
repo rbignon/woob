@@ -37,7 +37,7 @@ from woob.tools.decorators import retry
 from .pages import (
     AVHistoryPage, AVInvestmentsPage, BourseHomePage, BoursePage, CardDetailsPage, CardSynthesisPage, DiscPage,
     NoPermissionPage, SEPAMandatePage, HomePage, KeypadPage, BoursePreLoadPage, ForbiddenLifeInsurancesPage,
-    MonEspaceHome, PreHomePage, RedirectMonEspaceHome, RedirectionPage, LoginPage, AggregationPage,
+    MonEspaceHome, PreAccessPage, PreHomePage, RedirectMonEspaceHome, RedirectionPage, LoginPage, AggregationPage,
     AccountsPage, CardsPage, LifeInsurancesPage, LoansPage, LoanDetailsPage, RoutagePage, GetContractPage,
     TermAccountsPage, TransactionsPage, CardTransactionsPage, LaunchRedirectionPage, DocumentsPage, CONTRACT_TYPES,
 )
@@ -61,7 +61,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     login_contract = URL(r'/api/login/contract')
     user_contract = URL(r'/api/user/contract')
     authorized_operations = URL(r'/api/user/authorized_operations\?contract_id=(?P<contracts_id>.*)')
-    pre_access = URL(r'/api/user/messaging/pre-access')
+    pre_access = URL(r'/api/user/messaging/pre-access', PreAccessPage)
     launch_redirection = URL(
         r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/warbel-context-provider',
         LaunchRedirectionPage
@@ -136,7 +136,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     documents = URL(r'/api/user/documents/accounts_statements', DocumentsPage)
     download_document = URL(r'/api/user/documents/download\?downloadToken=(?P<token>.*)')
     bourse_pre_load = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UWMI/Bourse', BoursePreLoadPage)
-    bourse_home = URL(r'https://particuliers.secure.lcl.fr/outil/UWMI/Accueil/accueil', BourseHomePage)
+    bourse_home = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UWMI/Accueil/accueil', BourseHomePage)
     bourse = URL(
         r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis',
         r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.account.*',
@@ -237,7 +237,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         )
         self.user_contract.go(
             json={
-                'type': 'CLI',
+                'type': CONTRACT_TYPES[self.website],
                 'id': self.contract_id,
             },
         )
