@@ -434,12 +434,16 @@ class Module:
 
         :param klass: optional parameter to give another browser class to instanciate
         :type klass: :class:`woob.browser.browsers.Browser`
+        :param load_state: Whether to load the browser state if it supports
+            the feature.
+        :type load_state: bool
         """
 
         klass = kwargs.pop('klass', self.BROWSER)
-
         if not klass:
             return None
+
+        should_load_state = bool(kwargs.pop('load_state', True))
 
         kwargs['proxy'] = self.get_proxy()
         if '_proxy_headers' in self._private_config:
@@ -478,7 +482,7 @@ class Module:
 
         browser = klass(*args, **kwargs)
 
-        if hasattr(browser, 'load_state'):
+        if should_load_state and hasattr(browser, 'load_state'):
             browser.load_state(self.storage.get('browser_state', default={}))
 
         return browser
