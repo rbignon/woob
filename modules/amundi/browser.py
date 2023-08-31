@@ -128,7 +128,26 @@ class AmundiBrowser(TwoFactorBrowser):
             'resume': self.handle_polling,
         }
 
-        self.__states__ = ('has_mfa', 'mfa_id')
+        self.__states__ = ('has_mfa', 'mfa_id', 'token_header')
+
+    def locate_browser(self, state):
+        if not self.token_header:
+            # Do a new login if no token_header
+            return
+
+        # Set token_header if the URL in the state needs it.
+        # This token must not be set for the full session,
+        # some URLs will crash if we provide them this header.
+        try:
+            super().locate_browser(state)
+        except ClientError as e:
+            if (
+                e.response.status_code == 401
+                and e.response.json()['message'] == 'WEB Authentication Required'
+            ):
+                self.location(state['url'], headers=self.token_header)
+            else:
+                raise
 
     def init_login(self):
         if self.has_mfa:
