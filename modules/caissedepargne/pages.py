@@ -739,6 +739,7 @@ class CardsPage(LoggedPage, JsonPage):
                 card.ownership = MapIn(
                     Lower(CleanText(Dict('cardUser/cardUserType/label'))),
                     ACCOUNT_OWNERSHIP_TYPE,
+                    NotAvailable,
                 )(_card)
 
 
