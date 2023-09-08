@@ -89,7 +89,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     token_page = URL(r'libs/granite/csrf/token.json', TokenPage)
     change_password = URL(r'(?P<space>[\w-]+)/operations/interstitielles/code-personnel.html', ChangePasswordPage)
     tax_residency_filling_page = URL(
-        r'/particulier/operations/interstitielles/notification-auto-certification.html',
+        r'/(?P<space>[\w-]+)/operations/interstitielles/notification-auto-certification.html',
         TaxResidencyFillingPage,
     )
 
