@@ -296,6 +296,7 @@ ACCOUNT_TYPES = {
     'PERBANCGP': Account.TYPE_PER,
     'DAVPERBANC': Account.TYPE_PER,
     'PERBANCGL': Account.TYPE_PER,
+    'ESPSELEC 2': Account.TYPE_LIFE_INSURANCE,
 }
 
 ACCOUNT_IS_LIQUIDITY = re.compile(
