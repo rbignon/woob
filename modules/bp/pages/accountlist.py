@@ -52,6 +52,7 @@ def MyDate(*args, **kwargs):
 ACCOUNTS_TYPES = {
     'comptes? bancaires?': Account.TYPE_CHECKING,
     'ccp': Account.TYPE_CHECKING,
+    'compte courant postal': Account.TYPE_CHECKING,
     "plan d'epargne populaire": Account.TYPE_SAVINGS,
     'livrets?': Account.TYPE_SAVINGS,
     'epargnes? logement': Account.TYPE_SAVINGS,
