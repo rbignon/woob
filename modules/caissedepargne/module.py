@@ -18,7 +18,11 @@
 # flake8: compatible
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.bill import CapDocument, DocumentTypes, Subscription
+from woob.capabilities.base import find_object
+from woob.capabilities.bill import (
+    CapDocument, Document, DocumentNotFound,
+    DocumentTypes, Subscription,
+)
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
@@ -91,7 +95,18 @@ class CaisseEpargneModule(Module, CapBankWealth, CapDocument):
         return self.browser.iter_subscriptions()
 
     def iter_documents(self, subscription):
+        if not isinstance(subscription, Subscription):
+            subscription = self.get_subscription(subscription)
+
         return self.browser.iter_documents(subscription)
 
+    def get_document(self, _id):
+        subid = _id.rsplit('_', 1)[0]
+        subscription = self.get_subscription(subid)
+
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+
     def download_document(self, document):
+        if not isinstance(document, Document):
+            document = self.get_document(document)
         return self.browser.download_document(document)

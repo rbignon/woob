@@ -386,7 +386,7 @@ class CenetBrowser(CaisseEpargneLogin):
         raise NotImplementedError()
 
     @need_login
-    def iter_subscription(self):
+    def iter_subscriptions(self):
         subscriber = self.get_profile().name
         json_data = {
             'contexte': '',
