@@ -433,8 +433,9 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         # Then we need to do the redirection toward the classical view of all accounts.
         self.ent_enrole.go(cael=cael)
+
         self.session.headers.update(
-            {'X-XSRF-TOKEN': self.session.cookies.get('XSRF-TOKEN')}
+            {'X-XSRF-TOKEN': self.session.cookies.get('XSRF-TOKEN', domain='.entreprises.credit-agricole.fr')}
         )
         self.ent_sso.go(
             record_id=self.page.get_from_json('0/record_id'),
