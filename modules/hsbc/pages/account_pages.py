@@ -688,7 +688,8 @@ class LoanDetailsPage(LoggedPage, HTMLPage):
         obj_total_amount = CleanDecimal.French('''//p[label[contains(text(), "Montant emprunté")]]/strong''')
         obj_subscription_date = Date(
             CleanText('''//p[label[contains(text(), "Date d'ouverture")]]/strong'''),
-            dayfirst=True
+            dayfirst=True,
+            default=NotAvailable,
         )
         obj_maturity_date = Date(
             CleanText('''//p[label[contains(text(), "Date de fin")]]/strong'''),
