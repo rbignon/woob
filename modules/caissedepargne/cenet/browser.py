@@ -267,9 +267,9 @@ class CenetBrowser(CaisseEpargneLogin):
             return self.get_history_base(account)
 
         # this is any other account
-        return omit_deferred_transactions(self.get_history_base(account))
+        return omit_deferred_transactions(self.get_history_base(account, regular_account=True))
 
-    def get_history_base(self, account, card_number=None):
+    def get_history_base(self, account, card_number=None, regular_account=False):
         data = {
             'contexte': '',
             'dateEntree': None,
@@ -282,14 +282,16 @@ class CenetBrowser(CaisseEpargneLogin):
             for tr in self.page.get_history(coming=False):
                 # yield transactions from account
 
-                # if account is a card, this does not include card_summary detail
-                # if account is a checking and has no card displayed on the website but still has deferred
-                # transactions listed, we skip the card summary label (eg: CB 0123******3210 TOT DIF JUILLET)
-                # and get all the included transactions
+                # If the account given in this method is a card, the history we just
+                # fetched from get_history() does not include card_summary detail, this will
+                # have to be fetched from specific routes.
+                # If the given account is a checking, this can be a regular checking account
+                # or the checking account linked to a card. Depending on the case, we skip
+                # or not card_summary detail, thus the regular_account check.
                 if (
                     tr.type == tr.TYPE_CARD_SUMMARY and (
                         card_number or re.search(r'^CB [\d\*]+ TOT DIF .*', tr.label)
-                    ) and not self.has_cards_displayed
+                    ) and not regular_account
                 ):
                     if card_number:
                         yield tr
