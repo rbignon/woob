@@ -220,8 +220,6 @@ class AmeliBrowser(TwoFactorBrowser):
 
         self.location(self.otp_form_url, data=self.otp_form_data)  # validate the otp
 
-        self.trust_connect = self.session.cookies['trustConnect0']
-
         # This is to make sure that we won't run handle_otp() a second time
         # if an ActionNeeded occurs during handle_otp().
         self.otp_form_data = self.otp_form_url = None
@@ -229,6 +227,13 @@ class AmeliBrowser(TwoFactorBrowser):
         self.finalize_login()
 
     def finalize_login(self):
+        # this cookie (mandatory to avoid a new OTP for 6 months) is updated each time we login
+        # no matter if it's still available or has already expired
+        # if we keep using the old one, it's like we haven't it and a new OTP is required again
+        # trustConnect0 cookie is missing if password OR otp is wrong
+        # if this happens we keep the old value
+        self.trust_connect = self.session.cookies.get('trustConnect0', self.trust_connect)
+
         if self.new_password_page.is_here():
             raise BrowserPasswordExpired()
         if self.login_page.is_here():
