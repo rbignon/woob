@@ -823,7 +823,17 @@ class HistoryItem(ItemElement):
     klass = Transaction
 
     obj_label = CleanText(Dict('text'))
-    obj_date = Date(CleanText(Dict('dueDate'), default=NotAvailable), default=NotAvailable)
+
+    def obj_date(self):
+        date = Date(
+            CleanText(Dict('dueDate'), default=NotAvailable),
+            default=NotAvailable,
+        )(self)
+
+        if not date:
+            return Field('rdate')(self)
+        return date
+
     obj_rdate = Date(CleanText(Dict('date')))
     obj_raw = Transaction.Raw(Dict('parsedData/originalText'))
     obj_amount = CleanDecimal.SI(Dict('amount'))
