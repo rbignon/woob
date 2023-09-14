@@ -1374,12 +1374,7 @@ class CardsActivityPage(LoggedPage, HTMLPage):
 
 class OperationsPage(LoggedPage, HTMLPage):
     def go_on_history_tab(self):
-        try:
-            # Maybe obsolete, added a log to see if it still appear
-            form = self.get_form(id='I1:fm')
-            self.logger.warning("The I1:fm form still exists. (1)")
-        except FormNotFound:
-            form = self.get_form(id='I1:P2:F')
+        form = self.get_form(id='I1:P:F')
         form['_FID_DoShowListView'] = ''
         form.submit()
 
