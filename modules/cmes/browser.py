@@ -20,7 +20,9 @@
 from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
+from requests.exceptions import ConnectionError
 
+from woob.browser.exceptions import ClientError, ServerError
 from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.captcha import RecaptchaV3Question
 from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
@@ -164,7 +166,14 @@ class CmesBrowser(LoginBrowser):
             # Go to the investment details to get employee savings attributes
             if inv._form_param:
                 form = self.page.get_investment_form(form_param=inv._form_param)
-                form.submit()
+                # Sometimes we encounter the error "remote disconnected".
+                # The reason has not been found yet.
+                try:
+                    form.submit()
+                except (ClientError, ServerError) as e:
+                    raise e
+                except ConnectionError:
+                    self.logger.warning('Form could not be submitted, URL: %s escaped', form.url)
             elif inv._details_url:
                 self.location(inv._details_url)
 
