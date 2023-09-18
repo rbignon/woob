@@ -41,7 +41,7 @@ from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
-from woob.tools.url import get_url_params
+from woob.tools.url import get_url_param, get_url_params
 from woob.tools.value import Value
 from woob_modules.netfinca.browser import NetfincaBrowser as _NetfincaBrowser
 
@@ -79,6 +79,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     TIMEOUT = 20.0
 
     ENT_BASEURL = 'https://entreprises.credit-agricole.fr/'
+    PDIK_BASEURL = 'https://pdik.credit-agricole.fr/'
 
     # Login pages
     login_page = URL(r'particulier/acceder-a-mes-comptes.html$', LoginPage)
@@ -155,6 +156,20 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     predica_investments = URL(
         r'https://npcprediweb.predica.credit-agricole.fr/rest/detailEpargne/contrat/', PredicaInvestmentsPage
     )
+    predica_inv_redirect = URL(r'(?P<space>[\w-]+)/operations/synthese/jcr:content.n1.chargercontexteihml.parcourssynthesecontexteservlet.json')
+    predica_versement = URL(
+        r'(?P<space>[\w-]+)/operations/synthese/predica-versement-libre-synthese.iidc-.*.html',
+        EntRedirectionPage
+    )
+    pdik_config = URL(
+        r'(?P<region>[\w-]+)/fe/configuration/app-config.json',
+        JsonRedirectionPage,
+        base='PDIK_BASEURL',
+    )
+    pdik_user = URL(r'(?P<region>[\w-]+)/bff/api/security/user', JsonRedirectionPage, base='PDIK_BASEURL')
+    pdik_login = URL(r'(?P<region>[\w-]+)/bff/api/security/login', base='PDIK_BASEURL')
+    pdik_jwt = URL(r'(?P<region>[\w-]+)/bff/api/context/(?P<context_id>[\w-]+)/jwt', JsonRedirectionPage, base='PDIK_BASEURL')
+    npcprediweb_rooting = URL(r'https://npcprediweb.predica.credit-agricole.fr/prediweb/oidc/rooting')
 
     bgpi_redirection = URL(r'(?P<space>[\w-]+)/operations/moco/bgpi/_?jcr[:_]content.init.html', BgpiRedirectionPage)
     bgpi_accounts = URL(r'https://bgpi-gestionprivee.credit-agricole.fr/bgpi/Logon.do', BgpiAccountsPage)
@@ -1293,6 +1308,50 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         return False
 
+    def perform_predica_redirections(self, account, token):
+        headers = self.session.headers
+        headers.update({'CSRF-Token': token})
+        data = {
+            'id_element_contrat': account._id_element_contrat,
+            'numero_compte': account.number,
+            'url': 'synthese/predica-versement-libre-synthese.html',
+        }
+        self.predica_inv_redirect.go(space=self.space, data=data)
+        self.location(self.page.doc)
+        self.location(self.page.get_first_ca_connect_url())
+        self.location(self.page.get_second_ca_connect_url())
+        context_id = get_url_param(self.url, 'context_id')
+        self.pdik_user.go(region=self.region)
+        state = self.page.get_from_json('state')
+        self.pdik_config.go(region=self.region)
+        redirect_uri = f'{self.PDIK_BASEURL}{self.region}/fe/authorize'
+        params = {
+            'client_id': self.page.get_from_json('clientId'),
+            'redirect_uri': redirect_uri,
+            'response_type': 'code',
+            'scope': 'openid',
+            'state': state,
+        }
+        self.location(f"{self.page.get_from_json('xConnectUrl')}/authorize", params=params)
+        code = get_url_param(self.url, 'code')
+        state = get_url_param(self.url, 'state')
+        params = {
+            'code': code,
+            'redirect_uri': redirect_uri,
+            'state': state,
+            'canal': '',
+        }
+        headers = {'Accept': 'application/json, text/plain, */*'}
+        self.pdik_login.go(region=self.region, params=params, headers=headers)
+        self.pdik_jwt.go(region=self.region, context_id=context_id)
+        data = {
+            'request_version': '3',
+            'correlation_id': self.page.get_from_json('correlationId'),
+            'user_idp_hint': 'private.api.credit-agricole.fr',
+            'ihm_launch_params': self.page.get_from_json('jwt'),
+        }
+        self.npcprediweb_rooting.go(data=data)
+
     @need_login
     def iter_investment(self, account):
         if account.balance == 0 or empty(account.balance):
@@ -1371,13 +1430,9 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             self.go_to_account_space(account._contract)
             self.token_page.go()
             token = self.page.get_token()
-            data = {
-                'situation_travail': 'CONTRAT',
-                'idelco': account.id,
-                ':cq_csrf_token': token,
-            }
+            self.perform_predica_redirections(account, token)
+
             try:
-                self.predica_redirection.go(space=self.space, data=data)
                 self.predica_investments.go()
             except ServerError:
                 self.logger.warning('Got ServerError when fetching investments for account %s', account.id)
