@@ -51,6 +51,7 @@ class AmundiBrowser(TwoFactorBrowser):
     TIMEOUT = 120.0
 
     HAS_CREDENTIALS_ONLY = True
+    STATE_DURATION = 10
 
     login = URL(r'public/login/virtualKeyboard', LoginPage)
     mfa_status = URL(r'/public/individu/push\?jti=(?P<mfa_id>)', MFAStatusPage)
