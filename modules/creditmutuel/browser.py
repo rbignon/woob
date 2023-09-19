@@ -325,7 +325,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         self.twofa_auth_state is present and contains the exact time of the end of its validity
         Else, it will only last self.STATE_DURATION
         """
-        if self.twofa_auth_state:
+        if self.twofa_auth_state and self.twofa_auth_state.get('expires'):
             expires = datetime.fromtimestamp(
                 self.twofa_auth_state['expires'], tz.tzlocal()
             ).replace(microsecond=0).isoformat()
@@ -374,6 +374,12 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 # not present if 2FA is triggered systematically
                 self.twofa_auth_state['value'] = cookie.value  # this is a token
                 self.twofa_auth_state['expires'] = cookie.expires  # this is a timestamp
+                if not cookie.expires:
+                    self.logger.info(
+                        "The expiration state of the twofa authentication cookie is null. Cookie details: expires=%s, value=%s",
+                        cookie.expires,
+                        cookie.value
+                    )
                 break
         else:
             self.logger.info("User probably has his account setup with a systematic sca")
