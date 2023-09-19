@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob_modules.humanis.module import HumanisModule
@@ -34,8 +33,7 @@ class PradoepargneModule(HumanisModule, CapBankWealth):
     LICENSE = 'LGPLv3+'
     VERSION = '3.6'
     DEPENDENCIES = ('humanis',)
-    CONFIG = BackendConfig(
-        *HumanisModule.CONFIG.values(),
+    CONFIG = HumanisModule.CONFIG.with_values(
         ValueBackendPassword('login', label='Identifiant', masked=False),
     )
 
