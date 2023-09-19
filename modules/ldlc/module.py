@@ -19,7 +19,6 @@
 
 from woob.capabilities.bill import CapDocument, Bill
 from woob.capabilities.base import empty
-from woob.tools.backend import BackendConfig
 from woob.tools.value import Value
 from woob_modules.materielnet.module import MaterielnetModule
 
@@ -37,8 +36,7 @@ class LdlcModule(MaterielnetModule, CapDocument):
     LICENSE = 'LGPLv3+'
     VERSION = '3.6'
     DEPENDENCIES = ('materielnet',)
-    CONFIG = BackendConfig(
-        *MaterielnetModule.CONFIG.values(),
+    CONFIG = MaterielnetModule.CONFIG.with_values(
         Value('website', label='Site web', default='part', choices={'pro': 'Professionnels', 'part': 'Particuliers'}),
     )
 
