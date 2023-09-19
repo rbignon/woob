@@ -17,7 +17,6 @@
 
 # flake8: compatible
 
-from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob_modules.cmes.module import CmesModule
@@ -35,8 +34,7 @@ class HumanisModule(CmesModule, CapBankWealth):
     LICENSE = 'LGPLv3+'
     VERSION = '3.6'
     DEPENDENCIES = ('cmes',)
-    CONFIG = BackendConfig(
-        *CmesModule.CONFIG.values(),
+    CONFIG = CmesModule.CONFIG.with_values(
         ValueBackendPassword('login', label="Code d'accès", masked=False),
     )
 
