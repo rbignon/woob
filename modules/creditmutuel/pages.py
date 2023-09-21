@@ -477,7 +477,10 @@ class item_account_generic(ItemElement):
             and _type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE)
             and not self.is_revolving(label)
         ):
-            balance = CleanDecimal.French('./td[2] | ./td[3]')(self)
+            balance = Coalesce(
+                CleanDecimal.French('./td[2]', default=Decimal(0)),
+                CleanDecimal.French('./td[3]', default=Decimal(0)),
+            )(self)
             details = self.page.browser.open(details_link).page
             # We want to skip Loans with no details and balance at zero
             if balance == 0:
