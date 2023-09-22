@@ -23,7 +23,7 @@ import re
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ItemElement, method, ListElement, TableElement
 from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Regexp, QueryValue, Field
-from woob.browser.filters.html import Attr, TableCell
+from woob.browser.filters.html import Attr, Link, TableCell
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account
 from woob.tools.captcha.virtkeyboard import SplitKeyboard
@@ -32,23 +32,23 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 class DelubacVirtKeyboard(SplitKeyboard):
     char_to_hash = {
-        '0': 'a9a91717d92c524179f1afae2c10a723',
-        '1': '447127b3f969167d23a3fa8d67d16b92',
-        '2': 'e8e7050f0fe079b7aca78645c28ee2e8',
-        '3': '9ac3ef3e785d99a5b24ab9cfd3acfd18',
-        '4': '1f1988abef340469414c5362e440c308',
-        '5': '6a2f9bbaec0c9723bd8df2499c4a0f23',
-        '6': '3dfe2ffa48be5eed1b3bea330df31936',
-        '7': '6f82f2b9c6ce332b3c8d772c507bf6a3',
-        '8': '615e63bb3c19c4aaa6e4b017c8e55786',
-        '9': 'ce848fbd07daa83941ad886d34bf8b28',
+        '0': ('a9a91717d92c524179f1afae2c10a723', 'f7d02e19f182be5e13ccded38dda2dae'),
+        '1': ('447127b3f969167d23a3fa8d67d16b92', 'def7ebdc49310708a6fa7bd03e15befe'),
+        '2': ('e8e7050f0fe079b7aca78645c28ee2e8', '8352b7c54bc2108212da5515052549d5'),
+        '3': ('9ac3ef3e785d99a5b24ab9cfd3acfd18', '79a1389891b3711fcc4430d578efd7ab'),
+        '4': ('1f1988abef340469414c5362e440c308', 'bed28cc3c1c93cb57f9ad05fd167644e'),
+        '5': ('6a2f9bbaec0c9723bd8df2499c4a0f23', '549f3062dec406307ea1f7800fbad02c'),
+        '6': ('3dfe2ffa48be5eed1b3bea330df31936', '613f0619a59d1903a278dde45820bfc3'),
+        '7': ('6f82f2b9c6ce332b3c8d772c507bf6a3', '911e7fedf043af134a87d488b7be7def'),
+        '8': ('615e63bb3c19c4aaa6e4b017c8e55786', '3d397219ce17fa420595eb8e3a838724'),
+        '9': ('ce848fbd07daa83941ad886d34bf8b28', '42149d7cb18c0f43e80b87ca99b4a411'),
     }
 
 
 class LoginPage(HTMLPage):
     def login(self, username, password):
         imgs = {}
-        for img_elem in self.doc.xpath('//form[@name="entKbvLoginForm"]//img[@class="key-img"]'):
+        for img_elem in self.doc.xpath('//form[@name="entKbvLoginForm"]//img[@class="login-matrix-key"]'):
             img_src = self.browser.open(img_elem.attrib["src"], is_async=True).result().content
             img_code = re.search(r"[A-Z]{3}\|", img_elem.attrib['onclick']).group(0)
             imgs[img_code] = img_src
@@ -79,7 +79,7 @@ class AccountsPage(LoggedPage, HTMLPage):
 
     @method
     class iter_accounts(ListElement):
-        item_xpath = '//div[@id="compteCourantEUR"]//div[contains(@class, "synthese-ligne")]'
+        item_xpath = '//div[@id="compteCourantEUR"]//tr[@data-type="COMPTE"]'
 
         class item(ItemElement):
             klass = Account
@@ -87,12 +87,12 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_id = Attr('.', "data-id")
             obj_number = Attr('.', "data-id")
             obj_label = CleanText('.//div[1]')
-            obj_balance = CleanDecimal.US(Attr('.', 'data-montant'))
+            obj_balance = CleanDecimal.SI('.//div[@class="text-truncate text-end fs-sm fw-bold text-gray-600 text-hover-gray"]')
             obj_currency = 'EUR'
             obj_type = Account.TYPE_CHECKING
 
             obj_iban = QueryValue(
-                Attr('..//a[contains(@href, "chequier")]', 'href'),
+                Link('..//a[contains(@href, "check")]'),
                 'rechercheComptes',
                 default=NotAvailable
             )
