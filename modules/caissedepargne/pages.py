@@ -27,7 +27,7 @@ from dateutil.tz import tz
 from dateutil.parser import parse as parse_date
 from PIL import Image, ImageFilter
 
-from woob.browser.elements import DictElement, ItemElement, ItemElementRerootMixin, method
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
@@ -744,8 +744,8 @@ class CardsPage(LoggedPage, JsonPage):
 
 class RevolvingDetailsPage(LoggedPage, JsonPage):
     @method
-    class fill_revolving_details(ItemElementRerootMixin, ItemElement):
-        reroot_xpath = 'revolvingCreditSynthesisView'
+    class fill_revolving_details(ItemElement):
+        item_xpath = 'revolvingCreditSynthesisView'
 
         obj_total_amount = CleanDecimal.SI(Dict('maximumCreditAllowedAmount/value'))
         obj_available_amount = CleanDecimal.SI(Dict('totalCreditAmount/value'))
@@ -757,8 +757,8 @@ class RevolvingDetailsPage(LoggedPage, JsonPage):
 
 class ConsumerCreditDetailsPage(LoggedPage, JsonPage):
     @method
-    class fill_consumer_credit_details(ItemElementRerootMixin, ItemElement):
-        reroot_xpath = 'personalLoanPrdSynthesisView'
+    class fill_consumer_credit_details(ItemElement):
+        item_xpath = 'personalLoanPrdSynthesisView'
 
         obj_total_amount = CleanDecimal.SI(Dict('folder/requestedAmount/value'))
         obj_rate = CleanDecimal.SI(Dict('folder/tAEG'))
@@ -771,8 +771,8 @@ class ConsumerCreditDetailsPage(LoggedPage, JsonPage):
 
 class LoanDetailsPage(LoggedPage, JsonPage):
     @method
-    class fill_loan_details(ItemElementRerootMixin, ItemElement):
-        reroot_xpath = 'loan'
+    class fill_loan_details(ItemElement):
+        item_xpath = 'loan'
 
         obj_total_amount = CleanDecimal.SI(Dict('financialInformation/amountBorrowed/value'))
         obj_rate = CleanDecimal.SI(
