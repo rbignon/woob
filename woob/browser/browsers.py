@@ -1408,6 +1408,12 @@ class OAuth2Mixin(StatesMixin):
     refresh_token: str | None = None
     oauth_state: str | None = None
     authorized_date: str | None = None
+    callback_error_description = (
+       'operation canceled by the client',
+       'login cancelled',
+       'consent denied',
+       'psu cancelled the transaction',
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1489,19 +1495,14 @@ class OAuth2Mixin(StatesMixin):
         raise BrowserRedirect(self.build_authorization_uri())
 
     def handle_callback_error(self, values: dict):
-        wrongpass_on_webauth_errors = re.compile('|'.join((
-            'operation canceled by the client',
-            'login cancelled',
-            'consent denied',
-            'psu cancelled the transaction',
-        )))
+        callback_error_description = re.compile('|'.join(self.callback_error_description))
 
         error = values.get('error')
         error_message = values.get('error_description')
 
         if error == 'access_denied':
             if error_message:
-                if wrongpass_on_webauth_errors.search(error_message.lower()):
+                if callback_error_description.search(error_message.lower()):
                     raise BrowserIncorrectPassword(error_message)
                 raise AssertionError(f'Unhandled callback error_message: {error_message}')
             # access_denied with no error message
