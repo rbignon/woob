@@ -835,7 +835,13 @@ class HistoryItem(ItemElement):
         return date
 
     obj_rdate = Date(CleanText(Dict('date')))
-    obj_raw = Transaction.Raw(Dict('parsedData/originalText'))
+
+    def obj_raw(self):
+        # Redefine obj_raw so that parse_with_patterns method used in
+        # FrenchTransaction can load date attribute properly (obj_date has to
+        # be redefined, making its values being fetched after regular attributes).
+        return Transaction.Raw(Dict('parsedData/originalText'))(self)
+
     obj_amount = CleanDecimal.SI(Dict('amount'))
 
 
