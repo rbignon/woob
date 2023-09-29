@@ -201,8 +201,10 @@ ACCOUNT_TYPES = {
     'épargne disponible': Account.TYPE_SAVINGS,
     'LTA': Account.TYPE_SAVINGS,  # Livret Tandem
     'DAT': Account.TYPE_DEPOSIT,
+    'DAT5': Account.TYPE_DEPOSIT,
     'DPA': Account.TYPE_DEPOSIT,
     'DATG': Account.TYPE_DEPOSIT,
+    'DATX': Account.TYPE_DEPOSIT,
     'CEA': Account.TYPE_DEPOSIT,  # Dépôt à terme
     'VAR': Account.TYPE_DEPOSIT,  # Dépôt à terme
     'épargne à terme': Account.TYPE_DEPOSIT,
