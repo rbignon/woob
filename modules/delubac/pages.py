@@ -87,7 +87,7 @@ class AccountsPage(LoggedPage, HTMLPage):
             obj_id = Attr('.', "data-id")
             obj_number = Attr('.', "data-id")
             obj_label = CleanText('.//div[1]')
-            obj_balance = CleanDecimal.SI('.//div[@class="text-truncate text-end fs-sm fw-bold text-gray-600 text-hover-gray"]')
+            obj_balance = CleanDecimal.US('.//div[@class="text-truncate text-end fs-sm fw-bold text-gray-600 text-hover-gray"]')
             obj_currency = 'EUR'
             obj_type = Account.TYPE_CHECKING
 
