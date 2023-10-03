@@ -17,7 +17,7 @@
 
 # flake8: compatible
 
-from woob.capabilities.bank import CapBank
+from woob.capabilities.bank import CapBankWealth
 from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword
 from woob_modules.oney.module import OneyModule
@@ -26,7 +26,7 @@ from woob_modules.oney.module import OneyModule
 __all__ = ['BanqueAccordModule']
 
 
-class BanqueAccordModule(OneyModule, CapBank):
+class BanqueAccordModule(OneyModule, CapBankWealth):
     NAME = 'banqueaccord'
     DESCRIPTION = 'Banque Accord'
     MAINTAINER = 'Romain Bignon'
