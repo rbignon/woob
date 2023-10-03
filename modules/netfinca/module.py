@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bank import CapBank
+from woob.capabilities.bank import CapBankWealth
 from woob.tools.backend import Module
 
 from .browser import NetfincaBrowser
@@ -26,7 +26,7 @@ from .browser import NetfincaBrowser
 __all__ = ['NetfincaModule']
 
 
-class NetfincaModule(Module, CapBank):
+class NetfincaModule(Module, CapBankWealth):
     NAME = 'netfinca'
     DESCRIPTION = 'netfinca website'
     MAINTAINER = 'Martin Sicot'
