@@ -20,7 +20,7 @@
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, ValueTransient
-from woob.capabilities.bank import CapBankTransfer, Account
+from woob.capabilities.bank import CapBankTransfer, Account, CapBankWealth
 
 from .browser import NefBrowser
 
@@ -28,7 +28,7 @@ from .browser import NefBrowser
 __all__ = ['NefModule']
 
 
-class NefModule(Module, CapBankTransfer):
+class NefModule(Module, CapBankWealth, CapBankTransfer):
     NAME = 'nef'
     DESCRIPTION = 'La Nef'
     MAINTAINER = 'Damien Cassou'
