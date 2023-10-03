@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bank import CapBank, AccountNotFound
+from woob.capabilities.bank import CapBankWealth, AccountNotFound
 from woob.capabilities.base import find_object
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
@@ -28,7 +28,7 @@ from .browser import HSBCHK
 __all__ = ['HSBCHKModule']
 
 
-class HSBCHKModule(Module, CapBank):
+class HSBCHKModule(Module, CapBankWealth):
     NAME = 'hsbchk'
     MAINTAINER = u'sinopsysHK'
     EMAIL = 'sinofwd@gmail.com'
