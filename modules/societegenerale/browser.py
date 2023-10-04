@@ -669,7 +669,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     def iter_investment(self, account):
         if account.type not in (
             Account.TYPE_MARKET, Account.TYPE_LIFE_INSURANCE,
-            Account.TYPE_PEA, Account.TYPE_PERP,
+            Account.TYPE_PEA, Account.TYPE_PERP, Account.TYPE_PER,
         ):
             self.logger.debug('This account is not supported')
             return
@@ -681,7 +681,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             for invest in self.page.iter_investments(account=account):
                 yield invest
 
-        if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_PERP):
+        if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_PERP, Account.TYPE_PER):
 
             self.auth_life_insurance_api.go()
             self.life_insurance_api.go(id_tech=account._internal_id)
