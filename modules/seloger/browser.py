@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser import PagesBrowser, URL
-from woob.browser.profiles import Android
+from woob.browser.profiles import Firefox
 from woob.capabilities.housing import TypeNotSupported, POSTS_TYPES
 from .constants import TYPES, RET, BASE_URL
 from .pages import SearchResultsPage, HousingPage, CitiesPage, ErrorPage
@@ -28,7 +28,7 @@ __all__ = ['SeLogerBrowser']
 
 class SeLogerBrowser(PagesBrowser):
     BASEURL = BASE_URL
-    PROFILE = Android()
+    PROFILE = Firefox()
     cities = URL(r'https://autocomplete.svc.groupe-seloger.com/auto/complete/0/Ville/6\?text=(?P<pattern>.*)',
                  CitiesPage)
     search = URL(r'/list.html\?(?P<query>.*)&LISTING-LISTpg=(?P<page_number>\d+)', SearchResultsPage)
