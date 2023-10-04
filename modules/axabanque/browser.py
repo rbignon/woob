@@ -32,7 +32,7 @@ from woob.browser.filters.standard import QueryValue
 from woob.browser.switch import SiteSwitch
 from woob.capabilities.bank import Account
 from woob.exceptions import (
-    BrowserPasswordExpired, BrowserIncorrectPassword, ActionNeeded, ActionType,
+    BrowserPasswordExpired, BrowserIncorrectPassword, ActionNeeded, ActionType, BrowserUserBanned,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
@@ -127,8 +127,11 @@ class AXAOldLoginBrowser(LoginBrowser):
             )
         except ClientError as err:
             response = err.response
-            if response.status_code == 400 and 'INVALID_CREDENTIAL' in response.text:
-                raise BrowserIncorrectPassword()
+            if response.status_code == 400:
+                if 'INVALID_CREDENTIAL' in response.text:
+                    raise BrowserIncorrectPassword()
+                if 'COMMON_ERROR_LOCK_ACCOUNT' in response.text:
+                    raise BrowserUserBanned()
             raise
 
         if self.page.check_error():
