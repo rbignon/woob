@@ -59,8 +59,8 @@ class SeLogerBrowser(PagesBrowser):
         else:
             _type = TYPES.get(_type)
 
-        places = '|'.join(['{{ci:{}}}'.format(c) for c in cities])
-        places = '[{}]'.format(places)
+        places = ','.join(['{}'.format(c) for c in cities])
+        places = '[{{"inseeCodes": [{}]}}]'.format(places)
 
         ret = ','.join([RET.get(t) for t in house_types if t in RET])
 
