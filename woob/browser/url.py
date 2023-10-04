@@ -57,6 +57,7 @@ class URL:
 
     :param base: The name of the browser's property containing the base URL.
     :param headers: Headers to include on requests using this URL.
+    :param timeout: Timeout to use for this URL in particular.
     :param methods: Request HTTP methods to match the response.
     :param content_type: MIME type of the content to match the response with.
     """
@@ -66,6 +67,7 @@ class URL:
         self, *args,
         base: str = 'BASEURL',
         headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
         methods: Tuple[str, ...] = (),
         content_type: Optional[str] = None,
     ):
@@ -86,6 +88,7 @@ class URL:
 
         self._base = base
         self._headers = headers
+        self._timeout = timeout
         self._methods = tuple(methods)
         self._content_type = content_type
         self._creation_counter = URL._creation_counter
@@ -167,6 +170,7 @@ class URL:
         json: Dict | None = None,
         method: str | None = None,
         headers: Dict[str, str] |  None = None,
+        timeout: Optional[float] = None,
         **kwargs
     ) -> requests.Response | Page:
         """
@@ -183,6 +187,9 @@ class URL:
         if self._headers:
             headers.update(self._headers)
 
+        if timeout is None:
+            timeout = self._timeout
+
         r = self.browser.location(
             self.build(**kwargs),
             params=params,
@@ -190,6 +197,7 @@ class URL:
             json=json,
             method=method,
             headers=headers,
+            timeout=timeout,
         )
         return r.page or r
 
@@ -201,6 +209,7 @@ class URL:
         json: Dict | None = None,
         method: str | None = None,
         headers: Dict[str, str] | None = None,
+        timeout: float | None = None,
         is_async: bool = False,
         callback: Callable[[requests.Response], requests.Response] = lambda response: response,
         **kwargs
@@ -218,6 +227,9 @@ class URL:
         headers = headers or {}
         if self._headers:
             headers.update(self._headers)
+
+        if timeout is not None:
+            timeout = self._timeout
 
         r = self.browser.open(
             self.build(**kwargs),
@@ -424,6 +436,7 @@ class URL:
             self.klass,
             base=self._base,
             headers=headers,
+            timeout=self._timeout,
             methods=self._methods,
             content_type=self._content_type,
         )
@@ -437,6 +450,32 @@ class URL:
         """
         return self.with_headers(None)
 
+    def with_timeout(self: URLType, timeout: Optional[float]) -> URLType:
+        """Get a new URL object with timeout.
+
+        :param timeout: The new timeout to apply, or ``None`` if the default
+            timeout from the browser is to be used.
+        :return: The URL using the different timeout.
+        """
+        new_url = self.__class__(
+            *self.urls,
+            self.klass,
+            base=self._base,
+            headers=self._headers,
+            timeout=timeout,
+            methods=self._methods,
+            content_type=self._content_type,
+        )
+        new_url.browser = None
+        return new_url
+
+    def without_timeout(self: URLType) -> URLType:
+        """Get a new URL object using the browser's timeout.
+
+        :return: The URL without the custom timeout.
+        """
+        return self.with_timeout(None)
+
     def with_page(self: URLType, cls: Type[Page]) -> URLType:
         """Get a new URL with the same path but a different page class.
 
@@ -448,6 +487,7 @@ class URL:
             cls,
             base=self._base,
             headers=self._headers,
+            timeout=self._timeout,
             methods=self._methods,
             content_type=self._content_type,
         )
@@ -485,6 +525,7 @@ class URL:
             self.klass,
             base=self._base,
             headers=self._headers,
+            timeout=self._timeout,
             methods=self._methods,
             content_type=self._content_type,
         )
@@ -505,6 +546,7 @@ class URL:
             self.klass,
             base=base,
             headers=self._headers,
+            timeout=self._timeout,
             methods=self._methods,
             content_type=self._content_type,
         )
@@ -523,6 +565,7 @@ class URL:
             self.klass,
             base=self._base,
             headers=self._headers,
+            timeout=self._timeout,
             methods=methods,
             content_type=self._content_type,
         )
@@ -545,6 +588,7 @@ class URL:
             self.klass,
             base=self._base,
             headers=self._headers,
+            timeout=self._timeout,
             methods=self._methods,
             content_type=content_type,
         )

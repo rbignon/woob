@@ -343,7 +343,7 @@ def test_response_content_type_matching_same_page():
 
 
 def test_with_headers():
-    url = URL(r'mypath')
+    url = URL(r'mypath', timeout=5.)
     other_url = url.with_headers({
         'Accept': 'application/vnd.ohno+json; version=666',
     })
@@ -352,8 +352,22 @@ def test_with_headers():
 
     assert url._headers is None
     assert other_url._headers == {'Accept': 'application/vnd.ohno+json; version=666'}
+    assert other_url._timeout == 5.
     assert third_url._headers == {'X-Oh-No': 'wow'}  # non cumulative!
+    assert third_url._timeout == 5.
     assert fourth_url._headers is None
+    assert fourth_url._timeout == 5.
+
+
+def test_with_timeout():
+    url = URL(r'mypath', timeout=5.)
+    second_url = url.without_timeout()
+    third_url = url.with_timeout(6.)
+
+    assert url._timeout == 5.
+    assert second_url._timeout is None
+    assert third_url._timeout == 6.
+    assert third_url.urls == [r'mypath']
 
 
 def test_with_page():
