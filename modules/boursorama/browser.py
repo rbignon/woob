@@ -77,7 +77,7 @@ __all__ = ['BoursoramaBrowser']
 
 
 class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
-    BASEURL = 'https://clients.boursorama.com'
+    BASEURL = 'https://clients.boursobank.com'
     TIMEOUT = 60.0
     HAS_CREDENTIALS_ONLY = True
     TWOFA_DURATION = 60 * 24 * 90
@@ -87,10 +87,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     # following URL has to be declared early because there are two other URL with the same url
     # PdfDocumentPage has been declared with a is_here attribute to be differentiated to the 2 others
     # (the two other pages seem to be in csv format)
-    pdf_document_page = URL(r'https://api.boursorama.com/services/api/files/download.phtml.*', PdfDocumentPage)
+    pdf_document_page = URL(r'https://api.boursobank.com/services/api/files/download.phtml.*', PdfDocumentPage)
     status = URL(r'/aide/messages/dashboard\?showza=0&_hinclude=1', StatusPage)
     calendar = URL(r'/compte/cav/.*/calendrier', CalendarPage)
-    card_calendar = URL(r'https://api.boursorama.com/services/api/files/download.phtml.*', CardCalendarPage)
+    card_calendar = URL(r'https://api.boursobank.com/services/api/files/download.phtml.*', CardCalendarPage)
     card_renewal = URL(r'/infos-profil/renouvellement-carte-bancaire', CardRenewalPage)
     incident_trading_page = URL(r'/infos-profil/incident-trading', IncidentTradingPage)
     error = URL(
@@ -112,11 +112,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         PasswordPage
     )
     otp_send = URL(
-        r'https://api.boursorama.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/otp/startsms/(?P<otp_number>.*)',
+        r'https://api.boursobank.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/otp/startsms/(?P<otp_number>.*)',
         OtpPage
     )
     otp_validation = URL(
-        r'https://api.boursorama.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/otp/checksms/(?P<otp_number>.*)',
+        r'https://api.boursobank.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/otp/checksms/(?P<otp_number>.*)',
         OtpCheckPage
     )
     minor = URL(r'/connexion/mineur', MinorPage)
@@ -131,7 +131,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     history = URL(r'/compte/(cav|epargne)/(?P<webid>.*)/mouvements.*', HistoryPage)
     card_transactions = URL(r'/compte/cav/(?P<webid>.*)/carte/.*', HistoryPage)
-    deffered_card_history = URL(r'https://api.boursorama.com/services/api/files/download.phtml.*', CardHistoryPage)
+    deffered_card_history = URL(r'https://api.boursobank.com/services/api/files/download.phtml.*', CardHistoryPage)
     budget_transactions = URL(r'/budget/compte/(?P<webid>.*)/mouvements.*', HistoryPage)
     other_transactions = URL(r'/compte/cav/(?P<webid>.*)/mouvements.*', HistoryPage)
     saving_transactions = URL(r'/compte/epargne/csl/(?P<webid>.*)/mouvements.*', HistoryPage)
@@ -222,11 +222,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         AddRecipientPage
     )
     rcpt_send_otp_page = URL(
-        r'https://api.boursorama.com/services/api/v\d+\.\d+/_user_/_\w+_/session/(otp|challenge)/start(?P<otp_type>\w+)/\d+',
+        r'https://api.boursobank.com/services/api/v\d+\.\d+/_user_/_\w+_/session/(otp|challenge)/start(?P<otp_type>\w+)/\d+',
         AddRecipientOtpSendPage,
     )
     rcpt_check_otp_page = URL(
-        r'https://api.boursorama.com/services/api/v\d+\.\d+/_user_/_\w+_/session/(otp|challenge)/check(?P<otp_type>\w+)/\d+',
+        r'https://api.boursobank.com/services/api/v\d+\.\d+/_user_/_\w+_/session/(otp|challenge)/check(?P<otp_type>\w+)/\d+',
         OtpCheckPage,
     )
 
@@ -475,6 +475,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     @retry(FormNotFound, tries=3, delay=3)
     def start_login(self):
+        self.session.cookies.set("brsDomainMigration", "migrated")
         self.login.go()
         if not self.page.is_html_loaded():
             # If "__brs_mit" is not present, HTML responses are almost empty.
