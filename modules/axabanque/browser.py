@@ -22,11 +22,13 @@ import random
 from datetime import date
 from base64 import b64encode
 from hashlib import sha256
+import os
 from urllib.parse import urljoin, urlparse
 
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import LoginBrowser, URL, need_login
+from woob.browser.browsers import OAuth2PKCEMixin
 from woob.browser.exceptions import BrowserUnavailable, ClientError, ServerError
 from woob.browser.filters.standard import QueryValue
 from woob.browser.switch import SiteSwitch
@@ -57,7 +59,11 @@ WEALTH_ACCOUNTS = (
 )
 
 
-class AXAOldLoginBrowser(LoginBrowser):
+class AXAOldLoginBrowser(OAuth2PKCEMixin, LoginBrowser):
+    ACCESS_TOKEN_URI = 'https://connect.axa.fr/connect/token'
+
+    SCOPE = 'openid profile phone email openid api-client https://connect.axa.fr/individualOrProfessional.all https://connect.axa.fr/collectiveHealth.all https://connect.axa.fr/bank.all axa-fr-salary-saving eb-fr-collective fr-gfp https://connect.axa.fr/auth/pema'
+
     # Login
     login = URL(r'https://connect.axa.fr/api/identity/auth', LoginPage)
     password = URL(r'https://connect.axa.fr/#/changebankpassword', ChangepasswordPage)
@@ -83,6 +89,10 @@ class AXAOldLoginBrowser(LoginBrowser):
 
     def __init__(self, config, username, password, *args, **kwargs):
         super(AXAOldLoginBrowser, self).__init__(username, password, *args, **kwargs)
+        # Not sure about this one, might be needed to generate it instead of hardcoding it
+        self.client_id = 'ef65ad31-82e2-4131-99fc-f2e3504fd02c'
+        self.oauth_state = os.urandom(5).hex()
+        self.redirect_uri = 'https://espaceclient.axa.fr/silent-redirection.html'
 
     def do_login(self):
         # Due to the website change, login changed too.
@@ -159,9 +169,18 @@ class AXAOldLoginBrowser(LoginBrowser):
             location = self.response.headers.get('location')
             if not location:
                 break
-            self.location(location)
+            self.location(location, allow_redirects=False)
             if self.infinite_redirect.is_here():
                 raise BrowserUnavailable()
+
+        params = self.build_authorization_parameters()
+        params.update({
+            'response_type': 'code',
+            'scope': self.SCOPE,
+            'prompt': 'none',
+        })
+        self.authorize.go(params=params)
+        self.request_access_token(self.url)
 
 
 class AXANewLoginBrowser(AllianzbanqueBrowser):
@@ -456,7 +475,7 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
     BASEURL = 'https://espaceclient.axa.fr'  # Default BASEURL for AXAAssuranceBrowser accounts only
 
     accounts = URL(
-        r'/content/(?P<url_path>.*)/accueil.content-inner.html',
+        r'https://apis.axa.fr/ecv2/transverse/home-dashboard/policies',
         WealthAccountsPage,
     )
     history = URL(
@@ -468,8 +487,8 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
         HistoryInvestmentsPage,
     )
     details = URL(
-        r'.*accueil/savings/(\w+)/contract',
-        r'/#',
+        r'/content/espace-client/accueil/savings/retirement/contract.content-inner.pid_.*.aid_.*.html',
+        r'/#/savings/(?P<acc_number>.*)',
         AccountDetailsPage,
     )
     investment_error = URL(
@@ -479,6 +498,7 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
     investment = URL(
         r'/content/ecc-popin-cards/savings/[^/]+/repartition',
         r'/popin-cards/savings/[^/]+/repartition/.*',
+        r'/content/ecc-popin-cards/savings/retirement/repartition/_jcr_content/par.pid_.*.aid_.*.html',
         InvestmentPage,
     )
     investment_json = URL(
@@ -519,12 +539,14 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
         location(urljoin(self.BASEURL, account.url))
         if self.investment_error.is_here():  # If retrying failed
             raise BrowserUnavailable()
-        self.location(self.page.get_account_url(account.url))
 
     @need_login
     def iter_accounts(self):
-        self.accounts.go(url_path=self.axa_assurance_url_path)
-        return self.page.iter_accounts()
+        self.accounts.go()
+        for acc in self.page.iter_accounts():
+            self.location(urljoin(self.BASEURL, acc.url))
+            acc.url = self.page.get_real_account_url()
+            yield acc
 
     # Logged property is needed when switching from the main browser
     # to the insurance browser.
@@ -577,7 +599,7 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
         self.go_wealth_pages(account)
         self.investment_json.go(
             url_path=self.axa_assurance_url_path,
-            params={'pid': self.page.get_pid_invest(account.number)}
+            params={'pid': account._pid}
         )
         if self.investment_json.is_here() and not self.page.is_error():
             return self.page.iter_investments()
@@ -618,26 +640,25 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
         However, transactions are not always in the chronological order.
         '''
         self.go_wealth_pages(account)
-        pid = self.page.get_pid()
         skip = 0
-        if not pid:
+        if not account._pid:
             self.logger.warning('No pid available for account %s, transactions cannot be retrieved.', account.id)
             return
 
         transactions = []
-        self.go_to_transactions(pid, skip)
+        self.go_to_transactions(account._pid, skip)
         # Pagination:
         while self.page.has_operations():
             for tr in self.page.iter_history():
                 transactions.append(tr)
             skip += 10
-            self.go_to_transactions(pid, skip)
+            self.go_to_transactions(account._pid, skip)
 
         for tr in sorted_transactions(transactions):
             # Get investments for each transaction
             params = {
                 'oid': tr._oid,
-                'pid': pid,
+                'pid': account._pid,
             }
             self.history_investments.go(params=params)
             if self.page.has_investments():

@@ -20,13 +20,12 @@
 import re
 from decimal import Decimal
 
-from woob.exceptions import BrowserUnavailable
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
-from woob.browser.elements import ListElement, ItemElement, TableElement, DictElement, method
+from woob.browser.elements import ItemElement, TableElement, DictElement, method
 from woob.browser.filters.standard import (
     CleanDecimal, CleanText, Currency, Date,
     Eval, Field, Lower, MapIn, QueryValue, Regexp,
-    Env, Base, Coalesce,
+    Env, Base, Coalesce, Format,
 )
 from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, Link, TableCell
@@ -57,24 +56,17 @@ class ClearSessionPage(LoggedPage, RawPage):
     pass
 
 
-class AccountsPage(LoggedPage, PartialHTMLPage):
-    def check_errors(self):
-        error_msg = CleanText('//h3[@class="card-title-error"]')(self.doc)
-        if 'Problème technique' in error_msg:
-            raise BrowserUnavailable(error_msg)
-        elif error_msg:
-            raise AssertionError('Unhandled error message : %s' % error_msg)
-
+class AccountsPage(LoggedPage, JsonPage):
     @method
-    class iter_accounts(ListElement):
-        item_xpath = '//div[contains(@data-module-open-link--link, "/savings/")]'
+    class iter_accounts(DictElement):
+        item_xpath = 'activeAndTerminatedPolicies/activePolicies'
 
         class item(ItemElement):
             klass = Account
 
             def condition(self):
-                # Filter out closed accounts
-                return CleanDecimal.French('.//p[has-class("amount-card")]', default=None)(self) is not None
+                # Filter out closed accounts and accounts without balance
+                return CleanText(Dict('mainInfo'), default=None) and CleanText(Dict('status')) != 'TERMINATED'
 
             TYPES = {
                 'assurance vie': Account.TYPE_LIFE_INSURANCE,
@@ -87,15 +79,21 @@ class AccountsPage(LoggedPage, PartialHTMLPage):
                 'epargne retraite novial': Account.TYPE_LIFE_INSURANCE,
             }
 
-            obj_id = Regexp(CleanText('.//span[has-class("small-title")]'), r'([\d/]+)')
+            obj_id = CleanText(Dict('subTitle'))
             obj_number = obj_id
-            obj_label = CleanText('.//h3[has-class("card-title")]')
-            obj_balance = CleanDecimal.French('.//p[has-class("amount-card")]', default=None)
-            obj_valuation_diff = CleanDecimal.French('.//p[@class="performance"]', default=NotAvailable)
-            obj_currency = Currency('.//p[has-class("amount-card")]')
+            obj_label = CleanText(Dict('title'))
+            obj_balance = CleanDecimal.SI(Dict('mainInfo'), default=None)
+            obj_currency = Currency(CleanText(Dict('mainInfo'), default=None))
             obj__acctype = "investment"
             obj_type = MapIn(Lower(Field('label')), TYPES, Account.TYPE_UNKNOWN)
-            obj_url = Attr('.', 'data-module-open-link--link')
+            obj__pid = CleanText(Dict('policyId'))
+            obj__aid = CleanText(Dict('advisorId'))
+            obj_url = Format(
+                '/content/espace-client/accueil/savings/retirement/contract.content-inner.pid_%s.aid_%s.html',
+                Field('_pid'),
+                Field('_aid'),
+            )
+
             obj_ownership = AccountOwnership.OWNER
 
 
@@ -359,6 +357,9 @@ class Transaction(FrenchTransaction):
 
 
 class AccountDetailsPage(LoggedPage, HTMLPage):
+    def get_real_account_url(self):
+        return Attr('//div[contains(@class, "mawa-cards-item")]', 'data-url')(self.doc)
+
     def get_account_url(self, url):
         return Attr('//a[@href="%s"]' % url, 'data-url')(self.doc)
 
