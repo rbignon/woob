@@ -107,6 +107,7 @@ class ActionNeededPage(LoggedPage, HTMLPage):
             + '| //span[contains(text(), "mettre à jour vos informations personnelles")]/ancestor::div[1]'
             + '| //span[contains(text(), "Souscrivez au Livret + en quelques clics")]'
             + '| //p[@class="warning" and contains(text(), "Cette opération sensible doit être validée par un code sécurité envoyé par SMS")]'
+            + '| //span[contains(text(), "Comment sont catégorisées vos données chez Fortuneo ?")]'
         )(self.doc)
         if warning:
             return warning
