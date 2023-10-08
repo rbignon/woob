@@ -67,6 +67,7 @@ from .pages import (
     AccountsErrorPage, NoAccountPage, TransferMainPage, PasswordPage, NewTransferWizard, RecipientsPage,
     NewTransferEstimateFees, NewTransferUnexpectedStep, NewTransferConfirm, NewTransferSent, CardSumDetailPage,
     MinorPage, AddRecipientOtpSendPage, OtpPage, OtpCheckPage, PerPage, CardRenewalPage, IncidentTradingPage, TncPage,
+    OtpCheckEmailPage, OtpEmailPage
 )
 from .transfer_pages import TransferListPage, TransferInfoPage
 from .document_pages import (
@@ -115,12 +116,20 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r'https://api.boursobank.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/otp/startsms/(?P<otp_number>.*)',
         OtpPage
     )
+    otp_send_email = URL(
+        r'https://api.boursobank.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/otp/startemail/(?P<otp_number>.*)',
+        OtpEmailPage
+    )
     otp_validation = URL(
         r'https://api.boursobank.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/otp/checksms/(?P<otp_number>.*)',
         OtpCheckPage
     )
+    otp_validation_email = URL(
+        r'https://api.boursobank.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/otp/checkemail/(?P<otp_number>.*)',
+        OtpCheckEmailPage
+    )
     minor = URL(r'/connexion/mineur', MinorPage)
-    accounts = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsPage)
+    accounts = URL(r'/compte', AccountsPage)
     accounts_error = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsErrorPage)
     pro_accounts = URL(r'/dashboard/comptes-professionnels\?_hinclude=1', AccountsPage)
     no_account = URL(
@@ -277,7 +286,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     statements_page = URL(r'/documents/releves', BankStatementsPage)
     rib_page = URL(r'/documents/compte-bancaire', BankIdentityPage)
 
-    __states__ = ('recipient_form', 'transfer_form', 'user_hash', 'otp_number', 'otp_token',)
+    __states__ = ('recipient_form', 'transfer_form', 'user_hash', 'otp_number', 'otp_token', 'form_token')
 
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
@@ -291,6 +300,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.card_calendar_loaded = False
         self.recipient_form = None
         self.transfer_form = None
+        self.form_state = None
+        self.form_token = None
         kwargs['username'] = self.config['login'].get()
         kwargs['password'] = self.config['password'].get()
 
@@ -335,9 +346,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             }
             self.user_hash = api_config['USER_HASH']
             self.otp_number = self.page.get_otp_number()
-            self.otp_send.go(
+            self.form_state = self.page.get_form_state()
+            self.otp_send.open(
                 user_hash=self.user_hash, otp_number=self.otp_number,
-                headers=headers, json={},
+                headers=headers, json={'formState': self.form_state},
             )
 
             raise BrowserQuestion(Value('code', label='Entrez le code reçu par SMS'))
@@ -350,7 +362,34 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         try:
             self.otp_validation.go(
                 user_hash=self.user_hash, otp_number=self.otp_number,
-                headers=headers, json={'token': self.code}
+                headers=headers, json={'formState': self.form_state, 'token': self.code},
+            )
+        except ServerError as e:
+            error = e.response.json().get('error', '')
+            if error:
+                error_message = error.get('message')
+                if error_message == "Le code d'authentification est incorrect":
+                    raise BrowserIncorrectPassword(error_message)
+
+                raise AssertionError('otp validation error: %s' % error_message)
+
+            raise
+
+
+        self.location('https://clients.boursobank.com/securisation/validation', data={'form[_token]': self.form_token})
+        self.otp_number = self.user_hash = self.otp_token = None
+        self.status.go()
+        # The request does multiple redirect to go on home page
+        # after that we are really logged
+    def handle_email(self):
+        headers = {
+            'Authorization': self.otp_token,
+            'x-referer-feature-id': '_._.sca',
+        }
+        try:
+            self.otp_validation_email.go(
+                user_hash=self.user_hash, otp_number=self.otp_number,
+                headers=headers, json={'formState': self.form_state, 'token': self.code},
             )
         except ServerError as e:
             error = e.response.json().get('error', '')
@@ -493,6 +532,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 raise AssertionError('Could not fetch "__brs_mit" cookie')
             self.session.cookies.set(cookie_name, cookie_value)
             self.login.go()
+            self.form_token= self.page.get_form_token()
         self.page.enter_password(self.username, self.password)
 
     @login_method

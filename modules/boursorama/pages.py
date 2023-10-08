@@ -111,6 +111,27 @@ class IbanPage(LoggedPage, HTMLPage):
 
 
 class AuthenticationPage(HTMLPage):
+    def build_doc(self, content):
+        doc = super(AuthenticationPage, self).build_doc(content)
+        # We land on this page three times during the login process
+        # Only once, it contains an useful json payload inside a div attribute
+        # So we need to manage when it's not present
+        try:
+            self.json_payload = json.loads(
+                CleanText("//div/@data-strong-authentication-payload")(doc)
+            )
+        except json.decoder.JSONDecodeError:
+            self.json_payload = None
+        return doc
+
+
+    def get_form_state(self):
+        breakpoint()
+        if self.json_payload:
+            return Dict(
+                'challenges/0/parameters/formScreen/actions/check/api/params/formState'
+            )(self.json_payload)
+        return None
     def get_confirmation_link(self):
         return Link('//a[contains(@href, "validation")]', default=None)(self.doc)
 
@@ -138,6 +159,10 @@ class OtpPage(JsonPage):
     def is_here(self):
         # Same url Than AddRecipientOtpSendPage
         return 'Accès à votre compte' in self.doc.get('msgMask')
+
+class OtpEmailPage(JsonPage):
+    pass
+
 
 
 class Transaction(FrenchTransaction):
@@ -258,6 +283,9 @@ class PasswordPage(LoginPage, HTMLPage):
         'w': '9', 'x': '9', 'y': '9', 'z': '9',
     }
 
+    def get_form_token(self):
+        return CleanText('//input[@id="form__token"]/@value')(self.doc)
+
     def enter_password(self, username, password):
         if not password.isdigit():
             old_password = password
@@ -275,6 +303,8 @@ class PasswordPage(LoginPage, HTMLPage):
         form['form[clientNumber]'] = username
         form['form[password]'] = vk.get_string_code(password)
         form['form[matrixRandomChallenge]'] = Regexp(CleanText('//script'), r'val\("(.*)"')(keyboard_page.doc)
+        form['platformAuthenticatorAvailable'] = -1
+        form['_token'] = self.get_form_token()
         form.submit()
 
     def get_error(self):
@@ -2250,6 +2280,9 @@ class OtpCheckPage(LoggedPage, JsonPage):
     def is_success(self):
         return Dict('success', default=False)(self.doc)
 
+class OtpCheckEmailPage(LoggedPage, JsonPage):
+    def is_success(self):
+        return Dict('success', default=False)(self.doc)
 
 class PEPPage(LoggedPage, HTMLPage):
     pass
