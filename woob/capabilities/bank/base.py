@@ -192,6 +192,16 @@ class AccountSchemeName(Enum):
     """
 
 
+class AccountManagementType(Enum):
+    UNKNOWN = 'unknown'
+    CAPITALIZATION = 'capitalization'
+    FIXED_FUNDS = 'fixed_funds'
+    PROFILED = 'profiled'
+    DISCRETIONARY = 'discretionary'
+    DELEGATED = 'delegated'
+    UNIT_LINKED = 'unit_linked'
+
+
 class TransactionCounterparty(BaseObject):
     label = StringField('Name of the other stakeholder (Creditor or debtor)', default=None)
     account_scheme_name = EnumField('Type of account Scheme', AccountSchemeName, default=None)
@@ -312,6 +322,7 @@ class Account(BaseAccount):
     # Wealth accounts (market, life insurance...)
     valuation_diff = DecimalField('+/- values total')
     valuation_diff_ratio = DecimalField('+/- values ratio')
+    management_type = EnumField('Management type of account', AccountManagementType, default=AccountManagementType.UNKNOWN)
 
     # Employee savings (PERP, PERCO, Article 83...)
     company_name = StringField('Name of the company of the stock - only for employee savings')
