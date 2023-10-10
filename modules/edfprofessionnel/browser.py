@@ -156,7 +156,14 @@ class EdfproBrowser(LoginBrowser):
         if self.premium_client_space.is_here():
             self.is_premium = True
 
-        self.token = self.page.get_token()
+        for cookie in self.session.cookies:
+            if cookie.name.startswith('__Host-ERIC_PROD'):
+                self.token = cookie.value
+                break
+        else:
+            # In case Eric is fired
+            self.logger.warning('Could not find token cookie, check if its name has changed')
+
         aura_config = self.page.get_aura_config()
         self.context = aura_config['context']
 

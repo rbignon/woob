@@ -95,10 +95,6 @@ class ClientSpace(BaseRedirectPage):
         )(self.doc)
         return json.loads(aura_config)
 
-    def get_token(self):
-        aura_config = self.get_aura_config()
-        return aura_config['token']
-
 
 class ClientPremiumSpace(ClientSpace):
     pass
