@@ -177,7 +177,7 @@ class YomoniBrowser(APIBrowser):
                              if acc['details'] is not None]:
 
                 m = re.search(
-                    r'([\d\,]+)(?=[\s]+€|[\s]+euro)',
+                    r'([\d\, ]+)(?=[\s]+€|[\s]+euro)',
                     ReplaceEntities().filter(activity['details']),
                     flags=re.UNICODE,
                 )
