@@ -19,47 +19,40 @@
 
 # flake8: compatible
 
-import re
-import hashlib
 import datetime
+import hashlib
+import re
 from decimal import Decimal
 from functools import wraps
-from urllib.parse import urljoin, urlencode, urlparse, parse_qs
+from urllib.parse import parse_qs, urlencode, urljoin, urlparse
 
-from woob.browser.pages import (
-    HTMLPage, LoggedPage, pagination, NextPage, FormNotFound, PartialHTMLPage,
-    LoginPage, CsvPage, RawPage, JsonPage,
-)
-from woob.browser.elements import (
-    ListElement, ItemElement, method, TableElement, SkipItem, DictElement,
-)
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Field, Format,
-    Regexp, Date, Eval, Env,
-    Currency as CleanCurrency, Map, Coalesce,
-    MapIn, Lower, Base, Upper,
-)
-from woob.browser.filters.json import Dict
+from woob.browser.elements import DictElement, ItemElement, ListElement, SkipItem, TableElement, method
 from woob.browser.filters.html import Attr, HasElement, Link, TableCell
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import Base, CleanDecimal, CleanText, Coalesce
+from woob.browser.filters.standard import Currency as CleanCurrency
+from woob.browser.filters.standard import Date, Env, Eval, Field, Format, Lower, Map, MapIn, Regexp, Upper
+from woob.browser.pages import (
+    CsvPage, FormNotFound, HTMLPage, JsonPage, LoggedPage,
+    LoginPage, NextPage, PartialHTMLPage, RawPage, pagination,
+)
+from woob.capabilities.bank import Account as BaseAccount
 from woob.capabilities.bank import (
-    Account as BaseAccount, Recipient, Transfer, TransferDateType, AccountNotFound,
-    AddRecipientBankError, TransferInvalidAmount, Loan, AccountOwnership,
-    Emitter, TransferBankError,
+    AccountNotFound, AccountOwnership, AddRecipientBankError, Emitter, Loan,
+    Recipient, Transfer, TransferBankError, TransferDateType, TransferInvalidAmount,
 )
 from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderType, MarketOrderDirection, MarketOrderPayment,
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
 )
-from woob.capabilities.base import NotAvailable, Currency, empty
+from woob.capabilities.base import Currency, NotAvailable, empty
 from woob.capabilities.profile import Person
-from woob.exceptions import ScrapingBlocked
-from woob.tools.capabilities.bank.iban import clean as clean_iban, is_iban_valid
+from woob.exceptions import ActionNeeded, BrowserHTTPNotFound, BrowserUnavailable, ScrapingBlocked
+from woob.tools.capabilities.bank.iban import clean as clean_iban
+from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.date import parse_french_date
 from woob.tools.json import json
-from woob.exceptions import (
-    BrowserHTTPNotFound, BrowserUnavailable, ActionNeeded,
-)
 
 # Country codes for creating beneficiaries, per alpha-2 code at start of IBAN.
 # Actually probably just are Alpha-3 codes, but could be exceptions.
@@ -108,61 +101,6 @@ class IbanPage(LoggedPage, HTMLPage):
         return CleanText(
             '//div[strong[contains(text(),"IBAN")]]/div[contains(@class, "definition")]', replace=[(' ', '')]
         )(self.doc)
-
-
-class AuthenticationPage(HTMLPage):
-    def build_doc(self, content):
-        doc = super(AuthenticationPage, self).build_doc(content)
-        # We land on this page three times during the login process
-        # Only once, it contains an useful json payload inside a div attribute
-        # So we need to manage when it's not present
-        try:
-            self.json_payload = json.loads(
-                CleanText("//div/@data-strong-authentication-payload")(doc)
-            )
-        except json.decoder.JSONDecodeError:
-            self.json_payload = None
-        return doc
-
-
-    def get_form_state(self):
-        breakpoint()
-        if self.json_payload:
-            return Dict(
-                'challenges/0/parameters/formScreen/actions/check/api/params/formState'
-            )(self.json_payload)
-        return None
-    def get_confirmation_link(self):
-        return Link('//a[contains(@href, "validation")]', default=None)(self.doc)
-
-    def has_skippable_2fa(self):
-        return self.doc.xpath(
-            '//form[@name="form"]/div[contains(@data-strong-authentication-payload, "Ignorer")]'
-        )
-
-    def get_api_config(self):
-        json_config = Regexp(
-            CleanText('//script[contains(text(), "json config")]'),
-            r'CONFIG = (.*}); /'
-        )(self.doc)
-
-        return json.loads(json_config)
-
-    def get_otp_number(self):
-        return Regexp(
-            Attr('//form[@name="form"]/div[@data-strong-authentication-payload]', 'data-strong-authentication-payload'),
-            r'resourceId":"(\d+)'
-        )(self.doc)
-
-
-class OtpPage(JsonPage):
-    def is_here(self):
-        # Same url Than AddRecipientOtpSendPage
-        return 'Accès à votre compte' in self.doc.get('msgMask')
-
-class OtpEmailPage(JsonPage):
-    pass
-
 
 
 class Transaction(FrenchTransaction):
@@ -271,7 +209,56 @@ class BoursoramaVirtKeyboard(object):
         )
 
 
-class PasswordPage(LoginPage, HTMLPage):
+class AuthenticationFormPage(HTMLPage):
+    def get_form_token(self):
+        return CleanText('//input[@id="form__token"]/@value')(self.doc)
+
+
+class AuthenticationPage(AuthenticationFormPage):
+    def get_form_state(self):
+        payload = CleanText('//div/@data-strong-authentication-payload', default='')(self.doc)
+
+        if payload:
+            json_payload = json.loads(payload)
+
+            return Dict(
+                'challenges/0/parameters/formScreen/actions/check/api/params/formState'
+            )(json_payload)
+
+        return None
+
+    def get_confirmation_link(self):
+        return Link('//a[contains(@href, "validation")]', default=None)(self.doc)
+
+    def has_skippable_2fa(self):
+        return self.doc.xpath(
+            '//form[@name="form"]/div[contains(@data-strong-authentication-payload, "Ignorer")]'
+        )
+
+    def get_twofa_config(self):
+        # return a dict with the essential element to build otp url
+        # {'otp_challenge': 'challenge|otp', 'otp_type': 'sms|mail|webtoapp'}
+        return re.search(
+            r'\\/_user_\\/_{userHash}_\\/session\\/(?P<otp_challenge>challenge|otp)\\/start(?P<otp_type>\w+)\\/{resourceId}',
+            CleanText('//div/@data-strong-authentication-payload')(self.doc)
+        ).groupdict()
+
+    def get_api_config(self):
+        json_config = Regexp(
+            CleanText('//script[contains(text(), "json config")]'),
+            r'CONFIG = (.*}); /'
+        )(self.doc)
+
+        return json.loads(json_config)
+
+    def get_otp_number(self):
+        return Regexp(
+            Attr('//form[@name="form"]/div[@data-strong-authentication-payload]', 'data-strong-authentication-payload'),
+            r'resourceId":"(\d+)'
+        )(self.doc)
+
+
+class PasswordPage(LoginPage, AuthenticationFormPage):
     TO_DIGIT = {
         'a': '2', 'b': '2', 'c': '2',
         'd': '3', 'e': '3', 'f': '3',
@@ -282,9 +269,6 @@ class PasswordPage(LoginPage, HTMLPage):
         't': '8', 'u': '8', 'v': '8',
         'w': '9', 'x': '9', 'y': '9', 'z': '9',
     }
-
-    def get_form_token(self):
-        return CleanText('//input[@id="form__token"]/@value')(self.doc)
 
     def enter_password(self, username, password):
         if not password.isdigit():
@@ -328,6 +312,14 @@ class PasswordPage(LoginPage, HTMLPage):
         cookie_name = Regexp(CleanText('//script'), r'document.cookie="(.*?)=', default=None)(self.doc)
         cookie_value = Regexp(CleanText('//script'), fr'="{cookie_name}=(.*?);', default=None)(self.doc)
         return cookie_name, cookie_value
+
+
+class OtpPage(JsonPage):
+    def is_success(self):
+        return Dict('success', default=False)(self.doc)
+
+    def qrcode_needed(self):
+        return Dict('qrcode', default=False)(self.doc)
 
 
 class CardRenewalPage(RawPage):
@@ -1983,7 +1975,6 @@ class TransferOtpPage(LoggedPage, HTMLPage):
 
         otp_json_data = json.loads(self._get_sca_payload())
         # TODO: Check the path for the SMS OTP.
-        # breakpoint()
         challenge_data = otp_json_data['challenges'][0]['parameters']
         challenge_data = challenge_data['formScreen']['actions']
         try:
@@ -2280,9 +2271,6 @@ class OtpCheckPage(LoggedPage, JsonPage):
     def is_success(self):
         return Dict('success', default=False)(self.doc)
 
-class OtpCheckEmailPage(LoggedPage, JsonPage):
-    def is_success(self):
-        return Dict('success', default=False)(self.doc)
 
 class PEPPage(LoggedPage, HTMLPage):
     pass

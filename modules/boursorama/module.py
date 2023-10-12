@@ -23,22 +23,16 @@
 
 import re
 
-from woob.capabilities.base import empty, find_object
-from woob.capabilities.bank import (
-    Account, AccountNotFound, CapCurrencyRate,
-    CapBankTransferAddRecipient, CapBankWealth,
-)
+from woob.capabilities.bank import Account, AccountNotFound, CapBankTransferAddRecipient, CapBankWealth, CapCurrencyRate
 from woob.capabilities.bank.pfm import CapBankMatching
-from woob.capabilities.profile import CapProfile
+from woob.capabilities.base import empty, find_object
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
 from woob.capabilities.contact import CapContact
-from woob.capabilities.bill import (
-    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
-)
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import BoursoramaBrowser
-
 
 __all__ = ['BoursoramaModule']
 
@@ -56,8 +50,11 @@ class BoursoramaModule(
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'^[0-9]+$'),
         ValueBackendPassword('password', label='Mot de passe', regexp=r'[a-zA-Z0-9]+'),
         ValueTransient('code'),
+        ValueTransient('email_code'),
+        ValueTransient('resume'),
         ValueTransient('request_information'),
     )
+
     BROWSER = BoursoramaBrowser
 
     accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.RIB)
