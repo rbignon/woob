@@ -138,6 +138,20 @@ class AccountType(Enum):
     "Real estate investment such as SCPI, OPCI, SCI"
     CROWDLENDING = 22
     "Crowdlending accounts"
+    LDDS = 23
+    "LDD/LDDS Livret de développement durable et solidaire"
+    PEL = 24
+    "Plan épargne logement"
+    CSL = 25
+    "Compte sur Livret"
+    CEL = 26
+    "Compte épargne logement"
+    CAT = 27
+    "Compte à terme"
+    LIVRET_A = 28
+    "Livret A"
+    LIVRET_B = 29
+    "Livret B"
 
 
 class AccountOwnerType:
@@ -304,6 +318,13 @@ class Account(BaseAccount):
     TYPE_PER              = AccountType.PER
     TYPE_REAL_ESTATE      = AccountType.REAL_ESTATE
     TYPE_CROWDLENDING     = AccountType.CROWDLENDING
+    TYPE_LDDS             = AccountType.LDDS
+    TYPE_PEL              = AccountType.PEL
+    TYPE_CSL              = AccountType.CSL
+    TYPE_CEL              = AccountType.CEL
+    TYPE_CAT              = AccountType.CAT
+    TYPE_LIVRET_A         = AccountType.LIVRET_A
+    TYPE_LIVRET_B         = AccountType.LIVRET_B
 
     type =      EnumField('Type of account', AccountType, default=TYPE_UNKNOWN)
     owner_type = StringField('Usage of account')  # cf AccountOwnerType class
