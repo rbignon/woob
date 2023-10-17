@@ -457,6 +457,7 @@ ACCOUNT_TYPES = {
     'COMPTE A VUE': Account.TYPE_CHECKING,
     'COMPTE CHEQUE': Account.TYPE_CHECKING,
     'Mes comptes': Account.TYPE_CHECKING,
+    'COMPTE DE DEPOT': Account.TYPE_CHECKING,
     'CPT DEPOT PART.': Account.TYPE_CHECKING,
     'CPT DEPOT PROF.': Account.TYPE_CHECKING,
     'Mon épargne': Account.TYPE_SAVINGS,
@@ -466,6 +467,7 @@ ACCOUNT_TYPES = {
     'COMPTE SUR LIVRET': Account.TYPE_SAVINGS,
     'LIVRET DEV.DURABLE': Account.TYPE_SAVINGS,
     'LDD Solidaire': Account.TYPE_SAVINGS,
+    'LDDS': Account.TYPE_SAVINGS,
     'LIVRET A': Account.TYPE_SAVINGS,
     'LIVRET B': Account.TYPE_SAVINGS,  # Savings account specific to Caissedepargne.
     'LIVRET JEUNE': Account.TYPE_SAVINGS,
