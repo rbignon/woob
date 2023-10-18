@@ -354,10 +354,10 @@ ACCOUNT_TYPES = {
     'cav': Account.TYPE_CHECKING,
     'cel': Account.TYPE_SAVINGS,
     'ldd': Account.TYPE_SAVINGS,
+    'pea': Account.TYPE_PEA,  # We can have something like 'PEA_PME PELLEREAU'
     'pel': Account.TYPE_SAVINGS,
     'csl': Account.TYPE_SAVINGS,
     'ord': Account.TYPE_MARKET,
-    'pea': Account.TYPE_PEA,
     'per': Account.TYPE_PER,
     'av': Account.TYPE_LIFE_INSURANCE,
     'CROWDFUNDING IMMOBILIER': Account.TYPE_REAL_ESTATE,
