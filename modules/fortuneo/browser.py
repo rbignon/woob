@@ -293,6 +293,11 @@ class FortuneoBrowser(TwoFactorBrowser):
             self.location(self.absurl('ReloadContext?action=1&', base=True), method='POST')
             self.accounts_page.go()
 
+    def check_and_raise_action_needed(self):
+        message = self.page.get_action_needed_message()
+        if message:
+            raise ActionNeeded(message)
+
     @need_login
     def iter_accounts(self):
         self.accounts_page.go()
@@ -306,6 +311,8 @@ class FortuneoBrowser(TwoFactorBrowser):
 
                 if self.process_skippable_message():
                     self.location(account._investment_link)
+
+                self.check_and_raise_action_needed()
 
                 if account.type == Account.TYPE_LIFE_INSURANCE:
                     account_api_id = self.page.get_account_api_id()
@@ -325,9 +332,7 @@ class FortuneoBrowser(TwoFactorBrowser):
                 if self.process_skippable_message():
                     self.location(account._history_link)
 
-                action_needed_message = self.page.get_action_needed_message()
-                if action_needed_message:
-                    raise ActionNeeded(action_needed_message)
+                self.check_and_raise_action_needed()
 
                 if self.loan_contract.is_here():
                     loan = Loan.from_dict(account.to_dict())
