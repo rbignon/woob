@@ -1112,11 +1112,20 @@ class CaisseEpargne(CaisseEpargneLogin):
                 self.revolving_details.go(revolving_id=loan.id)
                 self.page.fill_revolving_details(obj=loan)
             elif loan.type == Account.TYPE_CONSUMER_CREDIT:
-                self.consumer_credit_details.go(
-                    consumer_credit_id=loan.id,
-                    headers={'Authorization': self.get_loans_token('consumer_credits')}
-                )
-                self.page.fill_consumer_credit_details(obj=loan)
+                try:
+                    self.consumer_credit_details.go(
+                        consumer_credit_id=loan.id,
+                        headers={'Authorization': self.get_loans_token('consumer_credits')}
+                    )
+                except ClientError as e:
+                    if e.response.status_code == 400:
+                        # Some "Prets conso" seem to have a specific way
+                        # to access their details, if they have any details.
+                        pass
+                    else:
+                        raise
+                else:
+                    self.page.fill_consumer_credit_details(obj=loan)
             elif loan.type == Account.TYPE_LOAN:
                 self.loan_details.go(
                     loan_id=loan._website_id,

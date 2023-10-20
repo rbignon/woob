@@ -506,6 +506,7 @@ ACCOUNT_TYPES = {
     'NUANCES CAPITALISATI': Account.TYPE_CAPITALISATION,
     'NUANCES 3D': Account.TYPE_LIFE_INSURANCE,
     'NUANCES PLUS': Account.TYPE_LIFE_INSURANCE,
+    'MULTIANCE CAP 1818': Account.TYPE_LIFE_INSURANCE,
     'PEL 16': Account.TYPE_SAVINGS,
     'PERP': Account.TYPE_PERP,
     'habitat': Account.TYPE_MORTGAGE,
@@ -557,7 +558,14 @@ class AccountItemElement(ItemElement):
                 CleanText(Dict('identity/contractLabel')),
                 CleanText(Dict('identity/customerReference')),
             )(self)
-        return CleanText(Dict('identity/contractLabel'))(self)
+        label = CleanText(Dict('identity/contractLabel'))(self)
+        if '\x00' in label:
+            # Only seen one case where the contractLabel value is
+            # something like "\x00\x00\x00\x00\x00...". Value in
+            # productLabel is then what is displayed on the website
+            # interface.
+            return CleanText(Dict('identity/productLabel'))(self)
+        return label
 
     obj_type = MapIn(Field('label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
     obj_balance = CleanDecimal.SI(Dict('identity/balance/value', default=NotAvailable), default=NotAvailable)
