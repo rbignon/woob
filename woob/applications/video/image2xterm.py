@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright(C) 2017  Vincent A
 #
 # This file is part of woob.
