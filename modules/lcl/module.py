@@ -111,14 +111,24 @@ class LCLModule(Module, CapBankWealth, CapBankMatching, CapDocument):
 
         matched_accounts = []
         for previous_account in previous_accounts:
+
             if (
                 previous_account.type == Account.TYPE_CARD
                 and previous_account.number == account.number
                 and previous_account.coming == account.coming
             ):
                 matched_accounts.append(previous_account)
-                if len(matched_accounts) > 1:
-                    raise AssertionError(f'Found multiple candidates to match the card {account.label}.')
+
+            # to match accounts between old and new websites
+            elif (
+                previous_account.type == Account.TYPE_CARD
+                and account.number[0] == '_'
+                and previous_account.number[:3] == account.number[:3]
+            ):
+                matched_accounts.append(previous_account)
+
+        if len(matched_accounts) > 1:
+            raise AssertionError(f'Found multiple candidates to match the card {account.label}.')
 
         if matched_accounts:
             self.logger.info(

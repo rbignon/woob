@@ -18,6 +18,7 @@
 # flake8: compatible
 
 from datetime import date, datetime, timedelta
+from base64 import b64decode
 import re
 import codecs
 
@@ -323,6 +324,21 @@ class CardsPage(LoggedPage, JsonPage):
             obj__market_link = None
             obj__internal_id = CleanText(Dict('internal_id'))
             obj__parent_internal_id = CleanText(Dict('account_internal_id'))
+
+            def obj_number(self):
+                card_id = Field('id')(self)
+                decoded_card_id = b64decode(f'{card_id}=='.encode('ascii')).decode('ascii')
+
+                # decoded_card_id can have one of these 2 formats:
+                #     - _50102797621X695
+                #     - _50102797621X695-01351028369F
+                if len(decoded_card_id) > 16:
+                    if decoded_card_id[16] == '-':
+                        decoded_card_id = decoded_card_id[:16]
+                    else:
+                        raise AssertionError('Unexpected number format')
+
+                return decoded_card_id
 
 
 class CardSynthesisPage(LoggedPage, JsonPage):
