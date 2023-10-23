@@ -18,7 +18,7 @@
 try:
     from prettytable import PrettyTable
 except ImportError as e:
-    raise ImportError('Please install python-prettytable') from e
+    raise ImportError('Please install the `prettytable` python package') from e
 
 try:
     from prettytable import SINGLE_BORDER
