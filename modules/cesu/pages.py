@@ -163,7 +163,7 @@ class DirectDebitsHeaderPage(CesuApiPage):
         class item(ItemElement):
             klass = Document
 
-            obj_id = Format("%s_%s", Env("subscription"), Dict("reference"))
+            obj_id = Format("%s_%s_%s", Env("subscription"), Dict("reference"), Dict("datePrelevement"))
             obj_format = "pdf"
             obj_date = Date(Dict("datePrelevement"))
             obj__period = Regexp(
