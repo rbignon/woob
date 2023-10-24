@@ -48,12 +48,6 @@ class LoginPage(CesuPage):
     def is_here(self):
         return not bool(self.doc.xpath('//*[@id="deconnexion_link"]'))
 
-    def login(self, username, password):
-        form = self.get_form(xpath='//form[has-class("loginForm")]')
-        form["username"] = username
-        form["password"] = password
-        form.submit()
-
 
 class HomePage(LoggedPage, JsonPage):
     def is_ok(self):

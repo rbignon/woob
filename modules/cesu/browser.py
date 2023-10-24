@@ -51,7 +51,7 @@ from .pages import (
 class CesuBrowser(LoginBrowser):
     BASEURL = 'https://www.cesu.urssaf.fr'
 
-    login = URL(r'/info/accueil.html$', LoginPage)
+    login = URL(r'/cesuwebdec/authentication$', LoginPage)
     homepage = URL(r'/info/accueil\.login\.do$', HomePage)
     logout = URL(r'/cesuwebdec/deconnexion$')
     status = URL(r'/cesuwebdec/status', StatusPage)
@@ -103,14 +103,17 @@ class CesuBrowser(LoginBrowser):
 
     def do_login(self):
         self.session.cookies.clear()
-        self.login.go()
         self.session.headers.update({
-            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Accept": "*/*",
+            "Content-Type": "application/json; charset=utf-8",
             "X-Requested-With": "XMLHttpRequest",
         })
 
         try:
-            self.page.login(self.username, self.password)
+            self.login.go(json={
+                'username': self.username,
+                'password': self.password,
+            })
         except ClientError as error:
             response = error.response.json()
 
