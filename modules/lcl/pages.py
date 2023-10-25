@@ -183,6 +183,7 @@ ACCOUNT_TYPES = {
     'Livret de Dév. Durable et Solidaire': Account.TYPE_SAVINGS,
     "Plan d'Epargne en Actions": Account.TYPE_PEA,
     "Plan d'Epargne en Actions - Bourse Expert": Account.TYPE_PEA,
+    "PEA": Account.TYPE_PEA,
     'Compte sur livret': Account.TYPE_SAVINGS,
     'OPTILION STRATEGIQUE': Account.TYPE_SAVINGS,
     'Compte épargne logement': Account.TYPE_SAVINGS,
@@ -248,13 +249,18 @@ class AccountsPage(LoggedPage, JsonPage):
 
         class item(AccountItem):
             def obj_type(self):
-                provided_account_types = {'current': Account.TYPE_CHECKING, 'saving': Account.TYPE_SAVINGS}
-                provided_type = CleanText(Dict('type', default=''), default=NotAvailable)(self)
-                if provided_type in provided_account_types:
-                    return provided_account_types.get(provided_type)
+                # We are losing granularity by using the type of lcl by default. We should not do that account we know.
+                acc_type = Map(Field('label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
+                if acc_type == Account.TYPE_UNKNOWN:
+                    # fallback to use provided field to type unknow account
+                    provided_account_types = {'current': Account.TYPE_CHECKING, 'saving': Account.TYPE_SAVINGS}
+                    provided_type = CleanText(Dict('type', default=''), default=NotAvailable)(self)
+                    if provided_type:
+                        if provided_type in provided_account_types:
+                            return provided_account_types.get(provided_type)
+                        self.logger.warning('Unknown provided type in iter_accounts: %s', provided_type)
 
-                # fallback to use the label field to type
-                return Map(Field('label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+                return acc_type
 
     @method
     class iter_subscriptions(DictElement):
