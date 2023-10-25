@@ -126,9 +126,6 @@ class CmsoProBrowser(CmsoLoginBrowser):
             'service': path,
         }
 
-        # Prevent an error 403
-        self.filter_page.go(website=self.website)
-
         url = self.ssoDomiweb.go(
             website=self.website,
             headers={'ADRIM': 'isAjax:true'},
@@ -142,9 +139,6 @@ class CmsoProBrowser(CmsoLoginBrowser):
     def go_on_area(self, area):
         if self.curr_area == area:
             return
-
-        # The website raise an error 403 if we try to change the area without doing this call first.
-        self.filter_page.go(website=self.website)
 
         ret = self.location(
             'https://api.%s/securityapi/changeSpace' % (self.website),
