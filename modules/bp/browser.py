@@ -395,7 +395,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     user_transaction_id = URL(r'/ws_q44/api/userProfile', UserTransactionIDPage)
 
-    profile_page = URL(r'/ws_q44/api/v1/infoclient/donnesClient', ProfilePage)
+    profile_page = URL(r'/ws_q44/api/v1/infoclient/donneesClient', ProfilePage)
 
     subscription = URL(
         '/voscomptes/canalXHTML/relevePdf/relevePdf_historique/reinitialiser-historiqueRelevesPDF.ea',
