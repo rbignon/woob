@@ -153,6 +153,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
                 op.deleted = True
 
             op.amount = Coalesce(
+                CleanDecimal.French('./td[@data-label="Montant"]', default=None),
                 CleanDecimal.French('./td[@data-label="Euros"]', default=None),
                 CleanDecimal.French('./td[@data-label="Credit"]', default=None),
                 CleanDecimal.French('./td[@data-label="Debit"]', default=None)
