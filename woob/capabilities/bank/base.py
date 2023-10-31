@@ -425,6 +425,10 @@ class TransactionType(Enum):
     CARD_SUMMARY  = 11
     DEFERRED_CARD = 12
     INSTANT       = 13
+    MARKET_ORDER  = 14
+    MARKET_FEE    = 15
+    ARBITRAGE     = 16
+    PROFIT        = 17
 
 
 class BankTransactionCode(BaseObject):
@@ -456,6 +460,10 @@ class Transaction(BaseObject):
     TYPE_CARD_SUMMARY  = TransactionType.CARD_SUMMARY
     TYPE_DEFERRED_CARD = TransactionType.DEFERRED_CARD
     TYPE_INSTANT       = TransactionType.INSTANT
+    TYPE_MARKET_ORDER  = TransactionType.MARKET_ORDER
+    TYPE_MARKET_FEE    = TransactionType.MARKET_FEE
+    TYPE_ARBITRAGE     = TransactionType.ARBITRAGE
+    TYPE_PROFIT        = TransactionType.PROFIT
 
     date =      DateField('Debit date on the bank statement')
     rdate =     DateField('Real date, when the payment has been made; usually extracted from the label or from credit card info')
