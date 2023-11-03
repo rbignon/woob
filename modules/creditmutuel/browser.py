@@ -224,6 +224,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         r'/fr/banque/mouvements.html',
         r'/(?P<subbank>.*)fr/banque/consultation/operations',
         r'/fr/banque/credit/operations/.*/consultation.aspx.*',
+        r'/(?P<subbank>.*)fr/banque/credit/operations/.*/RE/consultation.aspx.*',
         OperationsPage
     )
 
