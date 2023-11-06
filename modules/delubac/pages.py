@@ -85,17 +85,19 @@ class AccountsPage(LoggedPage, HTMLPage):
             klass = Account
 
             obj_id = Attr('.', "data-id")
-            obj_number = Attr('.', "data-id")
-            obj_label = CleanText('.//div[1]')
+            obj_label = CleanText('.//div[contains(@class, "fw-semibold")]')
             obj_balance = CleanDecimal.US('.//div[@class="text-truncate text-end fs-sm fw-bold text-gray-600 text-hover-gray"]')
             obj_currency = 'EUR'
             obj_type = Account.TYPE_CHECKING
 
             obj_iban = QueryValue(
-                Link('..//a[contains(@href, "check")]'),
+                Link('.//a[@data-bs-original-title = "Suivi des chèques"]'),
                 'rechercheComptes',
                 default=NotAvailable
             )
+
+            def obj_number(self):
+                return Regexp(CleanText('.//div[1]'), rf'{Field("label")(self)} (\d+)', r'\1')(self)
 
 
 class Transaction(FrenchTransaction):
