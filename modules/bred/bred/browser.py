@@ -380,6 +380,14 @@ class BredBrowser(TwoFactorBrowser):
         )
         self.current_univers = univers
 
+    def linebourse_login_for_universe(self, universe):
+        self.linebourse_login.go()
+        if self.linebourse_login.is_here():
+            linebourse_url = self.page.get_linebourse_url()
+            if linebourse_url:
+                self.linebourse_urls[universe] = linebourse_url
+                self.linebourse_tokens[universe] = self.page.get_linebourse_token()
+
     def universe_to_owner_type(self, universe_key):
         # P particulire
         # M immobilier
@@ -434,12 +442,7 @@ class BredBrowser(TwoFactorBrowser):
     def get_linebourse_accounts(self, universe_key):
         self.move_to_universe(universe_key)
         if universe_key not in self.linebourse_urls:
-            self.linebourse_login.go()
-            if self.linebourse_login.is_here():
-                linebourse_url = self.page.get_linebourse_url()
-                if linebourse_url:
-                    self.linebourse_urls[universe_key] = linebourse_url
-                    self.linebourse_tokens[universe_key] = self.page.get_linebourse_token()
+            self.linebourse_login_for_universe(universe_key)
         if universe_key in self.linebourse_urls:
             self.linebourse.location(
                 self.linebourse_urls[universe_key],
@@ -539,6 +542,7 @@ class BredBrowser(TwoFactorBrowser):
             if 'Portefeuille Titres' in account.label:
                 if account._is_in_linebourse:
                     self.move_to_universe(account._univers)
+                    self.linebourse_login_for_universe(account._univers)
                     self.linebourse.location(
                         self.linebourse_urls[account._univers],
                         data={'SJRToken': self.linebourse_tokens[account._univers]}
@@ -563,6 +567,7 @@ class BredBrowser(TwoFactorBrowser):
         if 'Portefeuille Titres' in account.label:
             if account._is_in_linebourse:
                 self.move_to_universe(account._univers)
+                self.linebourse_login_for_universe(account._univers)
                 self.linebourse.location(
                     self.linebourse_urls[account._univers],
                     data={'SJRToken': self.linebourse_tokens[account._univers]}
