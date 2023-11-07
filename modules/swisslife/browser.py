@@ -124,8 +124,15 @@ class SwisslifeBrowser(TwoFactorBrowser):
                     website_url='https://myswisslife.fr/connection/login'
                 )
 
-        except ClientError:
-            raise BrowserIncorrectPassword("Votre identifiant utilisateur est inconnu ou votre mot de passe est incorrect.")
+        except ClientError as e:
+            if e.response.status_code == 401:
+                # e.response.text only contains one line like this one for wrongpass 'global.message.IdmdpIncorrect'.
+                if 'compteBloque' in e.response.text:
+                    raise BrowserUserBanned('Pour des raisons de sécurité, votre compte est suspendu durant 48 h.')
+                elif 'IdmdpIncorrect' in e.response.text:
+                    raise BrowserIncorrectPassword('Votre identifiant utilisateur est inconnu ou votre mot de passe est incorrect.')
+                AssertionError(f'Unhandled login error: {e.response.text}')
+            raise
         except ServerError as e:
             error = e.response.json().get('error')
             if error:
