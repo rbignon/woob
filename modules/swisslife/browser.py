@@ -102,7 +102,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
             # the else case : no Captcha/SCA
             captcha_response = self.config['captcha_response'].get()
             if captcha_response:
-                self.phone_number.go(tokenCaptcha=captcha_response)
+                self.phone_number.go(tokenCaptcha=captcha_response, method='POST')
                 # check for SMS SCA
                 if self.phone_number.is_here():
                     if self.page.phone_is_valid():
