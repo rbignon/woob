@@ -85,7 +85,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     )
     history = URL(
         r'/gp/your-account/order-history\?ref_=ya_d_c_yo',
-        r'/gp/css/order-history\?',
+        r'/gp/css/order-history(/.*)?\?',
         HistoryPage,
     )
     documents = URL(
@@ -229,7 +229,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             raise SentOTPQuestion(field_name='pin_code', message=otp_message or 'Please type the OTP you received')
 
     def request_captcha_solver(self, captcha):
-        self.captcha_form = self.page.get_sign_in_form()
+        self.captcha_form = self.page.get_captcha_form()
         self.captcha_url = self.captcha_form.url
         image = self.open(captcha).content
         raise ImageCaptchaQuestion(image)
@@ -296,11 +296,36 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             # Resolve captcha code
             if self.captcha_form:
                 # We need to send the form manually since reloading the page changes the captcha
-                self.captcha_form['password'] = self.password
-                self.captcha_form['guess'] = self.config['captcha_response'].get()
-                self.location(self.captcha_url, data=self.captcha_form, allow_redirects=False)
+                if self.page.captcha_form_is_here():
+                    # Some accounts can have an app validation after captcha solving.
+                    self.check_interactive()
+                    params = {
+                        'amzn': self.captcha_form['amzn'],
+                        'amzn-r': self.captcha_form['amzn-r'],
+                        'field-keywords': self.config['captcha_response'].get(),
+                    }
+                    self.location(self.captcha_url, params=params)
+                    self.page.login(self.username, self.password)
+
+                    if self.login.is_here:
+                        msg = self.page.get_error_message()
+                        if msg:
+                            if any(wrongpass_message in msg for wrongpass_message in self.WRONGPASS_MESSAGES):
+                                raise BrowserIncorrectPassword(msg)
+
+                else:
+                    self.captcha_form['password'] = self.password
+                    self.captcha_form['guess'] = self.config['captcha_response'].get()
+                    self.location(self.captcha_url, data=self.captcha_form, allow_redirects=False)
+
                 self.captcha_form = None
                 self.captcha_url = None
+
+                # There can be an appval juste after solving the captcha.
+                if self.approval_page.is_here():
+                    msg_validation = self.page.get_msg_app_validation()
+                    raise AppValidation(msg_validation)
+
             else:
                 self.page.login(self.username, self.password, self.config['captcha_response'].get())
 
@@ -343,6 +368,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
         if not self.login.is_here():
             return
+
+        if self.page.captcha_form_is_here():
+            captcha = self.page.get_captcha()
+            if captcha and not self.config['captcha_response'].get():
+                self.request_captcha_solver(captcha)
 
         self.page.login(self.username, self.password)
         self.send_notification_interactive_mode()

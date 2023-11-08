@@ -58,7 +58,7 @@ class SecurityPage(HTMLPage):
         return CleanText('//div[@class="a-box-inner"]/p')(self.doc)
 
     def send_code(self):
-        form = self.get_form()
+        form = self.get_form(submit='//input[@type="submit" and @value="verifyCaptcha"]')
         if form.el.attrib.get('id') == 'auth-select-device-form':
             # the first is sms, second email, third application
             # the first item is automatically selected
@@ -86,7 +86,7 @@ class SecurityPage(HTMLPage):
         return Attr('//img[@alt="captcha"]', 'src', default=NotAvailable)(self.doc)
 
     def resolve_captcha(self, captcha_response):
-        form = self.get_form('//form[@action="verify"]')
+        form = self.get_form('//form[@action="verify"]', submit='//input[@type="submit" and @value="verifyCaptcha"]')
         form['cvf_captcha_input'] = captcha_response
         form.submit()
 
@@ -178,10 +178,17 @@ class LoginPage(PartialHTMLPage):
         form.submit(allow_redirects=False)
 
     def get_captcha(self):
+        if self.captcha_form_is_here():
+            return Attr('//form[@action="/errors/validateCaptcha"]//img', 'src', default=None)(self.doc)
         return Attr('//img[@id="auth-captcha-image"]', 'src', default=None)(self.doc)
 
-    def get_sign_in_form(self):
+    def get_captcha_form(self):
+        if self.captcha_form_is_here():
+            return self.get_form(xpath='//form[@action="/errors/validateCaptcha"]')
         return self.get_form(name='signIn')
+
+    def captcha_form_is_here(self):
+        return HasElement('//form[@action="/errors/validateCaptcha"]')(self.doc)
 
     def get_error_message(self):
         return Coalesce(
