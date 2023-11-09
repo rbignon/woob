@@ -483,7 +483,7 @@ class item_account_generic(ItemElement):
             )(self)
             details = self.page.browser.open(details_link).page
             # We want to skip Loans with no details and balance at zero
-            if balance == 0:
+            if balance == 0 and details:
                 error_message = details.get_error_message()
                 if 'bloqué' in error_message:
                     self.logger.warning('Account "%s" is not available', label)
