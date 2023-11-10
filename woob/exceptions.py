@@ -136,6 +136,7 @@ class OTPQuestion(BrowserQuestion):
 class OTPSentType:
     UNKNOWN = 'unknown'
     SMS = 'sms'
+    PHONE_CALL = 'phone_call'
     MOBILE_APP = 'mobile_app'
     EMAIL = 'email'
     DEVICE = 'device'
