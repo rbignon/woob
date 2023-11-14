@@ -250,8 +250,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
     cards_hist_available = URL(
         r'/(?P<subbank>.*)fr/banque/SCIM_default.aspx\?_tabi=C&_stack=SCIM_ListeActivityStep%3a%3a&_pid=ListeCartes&_fid=ChangeList&Data_ServiceListDatas_CurrentType=MyCards',
         r'/(?P<subbank>.*)fr/banque/PCS1_CARDFUNCTIONS.aspx',
-        r'/(?P<subbank>.*)fr/banque/PCS2_FUNCTIONS.aspx',
-        r'/(?P<subbank>.*)fr/banque/PCS5_FUNCTIONS.aspx',
+        r'/(?P<subbank>.*)fr/banque/PCS[25]_FUNCTIONS.aspx',
         NewCardsListPage
     )
     cards_hist_available2 = URL(r'/(?P<subbank>.*)fr/banque/SCIM_default.aspx', NewCardsListPage)
