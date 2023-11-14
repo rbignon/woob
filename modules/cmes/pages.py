@@ -41,12 +41,14 @@ class Transaction(FrenchTransaction):
 
 
 class LoginPage(HTMLPage):
+    ENCODING = 'utf-8'
+
     def login(self, login, password, recaptcha_reponse):
         form = self.get_form(name='bloc_ident')
         form['_cm_user'] = login
         form['_cm_pwd'] = password
         form['g-recaptcha-response'] = recaptcha_reponse
-        form.submit()
+        form.submit(allow_redirects=False)
 
     def get_captcha_site_key(self):
         return Attr('//div[@class="g-recaptcha"]', 'data-sitekey', default='')(self.doc)

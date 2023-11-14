@@ -25,7 +25,7 @@ from requests.exceptions import ConnectionError
 from woob.browser.exceptions import ClientError, ServerError
 from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.captcha import RecaptchaV3Question
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.exceptions import AuthMethodNotImplemented, BrowserIncorrectPassword, ActionNeeded
 
 from .pages import (
     LoginPage, AccountsPage, OperationsListPage, OperationPage, ActionNeededPage,
@@ -37,6 +37,8 @@ class CmesBrowser(LoginBrowser):
     BASEURL = 'https://www.cic-epargnesalariale.fr'
 
     login = URL(r'(?P<client_space>.*)fr/identification/authentification.html', LoginPage)
+
+    mfa = URL(r'https://www.creditmutuel-epargnesalariale.fr/fr/epargnants/premiers-pas/authentification-forte/index.html')
 
     action_needed = URL(
         r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/premiers-pas/saisir-vos-coordonnees',
@@ -104,9 +106,25 @@ class CmesBrowser(LoginBrowser):
                 )
 
         self.page.login(self.username, self.password, self.config['captcha_response'].get())
+        self.handle_mfa_page()
 
         if self.login.is_here():
             raise BrowserIncorrectPassword()
+
+    def handle_mfa_page(self):
+        # check if we are being redirected to mfa page. if that's the case stop.
+        redirect = self.response.headers.get('Location', '')
+
+        if self.accounts.match(redirect):
+            self.location(self.response.headers['Location'])
+            return
+
+        if self.mfa.match(redirect):
+            # if the redirect url is for mfa, we don't follow it.
+            # the mfa won't be sent to the user.
+            raise AuthMethodNotImplemented('Multi Factor Authentication is not handled yet')
+
+        raise AssertionError('Unexpected rediretion url')
 
     def go_to_investment_details(self):
         """ Go to InvestmentDetailsPage and return True if reached """
