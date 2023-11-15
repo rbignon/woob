@@ -343,7 +343,7 @@ class Account(BaseAccount):
     # Wealth accounts (market, life insurance...)
     valuation_diff = DecimalField('+/- values total')
     valuation_diff_ratio = DecimalField('+/- values ratio')
-    management_type = EnumField('Management type of account', AccountManagementType, default=AccountManagementType.UNKNOWN)
+    management_type = EnumField('Management type of account', AccountManagementType, default=None)
 
     # Employee savings (PERP, PERCO, Article 83...)
     company_name = StringField('Name of the company of the stock - only for employee savings')
