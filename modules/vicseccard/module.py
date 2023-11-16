@@ -45,8 +45,5 @@ class VicSecCardModule(Module, CapBank):
     def iter_accounts(self):
         return self.browser.iter_accounts()
 
-    def get_account(self, id_):
-        return self.browser.get_account(id_)
-
     def iter_history(self, account):
         return self.browser.iter_history(account)

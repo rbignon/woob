@@ -19,7 +19,7 @@
 
 from collections import OrderedDict
 
-from woob.capabilities.bank import Account, AccountNotFound
+from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
@@ -111,13 +111,6 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
-
-    def get_account(self, _id):
-        account = self.browser.get_account(_id)
-        if account:
-            return account
-        else:
-            raise AccountNotFound()
 
     def iter_history(self, account):
         return self.browser.iter_history(account)

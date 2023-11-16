@@ -18,11 +18,9 @@
 # flake8: compatible
 
 from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.bank.transfer import (
     CapBankTransferAddRecipient, TransferDateType,
 )
-from woob.capabilities.base import find_object
 from woob.capabilities.profile import CapProfile
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
@@ -58,9 +56,6 @@ class OrangeBankModule(Module, CapBankTransferAddRecipient, CapProfile):
 
     def create_default_browser(self):
         return self.create_browser(self.config)
-
-    def get_account(self, id):
-        return find_object(self.iter_accounts(), id=id, error=AccountNotFound)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

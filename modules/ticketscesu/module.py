@@ -17,8 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.base import find_object
-from woob.capabilities.bank import CapBank, Account, AccountNotFound
+from woob.capabilities.bank import CapBank, Account
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
@@ -46,17 +45,6 @@ class TicketsCesuModule(Module, CapBank):
 
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(), self.config['password'].get())
-
-    def get_account(self, id):
-        """
-        Get an account from its ID.
-
-        :param id: ID of the account
-        :type id: :class:`str`
-        :rtype: :class:`Account`
-        :raises: :class:`AccountNotFound`
-        """
-        return find_object(self.iter_accounts(), id=id, error=AccountNotFound)
 
     def iter_accounts(self):
         """

@@ -18,8 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bank import CapBankWealth, AccountNotFound
-from woob.capabilities.base import find_object
+from woob.capabilities.bank import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 from .browser import HSBCHK
@@ -50,9 +49,6 @@ class HSBCHKModule(Module, CapBankWealth):
     def iter_accounts(self):
         for account in self.browser.iter_accounts():
             yield account
-
-    def get_account(self, _id):
-        return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)
 
     def iter_history(self, account):
         for tr in self.browser.get_history(account):

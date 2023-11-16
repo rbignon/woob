@@ -101,13 +101,6 @@ class BNPModule(
     def iter_accounts(self):
         return self.browser.iter_accounts()
 
-    def get_account(self, _id):
-        account = self.browser.get_account(_id)
-        if account:
-            return account
-        else:
-            raise AccountNotFound()
-
     def iter_history(self, account):
         return self.browser.iter_history(account)
 

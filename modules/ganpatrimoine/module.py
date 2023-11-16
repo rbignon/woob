@@ -18,8 +18,6 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bank import AccountNotFound
-from woob.capabilities.base import find_object
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
@@ -58,9 +56,6 @@ class GanPatrimoineModule(Module, CapBankWealth, CapProfile):
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
-
-    def get_account(self, _id):
-        return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)
 
     def iter_history(self, account):
         return self.browser.iter_history(account)

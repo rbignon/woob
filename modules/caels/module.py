@@ -18,9 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.base import find_object
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
@@ -52,9 +50,6 @@ class CaelsModule(Module, CapBankWealth):
             self.config['login'].get(),
             self.config['password'].get(),
         )
-
-    def get_account(self, id):
-        return find_object(self.iter_accounts(), id=id, error=AccountNotFound)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

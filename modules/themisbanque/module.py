@@ -18,8 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.bank import CapBank, AccountNotFound
-from woob.capabilities.base import find_object
+from woob.capabilities.bank import CapBank
 from woob.capabilities.profile import CapProfile
 from woob.tools.value import ValueBackendPassword
 from .browser import ThemisBrowser
@@ -45,9 +44,6 @@ class ThemisModule(Module, CapBank, CapProfile):
     def create_default_browser(self):
         return self.create_browser(self.config['login'].get(),
                                    self.config['password'].get())
-
-    def get_account(self, _id):
-        return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

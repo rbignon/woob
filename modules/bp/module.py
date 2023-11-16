@@ -75,9 +75,6 @@ class BPModule(
     def iter_accounts(self):
         return self.browser.get_accounts_list()
 
-    def get_account(self, _id):
-        return find_object(self.browser.get_accounts_list(), id=_id, error=AccountNotFound)
-
     def iter_history(self, account):
         return self.browser.get_history(account)
 

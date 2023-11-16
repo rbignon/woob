@@ -22,7 +22,7 @@
 from woob.capabilities.bank import CapBankTransfer, Account, AccountNotFound, RecipientNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.contact import CapContact
-from woob.capabilities.base import find_object, strict_find_object
+from woob.capabilities.base import strict_find_object
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueTransient, ValueBackendPassword
@@ -76,9 +76,6 @@ class CmsoModule(Module, CapBankTransfer, CapBankWealth, CapContact, CapProfile)
             self.config['password'].get(),
             website=website_domain,
         )
-
-    def get_account(self, _id):
-        return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

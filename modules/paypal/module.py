@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bank import CapBank, AccountNotFound
+from woob.capabilities.bank import CapBank
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 
@@ -45,13 +45,6 @@ class PaypalModule(Module, CapBank):
 
     def iter_accounts(self):
         return self.browser.get_accounts().values()
-
-    def get_account(self, _id):
-        account = self.browser.get_account(_id)
-        if account:
-            return account
-        else:
-            raise AccountNotFound()
 
     def iter_history(self, account):
         for history in self.browser.get_download_history(account):

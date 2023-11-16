@@ -23,7 +23,10 @@
 
 import re
 
-from woob.capabilities.bank import Account, AccountNotFound, CapBankTransferAddRecipient, CapBankWealth, CapCurrencyRate
+from woob.capabilities.bank import (
+    Account, CapCurrencyRate,
+    CapBankTransferAddRecipient, CapBankWealth,
+)
 from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.base import empty, find_object
 from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
@@ -64,13 +67,6 @@ class BoursoramaModule(
 
     def iter_accounts(self):
         return self.browser.get_accounts_list()
-
-    def get_account(self, _id):
-        account = self.browser.get_account(_id)
-        if account:
-            return account
-        else:
-            raise AccountNotFound()
 
     def iter_history(self, account):
         for tr in self.browser.get_history(account):

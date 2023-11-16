@@ -19,8 +19,6 @@
 
 # flake8: compatible
 
-from woob.capabilities.base import find_object
-from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
@@ -50,9 +48,6 @@ class CarrefourBanqueModule(Module, CapBankWealth):
 
     def iter_accounts(self):
         return self.browser.get_account_list()
-
-    def get_account(self, _id):
-        return find_object(self.browser.get_account_list(), id=_id, error=AccountNotFound)
 
     def iter_history(self, account):
         return self.browser.iter_history(account)

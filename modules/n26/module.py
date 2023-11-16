@@ -61,9 +61,6 @@ class Number26Module(Module, CapBank):
     def iter_accounts(self):
         return self.browser.iter_accounts()
 
-    def get_account(self, id):
-        return self.browser.get_account(id)
-
     def iter_history(self, account):
         categories = self.get_categories()
         return self.browser.iter_history(categories=categories)

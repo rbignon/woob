@@ -18,14 +18,11 @@
 # flake8: compatible
 
 from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.base import find_object
 from woob.capabilities.profile import CapProfile
 from woob.tools.value import ValueBackendPassword, ValueDate, ValueTransient
 
 from .browser import BforbankBrowser
-
 
 __all__ = ['BforbankModule']
 
@@ -50,9 +47,6 @@ class BforbankModule(Module, CapBankWealth, CapProfile):
 
     def create_default_browser(self):
         return self.create_browser(self.config)
-
-    def get_account(self, _id):
-        return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

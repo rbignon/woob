@@ -73,9 +73,6 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
     def iter_accounts(self):
         return self.browser.iter_accounts()
 
-    def get_account(self, _id):
-        return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
-
     def iter_history(self, account):
         if not isinstance(account, Account):
             account = self.get_account(account)

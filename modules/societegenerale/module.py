@@ -90,9 +90,6 @@ class SocieteGeneraleModule(
         for account in self.browser.get_accounts_list():
             yield account
 
-    def get_account(self, _id):
-        return find_object(self.browser.get_accounts_list(), id=_id, error=AccountNotFound)
-
     def fill_account(self, account, fields):
         if all((
             self.BROWSER == SocieteGenerale,

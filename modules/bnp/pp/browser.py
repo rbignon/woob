@@ -24,9 +24,8 @@ from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
 from woob.browser.browsers import LoginBrowser, URL, need_login, StatesMixin
-from woob.capabilities.base import find_object
 from woob.capabilities.bank import (
-    AccountNotFound, Account, AddRecipientStep,
+    Account, AddRecipientStep,
     TransferInvalidRecipient, Loan, AddRecipientBankError,
 )
 from woob.capabilities.bill import Subscription, Document, DocumentTypes
@@ -429,9 +428,6 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                                 self.logger.warning("This account was skipped because it already appears in the API.")
 
         return iter(self.accounts_list)
-
-    def get_account(self, _id):
-        return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
 
     @need_login
     def iter_history(self, account, coming=False):

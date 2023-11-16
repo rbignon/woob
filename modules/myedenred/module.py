@@ -19,8 +19,7 @@
 
 # flake8: compatible
 
-from woob.capabilities.bank import CapBank, Account, AccountNotFound
-from woob.capabilities.base import find_object
+from woob.capabilities.bank import CapBank, Account
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
@@ -50,9 +49,6 @@ class MyedenredModule(Module, CapBank):
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
-
-    def get_account(self, id):
-        return find_object(self.iter_accounts(), id=id, error=AccountNotFound)
 
     def iter_history(self, account):
         if not isinstance(account, Account):

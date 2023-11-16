@@ -19,7 +19,7 @@
 
 # flake8: compatible
 
-from woob.capabilities.bank import Account, AccountNotFound
+from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
@@ -70,9 +70,6 @@ class HSBCModule(Module, CapBankWealth, CapProfile, CapDocument):
     def iter_accounts(self):
         for account in self.browser.iter_account_owners():
             yield account
-
-    def get_account(self, _id):
-        return find_object(self.browser.iter_account_owners(), id=_id, error=AccountNotFound)
 
     def iter_history(self, account):
         for tr in self.browser.get_history(account):

@@ -29,7 +29,7 @@ from woob.capabilities.bill import (
 )
 from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank import (
-    CapBankTransferAddRecipient, Account, AccountNotFound,
+    CapBankTransferAddRecipient, Account,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
 
@@ -154,9 +154,6 @@ class CreditAgricoleModule(Module, CapBankWealth, CapDocument, CapBankTransferAd
         )
 
     # Accounts methods
-    def get_account(self, _id):
-        return find_object(self.iter_accounts(), id=_id, error=AccountNotFound)
-
     def iter_accounts(self):
         return self.browser.iter_accounts()
 

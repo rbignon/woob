@@ -89,13 +89,6 @@ class CreditMutuelModule(
             self.logger.debug("Returning %s from matching_account", match)
         return match
 
-    def get_account(self, _id):
-        account = self.browser.get_account(_id)
-        if account:
-            return account
-        else:
-            raise AccountNotFound()
-
     def iter_coming(self, account):
         for tr in self.browser.get_history(account):
             if tr._is_coming:
