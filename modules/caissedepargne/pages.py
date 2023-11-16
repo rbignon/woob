@@ -774,10 +774,13 @@ class ConsumerCreditDetailsPage(LoggedPage, JsonPage):
         obj_total_amount = CleanDecimal.SI(Dict('folder/requestedAmount/value'))
         obj_rate = CleanDecimal.SI(Dict('folder/tAEG'))
         obj_next_payment_amount = CleanDecimal.SI(Dict('folder/nextMonthlyPaymentAmount/value'))
+        obj_next_payment_date = Date(Dict('folder/nextDueDate'), dayfirst=True)
+        obj_last_payment_date = Date(Dict('folder/lastDueDate'), dayfirst=True)
         obj_duration = Eval(int, Dict('offer/duration'))
         obj_subscription_date = Date(CleanText(Dict('offer/signatureDate')), dayfirst=True)
         obj_maturity_date = Date(CleanText(Dict('folder/lastDueDate')), dayfirst=True)
         obj_nb_payments_left = Eval(int, Dict('folder/remainingMonthlyPayment'))
+        obj_start_repayment_date = Date(Dict('offer/firstDueDate'), dayfirst=True)
 
 
 class LoanDetailsPage(LoggedPage, JsonPage):
@@ -791,6 +794,7 @@ class LoanDetailsPage(LoggedPage, JsonPage):
             default=NotAvailable,
         )
         obj_subscription_date = Date(CleanText(Dict('contractCharacteristic/subscriptionDate')))
+        obj_start_repayment_date = Date(CleanText(Dict('contractCharacteristic/firstPayoutDate')))
         obj_maturity_date = Date(CleanText(Dict('contractCharacteristic/closingDate')))
         obj_next_payment_amount = CleanDecimal.SI(Dict('financialInformation/nextDuedateAmount/value'))
         obj_next_payment_date = Date(CleanText(Dict('financialInformation/nextDuedateDate')))
