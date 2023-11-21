@@ -22,6 +22,8 @@ import json
 import re
 from decimal import Decimal
 
+from uuid import uuid4
+
 from woob.browser.browsers import APIBrowser
 from woob.browser.exceptions import ClientError
 from woob.browser.filters.standard import CleanDecimal, Date, Coalesce, MapIn
@@ -78,7 +80,7 @@ class YomoniBrowser(APIBrowser):
             'password': self.password,
         }
         try:
-            response = self.open('auth/login', data=data)
+            response = self.open('auth/login', data=data, headers={'X-Request-Id': str(uuid4().hex)[0:11]})
             self.request_headers['api_token'] = response.headers['API_TOKEN']
             self.users = response.json()
         except ClientError:
