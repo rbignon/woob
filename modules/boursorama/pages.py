@@ -360,7 +360,7 @@ ACCOUNT_TYPES = {
     'ord': Account.TYPE_MARKET,
     'per': Account.TYPE_PER,
     'av': Account.TYPE_LIFE_INSURANCE,
-    'CROWDFUNDING IMMOBILIER': Account.TYPE_REAL_ESTATE,
+    'crowdfunding immobilier': Account.TYPE_REAL_ESTATE,
 }
 
 
