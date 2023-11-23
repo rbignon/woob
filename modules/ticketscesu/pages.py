@@ -39,19 +39,16 @@ class ProfilePage(HTMLPage):
 
 
 class AccountsPage(LoggedPage, HTMLPage):
-    def go_to_transaction_page(self, page):
-        form = self.get_form('//form[@id="frmMain"]')
-        form['%s.x' % page] = 1
-        form['%s.y' % page] = 1
-        form.submit()
-
     @method
-    class get_accounts(ListElement):
+    class iter_accounts(ListElement):
         item_xpath = '//tr[has-class("ItemH23")]'
 
         class item(ItemElement):
             klass = Account
 
+            # TODO: control all these attributes
+
+            # obj_type = '??????'
             obj_id = CleanText('./td[position()=2]')
             obj_balance = CleanDecimal('./td[position()=6]', replace_dots=True)
             obj_label = Format('Millésime %s', Field('id'))
@@ -60,12 +57,20 @@ class AccountsPage(LoggedPage, HTMLPage):
 
             obj__page = Attr('./td//input', 'name')
 
+    def go_to_transactions_page(self, page):
+        form = self.get_form('//form[@id="frmMain"]')
+        form[f'{page}.x'] = 1
+        form[f'{page}.y'] = 1
+        form.submit()
+
     @method
-    class get_transactions(ListElement):
+    class iter_transactions(ListElement):
         item_xpath = '//tr[has-class("ItemH23")]'
 
         class item(ItemElement):
             klass = Transaction
+
+            # TODO: control all these attributes
 
             def obj_date(self):
                 maybe_date = CleanText('./td[position()=2]')(self)

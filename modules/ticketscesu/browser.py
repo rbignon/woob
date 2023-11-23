@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import ActionNeeded, ActionType
+from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword
 
 from .pages import AccountsPage, LoginPage, ProfilePage
 
@@ -32,29 +32,31 @@ class TicketCesuBrowser(LoginBrowser):
 
 
     def do_login(self):
-        self.login_page.go().login(login=self.username, password=self.password)
+        self.login_page.go()
+        self.page.login(self.username, self.password)
 
-        if self.profile_page.is_here():
+        if self.login_page.is_here():
+            # Wrong credentials leads back here, with JS generated message, hard-coded in the exception raised.
+            raise BrowserIncorrectPassword('login et / ou mot de passe erroné')
+
+
+        elif self.profile_page.is_here():
             raise ActionNeeded(
                 locale="en-US", message="Please agree CGU on the CESU website.",
                 action_type=ActionType.ACKNOWLEDGE,
             )
 
     @need_login
-    def get_accounts(self):
-        return self.accounts_page.go().get_accounts()
+    def iter_accounts(self):
+        self.accounts_page.go()
+        return self.page.iter_accounts()
 
     @need_login
-    def get_history(self, id):
-        accounts = self.get_accounts()
+    def iter_history(self, account):
+        self.accounts_page.stay_or_go()
+        self.page.go_to_transactions_page(account._page)
+        return self.page.iter_transactions()
 
-        account = None
-        for acc in accounts:
-            if acc.id == id:
-                account = acc
-
-        if account and self.accounts_page.is_here():
-            self.page.go_to_transaction_page(account._page)
-            return self.page.get_transactions()
-
+    @need_login
+    def iter_subscription(self):
         return []

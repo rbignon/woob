@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.bank import CapBank, Account
+from woob.capabilities.bill import CapDocument
 
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword, Value
@@ -28,7 +28,15 @@ from .browser import TicketCesuBrowser
 __all__ = ['TicketsCesuModule']
 
 
-class TicketsCesuModule(Module, CapBank):
+class TicketsCesuModule(Module, CapDocument):
+    """Almost empty module at the moment: not tested in the wild.
+
+    CapBank methods were written from a previous version of the module, but not tested and not in any present use case.
+    –> CapBank not implemented.
+    CapDocument methods are not written but are to be done once connections are made
+    –> CapDocument methods to be implemented
+    """
+
     NAME = 'ticketscesu'
     DESCRIPTION = 'Tickets CESU Edenred'
     MAINTAINER = 'Antoine BOSSY'
@@ -47,50 +55,10 @@ class TicketsCesuModule(Module, CapBank):
         return self.create_browser(self.config['login'].get(), self.config['password'].get())
 
     def iter_accounts(self):
-        """
-        Iter accounts.
-
-        :rtype: iter[:class:`Account`]
-        """
-        return self.browser.get_accounts()
-
-    def iter_coming(self, account):
-        """
-        Iter coming transactions on a specific account.
-
-        :param account: account to get coming transactions
-        :type account: :class:`Account`
-        :rtype: iter[:class:`Transaction`]
-        :raises: :class:`AccountNotFound`
-        """
-        raise NotImplementedError()
+        return self.browser.iter_accounts()
 
     def iter_history(self, account):
-        """
-        Iter history of transactions on a specific account.
+        return self.browser.iter_history(account.id)
 
-        :param account: account to get history
-        :type account: :class:`Account`
-        :rtype: iter[:class:`Transaction`]
-        :raises: :class:`AccountNotFound`
-        """
-        return self.browser.get_history(account.id)
-
-    def iter_resources(self, objs, split_path):
-        """
-        Iter resources.
-
-        Default implementation of this method is to return on top-level
-        all accounts (by calling :func:`iter_accounts`).
-
-        :param objs: type of objects to get
-        :type objs: tuple[:class:`BaseObject`]
-        :param split_path: path to discover
-        :type split_path: :class:`list`
-        :rtype: iter[:class:`BaseObject`]
-        """
-        if Account in objs:
-            self._restrict_level(split_path)
-            return self.iter_accounts()
-
-        return []
+    def iter_subscription(self):
+        return self.browser.iter_subscription()
