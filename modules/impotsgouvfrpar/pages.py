@@ -173,7 +173,7 @@ class DocumentsPage(LoggedPage, HTMLPage):
             obj_label = Env('label')
             obj_type = DocumentTypes.NOTICE
             obj_format = 'pdf'
-            obj_url = Format('/enp/ensu/Affichage_Document_PDF?idEnsua=%s', Field('_idEnsua'))
+            obj_url = Format('/enp/Affichage_Document_PDF?idEnsua=%s', Field('_idEnsua'))
 
             def parse(self, el):
                 label_ct = CleanText('./div[has-class("texte")][has-class("visible-xs")]')

@@ -39,23 +39,23 @@ class ImpotsParBrowser(FranceConnectBrowser):
     impot_get_context = URL(r'/GetContexte', ImpotsGetContextPage)
     home = URL(
         r"/monprofil-webapp/connexion",
-        r"/enp/ensu/accueilensupres.do",
+        r"/enp/accueilensupres.do",
         r"/enp/accueil.ex",
         r"/enp/j_appelportail",
         r"/enp/j_accueil;jsessionid=(?P<jsessionid>.*)",
         r"/enp/\?urlDest=(?P<url>.*)",
         HomePage
     )
-    third_party_doc_page = URL(r'/enp/ensu/dpr.do', ThirdPartyDocPage)
-    no_document_page = URL(r'/enp/ensu/documentabsent.do', NoDocumentPage)
-    error_document_page = URL(r'/enp/ensu/drpabsent.do', ErrorDocumentPage)
+    third_party_doc_page = URL(r'/enp/dpr.do', ThirdPartyDocPage)
+    no_document_page = URL(r'/enp/documentabsent.do', NoDocumentPage)
+    error_document_page = URL(r'/enp/drpabsent.do', ErrorDocumentPage)
 
     profile = URL(
-        r'/enp/ensu/chargementprofil.do',
+        r'/enp/chargementprofil.do',
         r'/enp/?$',
         ProfilePage
     )
-    documents = URL(r'/enp/ensu/documents.do', DocumentsPage)
+    documents = URL(r'/enp/documents.do', DocumentsPage)
 
     def __init__(self, login_source, *args, **kwargs):
         super(ImpotsParBrowser, self).__init__(*args, **kwargs)
