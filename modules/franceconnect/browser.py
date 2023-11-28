@@ -83,6 +83,10 @@ class FranceConnectBrowser(LoginBrowser):
         if context_page.has_wrong_login():
             raise BrowserIncorrectPassword(bad_fields=['login'])
 
+        if context_page.is_blocked():
+            raise BrowserUserBanned(
+                "Pour votre sécurité, l'accès à votre espace a été bloqué ; veuillez contacter votre centre des Finances publiques."
+            )
         assert context_page.has_next_step(), 'Unexpected behaviour after submitting login for France Connect impôts'
 
         # POST /LoginAEL (ImpotsLoginAELPage)

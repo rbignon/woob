@@ -90,6 +90,10 @@ class ImpotsGetContextPage(MessageResultPage):
         self.load_status_and_message_from_post_message()
         return self.message == 'EXISTEPAS'
 
+    def is_blocked(self):
+        self.load_status_and_message_from_post_message()
+        return self.message == 'BLOCAGE'
+
     def has_next_step(self):
         self.load_status_and_message_from_post_message()
         return self.status == 'ctx' and self.message == 'LMDP'
