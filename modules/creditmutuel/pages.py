@@ -410,6 +410,7 @@ class item_account_generic(ItemElement):
         (re.compile(r'Pea\b'), Account.TYPE_PEA),
         (re.compile(r'Compte De Liquidite Pea'), Account.TYPE_PEA),
         (re.compile(r'Compte Epargne'), Account.TYPE_SAVINGS),
+        (re.compile(r'Compte Syndicat Copro Travaux'), Account.TYPE_SAVINGS),
         (re.compile(r'Plan Epargne Logement'), Account.TYPE_SAVINGS),
         (re.compile(r'Ldd'), Account.TYPE_SAVINGS),
         (re.compile(r'Livret'), Account.TYPE_SAVINGS),
