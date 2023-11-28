@@ -174,6 +174,12 @@ class TransactionsInvestmentsPage(LoggedPage, HTMLPage, TransactionsParser):
         head_xpath = '//div[h3[normalize-space()="Répartition de votre portefeuille"]]//table//tr[1]/th'
         col_quantity = "Nombre d'unités de comptes"
 
+    def create_investment(self, account):
+        inv = Investment()
+        inv.valuation = account.balance
+        inv.label = 'Fond en euros'
+        return [inv]
+
 
 class AllTransactionsPage(LoggedPage, XMLPage, HTMLPage, TransactionsParser):
     def build_doc(self, content):

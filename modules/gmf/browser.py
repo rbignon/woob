@@ -18,6 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser import LoginBrowser, URL, need_login
+from woob.capabilities.bank import Account
 from woob.browser.exceptions import ServerError
 from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
 
@@ -118,4 +119,7 @@ class GmfBrowser(LoginBrowser):
         self.transactions_investments.go(data=data)
         if self.page.has_investments():
             return self.page.iter_investments()
+        elif account.label == 'Epargne Compte Libre Croissance' and account.type == Account.TYPE_LIFE_INSURANCE:
+            # This type of life insurance is very specific and contains only one invest of type 'Fond en euros' with no more information available on detail page.
+            return self.page.create_investment(account)
         return []
