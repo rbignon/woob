@@ -17,7 +17,7 @@
 
 # flake8: compatible
 
-
+import json
 import re
 from io import BytesIO
 from decimal import Decimal
@@ -101,8 +101,15 @@ class JsFilePage(RawPage):
     def get_nonce(self):
         return Regexp(pattern=r'\("nonce","([a-z0-9]+)"\)').filter(self.text)
 
-    def get_snid(self):
-        return Regexp(pattern=r'e.CE="(\d+)"').filter(self.text)
+    def get_snid(self, bank):
+        snid_dict = Regexp(pattern=r'const t=(\{BCP.*?\})\},', default=NotAvailable).filter(self.text)
+        assert snid_dict, 'Could not find SNIDs in main JS, check if it has been updated'
+
+        # dict is formatted like a JS dict, keys aren't quoted, must be
+        # fixed for python to handle it correctly.
+        json_snid_dict = json.loads(re.sub('([A-Z]+)', '"\\1"', snid_dict))
+
+        return json_snid_dict[bank]
 
 
 class AuthorizePage(HTMLPage):

@@ -224,7 +224,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.location(main_js_file)
 
         if not self.snid:
-            self.snid = self.page.get_snid()
+            self.snid = self.page.get_snid(self.enseigne.upper())
 
         self.first_client_id = self.page.get_first_client_id()
         self.second_client_id = self.page.get_second_client_id()
