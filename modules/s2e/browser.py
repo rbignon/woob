@@ -19,6 +19,7 @@
 
 import re
 
+from requests.exceptions import ConnectionError
 from urllib3.exceptions import ReadTimeoutError
 
 from woob.browser import LoginBrowser, URL, need_login, StatesMixin
@@ -359,9 +360,13 @@ class S2eBrowser(LoginBrowser, StatesMixin):
                     # Although we don't fetch anything on BNPInvestmentsPage, this request is
                     # necessary otherwise the calls to the BNP API will return a 401 error
                     try:
-                        self.location(inv._link)
-                    except ServerError:
+                        self.location(inv._link, timeout=30)
+                    except (ServerError, ConnectionError):
                         # For some connections, this request returns a 503 even on the website
+                        # Timeout is set at 60 but on the website this can take up to ~120
+                        # seconds before the website answers with a 503. Retrying three times
+                        # with a timeout at 60 would make a synchronization a bit too long,
+                        # reducing it to 30 might be more acceptable.
                         self.logger.warning('Server returned a Server Error when trying to fetch investment performances.')
                         continue
 
