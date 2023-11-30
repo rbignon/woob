@@ -35,6 +35,8 @@ class EdfproBrowser(LoginBrowser):
     BASEURL = 'https://entreprises-collectivites.edf.fr'
     AUTH_BASEURL = 'https://auth.entreprises-collectivites.edf.fr'
 
+    VERIFY = 'certificate.pem'  # Expire: 28/04/2024
+
     login = URL(r'/openam/json/authenticate', LoginPage, base='AUTH_BASEURL')
     auth = URL(
         r'/openam/UI/Login.*',
