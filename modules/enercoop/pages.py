@@ -31,12 +31,11 @@ from woob.browser.elements import (
 )
 from woob.browser.pages import HTMLPage, NextPage, pagination
 from woob.browser.filters.standard import (
-    Date, CleanDecimal, CleanText, Format, Regexp, QueryValue,
+    Date, CleanDecimal, CleanText, Format, Regexp,
 )
 from woob.browser.filters.html import (
-    AbsoluteLink, Attr, FormValue,
+    AbsoluteLink, FormValue,
 )
-from woob.capabilities.base import NotAvailable
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.profile import Person
 from woob.capabilities.bill import (
@@ -48,54 +47,77 @@ from woob.capabilities.gauge import GaugeMeasure
 SITE_TZ = gettz("Europe/Paris")
 
 
+class LoginPage(HTMLPage):
+    def get_login_token(self):
+        form = self.get_form(id="new_ecppp_client")
+        return form.get("authenticity_token")
+
+
 class LoggedMixin:
     @property
     def logged(self):
-        return bool(self.doc.xpath('//a[@id="logout"]'))
+        return bool(self.doc.xpath('//a[@href="/clients/sign_out"]'))
 
 
 class BillsPage(LoggedMixin, HTMLPage):
     @method
-    class iter_other_subscriptions(ListElement):
-        item_xpath = '//li[@id="contract-switch"]//a[@role="menuitem"][@href]'
-
-        class item(ItemElement):
-            klass = Subscription
-
-            obj_url = AbsoluteLink('.')
-            obj_id = QueryValue(obj_url, 'c')
-            obj__number = Regexp(CleanText('.'), r'(CNT-\d+-\d+)')
-            obj_label = Format(
-                '%s %s',
-                CleanText('./span', children=False),
-                obj__number,
-            )
-
-    @method
     class iter_documents(ListElement):
-        item_xpath = '//div[@id="invoices-container"]/ul/li'
+        item_xpath = '//div[has-class("container-fluid")]/div[@id="facture-table"]/div[has-class("js-accordion-container")]'
 
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Attr('.', 'data-invoice-id')
+            obj_id = Regexp(
+                CleanText('./div[has-class("table-line")]/div/div[2]'),
+                r"(NATLFAC.*)",
+                nth=0,
+            )
 
-            obj_total_price = CleanDecimal.French('.//div[has-class("amount")]')
+            obj_total_price = CleanDecimal.French(
+                Regexp(
+                    CleanText('./div[has-class("table-line")]/div/div[3]'),
+                    r"(\d+,\d+)",
+                    nth=0,
+                )
+            )
+
             obj_currency = 'EUR'
 
-            obj_date = Date(CleanText('.//div[has-class("dueDate")]'), dayfirst=True)
+            obj_date = Date(
+                Regexp(
+                    CleanText('./div[has-class("table-line")]/div/div[4]'),
+                    r"(\d+/\d+/\d+)",
+                    nth=0,
+                ),
+                dayfirst=True,
+            )
+
             obj_label = Format("%s %s", obj_id, obj_date)
 
             obj_format = 'pdf'
 
             def obj_url(self):
-                url = AbsoluteLink('.//a[@target="_blank"]')(self)
-                if '//download' in url:
-                    return NotAvailable
+                url = AbsoluteLink(".//a")(self)
                 return url
 
             def obj_has_file(self):
                 return bool(self.obj_url())
+
+
+class SubscriptionPage(LoggedMixin, HTMLPage):
+    @method
+    class get_subscription(ItemElement):
+        klass = Subscription
+
+        root_xpath = '//div[has-class("container-fluid")]/div/div[2]'
+        obj_id = CleanText(root_xpath + '/div[1]/div[has-class("value")]')
+        obj_label = CleanText(root_xpath + "/span", children=False)
+
+    def get_pdl_number(self):
+        text = CleanText(
+            '//div[has-class("container-fluid")]/div/div[2]/div[2]/div[has-class("value")]'
+        )(self.doc)
+        return re.search(r"(\d+)", text)[1]
 
 
 class ProfilePage(LoggedMixin, HTMLPage):
@@ -105,37 +127,27 @@ class ProfilePage(LoggedMixin, HTMLPage):
 
         obj_name = FormValue('//input[@name="name"]')
         obj_email = FormValue('//input[@name="email"]')
-        obj_phone = Format(
-            '%s%s',
-            Regexp(
-                CleanText(FormValue('//select[@id="phone_number_indic"]')),
-                r'\+\d+'
-            ),
-            FormValue('//input[@id="phone_number"]')
-        )
+        obj_phone = FormValue('//input[@name="fixed_phone1"]')
         obj_country = 'France'
 
         class obj_postal_address(ItemElement):
             klass = PostalAddress
 
-            # there can be a lot of whitespace in city name
-            obj_city = CleanText(FormValue('//select[@id="cities"]'))
-
+            obj_city = CleanText(
+                FormValue('//select[@id="invoicing_address_city"]'))
             obj_street = Format(
-                '%s %s',
-                FormValue('//input[@name="num"]'),
-                FormValue('//input[@name="street"]')
+                "%s %s",
+                FormValue('//input[@name="invoicing_address_street_number"]'),
+                FormValue('//input[@name="invoicing_address_street_name"]'),
             )
-            obj_postal_code = FormValue('//input[@name="zip_code"]')
+            obj_postal_code = FormValue(
+                '//input[@name="invoicing_address_zipcode"]')
             obj_country = 'France'
+            obj_country_code = 'FR'
 
     def fill_sub(self, sub):
         sub._profile = self.get_profile()
         sub.subscriber = sub._profile.name
-
-    def get_pdl_number(self):
-        text = CleanText("""//div[contains(text(),"Numéro de PDL")]/../..""")(self.doc)
-        return re.search(r"(\d+)", text)[1]
 
 
 class StatsPage(LoggedMixin, HTMLPage):
@@ -145,21 +157,23 @@ class StatsPage(LoggedMixin, HTMLPage):
     def iter_sensor_history(self):
         yield from self._history_on_page()
 
-        prev_links = self.doc.xpath("//a[has-class('previous')]/@href")
+        prev_links = self.doc.xpath("//a[text()='Précédent']/@href")
         if prev_links:
             raise NextPage(prev_links[0])
 
     def _history_on_page(self):
-        script_l = self.doc.xpath("//script[@id='enedis-api-response']")
-        if not script_l:
+        canvas_l = self.doc.xpath("//canvas[@id='conso']")
+        if not canvas_l:
             return
 
-        xvalues = json.loads(script_l[0].attrib["data-x-axis-values"])
-        yvalues = json.loads(script_l[0].attrib["data-y-axis-values"])
+        xvalues = json.loads(canvas_l[0].attrib["data-x-axis-values"])
+        yvalues = json.loads(canvas_l[0].attrib["data-y-axis-values"])
 
         xvalues, yvalues = self._tweak_values(xvalues, yvalues)
         if all(yv == 0 for yv in yvalues):
-            self.logger.warning("all values are 0 for %r... ignoring whole page", self.params)
+            self.logger.warning(
+                "all values are 0 for %r... ignoring whole page", self.params
+            )
             return
 
         date_builder = {"tzinfo": SITE_TZ}
@@ -181,7 +195,7 @@ class StatsPage(LoggedMixin, HTMLPage):
         return xvalues, yvalues
 
     def yearly_url(self):
-        return self.doc.xpath("//a[text()='Année']/@href")[0]
+        return self.doc.xpath("//a[text()='Consommation annuelle']/@href")[0]
 
 
 class YearlyPage(StatsPage):

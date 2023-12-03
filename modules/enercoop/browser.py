@@ -26,44 +26,42 @@ from woob.capabilities.base import find_object
 from woob.capabilities.gauge import Gauge, GaugeSensor
 
 from .pages import (
+    LoginPage, SubscriptionPage, StatsPage,
     BillsPage, ProfilePage,
     YearlyPage, MonthlyPage, DailyPage, HourlyPage,
 )
 
 
 class EnercoopBrowser(LoginBrowser):
-    BASEURL = 'https://espace-client.enercoop.fr'
+    BASEURL = 'https://mon-espace.enercoop.fr'
 
-    login = URL('/login')
-    bills = URL(
-        r'/mon-espace/factures/',
-        r'/mon-espace/factures/\?c=(?P<id>\d+)',
-        BillsPage
-    )
+    login = URL('/clients/sign_in', LoginPage)
+    bills = URL('/factures', BillsPage)
+    profile = URL('/mon-compte', ProfilePage)
+    subscription = URL('/contrat', SubscriptionPage)
 
-    profile = URL(
-        r'/mon-espace/compte/',
-        r'/mon-espace/compte/\?c=(?P<id>\d+)',
-        ProfilePage
-    )
-
-    pre_yearly = URL(r"http://mon-espace.enercoop.fr/(?P<contract>\d+)/bienvenue")
-    yearly = URL(r"https://mon-espace.enercoop.fr/(?P<contract>\d+)/conso_glo/(?P<y1>\d{4})-(?P<y2>\d{4})$", YearlyPage)
-    monthly = URL(r"https://mon-espace.enercoop.fr/(?P<contract>\d+)/conso_glo/(?P<year>\d{4})$", MonthlyPage)
+    pre_yearly = URL(r"/consommation$", StatsPage)
+    yearly = URL(
+        r"/consommation/conso_glo/(?P<y1>\d{4})-(?P<y2>\d{4})$", YearlyPage)
+    monthly = URL(r"/consommation/conso_glo/(?P<year>\d{4})$", MonthlyPage)
     daily = URL(
-        r"https://mon-espace.enercoop.fr/(?P<contract>\d+)/conso_glo/(?P<year>\d{4})/(?P<month>\d{2})$",
+        r"/consommation/conso_glo/(?P<year>\d{4})/(?P<month>\d{2})$",
         DailyPage
     )
     hourly = URL(
-        r"https://mon-espace.enercoop.fr/(?P<contract>\d+)/conso_glo/(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})$",
+        r"/consommation/conso_glo/(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})$",
         HourlyPage
     )
 
     def do_login(self):
-        self.login.go(data={
-            'email': self.username,
-            'password': self.password,
-        })
+        self.location("/clients/sign_in")
+        self.login.go(
+            data={
+                "ecppp_client[email]": self.username,
+                "ecppp_client[password]": self.password,
+                "authenticity_token": self.page.get_login_token(),
+            }
+        )
 
     def export_session(self):
         return {
@@ -72,26 +70,22 @@ class EnercoopBrowser(LoginBrowser):
         }
 
     @need_login
-    def iter_subscription(self):
-        self.bills.go()
-        subs = {sub.id: sub for sub in self.page.iter_other_subscriptions()}
-        if subs:
-            self.bills.go(id=next(iter(subs)))
-            subs.update({sub.id: sub for sub in self.page.iter_other_subscriptions()})
-
-            for sub in subs:
-                self.profile.go(id=sub)
-                self.page.fill_sub(subs[sub])
-
-            return subs.values()
-
-        raise NotImplementedError("how to get info when no selector?")
+    def get_profile(self):
+        self.profile.go()
+        yield self.page.get_profile()
 
     @need_login
-    def iter_documents(self, id):
-        self.bills.go(id=id)
+    def iter_subscription(self):
+        self.subscription.go()
+        sub = self.page.get_subscription()
+        self.profile.go()
+        self.page.fill_sub(sub)
+        yield sub
+
+    @need_login
+    def iter_documents(self, _):
+        self.bills.go()
         for doc in self.page.iter_documents():
-            doc.id = doc.id + "_" + id
             yield doc
 
     @need_login
@@ -102,7 +96,7 @@ class EnercoopBrowser(LoginBrowser):
     def iter_gauges(self):
         # TODO implement for multiple contracts
         # and for disabled contracts, consumption pages won't work
-        self.profile.go()
+        self.subscription.go()
         pdl = self.page.get_pdl_number()
         return [Gauge.from_dict({
             "id": f"{pdl}",
@@ -148,10 +142,10 @@ class EnercoopBrowser(LoginBrowser):
                 break
 
         if subid == "yearly":
-            self.pre_yearly.go(contract=pdl)
+            self.pre_yearly.go()
             self.location(self.page.yearly_url())
         else:
-            getattr(self, subid).go(contract=pdl, **url_args)
+            getattr(self, subid).go(**url_args)
 
         for measure in self.page.iter_sensor_history():
             if measure.date.date() > max_date:

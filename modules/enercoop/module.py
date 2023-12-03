@@ -22,10 +22,11 @@
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription, DocumentNotFound,
+    DocumentTypes, CapDocument, DocumentNotFound,
 )
 from woob.capabilities.base import find_object
 from woob.capabilities.gauge import CapGauge
+from woob.capabilities.profile import CapProfile
 
 from .browser import EnercoopBrowser
 
@@ -33,13 +34,12 @@ from .browser import EnercoopBrowser
 __all__ = ['EnercoopModule']
 
 
-class EnercoopModule(Module, CapDocument, CapGauge):
+class EnercoopModule(Module, CapDocument, CapGauge, CapProfile):
     NAME = 'enercoop'
     DESCRIPTION = 'Enercoop'
     MAINTAINER = 'Vincent A'
     EMAIL = 'dev@indigo.re'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
 
     BROWSER = EnercoopBrowser
 
@@ -53,12 +53,13 @@ class EnercoopModule(Module, CapDocument, CapGauge):
     def create_default_browser(self):
         return self.create_browser(self.config['email'].get(), self.config['password'].get())
 
+    def get_profile(self):
+        return self.browser.get_profile()
+
     def iter_subscription(self):
         return self.browser.iter_subscription()
 
     def iter_documents(self, subscription):
-        if isinstance(subscription, Subscription):
-            subscription = subscription.id
         return self.browser.iter_documents(subscription)
 
     def get_document(self, id):
