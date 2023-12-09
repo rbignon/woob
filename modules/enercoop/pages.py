@@ -224,12 +224,18 @@ class HourlyPage(StatsPage):
         if not xvalues:
             return [], []
 
+        if xvalues[0] == "00:15":
+            # xvalues[] is ['00:15', '00:30', '00:45', '01:00', ..., '00:00']
+            # move last element into first to have:
+            # ['00:00', '00:15', '00:30', '00:45', '01:00', ..., '23:45']
+            xvalues = xvalues[-1:] + xvalues[:-1]
+
         assert xvalues[0] == "00:00"
 
         xnew = []
-        for h in range(24):
-            for m in (0, 30):
-                xnew.append({"hour": h, "minute": m})
+        for v in xvalues:
+            (h, m) = map(int, v.split(':'))
+            xnew.append({"hour": h, "minute": m})
 
         ynew = yvalues
 

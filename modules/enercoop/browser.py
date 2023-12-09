@@ -124,7 +124,7 @@ class EnercoopBrowser(LoginBrowser):
         "yearly": "annuelle",
         "monthly": "mensuelle",
         "daily": "quotidienne",
-        "hourly": "par demie-heure",
+        "hourly": "par demie-heure ou quart d'heure",
     }
 
     maxpower_periods = {
