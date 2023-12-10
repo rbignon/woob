@@ -39,7 +39,7 @@ from woob.browser.filters.html import (
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.profile import Person
 from woob.capabilities.bill import (
-    Subscription, Bill,
+    DocumentTypes, Subscription, Bill,
 )
 from woob.capabilities.gauge import GaugeMeasure
 
@@ -60,18 +60,18 @@ class LoggedMixin:
 
 
 class BillsPage(LoggedMixin, HTMLPage):
+    @pagination
     @method
     class iter_documents(ListElement):
         item_xpath = '//div[has-class("container-fluid")]/div[@id="facture-table"]/div[has-class("js-accordion-container")]'
+        next_page = AbsoluteLink(
+            '//a[@title="Année précédente"]', default=None)
 
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Regexp(
-                CleanText('./div[has-class("table-line")]/div/div[2]'),
-                r"(NATLFAC.*)",
-                nth=0,
-            )
+            obj_id = CleanText(
+                './div[has-class("table-line")]/div/div[2]', children=False)
 
             obj_total_price = CleanDecimal.French(
                 Regexp(
@@ -93,6 +93,8 @@ class BillsPage(LoggedMixin, HTMLPage):
             )
 
             obj_label = Format("%s %s", obj_id, obj_date)
+
+            obj_type = DocumentTypes.BILL
 
             obj_format = 'pdf'
 
