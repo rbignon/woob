@@ -48,17 +48,18 @@ class LoginPage(HTMLPage):
 
     def check_user_double_auth(self):
         double_auth = self.doc.xpath('//p[contains(text(), "You have activated the double factor authentication")]')
-        return bool(double_auth)
+        double_auth2 = self.doc.xpath('//div[@class="mfa-title" and contains(text(), "Two-Factor authentication")]')
+        return bool(double_auth) or bool(double_auth2)
 
     def maybe_switch_user_double_auth(self, method):
-        form = self.get_form('//form[@id="2fa"]')
+        form = self.get_form('//form[@id="form-2fa" or @id="2fa"]')
         if form['change2FA'] != method:
             form['change2FA'] = method
             time.sleep(0.5)
             form.submit()
 
     def submit_user_double_auth(self, method, value):
-        form = self.get_form('//form[@id="2fa"]')
+        form = self.get_form('//form[@id="form-2fa" or @id="2fa"]')
         form[method] = value
         form['otpMethod'] = method
         time.sleep(0.5)
