@@ -156,15 +156,15 @@ class StatsPage(LoggedMixin, HTMLPage):
     ABSOLUTE_LINKS = True
 
     @pagination
-    def iter_sensor_history(self):
-        yield from self._history_on_page()
+    def iter_sensor_history(self, sensor):
+        yield from self._history_on_page(sensor)
 
         prev_links = self.doc.xpath("//a[text()='Précédent']/@href")
         if prev_links:
             raise NextPage(prev_links[0])
 
-    def _history_on_page(self):
-        canvas_l = self.doc.xpath("//canvas[@id='conso']")
+    def _history_on_page(self, sensor):
+        canvas_l = self.doc.xpath("//canvas[@id='" + sensor + "']")
         if not canvas_l:
             return
 

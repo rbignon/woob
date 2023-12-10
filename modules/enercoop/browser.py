@@ -40,17 +40,33 @@ class EnercoopBrowser(LoginBrowser):
     profile = URL('/mon-compte', ProfilePage)
     subscription = URL('/contrat', SubscriptionPage)
 
+    # Consumption sensor URLs
     pre_yearly = URL(r"/consommation$", StatsPage)
-    yearly = URL(
-        r"/consommation/conso_glo/(?P<y1>\d{4})-(?P<y2>\d{4})$", YearlyPage)
-    monthly = URL(r"/consommation/conso_glo/(?P<year>\d{4})$", MonthlyPage)
-    daily = URL(
+    c_yearly = URL(
+        r"/consommation/conso_glo/(?P<y1>\d{4})-(?P<y2>\d{4})$",
+        YearlyPage
+    )
+    c_monthly = URL(
+        r"/consommation/conso_glo/(?P<year>\d{4})$",
+        MonthlyPage
+    )
+    c_daily = URL(
         r"/consommation/conso_glo/(?P<year>\d{4})/(?P<month>\d{2})$",
         DailyPage
     )
-    hourly = URL(
+    c_hourly = URL(
         r"/consommation/conso_glo/(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})$",
         HourlyPage
+    )
+
+    # Max power sensor URLs
+    p_monthly = URL(
+        r"/consommation/puissance_max/(?P<year>\d{4})$",
+        MonthlyPage
+    )
+    p_daily = URL(
+        r"/consommation/puissance_max/(?P<year>\d{4})/(?P<month>\d{2})$",
+        DailyPage
     )
 
     def do_login(self):
@@ -111,11 +127,17 @@ class EnercoopBrowser(LoginBrowser):
         "hourly": "par demie-heure",
     }
 
+    maxpower_periods = {
+        "monthly": "mensuelle",
+        "daily": "quotidienne",
+    }
+
     def iter_sensors(self, id, pattern=None):
         g = find_object(self.iter_gauges(), id=id)
         assert g
 
-        return [
+        sensors = []
+        sensors.extend([
             GaugeSensor.from_dict({
                 "id": f"{id}.c.{subid}",
                 "name": f"Consommation électrique {name}",
@@ -123,12 +145,28 @@ class EnercoopBrowser(LoginBrowser):
                 "gaugeid": id,
             })
             for subid, name in self.consumption_periods.items()
-        ]
+        ])
+        sensors.extend([
+            GaugeSensor.from_dict({
+                "id": f"{id}.p.{subid}",
+                "name": f"Puissance max {name}",
+                "unit": "kVA",
+                "gaugeid": id,
+            })
+            for subid, name in self.maxpower_periods.items()
+        ])
+        return sensors
 
     @need_login
     def iter_sensor_history(self, id):
         pdl, sensor_type, subid = id.split(".")
-        assert sensor_type == "c"
+        assert sensor_type in ("c", "p")
+        if sensor_type == "c":
+            yield from self._iter_sensor_history_c(subid)
+        elif sensor_type == "p":
+            yield from self._iter_sensor_history_p(subid)
+
+    def _iter_sensor_history_c(self, subid):
         assert subid in ("yearly", "monthly", "daily", "hourly")
 
         # can't fetch stats of today, use yesterday (and the corresponding month/year)
@@ -145,9 +183,29 @@ class EnercoopBrowser(LoginBrowser):
             self.pre_yearly.go()
             self.location(self.page.yearly_url())
         else:
-            getattr(self, subid).go(**url_args)
+            getattr(self, "c_" + subid).go(**url_args)
 
-        for measure in self.page.iter_sensor_history():
+        for measure in self.page.iter_sensor_history("conso"):
+            if measure.date.date() > max_date:
+                continue
+            yield measure
+
+    def _iter_sensor_history_p(self, subid):
+        assert subid in ("monthly", "daily")
+
+        # can't fetch stats of today, use yesterday (and the corresponding month/year)
+        max_date = datetime.date.today() - datetime.timedelta(days=1)
+
+        url_args = {}
+        for unit in ("year", "month", "day"):
+            if subid[0] != unit[0]:
+                url_args[unit] = str(getattr(max_date, unit)).zfill(2)
+            else:
+                break
+
+        getattr(self, "p_" + subid).go(**url_args)
+
+        for measure in self.page.iter_sensor_history("puissance_max"):
             if measure.date.date() > max_date:
                 continue
             yield measure
