@@ -30,7 +30,7 @@ from urllib.parse import urlparse, parse_qsl
 
 from woob.browser.browsers import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
-from woob.browser.exceptions import ClientError, ServerError
+from woob.browser.exceptions import ClientError, ServerError, HTTPNotFound
 from woob.exceptions import AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
 from woob.capabilities.bank import Account, Transaction, AccountNotFound
 from woob.capabilities.base import find_object, empty
@@ -402,47 +402,54 @@ class CmsoParBrowser(CmsoLoginBrowser):
                     self.logger.warning('replace %s because it seems to be a duplicate of %s', seen[a._index], a)
                 self.accounts_list.append(a)
 
-        # Some saving accounts are not on the same page
-        # In this case we have no _index, we have the details url directly
-        url = self.redirect_insurance.go().get_url()
-        self.location(url)
-        for a in self.page.iter_accounts():
-            # Accounts can be on both pages. Info are slightly out-of-sync on both sites (balances are different).
-            # We keep this one because it's more coherent with invests data.
-            if a.id in seen_savings:
-                acc = seen_savings[a.id]
-                # We keep the _index because it's not available on the other website
-                a._index = acc._index
-                self.accounts_list.remove(acc)
-                self.logger.warning('replace %s because it seems to be a duplicate of %s', seen_savings[a.id], a)
-            url = a.url or self.redirect_insurance.go(accid=a._index).get_url()
+        try:
+            # Some saving accounts are not on the same page
+            # In this case we have no _index, we have the details url directly
+            url = self.redirect_insurance.go().get_url()
             self.location(url)
-            if self.lifeinsurance.is_here():
-                self.page.fill_account(obj=a)
-            self.accounts_list.append(a)
-
-        # Then, get loans
-        for key in self.loans.go().get_keys():
-            for a in self.page.iter_loans(key=key):
-                if a.id in seen:
-                    self.logger.warning('skipping %s because it seems to be a duplicate of %s', seen[a.id], a)
-
-                    account_found = False
-                    for account in list(self.accounts_list):
-                        # Loan id can be not unique when it also appears in json account page
-                        if a.id == account._index:
-                            account_found = True
-                            # Merge information from account to loan
-                            a.id = account.id
-                            a.currency = account.currency
-                            a.coming = account.coming
-                            a.total_amount = account._total_amount
-                            a._index = account._index
-                            self.accounts_list.remove(account)
-                            break
-                    assert account_found
-
+            for a in self.page.iter_accounts():
+                # Accounts can be on both pages. Info are slightly out-of-sync on both sites (balances are different).
+                # We keep this one because it's more coherent with invests data.
+                if a.id in seen_savings:
+                    acc = seen_savings[a.id]
+                    # We keep the _index because it's not available on the other website
+                    a._index = acc._index
+                    self.accounts_list.remove(acc)
+                    self.logger.warning('replace %s because it seems to be a duplicate of %s', seen_savings[a.id], a)
+                url = a.url or self.redirect_insurance.go(accid=a._index).get_url()
+                self.location(url)
+                if self.lifeinsurance.is_here():
+                    self.page.fill_account(obj=a)
                 self.accounts_list.append(a)
+        except HTTPNotFound:  # in case of 404
+            pass
+
+        try:
+            # Then, get loans
+            for key in self.loans.go().get_keys():
+                for a in self.page.iter_loans(key=key):
+                    if a.id in seen:
+                        self.logger.warning('skipping %s because it seems to be a duplicate of %s', seen[a.id], a)
+
+                        account_found = False
+                        for account in list(self.accounts_list):
+                            # Loan id can be not unique when it also appears in json account page
+                            if a.id == account._index:
+                                account_found = True
+                                # Merge information from account to loan
+                                a.id = account.id
+                                a.currency = account.currency
+                                a.coming = account.coming
+                                a.total_amount = account._total_amount
+                                a._index = account._index
+                                self.accounts_list.remove(account)
+                                break
+                        assert account_found
+
+                    self.accounts_list.append(a)
+        except HTTPNotFound:  # in case of 404
+            pass
+
         return self.accounts_list
 
     def _go_market_history(self, action):
