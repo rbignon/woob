@@ -19,9 +19,12 @@ import random
 from base64 import b64encode
 from hashlib import sha256
 
-from woob.browser import URL
+from woob.browser import URL, need_login
 from woob_modules.cmso.par.browser import CmsoParBrowser
+from woob.capabilities.bill import Subscription
 
+
+from .pages import SubscriptionsPage, DocumentsPage
 
 __all__ = ['CCFParBrowser', 'CCFProBrowser']
 
@@ -29,6 +32,10 @@ class CCFBrowser(CmsoParBrowser):
     arkea = 'MG'  # Needed for the X-ARKEA-EFS header
     arkea_si = None
     AUTH_CLIENT_ID = "S4dgkKwTA7FQzWxGRHPXe6xNvihEATOY"
+
+    subscriptions = URL(r'/distri-account-api/api/v1/customers/me/accounts', SubscriptionsPage)
+    documents = URL(r'/documentapi/api/v2/documents\?type=RELEVE$', DocumentsPage)
+    document_pdf = URL(r'/documentapi/api/v2/documents/(?P<document_id>.*)/content\?database=(?P<database>.*)')
 
     def __init__(self, *args, **kwargs):
         # most of url return 403 without this origin header
@@ -81,6 +88,30 @@ class CCFBrowser(CmsoParBrowser):
         headers = kwargs.setdefault('headers', {})
         headers['x-apikey'] = self.arkea_client_id
         return super().build_request(*args, **kwargs)
+
+    @need_login
+    def get_subscription_list(self):
+        accounts_list = self.iter_accounts()
+        subscriptions = []
+        for account in accounts_list:
+            s = Subscription()
+            s.label = account._lib
+            if account.number:
+                s.label = f'{s.label} {account.number}'
+            s.subscriber = account._owner_name
+            s.id = account.id
+            subscriptions.append(s)
+        return subscriptions
+
+    @need_login
+    def iter_documents(self, subscription):
+        self.documents.go()
+        return self.page.iter_documents(subid=subscription.id)
+
+    @need_login
+    def download_document(self, document):
+        params = {'flattenDoc': False}
+        return self.open(document.url, params=params).content
 
 
 class CCFParBrowser(CCFBrowser):

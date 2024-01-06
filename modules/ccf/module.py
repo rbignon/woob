@@ -22,6 +22,9 @@ from woob.capabilities.base import (
 )
 from woob.capabilities.bank import Account
 
+from woob.capabilities.bill import (
+    CapDocument, Subscription, Document, DocumentNotFound,
+)
 from woob_modules.cmso.module import CmsoModule
 from woob.tools.backend import BackendConfig
 
@@ -33,7 +36,7 @@ from .browser import CCFParBrowser, CCFProBrowser
 __all__ = ['CCFModule']
 
 
-class CCFModule(CmsoModule):
+class CCFModule(CmsoModule, CapDocument):
     NAME = 'ccf'
     DESCRIPTION = 'CCF (ex- HSBC France)'
     MAINTAINER = 'Ludovic LANGE'
@@ -57,3 +60,71 @@ class CCFModule(CmsoModule):
             }
         )
     )
+
+    def download_document(self, document):
+        """
+        Download a document.
+
+        :param document: ID of document
+        :rtype: bytes
+        :raises: :class:`DocumentNotFound`
+        """
+        if not isinstance(document, Document):
+            document = self.get_document(document)
+        return self.browser.download_document(document)
+
+    def get_document(self, _id):
+        """
+        Get a document.
+
+        :param id: ID of document
+        :rtype: :class:`Document`
+        :raises: :class:`DocumentNotFound`
+        """
+        subid = _id.rsplit('_', 1)[0]
+        subscription = self.get_subscription(subid)
+
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+
+    def iter_documents(self, subscription):
+        """
+        Iter documents.
+
+        :param subscription: subscription to get documents
+        :type subscription: :class:`Subscription`
+        :rtype: iter[:class:`Document`]
+        """
+        if not isinstance(subscription, Subscription):
+            subscription = self.get_subscription(subscription)
+        return self.browser.iter_documents(subscription)
+
+    def iter_resources(self, objs: List[BaseObject], split_path: List[str]) -> Iterable[BaseObject]:
+        """
+        Iter resources.
+
+        Default implementation of this method is to return on top-level
+        all accounts (by calling :func:`iter_accounts`).
+
+        :param objs: type of objects to get
+        :type objs: tuple[:class:`BaseObject`]
+        :param split_path: path to discover
+        :type split_path: :class:`list`
+        :rtype: iter[:class:`BaseObject`]
+        """
+        if Account in objs:
+            self._restrict_level(split_path)
+
+            yield from self.iter_accounts()
+
+        if Subscription in objs:
+            self._restrict_level(split_path)
+
+            yield from self.iter_subscription()
+
+    def iter_subscription(self):
+        """
+        Iter subscriptions.
+
+        :rtype: iter[:class:`Subscription`]
+        """
+        return self.browser.get_subscription_list()
