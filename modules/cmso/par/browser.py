@@ -321,7 +321,7 @@ class CmsoLoginBrowser(TwoFactorBrowser):
 
 class CmsoParBrowser(CmsoLoginBrowser):
     accounts = URL(r'/domiapi/oauth/json/accounts/synthese(?P<type>.*)', AccountsPage)
-    history = URL(r'/domiapi/oauth/json/accounts/(?P<page>.*)', HistoryPage)
+    history = URL(r'/domiapi/oauth/json/accounts/(?!recupererRib)(?P<page>.*)', HistoryPage)
     loans = URL(r'/creditapi/rest/oauth/v1/synthese', AccountsPage)
     redirect_insurance = URL(
         r'assuranceapi/v1/oauth/sso/suravenir/SYNTHESE_ASSURANCEVIE',
