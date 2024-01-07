@@ -24,7 +24,7 @@ from woob_modules.cmso.par.browser import CmsoParBrowser
 from woob.capabilities.bill import Subscription
 
 
-from .pages import SubscriptionsPage, DocumentsPage
+from .pages import SubscriptionsPage, DocumentsPage, RibPage
 
 __all__ = ['CCFParBrowser', 'CCFProBrowser']
 
@@ -36,6 +36,7 @@ class CCFBrowser(CmsoParBrowser):
     subscriptions = URL(r'/distri-account-api/api/v1/customers/me/accounts', SubscriptionsPage)
     documents = URL(r'/documentapi/api/v2/documents\?type=RELEVE$', DocumentsPage)
     document_pdf = URL(r'/documentapi/api/v2/documents/(?P<document_id>.*)/content\?database=(?P<database>.*)')
+    rib_details = URL(r'/domiapi/oauth/json/accounts/recupererRib$', RibPage)
 
     def __init__(self, *args, **kwargs):
         # most of url return 403 without this origin header
@@ -113,6 +114,17 @@ class CCFBrowser(CmsoParBrowser):
         params = {'flattenDoc': False}
         return self.open(document.url, params=params).content
 
+    def update_iban(self, account):
+        self.rib_details.go(json={"numeroContratSouscritCrypte": account._index})
+        iban_number = self.page.get_iban()
+        if not account.iban:
+            account.iban = iban_number
+
+    def iter_accounts(self):
+        accounts_list = super().iter_accounts()
+        for account in accounts_list:
+            self.update_iban(account)
+        return accounts_list
 
 class CCFParBrowser(CCFBrowser):
     BASEURL = 'https://api.ccf.fr'

@@ -23,6 +23,11 @@ from woob.browser.pages import JsonPage, LoggedPage
 from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 
+class RibPage(LoggedPage, JsonPage):
+    def get_iban(self):
+        return Dict('iban')(self.doc)
+
+
 class SubscriptionsPage(LoggedPage, JsonPage):
     @method
     class iter_subscriptions(DictElement):
