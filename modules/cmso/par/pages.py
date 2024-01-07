@@ -182,6 +182,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 return "LIVRET" not in Dict('accountType')(self.el)
 
             obj_id = Dict('numeroContratSouscrit')
+            obj__lib = Dict('lib')
             obj_label = Upper(MultiJoin(Dict('lib'), Field('_owner_name'), pattern=' '))
             obj_currency = Dict('deviseCompteCode')
             obj_coming = CleanDecimal(Dict('AVenir', default=None), default=NotAvailable)
