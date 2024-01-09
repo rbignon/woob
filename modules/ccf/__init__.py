@@ -19,4 +19,4 @@
 from .module import CCFModule
 
 
-__all__ = ['CCFModule']
+__all__ = ["CCFModule"]

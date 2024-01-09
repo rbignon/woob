@@ -17,7 +17,16 @@
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import BrowserURL, CleanText, Date, Env, Eval, Field, Format, Map
+from woob.browser.filters.standard import (
+    BrowserURL,
+    CleanText,
+    Date,
+    Env,
+    Eval,
+    Field,
+    Format,
+    Map,
+)
 
 from woob.browser.pages import JsonPage, LoggedPage
 from woob.capabilities.bill import Document, DocumentTypes, Subscription
@@ -25,7 +34,7 @@ from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 class RibPage(LoggedPage, JsonPage):
     def get_iban(self):
-        return Dict('iban')(self.doc)
+        return Dict("iban")(self.doc)
 
 
 class SubscriptionsPage(LoggedPage, JsonPage):
@@ -34,25 +43,26 @@ class SubscriptionsPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Subscription
 
-            obj_id = Dict('sourceContractId')
+            obj_id = Dict("sourceContractId")
 
             # there can be several "participants" but no matter what _contract_id is,
             # list of related documents will be the same, so we can simply take the first one
-            obj__contract_id = Dict('participants/0/id')  # CAUTION non persistant
+            obj__contract_id = Dict("participants/0/id")  # CAUTION non persistant
             obj_subscriber = Format(
-                '%s %s',
-                CleanText(Dict('participants/0/firstName')),
-                CleanText(Dict('participants/0/lastName')),
+                "%s %s",
+                CleanText(Dict("participants/0/firstName")),
+                CleanText(Dict("participants/0/lastName")),
             )
 
 
 DOCUMENT_TYPES = {
-    'Relevé de Compte': DocumentTypes.STATEMENT,
-    'Courrier libre client': DocumentTypes.NOTICE,
-    'Recapitulatif Annuel des Frais': DocumentTypes.REPORT,
-    'Relevé Loi Chatel': DocumentTypes.BILL,
-    'Courrier Garantie dépôts (FGDR)': DocumentTypes.NOTICE,
+    "Relevé de Compte": DocumentTypes.STATEMENT,
+    "Courrier libre client": DocumentTypes.NOTICE,
+    "Recapitulatif Annuel des Frais": DocumentTypes.REPORT,
+    "Relevé Loi Chatel": DocumentTypes.BILL,
+    "Courrier Garantie dépôts (FGDR)": DocumentTypes.NOTICE,
 }
+
 
 class MyDictElement(DictElement):
     # obj.id is based on documentName field, but we can have several documents with same name
@@ -67,7 +77,7 @@ class MyDictElement(DictElement):
         n = 1
         while _id in self.objects:
             n += 1
-            _id = f'{obj.id}-{n}'
+            _id = f"{obj.id}-{n}"
         obj.id = _id
         self.objects[obj.id] = obj
         return obj
@@ -79,10 +89,12 @@ class DocumentsPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Document
 
-            obj_id = Format('%s_%s', Env('subid'), Dict('Id'))
-            obj_label = CleanText(Field('_doc_name'))
-            obj_date = Date(CleanText(Dict('depositDate')))
-            obj_type = Map(Dict('documentType'), DOCUMENT_TYPES, DocumentTypes.OTHER)
-            obj_url = BrowserURL('document_pdf', database=Dict('dataBase'), document_id=Dict('Id'))
-            obj__doc_name = Eval(lambda v: v.strip('.pdf'), Dict('documentName'))
-            obj_format = 'pdf'
+            obj_id = Format("%s_%s", Env("subid"), Dict("Id"))
+            obj_label = CleanText(Field("_doc_name"))
+            obj_date = Date(CleanText(Dict("depositDate")))
+            obj_type = Map(Dict("documentType"), DOCUMENT_TYPES, DocumentTypes.OTHER)
+            obj_url = BrowserURL(
+                "document_pdf", database=Dict("dataBase"), document_id=Dict("Id")
+            )
+            obj__doc_name = Eval(lambda v: v.strip(".pdf"), Dict("documentName"))
+            obj_format = "pdf"

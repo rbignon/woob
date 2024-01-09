@@ -20,4 +20,4 @@ from woob.tools.test import BackendTest
 
 
 class CCFTest(BackendTest):
-    MODULE = 'ccf'
+    MODULE = "ccf"

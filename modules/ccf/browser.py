@@ -26,21 +26,26 @@ from woob.capabilities.bill import Subscription
 
 from .pages import SubscriptionsPage, DocumentsPage, RibPage
 
-__all__ = ['CCFParBrowser', 'CCFProBrowser']
+__all__ = ["CCFParBrowser", "CCFProBrowser"]
+
 
 class CCFBrowser(CmsoParBrowser):
-    arkea = 'MG'  # Needed for the X-ARKEA-EFS header
+    arkea = "MG"  # Needed for the X-ARKEA-EFS header
     arkea_si = None
     AUTH_CLIENT_ID = "S4dgkKwTA7FQzWxGRHPXe6xNvihEATOY"
 
-    subscriptions = URL(r'/distri-account-api/api/v1/customers/me/accounts', SubscriptionsPage)
-    documents = URL(r'/documentapi/api/v2/documents\?type=RELEVE$', DocumentsPage)
-    document_pdf = URL(r'/documentapi/api/v2/documents/(?P<document_id>.*)/content\?database=(?P<database>.*)')
-    rib_details = URL(r'/domiapi/oauth/json/accounts/recupererRib$', RibPage)
+    subscriptions = URL(
+        r"/distri-account-api/api/v1/customers/me/accounts", SubscriptionsPage
+    )
+    documents = URL(r"/documentapi/api/v2/documents\?type=RELEVE$", DocumentsPage)
+    document_pdf = URL(
+        r"/documentapi/api/v2/documents/(?P<document_id>.*)/content\?database=(?P<database>.*)"
+    )
+    rib_details = URL(r"/domiapi/oauth/json/accounts/recupererRib$", RibPage)
 
     def __init__(self, *args, **kwargs):
         # most of url return 403 without this origin header
-        kwargs['origin'] = self.original_site
+        kwargs["origin"] = self.original_site
         super().__init__(*args, **kwargs)
 
     def code_challenge(self):
@@ -48,8 +53,8 @@ class CCFBrowser(CmsoParBrowser):
         and get a session id.
         Found in domi-auth-fat.js (45394)"""
 
-        base = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-        code_challenge = ''.join(random.choices(base, k=39))
+        base = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        code_challenge = "".join(random.choices(base, k=39))
         return code_challenge
 
     def auth_state(self):
@@ -57,8 +62,8 @@ class CCFBrowser(CmsoParBrowser):
         and get a session id.
         Found in domi-auth-fat.js (49981)"""
 
-        base = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-        state = 'auth_' + ''.join(random.choices(base, k=25))
+        base = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        state = "auth_" + "".join(random.choices(base, k=25))
 
         return state
 
@@ -67,7 +72,7 @@ class CCFBrowser(CmsoParBrowser):
         on the server side.
         Found in domi-auth-fat.js (49986)"""
 
-        digest = sha256(code_challenge.encode('utf-8')).digest()
+        digest = sha256(code_challenge.encode("utf-8")).digest()
         code_verifier = b64encode(digest)
 
         return code_verifier.decode()
@@ -82,12 +87,12 @@ class CCFBrowser(CmsoParBrowser):
 
     def build_authorization_uri_params(self):
         params = super().build_authorization_uri_params()
-        params['state'] = self.auth_state()
+        params["state"] = self.auth_state()
         return params
 
     def build_request(self, *args, **kwargs):
-        headers = kwargs.setdefault('headers', {})
-        headers['x-apikey'] = self.arkea_client_id
+        headers = kwargs.setdefault("headers", {})
+        headers["x-apikey"] = self.arkea_client_id
         return super().build_request(*args, **kwargs)
 
     @need_login
@@ -98,7 +103,7 @@ class CCFBrowser(CmsoParBrowser):
             s = Subscription()
             s.label = account._lib
             if account.number:
-                s.label = f'{s.label} {account.number}'
+                s.label = f"{s.label} {account.number}"
             s.subscriber = account._owner_name
             s.id = account.id
             subscriptions.append(s)
@@ -111,7 +116,7 @@ class CCFBrowser(CmsoParBrowser):
 
     @need_login
     def download_document(self, document):
-        params = {'flattenDoc': False}
+        params = {"flattenDoc": False}
         return self.open(document.url, params=params).content
 
     def update_iban(self, account):
@@ -126,19 +131,20 @@ class CCFBrowser(CmsoParBrowser):
             self.update_iban(account)
         return accounts_list
 
+
 class CCFParBrowser(CCFBrowser):
-    BASEURL = 'https://api.ccf.fr'
-    original_site = 'https://mabanque.ccf.fr'
+    BASEURL = "https://api.ccf.fr"
+    original_site = "https://mabanque.ccf.fr"
     SPACE = "PART"
     arkea_client_id = "JcqCF4MXkladWOKb4hRJGw7xEEuCFyXu"
-    redirect_uri = '%s/auth/checkuser' % original_site
-    error_uri = '%s/auth/errorauthn' % original_site
+    redirect_uri = "%s/auth/checkuser" % original_site
+    error_uri = "%s/auth/errorauthn" % original_site
 
 
 class CCFProBrowser(CCFBrowser):
-    BASEURL = 'https://api.cmb.fr'
-    original_site = 'https://pro.ccf.fr'
+    BASEURL = "https://api.cmb.fr"
+    original_site = "https://pro.ccf.fr"
     SPACE = "PRO"
     arkea_client_id = "029Ao3yX6YRqbz9DtlSiIrFvgwuMBv9l"
-    redirect_uri = '%s/auth/checkuser' % original_site
-    error_uri = '%s/auth/errorauthn' % original_site
+    redirect_uri = "%s/auth/checkuser" % original_site
+    error_uri = "%s/auth/errorauthn" % original_site
