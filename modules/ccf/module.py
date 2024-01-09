@@ -39,7 +39,7 @@ __all__ = ["CCFModule"]
 
 class CCFModule(CmsoModule, CapDocument):
     NAME = "ccf"
-    DESCRIPTION = "CCF (ex- HSBC France)"
+    DESCRIPTION = "CCF (ex HSBC France) est une banque de détail française créée en 1917, rachetée en 2000 par HSBC, puis par My Money Group (ex GE Money Bank France) en 2024."
     MAINTAINER = "Ludovic LANGE"
     EMAIL = "llange@users.noreply.github.com"
     LICENSE = "LGPLv3+"
