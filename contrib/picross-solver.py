@@ -20,12 +20,16 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+from logging import DEBUG, basicConfig
 from os import linesep
+from sys import stderr
+import tempfile
 
 from woob.capabilities.picross import (
     PicrossNotFound, PicrossSolution, PicrossSolutionKind, PicrossSolvedStatus,
 )
 from woob.core.woob import Woob
+from woob.tools.log import settings as log_settings
 
 
 class PicrossSolver:
@@ -169,6 +173,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Solve some picrosses using Woob!',
     )
+    parser.add_argument(
+        '-a',
+        '--save-responses',
+        action='store_true',
+        help='save every response',
+    )
     parser.add_argument('-b', dest='backend', required=True)
     subcommands = parser.add_subparsers(dest='command', required=True)
 
@@ -178,6 +188,12 @@ if __name__ == '__main__':
     )
     list_unsolved.set_defaults(func=list_unsolved)
 
+    list_solved = subcommands.add_parser(
+        'list-solved',
+        description='List solved picrosses.',
+    )
+    list_solved.set_defaults(func=list_solved)
+
     solve = subcommands.add_parser(
         'solve',
         description='Solve a given picross',
@@ -186,6 +202,17 @@ if __name__ == '__main__':
     solve.set_defaults(func=solve)
 
     parsed_args = parser.parse_args()
+
+    if parsed_args.save_responses:
+        basicConfig(level=DEBUG)
+
+        responses_dirname = tempfile.mkdtemp(prefix='woob_session_')
+        print(
+            'Debug data will be saved in this directory: %s'
+            % responses_dirname,
+            file=stderr,
+        )
+        log_settings['responses_dirname'] = responses_dirname
 
     woob = None
     try:
@@ -217,6 +244,27 @@ if __name__ == '__main__':
 
             if is_first:
                 print('No unsolved picross available. Better luck next time!')
+            elif not has_stopped_naturally:
+                print(linesep + '... and more!')
+        elif parsed_args.command == 'list-solved':
+            is_first = True
+            has_stopped_naturally = False
+            for i, picross in enumerate(backend.iter_picross_puzzles(
+                PicrossSolvedStatus.SOLVED,
+            )):
+                if is_first:
+                    print('Solved picrosses:', end=linesep * 2)
+                    is_first = False
+
+                print(f'{picross.id} - {picross.name} ({picross.variant})')
+
+                if i >= 4:
+                    break
+            else:
+                has_stopped_naturally = True
+
+            if is_first:
+                print('No solved picross available. Better luck next time!')
             elif not has_stopped_naturally:
                 print(linesep + '... and more!')
         elif parsed_args.command == 'solve':
