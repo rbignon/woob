@@ -1,6 +1,6 @@
 # flake8: compatible
 
-# Copyright(C) 2022 Thomas Touhey <thomas@touhey.fr>
+# Copyright(C) 2022-2024 Thomas Touhey <thomas@touhey.fr>
 #
 # This file is part of a woob module.
 #

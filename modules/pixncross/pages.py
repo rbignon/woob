@@ -1,6 +1,6 @@
 # flake8: compatible
 
-# Copyright(C) 2022 Thomas Touhey <thomas@touhey.fr>
+# Copyright(C) 2022-2024 Thomas Touhey <thomas@touhey.fr>
 #
 # This file is part of a woob module.
 #
@@ -20,12 +20,15 @@
 from urllib.parse import parse_qsl, urlencode, urlparse
 
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.html import Attr, Link
+from woob.browser.filters.html import Attr
 from woob.browser.filters.standard import CleanText, Env, Format, Map, Regexp
-from woob.browser.pages import HTMLPage, pagination
+from woob.browser.pages import FormNotFound, HTMLPage, pagination
 from woob.capabilities.picross import (
     Picross, PicrossNotFound, PicrossSolvedStatus,
 )
+from woob.tools.misc import clean_text
+
+from .utils import naive_deobfuscate
 
 
 class BasePage(HTMLPage):
@@ -43,10 +46,24 @@ class BasePage(HTMLPage):
         # of the other buttons to log in or register.
         self.logged = False
         for _ in self.doc.xpath(
-            '//div[@class="insc" and contains(., "Connecté")]',
+            '//div[@class="insc2" and contains(., "Connecté")]',
         ):
             self.logged = True
             break
+
+
+class HiddenFormPage(BasePage):
+    def is_here(self):
+        try:
+            self.get_form(name='frm_ccp')
+        except FormNotFound:
+            return False
+        else:
+            return True
+
+    def submit_hidden_form(self):
+        form = self.get_form(name='frm_ccp')
+        form.submit()
 
 
 class HomePage(BasePage):
@@ -65,7 +82,15 @@ class HomePage(BasePage):
 
 class LoginPage(BasePage):
     def is_here(self):
-        return self.page_id == 'connexion'
+        if self.page_id != 'connexion':
+            return False
+
+        try:
+            self.get_form(name='frm_ccp')
+        except FormNotFound:
+            return True
+        else:
+            return False
 
     def do_login(self, username, password):
         form = self.get_form('//form[@name="frm"]')
@@ -113,7 +138,14 @@ class TodoPage(BasePage):
 
             def parse(self, el):
                 # Parse the identifier from the URL, to be safe.
-                params = dict(parse_qsl(urlparse(Link('.')(el)).query))
+                url = naive_deobfuscate(
+                    Regexp(
+                        Attr('.', 'onclick'),
+                        r"ccp\('([a-z0-9]+)'",
+                    )(self.el),
+                ).replace('&amp;', '&')
+
+                params = dict(parse_qsl(urlparse(url).query))
                 self.env['id'] = params['idm']
 
             obj_id = Format('aut%s', Env('id'))
@@ -190,7 +222,13 @@ class PuzzleListPage(BasePage):
 
             def parse(self, el):
                 # Get the picross identifier from the link to it.
-                url = Link('.//b/a')(el)
+                url = naive_deobfuscate(
+                    Regexp(
+                        Attr('.//b[1]/a', 'onclick'),
+                        r"ccp\('([a-z0-9]+)'",
+                    )(el),
+                ).replace('&amp;', '&')
+
                 params = dict(parse_qsl(urlparse(url).query))
                 if 'idm' not in params:
                     raise AssertionError("Could not get the puzzle's id.")
@@ -199,6 +237,48 @@ class PuzzleListPage(BasePage):
 
             obj_id = Format('aut%s', Env('id'))
             obj_solved_status = Env('solved_status')
+
+
+class DailyPicrossListPage(BasePage):
+    """Page for listing multiple daily picrosses.
+
+    This page is only accessible by premium accounts.
+    """
+
+    def is_here(self):
+        if self.page_id not in ('cid506_daily', 'cid506'):
+            # "cid506_daily" is the direct page.
+            # "cid506" is the general page.
+            # The first may lead to an error message page.
+            # The second may lead to the daily picross page instead.
+            # We need to check the page title in both cases.
+            return False
+
+        for title_el in self.doc.xpath("//h1"):
+            if clean_text(title_el.text) == "2 Picross du jour":
+                return True
+
+            break
+
+        return False
+
+    def is_daily_picross_solved(self, n) -> bool:
+        """Get whether a daily picross has been solved.
+
+        :param n: The number of the daily picross solved, either 1 for the
+            first daily puzzle or 2 for the second.
+        :return: Whether the puzzle is solved or not.
+        """
+        for daily_puzzle_name_el in self.doc.xpath(
+            '(//div[@class="d1"]/div[@class="d2"]/div[@class="z000"]'
+            + f'/div[@class="g0"])[{n}]',
+        ):
+            # By default, the icon is set by CSS. However, when a picross
+            # has been resolved, the "style" HTML attribute is set to
+            # replace the background image.
+            return "style" in daily_puzzle_name_el.attrib
+
+        return False
 
 
 class PuzzlePage(BasePage):
@@ -220,8 +300,8 @@ class PuzzlePage(BasePage):
         # We want to catch this and store it, just in case.
         if not self.solved:
             self.pattern = Regexp(
-                CleanText('//script[contains(., "var e506a")]'),
-                r"var e506a = '([^']+)'",
+                CleanText('//script[contains(., "const e506a")]'),
+                r'const e506a = "([^"]+)"',
             )(self.doc)
 
             if self.pattern == '%':
@@ -238,13 +318,40 @@ class PuzzlePage(BasePage):
             )(self.doc)
 
     def is_here(self):
-        return self.page_id == 'cid506'
+        # There is one exception to this, for premium accounts only: the
+        # "2 Picross du jour" page, which we have to catch.
+        if self.page_id == 'cid506_daily_picross':
+            return True
+
+        if self.page_id != 'cid506':
+            return False
+
+        for title_el in self.doc.xpath("//h1"):
+            if clean_text(title_el.text) == "2 Picross du jour":
+                return False
+
+            break
+
+        return True
 
     def is_solved(self):
         return self.solved
 
     def get_puzzle_id(self):
         return self.puzzle_id
+
+    def go_to_unsolved_if_needed(self):
+        """If this is a solved picross page, go to the unsolved version."""
+        for replay_el in self.doc.xpath('//a[.="Rejouer ce picross"]'):
+            url = naive_deobfuscate(
+                Regexp(
+                    Attr('.', 'onclick'),
+                    r"ccp\('([a-z0-9]+)'",
+                )(replay_el),
+            ).replace('&amp;', '&')
+
+            self.browser.location(url)
+            return
 
     @method
     class get_puzzle(ItemElement):
