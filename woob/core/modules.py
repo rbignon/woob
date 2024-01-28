@@ -23,7 +23,10 @@ import warnings
 from inspect import getmodule
 from pathlib import Path
 
-import pkg_resources
+try:
+    from importlib import metadata
+except ImportError: # for Python<3.8
+    import importlib_metadata as metadata
 
 from packaging.version import Version
 
@@ -280,8 +283,8 @@ class ModulesLoader:
                 continue
 
             try:
-                pkg = pkg_resources.get_distribution(name)
-            except pkg_resources.DistributionNotFound as exc:
+                pkg = metadata.distribution(name)
+            except metadata.PackageNotFoundError as exc:
                 raise ModuleLoadError(
                     module_name,
                     f'Module requires python package "{name}" but not installed.'
