@@ -72,7 +72,7 @@ class PKCEData(NamedTuple):
         # RFC 7636 section 7.1 mandates 256 bits of entropy (32 8-bit bytes), and
         # section 4.1 mandates between 43 and 128 characters in length; this method
         # makes us generate 64 characters with enough entropy, we're in the clear!
-        verifier = hex(int.from_bytes(urandom(32), byteorder='little'))[2:]
+        verifier = urandom(32).hex()
 
         if type_ == PKCEChallengeType.S256:
             digest = sha256(verifier.encode('ascii')).digest()
