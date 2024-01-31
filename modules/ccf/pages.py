@@ -15,21 +15,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import re
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
     BrowserURL,
+    CleanDecimal,
     CleanText,
+    Coalesce,
     Date,
     Env,
     Eval,
     Field,
     Format,
     Map,
+    Regexp,
 )
 
 from woob.browser.pages import JsonPage, LoggedPage
 from woob.capabilities.bill import Document, DocumentTypes, Subscription
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
 class RibPage(LoggedPage, JsonPage):
@@ -62,6 +67,19 @@ DOCUMENT_TYPES = {
     "Relevé Loi Chatel": DocumentTypes.BILL,
     "Courrier Garantie dépôts (FGDR)": DocumentTypes.NOTICE,
 }
+
+class Transaction(FrenchTransaction):
+    PATTERNS = [
+        (re.compile(r'^CARTE (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
+        (re.compile(r'^(?P<text>(PRLV|PRELEVEMENTS).*)'), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r'^(?P<text>RET DAB.*)'), FrenchTransaction.TYPE_WITHDRAWAL),
+        (re.compile(r'^(?P<text>ECH.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
+        (re.compile(r'^(?P<text>VIR.*)'), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r'^(?P<text>ANN.*)'), FrenchTransaction.TYPE_PAYBACK),
+        (re.compile(r'^(?P<text>(VRST|VERSEMENT).*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r'^(?P<text>CHQ.*)'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r'^(?P<text>.*)'), FrenchTransaction.TYPE_BANK),
+    ]
 
 
 class MyDictElement(DictElement):
@@ -98,3 +116,18 @@ class DocumentsPage(LoggedPage, JsonPage):
             )
             obj__doc_name = Eval(lambda v: v.strip(".pdf"), Dict("documentName"))
             obj_format = "pdf"
+
+
+class TransactionsPage(LoggedPage, JsonPage):
+    @method
+    class iter_transactions(DictElement):
+        class item(ItemElement):
+            klass = Transaction
+            obj_id = Regexp(Dict('id'), r'^(.*?)[_=]*$', '\\1')
+            obj_original_currency = Dict('currency')
+            obj_amount = CleanDecimal.SI(Dict('amount'))
+            obj_date = Date(Dict('bookedDate'))
+            obj_rdate = Date(Dict('transactionDate'))
+            obj_vdate = Date(Dict('valueDate'))
+            obj_raw = Transaction.Raw(Dict('longLabel'))
+            obj_coming = Coalesce(Eval(lambda x: x != 'booked', Dict('type')), default=False)

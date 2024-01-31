@@ -20,11 +20,14 @@ from base64 import b64encode
 from hashlib import sha256
 
 from woob.browser import URL, need_login
+from woob.browser.browsers import ClientError, ServerError
 from woob_modules.cmso.par.browser import CmsoParBrowser
 from woob.capabilities.bill import Subscription
+from woob.capabilities.bank import Account
+from woob.tools.decorators import retry
 
 
-from .pages import SubscriptionsPage, DocumentsPage, RibPage
+from .pages import SubscriptionsPage, DocumentsPage, RibPage, TransactionsPage
 
 __all__ = ["CCFParBrowser", "CCFProBrowser"]
 
@@ -42,6 +45,10 @@ class CCFBrowser(CmsoParBrowser):
         r"/documentapi/api/v2/documents/(?P<document_id>.*)/content\?database=(?P<database>.*)"
     )
     rib_details = URL(r"/domiapi/oauth/json/accounts/recupererRib$", RibPage)
+    transactions = URL(
+        r'/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/transactions',
+        TransactionsPage
+    )
 
     def __init__(self, *args, **kwargs):
         # most of url return 403 without this origin header
@@ -128,8 +135,18 @@ class CCFBrowser(CmsoParBrowser):
     def iter_accounts(self):
         accounts_list = super().iter_accounts()
         for account in accounts_list:
+            account._original_id = account.id
             self.update_iban(account)
         return accounts_list
+
+    @need_login
+    def iter_history(self, account):
+        if account.type in (Account.TYPE_LOAN, Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET, Account.TYPE_PEA):
+            return super().iter_history(account)
+
+        go_transactions = retry((ClientError, ServerError), tries=5)(self.transactions.go)
+        go_transactions(account_id=account._original_id)
+        return self.page.iter_transactions()
 
 
 class CCFParBrowser(CCFBrowser):
