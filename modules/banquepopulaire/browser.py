@@ -18,43 +18,37 @@
 # flake8: compatible
 
 import json
-import re
-from collections import OrderedDict
-from datetime import timedelta
+
+from datetime import timedelta, datetime
 from functools import wraps
 from urllib.parse import parse_qs, urlparse
 from uuid import uuid4
-
-from dateutil.relativedelta import relativedelta
-from requests.exceptions import ReadTimeout
 
 from woob.browser import URL, need_login
 from woob.browser.adapters import LowSecHTTPAdapter
 from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.browser.mfa import TwoFactorBrowser
-from woob.browser.pages import FormNotFound
-from woob.capabilities.bank import Account, AccountOwnership, Loan
-from woob.capabilities.base import NotAvailable, find_object
+from woob.capabilities.bank import Account
+from woob.capabilities.base import find_object
 from woob.exceptions import (
     AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword,
     BrowserUnavailable, OfflineOTPQuestion, OTPSentType, SentOTPQuestion,
 )
-from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.tools.date import now_as_tz, now_as_utc
+from woob.capabilities.bank import Transaction
+from woob.tools.date import now_as_utc
 from woob.tools.misc import polling_loop
 from woob_modules.caissedepargne.pages import VkImagePage
-from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
-from .document_pages import BasicTokenPage, DocumentsPage, SubscriberPage, SubscriptionsPage
+#Ugly hack
+from woob.tools.storage import StandardStorage
+
 from .pages import (
-    AccountsFullPage, AccountsNextPage, AccountsPage, AdvisorPage, AlreadyLoginPage, AppValidationPage,
-    AuthenticationMethodPage, AuthenticationStepPage, AuthorizeErrorPage, AuthorizePage, BPCEPage,
-    CaissedepargneVirtKeyboard, CardsPage, ErrorPage, EtnaPage, GenericAccountsPage, HomePage, IbanPage,
-    IndexPage, InfoTokensPage, InvestmentPage, JsFilePage, LastConnectPage, LineboursePage, LoggedOut,
-    Login2Page, LoginPage, LoginTokensPage, NatixisChoicePage, NatixisDetailsPage, NatixisErrorPage,
-    NatixisHistoryPage, NatixisInvestPage, NatixisPage, NatixisRedirect, NatixisUnavailablePage,
-    NewLoginPage, RedirectErrorPage, RedirectPage, TransactionDetailPage, TransactionsBackPage,
-    TransactionsPage, UnavailableDocumentsPage, UnavailablePage,
+    AppValidationPage,
+    AuthenticationMethodPage, AuthenticationStepPage, AuthorizeErrorPage, AuthorizePage,
+    BPOVirtKeyboard, ErrorPage, HomePage,
+    InfoTokensPage, JsFilePage, JsFilePageEspaceClient, LastConnectPage, LoggedOut,
+    LoginPage, LoginTokensPage,
+    NewLoginPage, RedirectErrorPage, UnavailablePage, SynthesePage, TransactionPage,
 )
 
 __all__ = ['BanquePopulaire']
@@ -114,6 +108,10 @@ def no_need_login(func):
 
     return wrapper
 
+class BanquePopulaireAccount(Account):
+    def __init__(self):
+        super().__init__()
+        self.contractPfmId = None
 
 class BanquePopulaire(TwoFactorBrowser):
     HTTP_ADAPTER_CLASS = LowSecHTTPAdapter
@@ -121,83 +119,33 @@ class BanquePopulaire(TwoFactorBrowser):
     TWOFA_DURATION = 90 * 24 * 60
 
     first_login_page = URL(r'/$')
-    new_first_login_page = URL(r'/cyber/ibp/ate/portal/internet89C3Portal.jsp')
+    new_first_login_page = URL(r'/se-connecter/identifier')
     login_page = URL(r'https://[^/]+/auth/UI/Login.*', LoginPage)
-    new_login = URL(r'https://[^/]+/.*se-connecter/sso', NewLoginPage)
+    new_login = URL(r'https://www.banquepopulaire.fr/se-connecter/identifier', NewLoginPage)
     js_file = URL(r'https://[^/]+/.*se-connecter/main\..*.js$', JsFilePage)
+    js_espaceclient_file = URL(r'https://[^/]+/.*espace-client/main\..*.js', JsFilePageEspaceClient)
+    root_clientdashboard_page = URL(r'/espace-client/', NewLoginPage)
     authorize = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/authorize', AuthorizePage)
     login_tokens = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume', LoginTokensPage)
-    info_tokens = URL(r'https://www.as-ex-ano-groupe.banquepopulaire.fr/api/oauth/token', InfoTokensPage)
-    user_info = URL(
-        r'https://www.rs-ex-ano-groupe.banquepopulaire.fr/bapi/user/v1/users/identificationRouting',
-        InfoTokensPage
-    )
+    info_tokens = URL(r'https://www.as-ex-ano-groupe.banquepopulaire.fr/api/oauth/v2/token', InfoTokensPage)
+
     authentication_step = URL(
-        r'https://www.icgauth.(?P<subbank>.*).fr/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step',
+        r'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step',
         AuthenticationStepPage
     )
     authentication_method_page = URL(
-        r'https://www.icgauth.(?P<subbank>.*).fr/dacsrest/api/v1u0/transaction/(?P<validation_id>)',
+        r'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/(?P<validation_id>)',
         AuthenticationMethodPage,
     )
     vk_image = URL(
-        r'https://www.icgauth.(?P<subbank>.*).fr/dacs-rest-media/api/v1u0/medias/mappings/[a-z0-9-]+/images',
+        r'https://www.icgauth.banquepopulaire.fr/dacs-rest-media/api/v1u0/medias/mappings/[a-z0-9-]+/images',
         VkImagePage,
     )
-    app_validation = URL(r'https://www.icgauth.(?P<subbank>.*).fr/dacsrest/WaitingCallbackHandler', AppValidationPage)
-    index_page = URL(r'https://[^/]+/cyber/internet/Login.do', IndexPage)
-    accounts_page = URL(
-        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=mesComptes.*',
-        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=maSyntheseGratuite.*',
-        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=accueilSynthese.*',
-        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=equipementComplet.*',
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=VUE_COMPLETE.*',
-        AccountsPage
-    )
-    accounts_next_page = URL(r'https://[^/]+/cyber/internet/Page.do\?.*', AccountsNextPage)
+    app_validation = URL(r'https://www.icgauth.banquepopulaire.fr/dacsrest/WaitingCallbackHandler', AppValidationPage)
 
-    iban_page = URL(
-        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=cyberIBAN.*',
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=DETAIL_IBAN_RIB.*',
-        IbanPage
-    )
-
-    accounts_full_page = URL(
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=EQUIPEMENT_COMPLET.*',
-        AccountsFullPage
-    )
-
-    cards_page = URL(
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=ENCOURS_COMPTE.*',
-        CardsPage
-    )
-
-    transactions_page = URL(
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=SELECTION_ENCOURS_CARTE.*',
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=SOLDE.*',
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=CONTRAT.*',
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=CANCEL.*',
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=BACK.*',
-        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=ordreBourseCTJ.*',
-        r'https://[^/]+/cyber/internet/Page.do\?.*',
-        r'https://[^/]+/cyber/internet/Sort.do\?.*',
-        TransactionsPage
-    )
-
-    investment_page = URL(
-        r'https://[^/]+/cyber/ibp/ate/skin/internet/pages/webAppReroutingAutoSubmit.jsp',
-        InvestmentPage
-    )
-
-    transactions_back_page = URL(
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*ActionPerformed=BACK.*',
-        TransactionsBackPage
-    )
-
-    transaction_detail_page = URL(
-        r'https://[^/]+/cyber/internet/ContinueTask.do\?.*dialogActionPerformed=DETAIL_ECRITURE.*',
-        TransactionDetailPage
-    )
+    synthesis_views = URL(r'https://www.rs-ex-ath-groupe.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews', SynthesePage )
+    
+    transactions = URL(r'https://www.rs-ex-ath-groupe.banquepopulaire.fr/pfm/user/v1.1/transactions', TransactionPage)
 
     error_page = URL(
         r'https://[^/]+/cyber/internet/ContinueTask.do',
@@ -215,128 +163,41 @@ class BanquePopulaire(TwoFactorBrowser):
 
     authorize_error = URL(r'https://[^/]+/dacswebssoissuer/AuthnRequestServlet', AuthorizeErrorPage)
 
-    redirect_page = URL(r'https://[^/]+/portailinternet/_layouts/Ibp.Cyi.Layouts/RedirectSegment.aspx.*', RedirectPage)
-    bpce_page = URL(r'https://[^/]+/cyber/ibp/ate/portal/internet89C3Portal.jsp', BPCEPage)
-
     redirect_error_page = URL(
         r'https://[^/]+/portailinternet/?$',
         RedirectErrorPage
     )
 
     home_page = URL(
-        r'https://[^/]+/portailinternet/Catalogue/Segments/.*.aspx(\?vary=(?P<vary>.*))?',
-        r'https://[^/]+/portailinternet/Pages/.*.aspx\?vary=(?P<vary>.*)',
-        r'https://[^/]+/portailinternet/Pages/[dD]efault.aspx',
-        r'https://[^/]+/portailinternet/Transactionnel/Pages/CyberIntegrationPage.aspx',
-        r'https://[^/]+/cyber/internet/ShowPortal.do\?token=.*',
-        r'https://[^/]+/cyber/internet/ShowPortal.do\?taskInfoOID=.*',
+        r'https://[^/]+/.*espace-client',
         HomePage
     )
-
-    already_login_page = URL(
-        r'https://[^/]+/dacswebssoissuer.*',
-        r'https://[^/]+/WebSSO_BP/_(?P<bankid>\d+)/index.html\?transactionID=(?P<transactionID>.*)',
-        AlreadyLoginPage
-    )
-    login2_page = URL(
-        r'https://[^/]+/WebSSO_BP/_(?P<bankid>\d+)/index.html\?transactionID=(?P<transactionID>.*)',
-        Login2Page
-    )
-
-    # natixis
-    natixis_redirect = URL(
-        r'https://www.assurances.natixis.fr/espaceinternet-bp/views/common/routage.xhtml.*?dswid=-?[a-f0-9]+$',
-        NatixisRedirect
-    )
-    natixis_choice = URL(
-        r'https://www.assurances.natixis.fr/espaceinternet-bp/views/contrat/list.xhtml\?.*',
-        NatixisChoicePage
-    )
-    natixis_page = URL(r'https://www.assurances.natixis.fr/espaceinternet-bp/views/common.*', NatixisPage)
-    etna = URL(
-        r'https://www.assurances.natixis.fr/etna-ihs-bp/#/contratVie/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+).*',
-        r'https://www.assurances.natixis.fr/espaceinternet-bp/views/contrat/detail/vie/view.xhtml\?windowId=.*&reference=(?P<id3>\d+)&codeSociete=(?P<id1>[^&]*)&codeProduit=(?P<id2>[^&]*).*',
-        EtnaPage
-    )
-    natixis_error_page = URL(
-        r'https://www.assurances.natixis.fr/espaceinternet-bp/error-redirect.*',
-        r'https://www.assurances.natixis.fr/etna-ihs-bp/#/equipement;codeEtab=.*\?windowId=.*',
-        NatixisErrorPage
-    )
-    natixis_unavailable_page = URL(
-        r'https://www.assurances.natixis.fr/espaceinternet-bp/page500.xhtml',
-        NatixisUnavailablePage
-    )
-    natixis_invest = URL(
-        r'https://www.assurances.natixis.fr/espaceinternet-bp/rest/v2/contratVie/load/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+)',
-        NatixisInvestPage
-    )
-    natixis_history = URL(
-        r'https://www.assurances.natixis.fr/espaceinternet-bp/rest/v2/contratVie/load-operation/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+)',
-        NatixisHistoryPage
-    )
-    natixis_pdf = URL(
-        r'https://www.assurances.natixis.fr/espaceinternet-bp/rest/v2/contratVie/load-releve/(?P<id1>\w+)/(?P<id2>\w+)/(?P<id3>\w+)/(?P<year>\d+)',
-        NatixisDetailsPage
-    )
-
-    linebourse_home = URL(r'https://www.linebourse.fr', LineboursePage)
-
-    advisor = URL(
-        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=accueil.*',
-        r'https://[^/]+/cyber/internet/StartTask.do\?taskInfoOID=contacter.*',
-        AdvisorPage
-    )
-
-    basic_token_page = URL(r'https://(?P<website>.[\w\.]+)/SRVATE/context/mde/1.1.5', BasicTokenPage)
-    subscriber_page = URL(r'/api-bp/wapi/2.0/abonnes/current/mes-documents-electroniques', SubscriberPage)
-    subscription_page = URL(r'https://[^/]+/api-bp/wapi/2.0/abonnes/current2/contrats', SubscriptionsPage)
-    documents_page = URL(r'/api-bp/wapi/2.0/abonnes/current/documents/recherche-avancee', DocumentsPage)
 
     last_connect = URL(
         r'https://www.rs-ex-ath-groupe.banquepopulaire.fr/bapi/user/v1/user/lastConnect',
         LastConnectPage
     )
 
-    redirect_uri = URL(r'/callback')
-
-    current_subbank = None
+    redirect_uri = URL(r'https://www.ibps.bpgo.banquepopulaire.fr/callbackleg')
 
     HAS_CREDENTIALS_ONLY = True
 
     def __init__(self, website, config, *args, **kwargs):
-        self.website = website
         self.config = config
         super(BanquePopulaire, self).__init__(
             self.config, self.config['login'].get(), self.config['password'].get(), *args, **kwargs
         )
-        self.BASEURL = 'https://%s' % self.website
-        self.is_creditmaritime = 'cmgo.creditmaritime' in self.BASEURL
+        self.BASEURL = 'https://%s' % website
         self.validation_id = None
         self.mfa_validation_data = None
         self.user_type = None
-        self.cdetab = None
+        self.cdetab = self.config['cdetab'].get()
         self.continue_url = None
-        self.current_subbank = None
         self.term_id = None
         self.access_token = None
-
-        if self.is_creditmaritime:
-            # this url is required because the creditmaritime abstract uses an other url
-            self.redirect_url = 'https://www.icgauth.creditmaritime.groupe.banquepopulaire.fr/dacsrest/api/v1u0/transaction/'
-        else:
-            self.redirect_url = 'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/'
+        self.access_token_expire = None
+        self.redirect_url = 'https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/'
         self.token = None
-
-        dirname = self.responses_dirname
-        if dirname:
-            dirname += '/bourse'
-        self.linebourse = LinebourseAPIBrowser(
-            'https://www.linebourse.fr',
-            logger=self.logger,
-            responses_dirname=dirname,
-            proxy=self.PROXIES
-        )
 
         self.documents_headers = None
 
@@ -352,30 +213,16 @@ class BanquePopulaire(TwoFactorBrowser):
             'user_type',
             'cdetab',
             'continue_url',
-            'current_subbank',
             'term_id',
             'user_code',
+            'access_token',
+            'access_token_expire'
         )
 
     def deinit(self):
         super(BanquePopulaire, self).deinit()
-        self.linebourse.deinit()
 
     no_login = 0
-
-    def follow_back_button_if_any(self, params=None, actions=None):
-        """
-        Look for a Retour button and follow it using a POST
-        :param params: Optional form params to use (default: call self.page.get_params())
-        :param actions: Optional actions to use (default: call self.page.get_button_actions())
-        :return: None
-        """
-        if not self.page:
-            return
-
-        data = self.page.get_back_button_params(params=params, actions=actions)
-        if data:
-            self.location('/cyber/internet/ContinueTask.do', data=data)
 
     def load_state(self, state):
         if state.get('validation_unit'):
@@ -385,12 +232,12 @@ class BanquePopulaire(TwoFactorBrowser):
         super(BanquePopulaire, self).load_state(state)
 
     def locate_browser(self, state):
-        if self.index_page.match(state.get('url', '')):
-            # the URL of the index page leads to an error page.
-            return
         super(BanquePopulaire, self).locate_browser(state)
 
     def init_login(self):
+        if self.isSSOBearerValid():
+            return
+        
         if (
             self.twofa_logged_date and (
                 now_as_utc() > (self.twofa_logged_date + timedelta(minutes=self.TWOFA_DURATION))
@@ -422,8 +269,6 @@ class BanquePopulaire(TwoFactorBrowser):
 
         if self.new_login.is_here():
             self.do_new_login()
-        else:
-            self.do_old_login()
 
         if self.authentication_step.is_here():
             # We are successfully logged in with a 2FA still valid
@@ -435,7 +280,6 @@ class BanquePopulaire(TwoFactorBrowser):
             self.page.check_errors(feature='login')
 
             auth_method = self.page.get_authentication_method_type()
-            self.get_current_subbank()
             self._set_mfa_validation_data()
 
             if auth_method == 'SMS':
@@ -495,7 +339,6 @@ class BanquePopulaire(TwoFactorBrowser):
 
         try:
             self.authentication_step.go(
-                subbank=self.current_subbank,
                 validation_id=self.validation_id,
                 json=data
             )
@@ -534,7 +377,7 @@ class BanquePopulaire(TwoFactorBrowser):
         assert self.mfa_validation_data
 
         for _ in polling_loop(timeout=300, delay=5):
-            self.app_validation.go(subbank=self.current_subbank)
+            self.app_validation.go()
             status = self.page.get_status()
 
             # The status is 'valid' even for non success authentication
@@ -542,7 +385,6 @@ class BanquePopulaire(TwoFactorBrowser):
             # Ex: when the user refuses the authentication on the application, AUTHENTICATION_CANCELED is returned.
             if status == 'valid':
                 self.authentication_step.go(
-                    subbank=self.current_subbank,
                     validation_id=self.validation_id,
                     json={
                         'validate': {
@@ -569,56 +411,39 @@ class BanquePopulaire(TwoFactorBrowser):
             self.mfa_validation_data = None
             raise AppValidationExpired()
 
-    def do_old_login(self):
-        assert self.login2_page.is_here(), 'Should be on login2 page'
-        self.page.set_form_ids()
-
-        try:
-            self.page.login(self.username, self.password)
-        except BrowserUnavailable as ex:
-            # HACK: some accounts with legacy password fails (legacy means not only digits).
-            # The website crashes, even on a web browser.
-            # So, if we get a specific exception AND if we have a legacy password,
-            # we raise WrongPass instead of BrowserUnavailable.
-            if 'Cette page est indisponible' in str(ex) and not self.password.isdigit():
-                raise BrowserIncorrectPassword()
-            raise
-        if not self.password.isnumeric():
-            self.logger.warning('Password with non numeric chararacters still works')
-
-        if self.login_page.is_here():
-            raise BrowserIncorrectPassword()
-        if 'internetRescuePortal' in self.url:
-            # 1 more request is necessary
-            data = {'integrationMode': 'INTERNET_RESCUE'}
-            self.location('/cyber/internet/Login.do', data=data)
-
-    def get_bpcesta(self):
+    def get_bpcesta_Auth(self):
         return {
             'csid': str(uuid4()),
             'typ_app': 'rest',
             'enseigne': 'bp',
             'typ_sp': 'out-band',
             'typ_act': 'auth',
-            'snid': '6782561',
+            'snid': '678256',
             'cdetab': self.cdetab,
-            'typ_srv': self.user_type,
+            'typ_srv': 'part',
+            "phase":"",
             'term_id': self.term_id,
+        }
+        
+    def get_bpcesta_SSO(self):
+        return {
+            'cdetab': self.cdetab,
+            'enseigne': 'bp',
+            'login_hint': self.user_code,
+            'typ_srv': 'part',
+            'typ_sp': 'out-band',
+            'typ_app': 'rest',
+            'typ_act': 'sso',
         }
 
     def _set_mfa_validation_data(self):
         """Same as in caissedepargne."""
         self.mfa_validation_data = self.page.get_authentication_method_info()
         self.mfa_validation_data['validation_unit_id'] = self.page.validation_unit_id
-
+        
     # need to try from the top in that case because this login is a long chain of redirections
     @retry(TemporaryBrowserUnavailable)
     def do_new_login(self):
-        # Same login as caissedepargne
-        url_params = parse_qs(urlparse(self.url).query)
-        self.cdetab = url_params['cdetab'][0]
-        self.continue_url = url_params['continue'][0]
-
         main_js_file = self.page.get_main_js_file_url()
         self.location(main_js_file)
 
@@ -631,52 +456,27 @@ class BanquePopulaire(TwoFactorBrowser):
             'scope': '',
         }
 
-        # The 2 followings requests are needed in order to get
-        # user type (part, ent and pro)
         self.info_tokens.go(data=data)
 
-        headers = {'Authorization': 'Bearer %s' % self.page.get_access_token()}
-        data = {
-            'characteristics': {
-                'iTEntityType': {
-                    'code': '03',  # 03 for BP and 02 for CE
-                    'label': 'BP',
-                },
-                # banquepopulaire front allows lower or upper username but it needs to be capitalize for making request
-                # If we don't, at the end of the login we will have an error that let us think the account if locked.
-                'userCode': self.username.upper(),
-                'bankId': self.cdetab,
-                'subscribeTypeItems': [],
-            },
-        }
-        try:
-            self.user_info.go(headers=headers, json=data)
-        except ReadTimeout:
-            # This server usually delivers data in less than a second on this request.
-            # If it timeouts, retrying will not help.
-            # It usually comes back up within a few hours.
+        self.user_code = self.config['login'].get()
 
-            raise BrowserUnavailable('Le service est momentanément indisponible. Veuillez réessayer plus tard.')
-
-        self.user_type = self.page.get_user_type()
-        # Recovering the username here and use it later is mandatory:
-        # - banquepopulaire front allows lower or upper username but it needs to be capitalize for making request
-        # - For palatine users, "1234567" username become "K1234567P00"
-        # If we don't use it in further requests, at the end of the login we will have an error that let us think the account if locked.
-        self.user_code = self.page.get_user_code()
-
-        bpcesta = self.get_bpcesta()
-
-        if self.user_type == 'pro':
-            is_pro = True
-        else:
-            is_pro = None
+        bpcesta = self.get_bpcesta_Auth()
 
         claims = {
             'userinfo': {
                 'cdetab': None,
                 'authMethod': None,
                 'authLevel': None,
+                'dacsId': None,
+                'last_login': None,
+                'auth_time': None,
+                'opsId': None,
+                'appid': None,
+                'pro': None,
+                'userRef': None,
+                'apidp': None,
+                'bpAttributeId': None,
+                'env': None
             },
             'id_token': {
                 'auth_time': {
@@ -684,7 +484,7 @@ class BanquePopulaire(TwoFactorBrowser):
                 },
                 'last_login': None,
                 'cdetab': None,
-                'pro': is_pro,
+                'pro': None,
             },
         }
 
@@ -698,7 +498,6 @@ class BanquePopulaire(TwoFactorBrowser):
             'claims': json.dumps(claims),
             'bpcesta': json.dumps(bpcesta),
             'login_hint': self.user_code,
-            'phase': '',
             'display': 'page',
         }
         headers = {
@@ -708,9 +507,14 @@ class BanquePopulaire(TwoFactorBrowser):
         }
 
         self.authorize.go(params=params, method='POST', headers=headers)
-        self.do_redirect('SAMLRequest')
+        
+        headers = {
+            'Accept': 'application/json, text/plain, */*',  # Mandatory, else you've got an HTML page.
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Referer': 'https://www.banquepopulaire.fr/se-connecter/identifier(redirect:authentifier)' #Mandatory if not, you have 430 error
+        }
+        self.do_redirect('SAMLRequest', headers=headers)
         self.validation_id = self.page.get_validation_id()
-        self.get_current_subbank()
 
         security_level = self.page.get_security_level()
         is_sca_expected = self.page.is_sca_expected()
@@ -750,7 +554,7 @@ class BanquePopulaire(TwoFactorBrowser):
 
             self.location(vk_images_url)
             images_url = self.page.get_all_images_data()
-            vk = CaissedepargneVirtKeyboard(self, images_url)
+            vk = BPOVirtKeyboard(self, images_url)
             code = vk.get_string_code(self.password)
 
         headers = {
@@ -759,7 +563,6 @@ class BanquePopulaire(TwoFactorBrowser):
         }
 
         self.authentication_step.go(
-            subbank=self.current_subbank,
             validation_id=self.validation_id,
             json={
                 'validate': {
@@ -819,17 +622,6 @@ class BanquePopulaire(TwoFactorBrowser):
         self.page.check_errors(feature='login')
         self.do_redirect('SAMLResponse', headers)
 
-        self.handle_continue_url()
-
-        url_params = parse_qs(urlparse(self.url).query)
-        validation_id = url_params['transactionID'][0]
-
-        self.authentication_method_page.go(
-            subbank=self.current_subbank, validation_id=validation_id
-        )
-        # Need to do the redirect a second time to finish login
-        self.do_redirect('SAMLResponse', headers)
-
         self.put_terminal_id()
 
     def check_for_fallback(self):
@@ -839,15 +631,12 @@ class BanquePopulaire(TwoFactorBrowser):
                 # we might first have a CERTIFICATE method, which we may fall back to EMV,
                 # which we may fall back to PASSWORD
                 self.authentication_step.go(
-                    subbank=self.current_subbank,
                     validation_id=self.validation_id,
                     json={'fallback': {}},
                 )
             else:
                 break
         return current_method
-
-    ACCOUNT_URLS = ['mesComptes', 'mesComptesPRO', 'maSyntheseGratuite', 'accueilSynthese', 'equipementComplet']
 
     def do_redirect(self, keyword, headers=None):
         if headers is None:
@@ -897,643 +686,266 @@ class BanquePopulaire(TwoFactorBrowser):
             json={}
         )
 
-    @retry(BrokenPageError)
-    @need_login
-    def go_on_accounts_list(self):
-        for taskInfoOID in self.ACCOUNT_URLS:
-            # 4 possible URLs but we stop as soon as one of them works
-            # Some of the URL are sometimes temporarily unavailable
-            # so we handle potential errors and continue to the next
-            # iteration of the loop if that's the case to get the next URL
-            data = OrderedDict([('taskInfoOID', taskInfoOID), ('token', self.token)])
+    def isSSOBearerValid(self):
+        if (self.access_token_expire == None):
+            self.logger.debug('No valid token found in local storage')
+            return False
+        
+        expire_dt = datetime.strptime(self.access_token_expire, "%m/%d/%Y %H:%M:%S")
 
-            # Go from AdvisorPage to AccountsPage
-            try:
-                self.location(self.absurl('/cyber/internet/StartTask.do', base=True), params=data)
-            except ServerError as e:
-                if e.response.status_code == 500 and 'votre demande ultérieurement' in e.response.text:
-                    continue
-                raise
+        current_dt = datetime.now()
+        expected_endofrequests_dt = current_dt + timedelta(seconds=20)
 
-            if "indisponible pour cause de maintenance." in self.response.text:
-                continue
+        if (expire_dt < expected_endofrequests_dt):
+            self.logger.debug('Token found in local storage, but expired')
+            return False
 
-            if not self.page.is_error():
-                if self.page.pop_up():
-                    self.logger.debug('Popup displayed, retry')
-                    data = OrderedDict([('taskInfoOID', taskInfoOID), ('token', self.token)])
-                    self.location('/cyber/internet/StartTask.do', params=data)
+        self.logger.debug('Valid token found in local storage, skip login')
+        return True
+    
+    def saveSSOBearer(self, token, expire):
+        current_dt = datetime.now()
+        expire_dt = current_dt + timedelta(seconds=int(expire))
+        self.access_token_expire = expire_dt.strftime("%m/%d/%Y %H:%M:%S")
+        self.access_token = token
 
-                # Set the valid ACCOUNT_URL and break the loop
-                self.ACCOUNT_URLS = [taskInfoOID]
-                break
-        else:
-            raise BrokenPageError('Unable to go on the accounts list page')
+    def updateBearerForDataConsumptionIfNeeded(self):
+        if self.isSSOBearerValid():
+            return
 
-        if self.page.is_short_list():
-            # Go from AccountsPage to AccountsFullPage to get the full accounts list
-            form = self.page.get_form(nr=0)
-            form['dialogActionPerformed'] = 'EQUIPEMENT_COMPLET'
-            form['token'] = self.page.build_token(form['token'])
-            form.submit()
+        self.root_clientdashboard_page.go()
+        main_js_file = self.page.get_main_js_file_url()
+        self.location(main_js_file)
+        client_id = self.page.get_client_id()
+        
+        data = {
+            'grant_type': 'client_credentials',
+            'client_id': self.page.get_user_info_client_id(),
+            'scope': 'readTypology readAgencyV2'
+        }
+        self.info_tokens.go(data=data)
+        
+        bpcesta = self.get_bpcesta_SSO()
+        claims = {
+            'id_token':{
+                'cdetab':None,
+                'pro':None
+            },
+            'userinfo':{
+                'cdetab':None,
+                'authMethod':None,
+                'authLevel':None,
+                'dacsId':None,
+                'last_login':None,
+                'auth_time':None,
+                'opsId':None,
+                'appid':None,
+                'pro':None,
+                'userRef':None,
+                'apidp':None,
+                'bpAttributeId':None,
+                'env':None
+                }
+            }
+        params = {
+            'cdetab': self.cdetab,
+            'client_id': client_id,
+            'response_type': 'id_token token',
+            'nonce': str(uuid4()),
+            'response_mode': 'form_post',
+            'claims': json.dumps(claims),
+            'bpcesta': json.dumps(bpcesta),
+            'login_hint': self.user_code,
+            'display': 'page',
+        }
+        headers = {
+            'Accept': 'application/json, text/plain, */*',  # Mandatory, else you've got an HTML page.
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': '0',  # Mandatory, otherwhise enjoy the 415 error
+            'Origin': 'https://www.banquepopulaire.fr',
+            'Referer': 'https://www.banquepopulaire.fr/',
+        }
+        self.authorize.go(params=params, method='POST', headers=headers)
+        
+        #Authorize response gave a SAML request in the payload
+        #Play it by "do_redirect" will give us a json with a samlResponse and the response consumer :
+        #{
+        #    "id":"blahblah",
+        #    "locale":"en",
+        #    "response":{
+        #        "status":"AUTHENTICATION_SUCCESS",
+        #        "saml2_post":{
+        #            "samlResponse":"a very hug lot of blah blah, probably in base64, but we don't really care",
+        #            "action":"https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume",
+        #            "method":"POST"
+        #        }
+        #    }
+        #}
+        headers = {
+            'Accept': 'application/json, text/plain, */*',  # Mandatory, else you've got an HTML page.
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Referer': 'https://www.banquepopulaire.fr/se-connecter/identifier(redirect:authentifier)' #Mandatory if not, you have 430 error
+        }
+        self.do_redirect('SAMLRequest', headers=headers)
+        
+        #Last but not least, we have to call the v2/consume with the SAML Response and that will provide us the wanted Token in json: 
+        ###{
+        ###    "method" : "POST",
+        ###    "enctype" : "application/x-www-form-urlencoded",
+        ###    "action" : "https://www.banquepopulaire.fr/espace-client/implicit/callback",
+        ###    "parameters" : {
+        ###        "access_token" : "0Ylr9f5RxYGBQCAeOxh2....." 
+        self.do_redirect('SAMLResponse', headers=headers)
 
-        # In case of prevAction maybe we have reached an expanded accounts list page, need to go back
-        self.follow_back_button_if_any()
-
-    def get_loan_from_account(self, account):
-        loan = Loan.from_dict(account.to_dict())
-        loan._prev_debit = account._prev_debit
-        loan._next_debit = account._next_debit
-        loan._params = account._params
-        loan._coming_params = account._coming_params
-        loan._coming_count = account._coming_count
-        loan._invest_params = account._invest_params
-        loan._loan_params = account._loan_params
-
-        # if the loan is fully refunded we avoid sending the form,
-        # it seems that there is no more detail, so server is reponding 400
-        # avoid calling detail when it is a leasing type of contract because it must be handled differently
-        if (
-            account._invest_params
-            and 'mesComptes' in account._invest_params['taskInfoOID']
-            and 'Credit Bail' not in account.label
-        ):
-            form = self.page.get_form(id='myForm')
-            form.update(account._invest_params)
-            form['token'] = self.page.get_params()['token']
-            form.submit()
-            self.page.fill_loan(obj=loan)
-            self.follow_back_button_if_any()
-
-        return loan
-
+        ### Wonderfull in this json we have the acces_token mandatory to reach user data (like balances)
+        self.saveSSOBearer(token=self.page.get_access_token(), expire=self.page.get_access_expire())
+        self.access_token = self.page.get_access_token()
+    
     @retry(LoggedOut)
     @need_login
-    def iter_accounts(self, get_iban=True):
-        # We have to parse account list in 2 different way depending if
-        # we want the iban number or not thanks to stateful website
-        next_pages = []
+    def iter_accounts(self, get_iban=False):
+        self.updateBearerForDataConsumptionIfNeeded()
+        
+        headers = {
+            'Accept': 'application/json, text/plain, */*',
+            'Authorization': 'Bearer %s' % self.access_token,
+            'Origin': 'https://www.banquepopulaire.fr',
+            'Referer': 'https://www.banquepopulaire.fr/',
+            'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-site',
+        }
+        #This is a new API. I still don't know how is built the field productFamilyPFM=1,2,3,4,6,7,17,18.
+        #Let see with other users if they have the same IDs and, if necessary, how to dynamically retrieve it...
+        self.location('https://www.rs-ex-ath-groupe.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews?productFamilyPFM=1,2,3,4,6,7,17,18&pfmCharacteristicsIndicator=true', headers=headers)
+        raw_json_data = self.page.get_raw_json()
+        accounts_data = json.loads(raw_json_data)
         accounts = []
-        owner_type = self.get_owner_type()
-        profile = self.get_profile()
-
-        if profile:
-            if profile.name:
-                name = profile.name
-            else:
-                name = profile.company_name
-
-            # Handle names/company names without spaces
-            if ' ' in name:
-                owner_name = re.search(r' (.+)', name).group(1).upper()
-            else:
-                owner_name = name.upper()
-        else:
-            # AdvisorPage is not available for all users
-            owner_name = None
-
-        self.go_on_accounts_list()
-
-        for account in self.page.iter_accounts(next_pages):
-            account.owner_type = owner_type
-            if owner_name:
-                self.set_account_ownership(account, owner_name)
-
-            if account.type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE):
-                account = self.get_loan_from_account(account)
-
-            accounts.append(account)
-            if not get_iban:
-                yield account
-
-        while len(next_pages) > 0:
-            next_with_params = None
-            next_page = next_pages.pop()
-
-            if not self.accounts_full_page.is_here():
-                self.go_on_accounts_list()
-            # If there is an action needed to go to the "next page", do it.
-            if 'prevAction' in next_page:
-                params = self.page.get_params()
-                params['dialogActionPerformed'] = next_page.pop('prevAction')
-                params['token'] = self.page.build_token(self.token)
-                self.location('/cyber/internet/ContinueTask.do', data=params)
-
-            # Go to next_page with params and token
-            next_page['token'] = self.page.build_token(self.token)
-            try:
-                self.location('/cyber/internet/ContinueTask.do', data=next_page)
-            except ServerError as e:
-                if e.response.status_code == 500 and 'votre demande ultérieurement' in e.response.text:
+        
+        if "items" in accounts_data:
+            for element in accounts_data["items"]:
+                account = BanquePopulaireAccount()
+                if element is not None and "identification" in element :
+                    identification = element["identification"]
+                    if identification is not None and "augmentedSynthesisViewId" in identification :
+                        augmentedSynthesisViewId = identification["augmentedSynthesisViewId"]
+                        if augmentedSynthesisViewId is not None and "id" in augmentedSynthesisViewId :
+                            account.id = augmentedSynthesisViewId["id"]
+                        else:
+                            self.logger.warning("Miss /items/**/identification/augmentedSynthesisViewId/id key in one account provided by the bank : entry skipped")
+                            continue
+                        if "contractPfmId" in identification :
+                            account.contractPfmId = identification["contractPfmId"]
+                    else:
+                        self.logger.warning("Miss /items/**/identification/augmentedSynthesisViewId key in one account provided by the bank : entry skipped")
+                        continue
+                else:
+                    self.logger.warning("Miss /items/**/identification/ key in one account provided by the bank : entry skipped")
                     continue
-                raise
-            secure_iteration = 0
-            while secure_iteration == 0 or (next_with_params and secure_iteration < 10):
-                # The first condition allows to do iter_accounts with less than 20 accounts
-                secure_iteration += 1
-                # If we have more than 20 accounts of a type
-                # The next page is reached by params found in the current page
-                if isinstance(self.page, GenericAccountsPage):
-                    next_with_params = self.page.get_next_params()
+                    
+                if element is not None and "identity" in element :
+                    identity = element["identity"]
+                    if identity is not None and "bankingClientLabel" in identity and "balance" in identity and "contractLabel" in identity:
+                        account.label = ('%s %s' % (identity["contractLabel"], identity["bankingClientLabel"])).strip()
+
+                        balance = identity["balance"]
+                        if balance is not None and "value" in balance and "currencyCode" in balance:
+                            account.balance = balance["value"]
+                            account.currency = balance["currencyCode"]
+                        else:
+                            self.logger.warning("Miss /items/**/identity/balance/value or /items/**/identity/balance/currencyCode key in one account provided by the bank : entry skipped")
+                            continue
+                        
+                        account._prev_debit = None
+                        account._next_debit = None
+                        account._params = None
+                        account._coming_params = None
+                        account._coming_count = None
+                        account._invest_params = None
+                        account._loan_params = None
+                    else:
+                        self.logger.warning("Miss /items/**/identity/bankingClientLabel or /items/**/identity/balance or /items/**/identity/contractLabel key in one account provided by the bank : entry skipped")
                 else:
-                    # Can be ErrorPage
-                    next_with_params = None
+                    self.logger.warning("Miss /items/**/identity key in one account provided by the bank : entry skipped")
+                    
+                accounts.append(account)
 
-                accounts_iter = self.page.iter_accounts(
-                    next_pages, accounts_parsed=accounts,
-                    next_with_params=next_with_params
-                )
-                for a in accounts_iter:
-                    a.owner_type = owner_type
-                    self.set_account_ownership(a, owner_name)
-                    if a.type in (Account.TYPE_LOAN, Account.TYPE_MORTGAGE):
-                        a = self.get_loan_from_account(a)
-                    accounts.append(a)
-                    if not get_iban:
-                        yield a
-
-                if next_with_params:
-                    self.location('/cyber/internet/Page.do', params=next_with_params)
-
-        if get_iban:
-            for a in accounts:
-                a.owner_type = owner_type
-                a.iban = self.get_iban_number(a)
-                yield a
-
-    # TODO: see if there's other type of account with a label without name which
-    # is not ATTORNEY (cf. 'COMMUN'). Didn't find one right now.
-    def set_account_ownership(self, account, owner_name):
-        if not account.ownership:
-            label = account.label.upper()
-            if account.parent:
-                if not account.parent.ownership:
-                    self.set_account_ownership(account.parent, owner_name)
-                account.ownership = account.parent.ownership
-            elif owner_name in label:
-                if (
-                    re.search(
-                        r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)',
-                        label, re.IGNORECASE)
-                ):
-                    account.ownership = AccountOwnership.CO_OWNER
-                else:
-                    account.ownership = AccountOwnership.OWNER
-            elif 'COMMUN' in label:
-                account.ownership = AccountOwnership.CO_OWNER
-            else:
-                account.ownership = AccountOwnership.ATTORNEY
-
-    @need_login
-    def get_iban_number(self, account):
-        # Some rare users have no IBAN available at all on the whole account
-        # triggering a ServerError 500 if we try to access the IBAN page
-        try:
-            url = self.absurl(
-                '/cyber/internet/StartTask.do?taskInfoOID=cyberIBAN&token=%s' % self.page.build_token(self.token),
-                base=True
-            )
-            self.location(url)
-        except ServerError as e:
-            if e.response.status_code == 500 and 'Votre abonnement ne vous permet pas' in e.response.text:
-                return NotAvailable
-            raise
-        # Sometimes we can't choose an account
-        if (
-            account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET)
-            or (self.page.need_to_go() and not self.page.go_iban(account))
-        ):
-            return NotAvailable
-        return self.page.get_iban(account.id)
+        else:
+            self.logger.warning("Miss /items/ in accounts provided by the bank : couldn't do anything...")
+        #No Yield here, no more account to process
+        return accounts
 
     @retry(LoggedOut)
     @need_login
     def get_account(self, id):
         return find_object(self.iter_accounts(get_iban=False), id=id)
 
-    def set_gocardless_transaction_details(self, transaction):
-        # Setting references for a GoCardless transaction
-        data = self.page.get_params()
-        data['validationStrategy'] = self.page.get_gocardless_strategy_param(transaction)
-        data['dialogActionPerformed'] = 'DETAIL_ECRITURE'
-        attribute_key, attribute_value = self.page.get_transaction_table_id(transaction._ref)
-        data[attribute_key] = attribute_value
-        data['token'] = self.page.build_token(data['token'])
-
-        self.location(self.absurl('/cyber/internet/ContinueTask.do', base=True), data=data)
-        ref = self.page.get_reference()
-        transaction.raw = '%s %s' % (transaction.raw, ref)
-
-        # Needed to preserve navigation.
-        self.follow_back_button_if_any()
 
     @retry(LoggedOut)
     @need_login
-    def iter_history(self, account, coming=False):
-        def get_history_by_receipt(account, coming, sel_tbl1=None):
-            account = self.get_account(account.id)
-
-            if account is None:
-                raise BrowserUnavailable()
-
-            if account._invest_params or (account.id.startswith('TIT') and account._params):
-                if not coming:
-                    for tr in self.get_invest_history(account):
-                        yield tr
-                return
-
-            if coming:
-                params = account._coming_params
-            else:
-                params = account._params
-
-            if params is None:
-                return
-            params['token'] = self.page.build_token(params['token'])
-
-            if sel_tbl1 is not None:
-                params['attribute($SEL_$tbl1)'] = str(sel_tbl1)
-
-            self.location(self.absurl('/cyber/internet/ContinueTask.do', base=True), data=params)
-
-            if not self.page or self.error_page.is_here() or self.page.no_operations():
-                return
-
-            # Sort by operation date
-            if len(self.page.doc.xpath('//a[@id="tcl4_srt"]')) > 0:
-                # The first request sort might transaction by oldest. If this is the case,
-                # we need to do the request a second time for the transactions to be sorted by newest.
-                for _ in range(2):
-                    form = self.page.get_form(id='myForm')
-                    form.url = self.absurl('/cyber/internet/Sort.do?property=tbl1&sortBlocId=blc2&columnName=dateOperation')
-                    params['token'] = self.page.build_token(params['token'])
-                    form.submit()
-                    if self.page.is_sorted_by_most_recent():
-                        break
-
-            transactions_next_page = True
-
-            while transactions_next_page:
-                assert self.transactions_page.is_here()
-
-                transaction_list = self.page.get_history(account, coming)
-
-                for tr in transaction_list:
-                    # Add information about GoCardless
-                    if 'GoCardless' in tr.label and tr._has_link:
-                        self.set_gocardless_transaction_details(tr)
-                    yield tr
-
-                next_params = self.page.get_next_params()
-                # Go to the next transaction page only if it exists:
-                if next_params is None:
-                    transactions_next_page = False
-                else:
-                    self.location('/cyber/internet/Page.do', params=next_params)
-
-        if coming and account._coming_count:
-            for i in range(account._coming_start, account._coming_start + account._coming_count):
-                for tr in get_history_by_receipt(account, coming, sel_tbl1=i):
-                    yield tr
-        else:
-            for tr in get_history_by_receipt(account, coming):
-                yield tr
-
-    @need_login
-    def go_investments(self, account, get_account=False):
-        if not account._invest_params and not (account.id.startswith('TIT') or account.id.startswith('PRV')):
-            raise NotImplementedError()
-
-        if get_account:
-            account = self.get_account(account.id)
-
-        if account._params:
+    def iter_history(self, account:BanquePopulaireAccount, coming=False):
+        self.updateBearerForDataConsumptionIfNeeded()
+        pagination_start = 0
+        pagination_count = 25
+        current_skip_value = pagination_start
+        
+        transactions = []
+        
+        while True:
             params = {
-                'taskInfoOID': 'ordreBourseCTJ2',
-                'controlPanelTaskAction': 'true',
-                'token': self.page.build_token(account._params['token']),
+                'businessType': 'UserProfile',
+                'accountIds' : '67009',
+                'accountIds' : str(account.contractPfmId),
+                'include': 'Merchant',
+                'parsedData': '[{"key":"transactionGranularityCode","value":"IN"},{"key":"transactionGranularityCode","value":"ST"}]',
+                'skip' : current_skip_value,
+                'take' : pagination_count,
+                'includeDisabledAccounts':'true',
+                'ascendingOrder': 'false',
+                'orderBy': 'ByParsedData',
+                'parsedDataNameToOrderBy': 'accountingDate',
+                'useAndSearchForParsedData': 'false',
             }
-            self.location(self.absurl('/cyber/internet/StartTask.do', base=True), params=params)
-            try:
-                # Form to complete the user's info, we can pass it
-                form = self.page.get_form()
-                if 'QuestConnCliInt.EcranMessage' in form.get('screenName', ''):
-                    form['dialogActionPerformed'] = 'CANCEL'
-                    form['validationStrategy'] = 'NV'
-                    form.submit()
-            except FormNotFound:
-                pass
-        else:
-            params = account._invest_params
-            params['token'] = self.page.build_token(params['token'])
-            try:
-                self.location(self.absurl('/cyber/internet/ContinueTask.do', base=True), data=params)
-            except BrowserUnavailable:
-                return False
+            headers = {
+                'Accept': 'application/json, text/plain, */*',  # Mandatory, else you've got an HTML page.
+                'Authorization': 'Bearer %s' % self.access_token,
+                'Origin': 'https://www.banquepopulaire.fr',
+                'Referer': 'https://www.banquepopulaire.fr/',
+                'Host':	'www.rs-ex-ath-groupe.banquepopulaire.fr',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-site'
+            }
+            
+            self.transactions.go(params=params, method='GET', headers=headers)
+            raw_json_data = self.page.get_raw_json()
+            transactions_data = json.loads(raw_json_data)
+        
+            for element in transactions_data['data']:
+                transaction = Transaction()
+                transaction.date = datetime.strptime(element['date'], '%Y-%m-%dT%H:%M:%S')
+                transaction.label = element['text']
+                if "parsedData" in element :
+                    parsedData = element["parsedData"]
+                    if "label1" in parsedData :
+                        transaction.label += " - " 
+                        transaction.label += parsedData["label1"]
+                    if "label2" in parsedData :
+                        transaction.label += " - " 
+                        transaction.label += parsedData["label2"]
+                    if "label3" in parsedData :
+                        transaction.label += " - " 
+                        transaction.label += parsedData["label3"]
+                
+                transaction.amount = element['amount']
+                ###transaction.category  ####Must be done with a correlation with json content of www.rs-ex-ath-groupe.banquepopulaire.fr/pfm/user/v1.1/categories
+                
+                transactions.append(transaction)
+                yield transaction
 
-        if self.error_page.is_here():
-            raise NotImplementedError()
-
-        if self.page.go_investment():
-            url, params = self.page.get_investment_page_params()
-            if params:
-                try:
-                    self.location(url, data=params)
-                except BrowserUnavailable:
-                    return False
-
-                if 'linebourse' in self.url:
-                    self.linebourse.session.cookies.update(self.session.cookies)
-                    self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get('XSRF-TOKEN')
-
-                if self.natixis_error_page.is_here():
-                    self.logger.warning('Natixis site does not work.')
-                    return False
-
-                if self.natixis_redirect.is_here():
-                    url = self.page.get_redirect()
-                    if (
-                        re.match(
-                            r'https://www.assurances.natixis.fr/etna-ihs-bp/#/equipement;codeEtab=\d+\?windowId=[a-f0-9]+$',
-                            url)
-                    ):
-                        self.logger.warning('There may be no contract associated with %s, skipping', url)
-                        return False
-        return True
-
-    @need_login
-    def iter_investments(self, account):
-        if account.type not in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_PEA, Account.TYPE_MARKET, Account.TYPE_PERP):
-            return
-
-        # Add "Liquidities" investment if the account is a "Compte titres PEA":
-        if account.type == Account.TYPE_PEA and account.id.startswith('CPT'):
-            yield create_french_liquidity(account.balance)
-            return
-        if self.go_investments(account, get_account=True):
-            # Redirection URL is https://www.linebourse.fr/ReroutageSJR
-            if 'linebourse' in self.url:
-                self.logger.warning('Going to Linebourse space to fetch investments.')
-                # Eliminating the 3 letters prefix to match IDs on Linebourse:
-                linebourse_id = account.id[3:]
-                for inv in self.linebourse.iter_investments(linebourse_id):
-                    yield inv
-                return
-
-            if self.etna.is_here():
-                self.logger.warning('Going to Etna space to fetch investments.')
-                params = self.page.params
-
-            elif self.natixis_redirect.is_here():
-                self.logger.warning('Going to Natixis space to fetch investments.')
-                # the url may contain a "#", so we cannot make a request to it, the params after "#" would be dropped
-                url = self.page.get_redirect()
-                self.logger.debug('using redirect url %s', url)
-                m = self.etna.match(url)
-                if not m:
-                    # URL can be contratPrev which is not investments
-                    self.logger.warning('Unable to handle this kind of contract.')
-                    return
-
-                params = m.groupdict()
-
-            if self.natixis_redirect.is_here() or self.etna.is_here():
-                try:
-                    self.natixis_invest.go(**params)
-                except ServerError:
-                    # Broken website... nothing to do.
-                    return
-                if self.natixis_unavailable_page.is_here():
-                    raise BrowserUnavailable(self.page.get_message())
-                for inv in self.page.iter_investments():
-                    yield inv
-
-    @need_login
-    def iter_market_orders(self, account):
-        if account.type not in (Account.TYPE_PEA, Account.TYPE_MARKET):
-            return
-
-        if account.type == Account.TYPE_PEA and account.id.startswith('CPT'):
-            # Liquidity PEA have no market orders
-            return
-
-        if self.go_investments(account, get_account=True):
-            # Redirection URL is https://www.linebourse.fr/ReroutageSJR
-            if 'linebourse' in self.url:
-                self.logger.warning('Going to Linebourse space to fetch investments.')
-                # Eliminating the 3 letters prefix to match IDs on Linebourse:
-                linebourse_id = account.id[3:]
-                for order in self.linebourse.iter_market_orders(linebourse_id):
-                    yield order
-
-    @need_login
-    def get_invest_history(self, account):
-        if not self.go_investments(account):
-            return
-        if "linebourse" in self.url:
-            for tr in self.linebourse.iter_history(re.sub('[^0-9]', '', account.id)):
-                yield tr
-            return
-
-        if self.etna.is_here():
-            params = self.page.params
-        elif self.natixis_redirect.is_here():
-            url = self.page.get_redirect()
-            self.logger.debug('using redirect url %s', url)
-            m = self.etna.match(url)
-            if not m:
-                # url can be contratPrev which is not investments
-                self.logger.debug('Unable to handle this kind of contract')
-                return
-
-            params = m.groupdict()
-        else:
-            return
-
-        self.natixis_history.go(**params)
-        if self.natixis_unavailable_page.is_here():
-            # if after this we are not redirected to the NatixisUnavaiblePage it means
-            # the account is indeed available but there is no history
-            self.natixis_invest.go(**params)
-            if self.natixis_unavailable_page.is_here():
-                raise BrowserUnavailable(self.page.get_message())
-            return
-        json_transactions = list(self.page.get_history())
-        json_transactions.sort(reverse=True, key=lambda item: item.date)
-
-        years = list(set(item.date.year for item in json_transactions))
-        years.sort(reverse=True)
-
-        for year in years:
-            try:
-                self.natixis_pdf.go(year=year, **params)
-            except HTTPNotFound:
-                self.logger.debug('no pdf for year %s, fallback on json transactions', year)
-                for tr in json_transactions:
-                    if tr.date.year == year:
-                        yield tr
-            except ServerError:
-                return
-            else:
-                if self.natixis_unavailable_page.is_here():
-                    # None bank statements available for this account
-                    # So using json transactions
-                    for tr in json_transactions:
-                        if tr.date.year == year:
-                            yield tr
-                else:
-                    history = list(self.page.get_history())
-                    history.sort(reverse=True, key=lambda item: item.date)
-                    for tr in history:
-                        yield tr
-
-    @need_login
-    def get_profile(self):
-        # The old way.
-        self.location(self.absurl('/cyber/internet/StartTask.do?taskInfoOID=accueil&token=%s' % self.token, base=True))
-
-        if not self.token or self.response.headers.get('ate-taskInfoOID', '') != 'accueil':
-            # The new way.
-            self.new_front_start_profile()
-            self.location(
-                self.absurl('/cyber/internet/StartTask.do?taskInfoOID=accueil&token=%s' % self.token, base=True)
-            )
-
-        if not self.page.is_profile_here():
-            raise BrowserUnavailable()
-
-        if not self.page.is_profile_unavailable():
-            # For some users this page is not accessible.
-            return self.page.get_profile()
-
-    def new_front_start_profile(self):
-        data = {
-            'integrationMode': 'INTERNET_89C3',
-            'realOrigin': self.BASEURL,
-        }
-
-        if not self.home_page.is_here():
-            self.location('/cyber/internet/Login.do', data=data)
-
-        data['taskId'] = self.page.get_profile_type()
-        self.location('/cyber/internet/Login.do', data=data)  # It's not a real login request
-
-    @retry(LoggedOut)
-    @need_login
-    def get_advisor(self):
-        for taskInfoOID in ['accueil', 'contacter']:
-            data = OrderedDict([('taskInfoOID', taskInfoOID), ('token', self.token)])
-            self.location(self.absurl('/cyber/internet/StartTask.do', base=True), params=data)
-            if taskInfoOID == "accueil":
-                advisor = self.page.get_advisor()
-                if not advisor:
-                    break
-            else:
-                self.page.update_agency(advisor)
-        return iter([advisor])
-
-    @need_login
-    def iter_subscriptions(self):
-        # specify the website url in order to avoid 404 errors.
-        # 404 errors occur when the baseurl is a website we have
-        # been redirected to, like natixis or linebourse
-        self.basic_token_page.go(website=self.website)
-        headers = {'Authorization': 'Basic %s' % self.page.get_basic_token()}
-        response = self.location('/as-bp/as/2.0/tokens', method='POST', headers=headers)
-        self.documents_headers = {'Authorization': 'Bearer %s' % response.json()['access_token']}
-
-        try:
-            self.subscriber_page.go(
-                headers=self.documents_headers
-            )
-        except ClientError as err:
-            response = err.response
-            if response.status_code == 400 and "ERREUR_ACCES_NOT_ALLOWED" in response.json().get('code', ''):
-                # {"code":"ERREUR_ACCES_NOT_ALLOWED_MDE_MOBILE","message":"Vous n'avez pas l'accès à cette application."}
-                # The user did not activate the numeric vault for dematerialized documents
-                return []
-            raise
-
-        if self.page.get_status_dematerialized() == 'CGDN':
-            # A status different than 1 means either the demateralization isn't enabled
-            # or not available for this connection
-            return []
-
-        subscriber = self.page.get_subscriber()
-        params = {'type': 'dematerialisationEffective'}
-        self.location('/api-bp/wapi/2.0/abonnes/current2/contrats', params=params, headers=self.documents_headers)
-        return self.page.get_subscriptions(subscriber=subscriber)
-
-    @need_login
-    def iter_documents(self, subscription):
-        now = now_as_tz('Europe/Paris')
-        # website says we can't get documents more than one year range, even if we can get 5 years
-        # but they tell us this overload their server
-        first_date = now - relativedelta(years=1)
-        start_date = first_date.strftime('%Y-%m-%dT%H:%M:%S.000+00:00')
-        end_date = now.strftime('%Y-%m-%dT%H:%M:%S.000+00:00')
-        body = {
-            'inTypeRecherche': {'type': 'typeRechercheDocument', 'code': 'DEMAT'},
-            'inDateDebut': start_date,
-            'inDateFin': end_date,
-            'inListeIdentifiantsContrats': [
-                {'identifiantContrat': {'identifiant': subscription.id, 'codeBanque': subscription._bank_code}},
-            ],
-            'inListeTypesDocuments': [
-                {'typeDocument': {'code': 'EXTRAIT', 'label': 'Extrait de compte', 'type': 'referenceLogiqueDocument'}},
-                # space at the end of 'RELVCB ' is mandatory
-                {'typeDocument': {'code': 'RELVCB ', 'label': 'Relevé Carte Bancaire', 'type': 'referenceLogiqueDocument'}},
-            ],
-        }
-        # if the syntax is not exactly the correct one we have an error 400 for card statement
-        # banquepopulaire has subdomain so the param change if we are in subdomain or not
-        # if we are in subdomain the param for card statement is 'RLVCB  '
-        # else the param is 'RELVCB '
-        try:
-            self.documents_page.go(json=body, headers=self.documents_headers)
-        except ClientError as e:
-            if e.response.status_code == 400:
-                unavailable_page = UnavailableDocumentsPage(self, e.response)
-                if unavailable_page.is_here():
-                    raise BrowserUnavailable()
-
-                body['inListeTypesDocuments'][1] = {
-                    'typeDocument': {
-                        # two spaces at the end of 'RLVCB  ' is mandatory
-                        'code': 'RLVCB  ',
-                        'label': 'Relevé Carte Bancaire',
-                        'type': 'referenceLogiqueDocument',
-                    },
-                }
-                self.documents_page.go(json=body, headers=self.documents_headers)
-            else:
-                raise
-
-        return self.page.iter_documents(subid=subscription.id)
-
-    @retry(ClientError)
-    def download_document(self, document):
-        return self.open(document.url, headers=self.documents_headers).content
-
-    def get_current_subbank(self):
-        match = re.search(r'icgauth.(?P<domaine>[\.a-z]*).fr', self.url)
-        if match:
-            self.current_subbank = match.group('domaine')
-        else:
-            self.current_subbank = 'banquepopulaire'
-
-    @need_login
-    def get_owner_type(self):
-        if self.is_creditmaritime:
-            self.new_first_login_page.go()
-        else:
-            self.first_login_page.go()  # the old website version
-
-        if not self.home_page.is_here():
-            # The new way.
-            self.new_front_start_profile()
-        if self.home_page.is_here():
-            return self.page.get_owner_type()
+            current_skip_value += pagination_count
+        return transactions
 
 
 class iter_retry(object):

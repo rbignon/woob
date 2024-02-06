@@ -19,7 +19,7 @@
 
 from collections import OrderedDict
 
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
@@ -27,69 +27,46 @@ from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
-
+    
 from .browser import BanquePopulaire
 
 __all__ = ['BanquePopulaireModule']
-
-
-class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDocument):
+                            
+class BanquePopulaireModule(Module, CapBankWealth):
     NAME = 'banquepopulaire'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
+    MAINTAINER = 'Etienne RABY'
+    EMAIL = 'mail@eraby.fr'
     VERSION = '3.6'
     DEPENDENCIES = ('caissedepargne', 'linebourse')
     DESCRIPTION = 'Banque Populaire'
     LICENSE = 'LGPLv3+'
 
-    website_choices = {
-        'www.ibps.alpes.banquepopulaire.fr': 'Alpes',
-        'www.ibps.alsace.banquepopulaire.fr': 'Alsace Lorraine Champagne',
-        'www.ibps.bpalc.banquepopulaire.fr': 'Alsace Lorraine Champagne',
-        'www.ibps.bpaca.banquepopulaire.fr': 'Aquitaine Centre Atlantique',
-        'www.ibps.atlantique.banquepopulaire.fr': 'Atlantique',
-        'www.ibps.bpgo.banquepopulaire.fr': 'Grand Ouest',
-        'www.ibps.loirelyonnais.banquepopulaire.fr': 'Auvergne Rhône Alpes',
-        'www.ibps.bpaura.banquepopulaire.fr': 'Auvergne Rhône Alpes',
-        'www.ibps.banquedesavoie.banquepopulaire.fr': 'Banque de Savoie',
-        'www.ibps.bpbfc.banquepopulaire.fr': 'Bourgogne Franche-Comté',
-        'www.ibps.bretagnenormandie.cmm.groupe.banquepopulaire.fr': 'Crédit Maritime Bretagne Normandie',
-        'www.ibps.atlantique.creditmaritime.groupe.banquepopulaire.fr': 'Crédit Maritime Atlantique',
-        'www.ibps.sudouest.creditmaritime.groupe.banquepopulaire.fr': 'Crédit Maritime du Littoral du Sud-Ouest',
-        'www.ibps.lorrainechampagne.banquepopulaire.fr': 'Lorraine Champagne',
-        'www.ibps.massifcentral.banquepopulaire.fr': 'Massif central',
-        'www.ibps.mediterranee.banquepopulaire.fr': 'Méditerranée',
-        'www.ibps.nord.banquepopulaire.fr': 'Nord',
-        'www.ibps.occitane.banquepopulaire.fr': 'Occitane',
-        'www.ibps.ouest.banquepopulaire.fr': 'Ouest',
-        'www.ibps.rivesparis.banquepopulaire.fr': 'Rives de Paris',
-        'www.ibps.sud.banquepopulaire.fr': 'Sud',
-        'www.ibps.valdefrance.banquepopulaire.fr': 'Val de France',
+    #Could be updated just by checking https://www.icgauth.banquepopulaire.fr/ria/pas/configuration/config.json
+    cdetab_choices = {
+        '13807': 'BPGO',
+        '14707': 'BPALC',
+        '10907': 'BPACA',
+        '16807': 'BPAURA',
+        '10807': 'BPBFC',
+        '13507': 'BPN',
+        '16607': 'BPS',
+        '14607': 'BPMED',
+        '17807': 'BPOC',
+        '10207': 'BPRI',
+        '18707': 'BPVF'
     }
 
-    website_choices = OrderedDict([
+    cdetab_choices = OrderedDict([
         (k, '%s (%s)' % (v, k))
-        for k, v in sorted(website_choices.items(), key=lambda k_v: (k_v[1], k_v[0]))])
+        for k, v in sorted(cdetab_choices.items(), key=lambda k_v: (k_v[1], k_v[0]))])
 
     # Some regions have been renamed after bank cooptation
     region_aliases = {
-        'www.ibps.alsace.banquepopulaire.fr': 'www.ibps.bpalc.banquepopulaire.fr',
-        'www.ibps.lorrainechampagne.banquepopulaire.fr': 'www.ibps.bpalc.banquepopulaire.fr',
-        'www.ibps.loirelyonnais.banquepopulaire.fr': 'www.ibps.bpaura.banquepopulaire.fr',
-        'www.ibps.alpes.banquepopulaire.fr': 'www.ibps.bpaura.banquepopulaire.fr',
-        'www.ibps.massifcentral.banquepopulaire.fr': 'www.ibps.bpaura.banquepopulaire.fr',
-        # creditmaritime atlantique now redirecting to Banque Populaire Aquitaine Centre Atlantique (new website)
-        'www.ibps.atlantique.creditmaritime.groupe.banquepopulaire.fr': 'www.ibps.bpaca.banquepopulaire.fr',
-        # creditmaritime sudouest now redirecting to Banque Populaire Aquitaine Centre Atlantique (new website)
-        'www.ibps.sudouest.creditmaritime.groupe.banquepopulaire.fr': 'www.ibps.bpaca.banquepopulaire.fr',
-        # creditmaritime bretagnenormandie now redirecting to Banque Populaire Grand Ouest (old website)
-        'www.ibps.bretagnenormandie.cmm.groupe.banquepopulaire.fr': 'www.ibps.cmgo.creditmaritime.groupe.banquepopulaire.fr',
-        'www.ibps.atlantique.banquepopulaire.fr': 'www.ibps.bpgo.banquepopulaire.fr',
-        'www.ibps.ouest.banquepopulaire.fr': 'www.ibps.bpgo.banquepopulaire.fr',
+        'www.banquepopulaire.fr': 'www.banquepopulaire.fr',
     }
 
     CONFIG = BackendConfig(
-        Value('website', label='Région', choices=website_choices, aliases=region_aliases),
+        Value('cdetab', label='Région', choices=cdetab_choices),
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'[a-zA-Z0-9]+'),
         ValueBackendPassword('password', label='Mot de passe'),
         ValueTransient('code_sms', regexp=r'\d{8}'),
@@ -103,57 +80,59 @@ class BanquePopulaireModule(Module, CapBankWealth, CapContact, CapProfile, CapDo
     accepted_document_types = (DocumentTypes.STATEMENT,)
 
     def create_default_browser(self):
-        website = self.config['website'].get()
         return self.create_browser(
-            website,
+            "www.banquepopulaire.fr",
             self.config,
         )
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
 
+    def get_account(self, _id):
+        account = self.browser.get_account(_id)
+        #account.id = _id
+        ##Need to call https://www.rs-ex-ath-groupe.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews?productFamilyPFM=1,2,3,4,6,7,17,18&pfmCharacteristicsIndicator=true
+        ##In order to link in items/**/identificationid/augmentedSynthesisViewId/id=CPT10719166171 and items/**/identificationid/contractPfmId=67009
+        #account.__contractPfmId="67009"
+        
+        #account = self.browser.get_account(_id)
+        if account:
+            return account
+        else:
+            raise AccountNotFound()
+        
     def iter_history(self, account):
         return self.browser.iter_history(account)
 
     def iter_coming(self, account):
-        return self.browser.iter_history(account, coming=True)
+        return None
 
     def iter_investment(self, account):
-        return self.browser.iter_investments(account)
+        pass
 
     def iter_market_orders(self, account):
-        return self.browser.iter_market_orders(account)
+        pass
 
     def iter_contacts(self):
-        return self.browser.get_advisor()
+        pass
 
     def get_profile(self):
-        return self.browser.get_profile()
+        pass
 
     def iter_subscription(self):
-        return self.browser.iter_subscriptions()
+        pass
 
     def iter_documents(self, subscription):
-        if not isinstance(subscription, Subscription):
-            subscription = self.get_subscription(subscription)
-        return self.browser.iter_documents(subscription)
+        pass
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
-        subscription = self.get_subscription(subid)
-
-        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
+        pass
 
     def download_document(self, document):
-        if not isinstance(document, Document):
-            document = self.get_document(document)
-
-        return self.browser.download_document(document)
+        pass
 
     def iter_resources(self, objs, split_path):
         if Account in objs:
             self._restrict_level(split_path)
             return self.iter_accounts()
-        if Subscription in objs:
-            self._restrict_level(split_path)
-            return self.iter_subscription()
+

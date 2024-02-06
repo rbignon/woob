@@ -1,4 +1,4 @@
-# Copyright(C) 2012 Romain Bignon
+# Copyright(C) 2023 Etienne RABY
 #
 # This file is part of a woob module.
 #
@@ -14,8 +14,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-
-# flake8: compatible
 
 from .module import BanquePopulaireModule
 
