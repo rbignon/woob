@@ -21,17 +21,14 @@ from collections import OrderedDict
 
 from woob.capabilities.bank import Account, AccountNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.base import find_object
-from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
-from woob.capabilities.contact import CapContact
-from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
-    
+
 from .browser import BanquePopulaire
 
 __all__ = ['BanquePopulaireModule']
-                            
+
+
 class BanquePopulaireModule(Module, CapBankWealth):
     NAME = 'banquepopulaire'
     MAINTAINER = 'Etienne RABY'
@@ -41,7 +38,7 @@ class BanquePopulaireModule(Module, CapBankWealth):
     DESCRIPTION = 'Banque Populaire'
     LICENSE = 'LGPLv3+'
 
-    #Could be updated just by checking https://www.icgauth.banquepopulaire.fr/ria/pas/configuration/config.json
+#   Could be updated just by checking https://www.icgauth.banquepopulaire.fr/ria/pas/configuration/config.json
     cdetab_choices = {
         '13807': 'BPGO',
         '14707': 'BPALC',
@@ -53,7 +50,7 @@ class BanquePopulaireModule(Module, CapBankWealth):
         '14607': 'BPMED',
         '17807': 'BPOC',
         '10207': 'BPRI',
-        '18707': 'BPVF'
+        '18707': 'BPVF',
     }
 
     cdetab_choices = OrderedDict([
@@ -77,8 +74,6 @@ class BanquePopulaireModule(Module, CapBankWealth):
 
     BROWSER = BanquePopulaire
 
-    accepted_document_types = (DocumentTypes.STATEMENT,)
-
     def create_default_browser(self):
         return self.create_browser(
             "www.banquepopulaire.fr",
@@ -90,17 +85,11 @@ class BanquePopulaireModule(Module, CapBankWealth):
 
     def get_account(self, _id):
         account = self.browser.get_account(_id)
-        #account.id = _id
-        ##Need to call https://www.rs-ex-ath-groupe.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews?productFamilyPFM=1,2,3,4,6,7,17,18&pfmCharacteristicsIndicator=true
-        ##In order to link in items/**/identificationid/augmentedSynthesisViewId/id=CPT10719166171 and items/**/identificationid/contractPfmId=67009
-        #account.__contractPfmId="67009"
-        
-        #account = self.browser.get_account(_id)
         if account:
             return account
         else:
             raise AccountNotFound()
-        
+
     def iter_history(self, account):
         return self.browser.iter_history(account)
 
@@ -135,4 +124,3 @@ class BanquePopulaireModule(Module, CapBankWealth):
         if Account in objs:
             self._restrict_level(split_path)
             return self.iter_accounts()
-

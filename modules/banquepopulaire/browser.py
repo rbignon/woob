@@ -18,10 +18,8 @@
 # flake8: compatible
 
 import json
-
 from datetime import timedelta, datetime
 from functools import wraps
-from urllib.parse import parse_qs, urlparse
 from uuid import uuid4
 
 from woob.browser import URL, need_login
@@ -38,9 +36,6 @@ from woob.capabilities.bank import Transaction
 from woob.tools.date import now_as_utc
 from woob.tools.misc import polling_loop
 from woob_modules.caissedepargne.pages import VkImagePage
-
-#Ugly hack
-from woob.tools.storage import StandardStorage
 
 from .pages import (
     AppValidationPage,
@@ -108,10 +103,12 @@ def no_need_login(func):
 
     return wrapper
 
+
 class BanquePopulaireAccount(Account):
     def __init__(self):
         super().__init__()
         self.contractPfmId = None
+
 
 class BanquePopulaire(TwoFactorBrowser):
     HTTP_ADAPTER_CLASS = LowSecHTTPAdapter
@@ -143,8 +140,10 @@ class BanquePopulaire(TwoFactorBrowser):
     )
     app_validation = URL(r'https://www.icgauth.banquepopulaire.fr/dacsrest/WaitingCallbackHandler', AppValidationPage)
 
-    synthesis_views = URL(r'https://www.rs-ex-ath-groupe.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews', SynthesePage )
-    
+    synthesis_views = URL(
+        r'https://www.rs-ex-ath-groupe.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews',
+        SynthesePage)
+
     transactions = URL(r'https://www.rs-ex-ath-groupe.banquepopulaire.fr/pfm/user/v1.1/transactions', TransactionPage)
 
     error_page = URL(
@@ -216,7 +215,7 @@ class BanquePopulaire(TwoFactorBrowser):
             'term_id',
             'user_code',
             'access_token',
-            'access_token_expire'
+            'access_token_expire',
         )
 
     def deinit(self):
@@ -237,7 +236,7 @@ class BanquePopulaire(TwoFactorBrowser):
     def init_login(self):
         if self.isSSOBearerValid():
             return
-        
+
         if (
             self.twofa_logged_date and (
                 now_as_utc() > (self.twofa_logged_date + timedelta(minutes=self.TWOFA_DURATION))
@@ -421,10 +420,10 @@ class BanquePopulaire(TwoFactorBrowser):
             'snid': '678256',
             'cdetab': self.cdetab,
             'typ_srv': 'part',
-            "phase":"",
+            "phase": "",
             'term_id': self.term_id,
         }
-        
+
     def get_bpcesta_SSO(self):
         return {
             'cdetab': self.cdetab,
@@ -440,7 +439,7 @@ class BanquePopulaire(TwoFactorBrowser):
         """Same as in caissedepargne."""
         self.mfa_validation_data = self.page.get_authentication_method_info()
         self.mfa_validation_data['validation_unit_id'] = self.page.validation_unit_id
-        
+
     # need to try from the top in that case because this login is a long chain of redirections
     @retry(TemporaryBrowserUnavailable)
     def do_new_login(self):
@@ -476,7 +475,7 @@ class BanquePopulaire(TwoFactorBrowser):
                 'userRef': None,
                 'apidp': None,
                 'bpAttributeId': None,
-                'env': None
+                'env': None,
             },
             'id_token': {
                 'auth_time': {
@@ -507,11 +506,11 @@ class BanquePopulaire(TwoFactorBrowser):
         }
 
         self.authorize.go(params=params, method='POST', headers=headers)
-        
+
         headers = {
             'Accept': 'application/json, text/plain, */*',  # Mandatory, else you've got an HTML page.
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Referer': 'https://www.banquepopulaire.fr/se-connecter/identifier(redirect:authentifier)' #Mandatory if not, you have 430 error
+            'Referer': 'https://www.banquepopulaire.fr/se-connecter/identifier(redirect:authentifier)',  # Mandatory if not, you have 430 error
         }
         self.do_redirect('SAMLRequest', headers=headers)
         self.validation_id = self.page.get_validation_id()
@@ -687,10 +686,10 @@ class BanquePopulaire(TwoFactorBrowser):
         )
 
     def isSSOBearerValid(self):
-        if (self.access_token_expire == None):
+        if (self.access_token_expire is None):
             self.logger.debug('No valid token found in local storage')
             return False
-        
+
         expire_dt = datetime.strptime(self.access_token_expire, "%m/%d/%Y %H:%M:%S")
 
         current_dt = datetime.now()
@@ -702,7 +701,7 @@ class BanquePopulaire(TwoFactorBrowser):
 
         self.logger.debug('Valid token found in local storage, skip login')
         return True
-    
+
     def saveSSOBearer(self, token, expire):
         current_dt = datetime.now()
         expire_dt = current_dt + timedelta(seconds=int(expire))
@@ -717,36 +716,37 @@ class BanquePopulaire(TwoFactorBrowser):
         main_js_file = self.page.get_main_js_file_url()
         self.location(main_js_file)
         client_id = self.page.get_client_id()
-        
+
         data = {
             'grant_type': 'client_credentials',
             'client_id': self.page.get_user_info_client_id(),
-            'scope': 'readTypology readAgencyV2'
+            'scope': 'readTypology readAgencyV2',
         }
         self.info_tokens.go(data=data)
-        
+
         bpcesta = self.get_bpcesta_SSO()
         claims = {
-            'id_token':{
-                'cdetab':None,
-                'pro':None
+            'id_token': {
+                'cdetab': None,
+                'pro': None,
             },
-            'userinfo':{
-                'cdetab':None,
-                'authMethod':None,
-                'authLevel':None,
-                'dacsId':None,
-                'last_login':None,
-                'auth_time':None,
-                'opsId':None,
-                'appid':None,
-                'pro':None,
-                'userRef':None,
-                'apidp':None,
-                'bpAttributeId':None,
-                'env':None
-                }
-            }
+            'userinfo':
+            {
+                'cdetab': None,
+                'authMethod': None,
+                'authLevel': None,
+                'dacsId': None,
+                'last_login': None,
+                'auth_time': None,
+                'opsId': None,
+                'appid': None,
+                'pro': None,
+                'userRef': None,
+                'apidp': None,
+                'bpAttributeId': None,
+                'env': None,
+            },
+        }
         params = {
             'cdetab': self.cdetab,
             'client_id': client_id,
@@ -766,46 +766,46 @@ class BanquePopulaire(TwoFactorBrowser):
             'Referer': 'https://www.banquepopulaire.fr/',
         }
         self.authorize.go(params=params, method='POST', headers=headers)
-        
-        #Authorize response gave a SAML request in the payload
-        #Play it by "do_redirect" will give us a json with a samlResponse and the response consumer :
-        #{
-        #    "id":"blahblah",
-        #    "locale":"en",
-        #    "response":{
-        #        "status":"AUTHENTICATION_SUCCESS",
-        #        "saml2_post":{
-        #            "samlResponse":"a very hug lot of blah blah, probably in base64, but we don't really care",
-        #            "action":"https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume",
-        #            "method":"POST"
-        #        }
-        #    }
-        #}
+
+#       Authorize response gave a SAML request in the payload
+#       Play it by "do_redirect" will give us a json with a samlResponse and the response consumer :
+#       {
+#           "id":"blahblah",
+#           "locale":"en",
+#           "response":{
+#               "status":"AUTHENTICATION_SUCCESS",
+#               "saml2_post":{
+#                   "samlResponse":"a very hug lot of blah blah, probably in base64, but we don't really care",
+#                   "action":"https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume",
+#                   "method":"POST"
+#               }
+#           }
+#       }
         headers = {
             'Accept': 'application/json, text/plain, */*',  # Mandatory, else you've got an HTML page.
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Referer': 'https://www.banquepopulaire.fr/se-connecter/identifier(redirect:authentifier)' #Mandatory if not, you have 430 error
+            'Referer': 'https://www.banquepopulaire.fr/se-connecter/identifier(redirect:authentifier)',  # Mandatory if not, you have 430 error
         }
         self.do_redirect('SAMLRequest', headers=headers)
-        
-        #Last but not least, we have to call the v2/consume with the SAML Response and that will provide us the wanted Token in json: 
-        ###{
-        ###    "method" : "POST",
-        ###    "enctype" : "application/x-www-form-urlencoded",
-        ###    "action" : "https://www.banquepopulaire.fr/espace-client/implicit/callback",
-        ###    "parameters" : {
-        ###        "access_token" : "0Ylr9f5RxYGBQCAeOxh2....." 
+
+#       Last but not least, we have to call the v2/consume with the SAML Response and that will provide us the wanted Token in json:
+#       ##{
+#       ##    "method" : "POST",
+#       ##    "enctype" : "application/x-www-form-urlencoded",
+#       ##    "action" : "https://www.banquepopulaire.fr/espace-client/implicit/callback",
+#       ##    "parameters" : {
+#       ##        "access_token" : "0Ylr9f5RxYGBQCAeOxh2....."
         self.do_redirect('SAMLResponse', headers=headers)
 
-        ### Wonderfull in this json we have the acces_token mandatory to reach user data (like balances)
+#       ## Wonderfull in this json we have the acces_token mandatory to reach user data (like balances)
         self.saveSSOBearer(token=self.page.get_access_token(), expire=self.page.get_access_expire())
         self.access_token = self.page.get_access_token()
-    
+
     @retry(LoggedOut)
     @need_login
     def iter_accounts(self, get_iban=False):
         self.updateBearerForDataConsumptionIfNeeded()
-        
+
         headers = {
             'Accept': 'application/json, text/plain, */*',
             'Authorization': 'Bearer %s' % self.access_token,
@@ -816,26 +816,28 @@ class BanquePopulaire(TwoFactorBrowser):
             'Sec-Fetch-Mode': 'cors',
             'Sec-Fetch-Site': 'same-site',
         }
-        #This is a new API. I still don't know how is built the field productFamilyPFM=1,2,3,4,6,7,17,18.
-        #Let see with other users if they have the same IDs and, if necessary, how to dynamically retrieve it...
-        self.location('https://www.rs-ex-ath-groupe.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews?productFamilyPFM=1,2,3,4,6,7,17,18&pfmCharacteristicsIndicator=true', headers=headers)
+#       This is a new API. I still don't know how is built the field productFamilyPFM=1,2,3,4,6,7,17,18.
+#       Let see with other users if they have the same IDs and, if necessary, how to dynamically retrieve it...
+        self.location(
+            'https://www.rs-ex-ath-groupe.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews?productFamilyPFM=1,2,3,4,6,7,17,18&pfmCharacteristicsIndicator=true',
+            headers=headers)
         raw_json_data = self.page.get_raw_json()
         accounts_data = json.loads(raw_json_data)
         accounts = []
-        
+
         if "items" in accounts_data:
             for element in accounts_data["items"]:
                 account = BanquePopulaireAccount()
-                if element is not None and "identification" in element :
+                if element is not None and "identification" in element:
                     identification = element["identification"]
-                    if identification is not None and "augmentedSynthesisViewId" in identification :
+                    if identification is not None and "augmentedSynthesisViewId" in identification:
                         augmentedSynthesisViewId = identification["augmentedSynthesisViewId"]
-                        if augmentedSynthesisViewId is not None and "id" in augmentedSynthesisViewId :
+                        if augmentedSynthesisViewId is not None and "id" in augmentedSynthesisViewId:
                             account.id = augmentedSynthesisViewId["id"]
                         else:
                             self.logger.warning("Miss /items/**/identification/augmentedSynthesisViewId/id key in one account provided by the bank : entry skipped")
                             continue
-                        if "contractPfmId" in identification :
+                        if "contractPfmId" in identification:
                             account.contractPfmId = identification["contractPfmId"]
                     else:
                         self.logger.warning("Miss /items/**/identification/augmentedSynthesisViewId key in one account provided by the bank : entry skipped")
@@ -843,10 +845,11 @@ class BanquePopulaire(TwoFactorBrowser):
                 else:
                     self.logger.warning("Miss /items/**/identification/ key in one account provided by the bank : entry skipped")
                     continue
-                    
-                if element is not None and "identity" in element :
+
+                if element is not None and "identity" in element:
                     identity = element["identity"]
-                    if identity is not None and "bankingClientLabel" in identity and "balance" in identity and "contractLabel" in identity:
+                    if (identity is not None and "bankingClientLabel" in identity and "balance" in identity
+                            and "contractLabel" in identity):
                         account.label = ('%s %s' % (identity["contractLabel"], identity["bankingClientLabel"])).strip()
 
                         balance = identity["balance"]
@@ -856,7 +859,7 @@ class BanquePopulaire(TwoFactorBrowser):
                         else:
                             self.logger.warning("Miss /items/**/identity/balance/value or /items/**/identity/balance/currencyCode key in one account provided by the bank : entry skipped")
                             continue
-                        
+
                         account._prev_debit = None
                         account._next_debit = None
                         account._params = None
@@ -868,12 +871,12 @@ class BanquePopulaire(TwoFactorBrowser):
                         self.logger.warning("Miss /items/**/identity/bankingClientLabel or /items/**/identity/balance or /items/**/identity/contractLabel key in one account provided by the bank : entry skipped")
                 else:
                     self.logger.warning("Miss /items/**/identity key in one account provided by the bank : entry skipped")
-                    
+
                 accounts.append(account)
 
         else:
             self.logger.warning("Miss /items/ in accounts provided by the bank : couldn't do anything...")
-        #No Yield here, no more account to process
+#       No Yield here, no more account to process
         return accounts
 
     @retry(LoggedOut)
@@ -881,27 +884,25 @@ class BanquePopulaire(TwoFactorBrowser):
     def get_account(self, id):
         return find_object(self.iter_accounts(get_iban=False), id=id)
 
-
     @retry(LoggedOut)
     @need_login
-    def iter_history(self, account:BanquePopulaireAccount, coming=False):
+    def iter_history(self, account: BanquePopulaireAccount, coming=False):
         self.updateBearerForDataConsumptionIfNeeded()
         pagination_start = 0
         pagination_count = 25
         current_skip_value = pagination_start
-        
+
         transactions = []
-        
+
         while True:
             params = {
                 'businessType': 'UserProfile',
-                'accountIds' : '67009',
-                'accountIds' : str(account.contractPfmId),
+                'accountIds': str(account.contractPfmId),
                 'include': 'Merchant',
                 'parsedData': '[{"key":"transactionGranularityCode","value":"IN"},{"key":"transactionGranularityCode","value":"ST"}]',
-                'skip' : current_skip_value,
-                'take' : pagination_count,
-                'includeDisabledAccounts':'true',
+                'skip': current_skip_value,
+                'take': pagination_count,
+                'includeDisabledAccounts': 'true',
                 'ascendingOrder': 'false',
                 'orderBy': 'ByParsedData',
                 'parsedDataNameToOrderBy': 'accountingDate',
@@ -912,35 +913,35 @@ class BanquePopulaire(TwoFactorBrowser):
                 'Authorization': 'Bearer %s' % self.access_token,
                 'Origin': 'https://www.banquepopulaire.fr',
                 'Referer': 'https://www.banquepopulaire.fr/',
-                'Host':	'www.rs-ex-ath-groupe.banquepopulaire.fr',
+                'Host': 'www.rs-ex-ath-groupe.banquepopulaire.fr',
                 'Sec-Fetch-Dest': 'empty',
                 'Sec-Fetch-Mode': 'cors',
-                'Sec-Fetch-Site': 'same-site'
+                'Sec-Fetch-Site': 'same-site',
             }
-            
+
             self.transactions.go(params=params, method='GET', headers=headers)
             raw_json_data = self.page.get_raw_json()
             transactions_data = json.loads(raw_json_data)
-        
+
             for element in transactions_data['data']:
                 transaction = Transaction()
                 transaction.date = datetime.strptime(element['date'], '%Y-%m-%dT%H:%M:%S')
                 transaction.label = element['text']
-                if "parsedData" in element :
+                if "parsedData" in element:
                     parsedData = element["parsedData"]
-                    if "label1" in parsedData :
-                        transaction.label += " - " 
+                    if "label1" in parsedData:
+                        transaction.label += " - "
                         transaction.label += parsedData["label1"]
-                    if "label2" in parsedData :
-                        transaction.label += " - " 
+                    if "label2" in parsedData:
+                        transaction.label += " - "
                         transaction.label += parsedData["label2"]
-                    if "label3" in parsedData :
-                        transaction.label += " - " 
+                    if "label3" in parsedData:
+                        transaction.label += " - "
                         transaction.label += parsedData["label3"]
-                
+
                 transaction.amount = element['amount']
-                ###transaction.category  ####Must be done with a correlation with json content of www.rs-ex-ath-groupe.banquepopulaire.fr/pfm/user/v1.1/categories
-                
+#               transaction.category  ####Must be done with a correlation with json content of www.rs-ex-ath-groupe.banquepopulaire.fr/pfm/user/v1.1/categories
+
                 transactions.append(transaction)
                 yield transaction
 

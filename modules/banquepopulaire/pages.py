@@ -37,11 +37,14 @@ from woob_modules.caissedepargne.pages import (
     LoginTokensPage as _LoginTokensPage,
 )
 
+
 class LoggedOut(Exception):
     pass
 
+
 class BrokenPageError(Exception):
     pass
+
 
 class BasePage(object):
     ENCODING = 'iso-8859-15'
@@ -65,6 +68,7 @@ class BasePage(object):
 
         return False
 
+
 class MyHTMLPage(BasePage, HTMLPage):
     def build_doc(self, data, *args, **kwargs):
         # XXX FUCKING HACK BECAUSE BANQUE POPULAIRE ARE NASTY AND INCLUDE NULL
@@ -72,9 +76,11 @@ class MyHTMLPage(BasePage, HTMLPage):
         data = data.replace(b'\x00', b'')
         return super(MyHTMLPage, self).build_doc(data, *args, **kwargs)
 
+
 class RedirectErrorPage(HTMLPage):
     def is_unavailable(self):
         return bool(CleanText('//p[contains(text(), "momentanément indisponible")]')(self.doc))
+
 
 class AuthorizeErrorPage(HTMLPage):
     def is_here(self):
@@ -82,6 +88,7 @@ class AuthorizeErrorPage(HTMLPage):
 
     def get_error_message(self):
         return CleanText('//p[contains(text(), "momentanément indisponible")]')(self.doc)
+
 
 class ErrorPage(LoggedPage, MyHTMLPage):
     def on_load(self):
@@ -103,6 +110,7 @@ class ErrorPage(LoggedPage, MyHTMLPage):
             if m:
                 return m.group(1)
 
+
 class UnavailablePage(LoggedPage, MyHTMLPage):
     def on_load(self):
         h1 = CleanText('//h1[1]')(self.doc)
@@ -117,9 +125,11 @@ class UnavailablePage(LoggedPage, MyHTMLPage):
             raise BrowserUnavailable()
         self.browser.location(a)
 
+
 class NewLoginPage(HTMLPage):
     def get_main_js_file_url(self):
         return Attr('//script[contains(@src, "main.")]', 'src')(self.doc)
+
 
 class JsFilePage(_JsFilePage):
     def get_client_id(self):
@@ -127,21 +137,27 @@ class JsFilePage(_JsFilePage):
 
     def get_user_info_client_id(self):
         return Regexp(pattern=r'anonymous:{clientId:"([^"]+)"').filter(self.text)
-    
+
+
 class JsFilePageEspaceClient(_JsFilePage):
     def get_client_id(self):
-        return Regexp(pattern=r'pasConfig:{authenticatedGatewayThreeLeggedAuthenticationAsUrl:Pe,clientId:"([^"]+)"').filter(self.text)
+        return Regexp(
+            pattern=r'pasConfig:{authenticatedGatewayThreeLeggedAuthenticationAsUrl:Pe,clientId:"([^"]+)"').filter(
+                self.text)
 
     def get_user_info_client_id(self):
         return Regexp(pattern=r'{clientCredentialConfig:{clientId:"([^"]+)"').filter(self.text)
 
+
 class SynthesePage(JsonPage):
     def get_raw_json(self):
         return self.text
-    
+
+
 class TransactionPage(JsonPage):
     def get_raw_json(self):
         return self.text
+
 
 class AuthorizePage(JsonPage):
     def build_doc(self, content):
@@ -159,18 +175,18 @@ class AuthorizePage(JsonPage):
     def get_payload(self):
         return Dict('parameters/SAMLRequest')(self.doc)
 
-class LoginTokensPage(_LoginTokensPage):
-    #def get_expires_in(self):
-    #    return Dict('parameters/expires_in')(self.doc)
 
+class LoginTokensPage(_LoginTokensPage):
     def get_access_token(self):
         return Dict('parameters/access_token', default=None)(self.doc)
-    
+
     def get_access_expire(self):
         return Dict('parameters/expires_in', default=None)(self.doc)
 
+
 class InfoTokensPage(JsonPage):
     pass
+
 
 class AuthenticationMethodPage(_AuthenticationMethodPage):
     def get_next_url(self):
@@ -246,6 +262,7 @@ class AppValidationPage(XMLPage):
     def get_status(self):
         return CleanText('//response/status')(self.doc)
 
+
 class LoginPage(MyHTMLPage):
     def on_load(self):
         h1 = CleanText('//h1[1]')(self.doc)
@@ -256,6 +273,7 @@ class LoginPage(MyHTMLPage):
 
         if not self.browser.no_login:
             raise LoggedOut()
+
 
 class BPOVirtKeyboard(SplitKeyboard):
     char_to_hash = {
@@ -298,6 +316,7 @@ class BPOVirtKeyboard(SplitKeyboard):
             code_to_filedata[img_item['value']] = b.getvalue()
         super(BPOVirtKeyboard, self).__init__(code_to_filedata)
 
+
 class HomePage(LoggedPage, MyHTMLPage):
     # Sometimes, the page is empty but nothing is scrapped on it.
     def build_doc(self, data, *args, **kwargs):
@@ -305,8 +324,10 @@ class HomePage(LoggedPage, MyHTMLPage):
             return None
         return super(MyHTMLPage, self).build_doc(data, *args, **kwargs)
 
+
 class AccountsPage(LoggedPage, MyHTMLPage):
     pass
+
 
 class LastConnectPage(LoggedPage, RawPage):
     pass
