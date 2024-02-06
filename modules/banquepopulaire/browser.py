@@ -110,7 +110,6 @@ class BanquePopulaireAccount(Account):
         self._contractPfmId = None
 
 
-
 class BanquePopulaire(TwoFactorBrowser):
     HTTP_ADAPTER_CLASS = LowSecHTTPAdapter
 
