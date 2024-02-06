@@ -107,7 +107,8 @@ def no_need_login(func):
 class BanquePopulaireAccount(Account):
     def __init__(self):
         super().__init__()
-        self.contractPfmId = None
+        self._contractPfmId = None
+
 
 
 class BanquePopulaire(TwoFactorBrowser):
@@ -838,7 +839,7 @@ class BanquePopulaire(TwoFactorBrowser):
                             self.logger.warning("Miss /items/**/identification/augmentedSynthesisViewId/id key in one account provided by the bank : entry skipped")
                             continue
                         if "contractPfmId" in identification:
-                            account.contractPfmId = identification["contractPfmId"]
+                            account._contractPfmId = identification["contractPfmId"]
                     else:
                         self.logger.warning("Miss /items/**/identification/augmentedSynthesisViewId key in one account provided by the bank : entry skipped")
                         continue
@@ -897,7 +898,7 @@ class BanquePopulaire(TwoFactorBrowser):
         while True:
             params = {
                 'businessType': 'UserProfile',
-                'accountIds': str(account.contractPfmId),
+                'accountIds': str(account._contractPfmId),
                 'include': 'Merchant',
                 'parsedData': '[{"key":"transactionGranularityCode","value":"IN"},{"key":"transactionGranularityCode","value":"ST"}]',
                 'skip': current_skip_value,
