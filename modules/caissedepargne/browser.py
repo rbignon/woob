@@ -1245,7 +1245,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             return []
 
         if account.type in (Account.TYPE_PEA, Account.TYPE_MARKET) and not account._is_cash_pea:
-            if account.label == 'CPT PARTS SOCIALES':
+            if 'PARTS SOCIALES' in account.label:
                 # TODO Investigate how to retrieve history
                 self.logger.warning('"CPT PARTS SOCIALES" account to investigate')
                 return []
