@@ -111,8 +111,6 @@ class BanquePopulaireAccount(Account):
 
 
 class BanquePopulaire(TwoFactorBrowser):
-    HTTP_ADAPTER_CLASS = LowSecHTTPAdapter
-
     TWOFA_DURATION = 90 * 24 * 60
 
     first_login_page = URL(r'/$')
