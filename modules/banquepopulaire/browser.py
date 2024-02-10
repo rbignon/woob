@@ -23,7 +23,6 @@ from functools import wraps
 from uuid import uuid4
 
 from woob.browser import URL, need_login
-from woob.browser.adapters import LowSecHTTPAdapter
 from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bank import Account

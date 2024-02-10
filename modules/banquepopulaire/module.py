@@ -40,30 +40,26 @@ class BanquePopulaireModule(Module, CapBankWealth):
 
 #   Could be updated just by checking https://www.icgauth.banquepopulaire.fr/ria/pas/configuration/config.json
     cdetab_choices = {
-        '13807': 'BPGO',
-        '14707': 'BPALC',
-        '10907': 'BPACA',
-        '16807': 'BPAURA',
-        '10807': 'BPBFC',
-        '13507': 'BPN',
-        '16607': 'BPS',
-        '14607': 'BPMED',
-        '17807': 'BPOC',
-        '10207': 'BPRI',
-        '18707': 'BPVF',
+        '13807': 'Grand Ouest',
+        '14707': 'Alsace Lorraine Champagne',
+        '10907': 'Aquitaine Centre Atlantique',
+        '16807': 'Auvergne Rhone Alpes',
+        '10807': 'Bourgogne Franche Comté',
+        '13507': 'Nord',
+        '16607': 'Sud',
+        '14607': 'Mediterranée',
+        '17807': 'Occitane',
+        '10207': 'Rives de Paris',
+        '18707': 'Val de France',
+        'Padding': 'ZZ Do not use that entry',  # Ugly hack to avoid "v.tiny = True" in console.py:ask()
     }
 
     cdetab_choices = OrderedDict([
-        (k, '%s (%s)' % (v, k))
+        (k, '%s ( %s )' % (v, k))
         for k, v in sorted(cdetab_choices.items(), key=lambda k_v: (k_v[1], k_v[0]))])
 
-    # Some regions have been renamed after bank cooptation
-    region_aliases = {
-        'www.banquepopulaire.fr': 'www.banquepopulaire.fr',
-    }
-
     CONFIG = BackendConfig(
-        Value('cdetab', label='Région', choices=cdetab_choices),
+        Value('cdetab', label='Région', choices=cdetab_choices, regexp=r'\d{5}'),
         ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'[a-zA-Z0-9]+'),
         ValueBackendPassword('password', label='Mot de passe'),
         ValueTransient('code_sms', regexp=r'\d{8}'),
