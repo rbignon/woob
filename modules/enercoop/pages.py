@@ -153,8 +153,6 @@ class ProfilePage(LoggedMixin, HTMLPage):
 
 
 class StatsPage(LoggedMixin, HTMLPage):
-    ABSOLUTE_LINKS = True
-
     @pagination
     def iter_sensor_history(self, sensor):
         yield from self._history_on_page(sensor)
