@@ -889,8 +889,6 @@ class BanquePopulaire(TwoFactorBrowser):
         pagination_count = 25
         current_skip_value = pagination_start
 
-        transactions = []
-
         while True:
             params = {
                 'businessType': 'UserProfile',
@@ -920,6 +918,10 @@ class BanquePopulaire(TwoFactorBrowser):
             raw_json_data = self.page.get_raw_json()
             transactions_data = json.loads(raw_json_data)
 
+#           If nothing in transaction_data, we reached the end of the operations in this account
+            if not transactions_data['data']:
+                return
+
             for element in transactions_data['data']:
                 transaction = Transaction()
                 transaction.date = datetime.strptime(element['date'], '%Y-%m-%dT%H:%M:%S')
@@ -939,11 +941,9 @@ class BanquePopulaire(TwoFactorBrowser):
                 transaction.amount = element['amount']
 #               transaction.category  ####Must be done with a correlation with json content of www.rs-ex-ath-groupe.banquepopulaire.fr/pfm/user/v1.1/categories
 
-                transactions.append(transaction)
                 yield transaction
 
             current_skip_value += pagination_count
-        return transactions
 
 
 class iter_retry(object):
