@@ -832,15 +832,15 @@ class BanquePopulaire(TwoFactorBrowser):
                         if augmentedSynthesisViewId is not None and "id" in augmentedSynthesisViewId:
                             account.id = augmentedSynthesisViewId["id"]
                         else:
-                            self.logger.warning("Miss /items/**/identification/augmentedSynthesisViewId/id key in one account provided by the bank : entry skipped")
+                            self.logger.debug("Miss /items/**/identification/augmentedSynthesisViewId/id key in one account provided by the bank : entry skipped")
                             continue
                         if "contractPfmId" in identification:
                             account._contractPfmId = identification["contractPfmId"]
                     else:
-                        self.logger.warning("Miss /items/**/identification/augmentedSynthesisViewId key in one account provided by the bank : entry skipped")
+                        self.logger.debug("Miss /items/**/identification/augmentedSynthesisViewId key in one account provided by the bank : entry skipped")
                         continue
                 else:
-                    self.logger.warning("Miss /items/**/identification/ key in one account provided by the bank : entry skipped")
+                    self.logger.debug("Miss /items/**/identification/ key in one account provided by the bank : entry skipped")
                     continue
 
                 if element is not None and "identity" in element:
@@ -854,7 +854,7 @@ class BanquePopulaire(TwoFactorBrowser):
                             account.balance = balance["value"]
                             account.currency = balance["currencyCode"]
                         else:
-                            self.logger.warning("Miss /items/**/identity/balance/value or /items/**/identity/balance/currencyCode key in one account provided by the bank : entry skipped")
+                            self.logger.debug("Miss /items/**/identity/balance/value or /items/**/identity/balance/currencyCode key in one account provided by the bank : entry skipped")
                             continue
 
                         account._prev_debit = None

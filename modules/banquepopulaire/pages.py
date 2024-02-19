@@ -142,7 +142,7 @@ class JsFilePage(_JsFilePage):
 class JsFilePageEspaceClient(_JsFilePage):
     def get_client_id(self):
         return Regexp(
-            pattern=r'pasConfig:{authenticatedGatewayThreeLeggedAuthenticationAsUrl:Pe,clientId:"([^"]+)"').filter(
+            pattern=r'onfig:{authenticatedGatewayThreeLeggedAuthenticationAsUrl:[a-zA-Z]{2},clientId:"([^"]+)"').filter(
                 self.text)
 
     def get_user_info_client_id(self):
