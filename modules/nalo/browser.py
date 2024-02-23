@@ -26,7 +26,7 @@ from .pages import LoginPage, AccountsPage, AccountPage, InvestPage
 
 
 class NaloBrowser(LoginBrowser):
-    BASEURL = 'https://nalo.fr'
+    BASEURL = 'https://api.nalo.fr'
 
     login = URL(r'/api/v1/login', LoginPage)
     accounts = URL(r'/api/v1/projects/mine/without-details', AccountsPage)
