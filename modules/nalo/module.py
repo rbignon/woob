@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 
 from .browser import NaloBrowser
@@ -40,10 +40,11 @@ class NaloModule(Module, CapBankWealth):
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='E-mail', masked=False, regexp='.+@.+'),
         ValueBackendPassword('password', label='Mot de passe'),
+        ValueTransient('captcha_response', label='Captcha Response'),
     )
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config)
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

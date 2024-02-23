@@ -19,16 +19,20 @@
 
 from decimal import Decimal
 
-from woob.browser.pages import LoggedPage, JsonPage
+from woob.browser.pages import LoggedPage, JsonPage, PartialHTMLPage
 from woob.browser.elements import method, DictElement, ItemElement
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import Eval
+from woob.browser.filters.standard import Eval, Regexp, CleanText
 from woob.capabilities.bank import Account
 
 
 def float_to_decimal(v):
     return Decimal(str(v))
 
+
+class HtmlLoginFragment(PartialHTMLPage):
+    def get_recaptcha_site_key(self):
+        return Regexp(CleanText('//script[contains(text(), "sitekey")]/text()'), r'"sitekey" *: *"([^"]*)"')(self.doc)
 
 class LoginPage(JsonPage):
     def get_token(self):
