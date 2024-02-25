@@ -284,9 +284,9 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     STATE_DURATION = 10
 
     # documents
-    documents = URL(r'/icd/cbo-edocument/data/get-all-prestations-edocument-authsec.json', DocumentsPage)
+    documents = URL(r'/icd/epe/data/get-all-releves-authsec.json', DocumentsPage)
     pdf_page = URL(
-        r'/icd/cbo-edocument/pdf/rce-authsec.pdf\?b64e200_prestationIdTechnique=(?P<id_tech>.*)&b64e200_refTechnique=(?P<ref_tech>.*)'
+        r'/icd/epe/pdf/edocument-authsec.pdf\?b64e200_prestationIdTechnique=(?P<id_tech>.*)&b64e200_refTechnique=(?P<ref_tech>.*)'
     )
     rib_pdf_page = URL(r'/com/icd-web/cbo/pdf/rib-authsec.pdf', RibPdfPage)
 

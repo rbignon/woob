@@ -35,11 +35,11 @@ def parse_from_timestamp(date, **kwargs):
 
 class DocumentsPage(LoggedPage, JsonPage):
     def has_documents(self):
-        return bool(self.doc['donnees']['eDocumentDto']['listCleReleveDto'])
+        return bool(self.doc['donnees']['edocumentDto']['listCleReleveDto'])
 
     @method
     class iter_documents(DictElement):
-        item_xpath = 'donnees/eDocumentDto/listCleReleveDto'
+        item_xpath = 'donnees/edocumentDto/listCleReleveDto'
 
         class item(ItemElement):
             klass = Document
