@@ -17,19 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
-
 from woob.capabilities.bill import (
     DocumentCategory, DocumentTypes, CapDocument,
     Document, DocumentNotFound, Subscription
 )
 from woob.capabilities.base import find_object, NotAvailable
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, ValueTransient
-
-from woob.capabilities.profile import CapProfile
-from woob.capabilities.account import CapAccount
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import ScalewayBrowser
 
@@ -37,17 +31,15 @@ from .browser import ScalewayBrowser
 __all__ = ['ScalewayModule']
 
 
-class ScalewayModule(Module, CapDocument, CapProfile, CapAccount):
+class ScalewayModule(Module, CapDocument):
     NAME = 'scaleway'
     DESCRIPTION = 'Scaleway'
-    MAINTAINER = 'Jeremy Demange'
+    MAINTAINER = 'Jeremy Demange + Ludovic LANGE'
     EMAIL = 'jeremy@scrapfast.io'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.1'
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Email de connexion', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('otp'),
+        Value('access_key', label='Access Key'),
+        ValueBackendPassword('secret_key', label='Secret Key'),
     )
 
     BROWSER = ScalewayBrowser
@@ -57,9 +49,6 @@ class ScalewayModule(Module, CapDocument, CapProfile, CapAccount):
 
     def create_default_browser(self):
         return self.create_browser(self.config)
-
-    def get_profile(self):
-        return self.browser.get_profile()
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
