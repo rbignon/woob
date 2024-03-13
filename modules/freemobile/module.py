@@ -37,9 +37,8 @@ __all__ = ['FreeMobileModule']
 
 class FreeMobileModule(Module, CapDocument, CapProfile, CapMessages, CapMessagesPost):
     NAME = 'freemobile'
-    MAINTAINER = u'Florent Fourcot'
-    EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.6'
+    MAINTAINER = u'Ludovic LANGE'
+    EMAIL = 'llange@users.noreply.github.com'
     LICENSE = 'LGPLv3+'
     DESCRIPTION = 'Free Mobile website'
     CONFIG = BackendConfig(
