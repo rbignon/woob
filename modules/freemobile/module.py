@@ -27,7 +27,7 @@ from woob.capabilities.profile import CapProfile
 from woob.capabilities.messages import CantSendMessage, CapMessages, CapMessagesPost
 from woob.capabilities.base import find_object
 from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
+from woob.tools.value import ValueBackendPassword, ValueTransient, ValueBool
 
 from .browser import Freemobile
 
@@ -51,7 +51,14 @@ class FreeMobileModule(Module, CapDocument, CapProfile, CapMessages, CapMessages
         ValueBackendPassword(
             'password',
             label='Password'
-        )
+        ),
+        ValueBool(
+            'force_twofa_type_email',
+            label='Force 2FA to be sent by email',
+            default=False,
+        ),
+        ValueTransient('request_information'),
+        ValueTransient('otp_code', regexp=r'\d{6}'),
     )
     BROWSER = Freemobile
 
@@ -60,6 +67,7 @@ class FreeMobileModule(Module, CapDocument, CapProfile, CapMessages, CapMessages
 
     def create_default_browser(self):
         return self.create_browser(
+            self.config,
             self.config['login'].get(),
             self.config['password'].get()
         )

@@ -19,12 +19,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import json
 import re
 
 from dateutil.relativedelta import relativedelta
 
 from woob.browser.filters.html import AbsoluteLink, Link
-from woob.browser.pages import HTMLPage, LoggedPage, RawPage
+from woob.browser.filters.json import Dict
+from woob.browser.pages import HTMLPage, LoggedPage, RawPage, JsonPage
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.profile import Profile
@@ -51,16 +53,21 @@ class FormatDate(Filter):
 
 
 class LoginPage(HTMLPage):
-    is_here = '//form[@class="form-login"]'
+    def is_here(self):
+        if 'text/html' not in self.response.headers.get('content-type', ''):
+            return False
+        if not self.doc.xpath('//input[@id="login-username"]'):
+            return False
+        return True
 
     def login(self, login, password):
-        form = self.get_form('//form[@class="form-login"]')
-        form['login-ident'] = login
-        form['login-pwd'] = password
+        form = self.get_form('//form')
+        form['login-username'] = login
+        form['login-password'] = password
         form.submit()
 
     def get_error(self):
-        return CleanText('//div[has-class("flash")]')(self.doc)
+        return CleanText('//div[has-class("override:text-status-error")]')(self.doc)
 
 
 class MainPage(LoggedPage, HTMLPage):
@@ -221,3 +228,117 @@ class OptionsPage(LoggedPage, HTMLPage):
             return api_key[0].text.strip()
         else:
             return None
+
+
+class CsrfPage(JsonPage):
+    def get_token(self):
+        return Dict('csrfToken')(self.doc)
+
+
+class ProvidersPage(JsonPage):
+    def get_auth_provider(self):
+        return Dict('credentials')(self.doc)
+
+
+class CredentialsPage(JsonPage):
+    def get_error(self):
+        return QueryValue(Dict('url'), 'error', default=None)(self.doc)
+
+
+class SessionPage(JsonPage):
+    def get_token(self):
+        return Dict('user/token')(self.doc)
+
+    def get_2fa_type(self):
+        return Dict('user/type2FA', default=None)(self.doc)
+
+    def get_otp_id(self):
+        return Dict('user/otpId', default=None)(self.doc)
+
+
+class RSCPage(JsonPage):
+    """
+    This is a React Server Component partial page.
+
+    The content of the page is a list of (JSON) representation of a
+    tree of components/html or metadata such as required imports,
+    etc... that needs to be loaded / updated.
+    Each JSON line is preceded by an identifier and ':'.
+    Sometimes, the ':' can be followed by another character (often 'I').
+
+    We extract this into a dict of (rowid, JSON line).
+
+    The identifier (rowid) is related to the page structure, and so is stable
+    (as long as the page structure is stable), thus we can query it to
+    retrieve information about which component needs to be updated.
+
+    Here, it's mainly used to get the error messages sent by the server.
+    """
+    def is_here(self):
+        if 'text/x-component' not in self.response.headers.get('content-type', ''):
+            return False
+        return True
+
+    def build_doc(self, text: str) -> Dict:
+        forbidden_extra_chars = re.compile(r'\{|\[|n|\d')
+        result = {}
+        for line in text.splitlines():
+            if line.strip() == '':
+                continue
+            (rowID, sep, row) = line.partition(':')
+            mtch = forbidden_extra_chars.match(row[0])
+            if mtch is None:
+                rowID += row[0]
+                row = row[1:]
+            result[rowID] = json.loads(row)
+        return result
+
+
+class LoginRSCPage(RSCPage):
+    """
+    The React Server Component update of the main Login page.
+
+    Of interest is the entry named `2:`, which seems to contain an error message:
+    ```
+    0:[...]
+    ...
+    1:null
+    ...
+    2:["$","$L4",null,{"header":"Bienvenue","description":"Saisissez les identifiants de votre Espace Abonné mobile","errorMessage":"Suite à plusieurs tentatives, votre compte a été temporairement bloqué. Veuillez réessayer dans 13 minutes.","................]
+    ```
+
+    So:
+    * Dict('2') retrives this JSON line,
+    * out_row[3] retrieves the 3rd element of the JSON array - a dict object `{"header":"Bienvenue","description":"Saisissez les identifiants.....`
+    * this dict object has an entry `errorMessage` which is either `$undefined` or a message.
+    """
+    def get_error(self):
+        result = None
+        our_row = Dict('2')(self.doc)
+        if our_row:
+            try:
+                result = our_row[3].get('errorMessage', None)
+            except IndexError:
+                pass
+        return result
+
+
+class OtpPage(RSCPage):
+    """
+    The React Server Component update of the Otp Email Page.
+
+    Of interest is the entry named `1:`, which is the new OtpIp
+    ```
+    0:["$@1",["ABCDEF0123456789ABCDEF",null]]
+    1:12345678
+    ```
+
+    So:
+    * Dict('1') retrives this JSON line.
+    """
+    def get_otp_id(self):
+        result = None
+        our_row = Dict('1')(self.doc)
+        if our_row:
+            result = our_row
+        return result
