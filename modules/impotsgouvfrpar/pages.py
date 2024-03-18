@@ -176,7 +176,7 @@ class DocumentsPage(LoggedPage, HTMLPage):
             obj_url = Format('/enp/Affichage_Document_PDF?idEnsua=%s', Field('_idEnsua'))
 
             def parse(self, el):
-                label_ct = CleanText('./div[has-class("texte")][has-class("visible-xs")]')
+                label_ct = CleanText('./div[contains(@class, "texte")][has-class("hidden-xs")]')
                 date = Regexp(label_ct, r'le ([\w\/]+?),', default=NotAvailable)(self)
                 self.env['label'] = label_ct(self)
 
