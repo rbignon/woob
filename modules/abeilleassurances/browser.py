@@ -21,6 +21,7 @@ from woob.browser import LoginBrowser, need_login
 from woob.browser.url import URL, BrowserParamURL
 from woob.capabilities.bank import Account
 from woob.capabilities.base import empty
+from woob.capabilities.bill import Subscription
 from woob.exceptions import (
     ActionNeeded,
     ActionType,
@@ -34,6 +35,7 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from .pages import (
     AccountsPage,
     ActionNeededPage,
+    AllDocumentsPage,
     HistoryPage,
     InvestDetailPage,
     InvestmentPage,
@@ -72,6 +74,7 @@ class AbeilleAssurancesBrowser(LoginBrowser):
         r"/(?P<browser_subsite>[^/]+)/web/\?src=/tunnel",
         ActionNeededPage,
     )
+    all_documents = BrowserParamURL(r"/(?P<browser_subsite>[^/]+)/contact/message/myDocuments", AllDocumentsPage)
     invest_detail = BrowserParamURL(
         r"https://fonds-ext2.abeille-assurances.fr/sheet/fund/(?P<isin>[A-Z0-9]+)", InvestDetailPage
     )
@@ -138,6 +141,18 @@ class AbeilleAssurancesBrowser(LoginBrowser):
                 yield account
             except BrowserHTTPError:
                 self.logger.warning("Could not get the account details: account %s will be skipped", account.id)
+
+    def iter_subscriptions(self):
+        for account in self.iter_accounts():
+            sub = Subscription()
+            sub.id = account.id
+            sub.label = account.label
+            yield sub
+
+    @need_login
+    def iter_documents(self, subscription):
+        self.all_documents.go()
+        return self.page.iter_documents(subid=subscription.id)
 
     @need_login
     def iter_investment(self, account):

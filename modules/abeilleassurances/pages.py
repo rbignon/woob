@@ -17,6 +17,7 @@
 
 # flake8: compatible
 
+import hashlib
 from urllib.parse import urljoin
 
 from woob.browser.elements import ItemElement, ListElement, method
@@ -27,6 +28,7 @@ from woob.browser.filters.standard import (
     Coalesce,
     Currency,
     Date,
+    Env,
     Eval,
     Field,
     Format,
@@ -39,8 +41,10 @@ from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.bill import Document, DocumentTypes
 from woob.exceptions import ActionNeeded, ActionType, BrowserUnavailable
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.date import parse_french_date
 
 
 class BasePage(HTMLPage):
@@ -181,6 +185,11 @@ class InvestmentPage(LoggedPage, HTMLPage):
             ),
             Date(
                 CleanText("""//h3[contains(text(), "Date d’effet fiscale")]/following-sibling::p"""),
+                dayfirst=True,
+                default=NotAvailable,
+            ),
+            Date(
+                CleanText("""//h3[contains(text(), "Date d'effet")]/following-sibling::p"""),
                 dayfirst=True,
                 default=NotAvailable,
             ),
@@ -366,3 +375,60 @@ class InvestPerformancePage(LoggedPage, HTMLPage):
 
 class MaintenancePage(HTMLPage):
     pass
+
+
+class AllDocumentsPage(LoggedPage, HTMLPage):
+
+    # Each row of the table contains up to two documents, which is why I preferred
+    # to handle the table with a `ListElement` - instead of a `TableElement`.
+    @method
+    class iter_documents(ListElement):
+        item_xpath = '//form[@id="sortantsId"]//table/tbody//td//a[boolean(@data-document-url) and boolean(@data-document-number)]'
+
+        def store(self, obj):
+            # This code enables obj_id to be unique when there
+            # are several docs with the exact same id.
+            # there is an id in the document url but it is
+            # inconsistent
+            _id = obj.id
+            n = 1
+            while _id in self.objects:
+                n += 1
+                _id = f"{obj.id}-{n}"
+            obj.id = _id
+            self.objects[obj.id] = obj
+            return obj
+
+        class item(ItemElement):
+            klass = Document
+
+            def condition(self):
+                return Env("subid")(self) == CleanText("./ancestor::tr/td[2]")(self)
+
+            def obj_id(self):
+                """id for the document.
+
+                the field `data-document-number` is always different
+                from one request to the other.
+                In that case, we use the hash(sha1) of the document label + date to have a fixed id.
+                """
+                unique_string = "{}{}".format(Field("label")(self), Field("_date_string")(self))
+                hash_label = hashlib.sha1(unique_string.encode("utf-8")).hexdigest()
+                return "{}_{}".format(Env("subid")(self), hash_label)
+
+            obj__document_url = CleanText("./@data-document-url")
+            obj__document_number = CleanText("./@data-document-number")
+            obj__date_string = CleanText("./ancestor::tr/td[1]")
+            obj_date = Date(Field("_date_string"), parse_func=parse_french_date)
+            obj_type = DocumentTypes.NOTICE
+            obj_format = "pdf"
+            obj_url = Format("%s%s", Field("_document_url"), Field("_document_number"))
+
+            # When we have 2 documents per row, the second document is an annex of the
+            # first document. Same date, same label, but we append ` (annexe)` after the label.
+            def obj_label(self):
+                result = CleanText("./ancestor::tr/th[1]")(self)
+                name = CleanText("./ancestor::td/@data-th")(self)
+                if name.startswith("Annexe"):
+                    result += " (annexe)"
+                return result
