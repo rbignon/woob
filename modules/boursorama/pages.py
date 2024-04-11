@@ -531,6 +531,8 @@ class LoanPage(LoggedPage, HTMLPage):
 
         obj_type = Account.TYPE_LOAN
 
+        obj_number = obj_id
+
     @method
     class get_loan(ItemElement):
 
@@ -548,6 +550,7 @@ class LoanPage(LoggedPage, HTMLPage):
                 default=NotAvailable
             ),
         )
+        obj_number = obj_id
         obj_label = CleanText(r'//span[@class="account-edit-label"]/span[1]')
         obj_currency = CleanCurrency('//p[contains(text(), "Solde impayé")]/span')
         # Loan rate seems to be formatted as '1,123 %' or as '1.123 %' depending on connections
@@ -712,6 +715,8 @@ class HistoryPage(LoggedPage, HTMLPage):
             )(self)
             assert not empty(account_id), "Could not fetch account ID, xpath was not found."
             return account_id
+
+        obj_number = obj_id
 
         def obj__key(self):
             if self.obj.type == Account.TYPE_CARD:
