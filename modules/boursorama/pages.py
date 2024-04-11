@@ -40,6 +40,7 @@ from woob.capabilities.bank import Account as BaseAccount
 from woob.capabilities.bank import (
     AccountNotFound, AccountOwnership, AddRecipientBankError, Emitter, Loan,
     Recipient, Transfer, TransferBankError, TransferDateType, TransferInvalidAmount,
+    AccountOwnerType,
 )
 from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
@@ -363,13 +364,14 @@ ACCOUNT_TYPES = {
     'crowdfunding immobilier': Account.TYPE_REAL_ESTATE,
 }
 
+ACCOUNT_OWNERS = {
+    'accounts-pro': AccountOwnerType.ORGANIZATION,
+    'accounts-perso': AccountOwnerType.PRIVATE,
+}
 
-class AccountsPage(LoggedPage, HTMLPage):
+
+class AccountsPage(LoggedPage, PartialHTMLPage):
     ENCODING = 'utf-8'
-
-    def is_here(self):
-        # This id appears when there are no accounts (pro and pp)
-        return not self.doc.xpath('//div[contains(@id, "alert-random")]')
 
     ACCOUNTS_OWNERSHIP = {
         'Comptes de mes enfants': AccountOwnership.ATTORNEY,
@@ -379,100 +381,117 @@ class AccountsPage(LoggedPage, HTMLPage):
 
     @method
     class iter_accounts(ListElement):
-        item_xpath = '//table[@class="table table--accounts"]/tr[has-class("table__line--account") and count(descendant::td) > 1 and @data-line-account-href]'
+        item_xpath = '//div[@data-sidebar-accounts-category]'
 
-        class item(ItemElement):
-            klass = Account
+        def parse(self, el):
+            account_type = CleanText(
+                Attr(
+                    "//div[@data-sidebar-accounts-category]",
+                    "data-segmented-control-refresh",
+                )
+            )(self)
+            self.env["account_type"] = account_type
 
-            def condition(self):
-                # Ignore externally aggregated accounts and insurances:
-                # We need to use 'assurance/' as a filter because using 'assurance' would filter out life insurance accounts
-                return not self.is_external() and 'assurance/' not in Field('url')(self)
+        class iter_items(ListElement):
+            item_xpath = './/li[@data-brs-filterable][descendant::span[@data-brs-list-item-label][@data-account-label]]'
 
-            obj_label = CleanText('.//a[has-class("account--name")] | .//div[has-class("account--name")]')
-            obj_currency = FrenchTransaction.Currency('.//a[has-class("account--balance")]')
+            class item(ItemElement):
+                klass = Account
 
-            obj__holder = None
+                def condition(self):
+                    # Ignore externally aggregated accounts and insurances:
+                    # We need to use 'assurance/' as a filter because using 'assurance' would filter out life insurance accounts
+                    return not self.is_external() and 'assurance/' not in Field('url')(self)
 
-            obj__amount = CleanDecimal.French('.//a[has-class("account--balance")]')
+                obj_label = CleanText('.//span[has-class("c-info-box__account-label")]')
+                obj_currency = FrenchTransaction.Currency('.//span[has-class("c-info-box__account-balance")]')
 
-            def obj_balance(self):
-                if Field('type')(self) != Account.TYPE_CARD:
-                    balance = Field('_amount')(self)
-                    return balance
-                return Decimal('0')
+                obj__holder = None
 
-            def obj_coming(self):
-                # report deferred expenses in the coming attribute
-                if Field('type')(self) == Account.TYPE_CARD:
-                    return Field('_amount')(self)
+                obj__amount = CleanDecimal.French('.//span[has-class("c-info-box__account-balance")]')
 
-            def obj_type(self):
-                # card url is /compte/cav/xxx/carte/yyy so reverse to match "carte" before "cav"
-                for word in Field('url')(self).lower().split('/')[::-1]:
-                    # card url can contains creditcardkey as query params
-                    # 'mouvements-a-venir?selection=deferred&creditcardkey=xxxxx'
-                    if not word.find('creditcardkey') == -1:
-                        return Account.TYPE_CARD
-                    account_type = ACCOUNT_TYPES.get(word)
+                obj_owner_type = MapIn(Lower(Env('account_type')), ACCOUNT_OWNERS, default=NotAvailable)
+
+                obj_bank_name = "BoursoBank"
+
+                def obj_balance(self):
+                    if Field('type')(self) != Account.TYPE_CARD:
+                        balance = Field('_amount')(self)
+                        return balance
+                    return Decimal('0')
+
+                def obj_coming(self):
+                    # report deferred expenses in the coming attribute
+                    if Field('type')(self) == Account.TYPE_CARD:
+                        return Field('_amount')(self)
+
+                def obj_type(self):
+                    # card url is /compte/cav/xxx/carte/yyy so reverse to match "carte" before "cav"
+                    for word in Field('url')(self).lower().split('/')[::-1]:
+                        # card url can contains creditcardkey as query params
+                        # 'mouvements-a-venir?selection=deferred&creditcardkey=xxxxx'
+                        if not word.find('creditcardkey') == -1:
+                            return Account.TYPE_CARD
+                        account_type = ACCOUNT_TYPES.get(word)
+                        if account_type:
+                            return account_type
+
+                    account_type = MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
                     if account_type:
                         return account_type
 
-                account_type = MapIn(Lower(Field('label')), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)(self)
-                if account_type:
-                    return account_type
+                    for word in Field('label')(self).replace('_', ' ').lower().split():
+                        account_type = ACCOUNT_TYPES.get(word)
+                        if account_type:
+                            return account_type
 
-                for word in Field('label')(self).replace('_', ' ').lower().split():
-                    account_type = ACCOUNT_TYPES.get(word)
+                    category = CleanText('./preceding-sibling::tr[has-class("list--accounts--master")]//h4')(self)
+                    account_type = ACCOUNT_TYPES.get(category.lower())
                     if account_type:
                         return account_type
 
-                category = CleanText('./preceding-sibling::tr[has-class("list--accounts--master")]//h4')(self)
-                account_type = ACCOUNT_TYPES.get(category.lower())
-                if account_type:
-                    return account_type
+                    return Account.TYPE_UNKNOWN
 
-                return Account.TYPE_UNKNOWN
+                def obj_id(self):
+                    account_type = Field('type')(self)
+                    if account_type == Account.TYPE_CARD:
+                        # When card is opposed it still appears on accounts page with a dead link and so, no id. Skip it.
+                        if Attr('.//a[has-class("account--name")]', 'href')(self) == '#':
+                            raise SkipItem()
+                        return self.obj__idparts()[1]
 
-            def obj_id(self):
-                account_type = Field('type')(self)
-                if account_type == Account.TYPE_CARD:
-                    # When card is opposed it still appears on accounts page with a dead link and so, no id. Skip it.
-                    if Attr('.//a[has-class("account--name")]', 'href')(self) == '#':
-                        raise SkipItem()
-                    return self.obj__idparts()[1]
-
-            def obj_ownership(self):
-                ownership = Coalesce(
-                    MapIn(
-                        CleanText('../tr[contains(@class, "list--accounts--master")]//h4/text()'),
-                        self.page.ACCOUNTS_OWNERSHIP,
+                def obj_ownership(self):
+                    ownership = Coalesce(
+                        MapIn(
+                            CleanText('../tr[contains(@class, "list--accounts--master")]//h4/text()'),
+                            self.page.ACCOUNTS_OWNERSHIP,
+                            default=NotAvailable
+                        ),
+                        MapIn(
+                            Lower(Field('label')),
+                            self.page.ACCOUNTS_OWNERSHIP,
+                            default=NotAvailable
+                        ),
                         default=NotAvailable
-                    ),
-                    MapIn(
-                        Lower(Field('label')),
-                        self.page.ACCOUNTS_OWNERSHIP,
-                        default=NotAvailable
-                    ),
-                    default=NotAvailable
-                )(self)
+                    )(self)
 
-                return ownership
+                    return ownership
 
-            def obj_url(self):
-                link = Attr('.//a[has-class("account--name")] | .//a[2] | .//div/a', 'href', default=NotAvailable)(self)
-                return urljoin(self.page.url, link)
+                def obj_url(self):
+                    link = Attr('.//a[has-class("c-info-box__link-wrapper")]', 'href', default=NotAvailable)(self)
+                    return urljoin(self.page.url, link)
 
-            def is_external(self):
-                return '/budget/' in Field('url')(self) or '/crypto/' in Field('url')(self)
+                def is_external(self):
+                    return '/budget/' in Field('url')(self) or '/crypto/' in Field('url')(self)
 
-            def obj__idparts(self):
-                return re.findall(r'[a-z\d]{32}', Field('url')(self))
+                def obj__idparts(self):
+                    return re.findall(r'[a-z\d]{32}', Field('url')(self))
 
-            def obj__webid(self):
-                parts = self.obj__idparts()
-                if parts:
-                    return parts[0]
+                def obj__webid(self):
+                    # return Attr('.//span[@data-account-label]', 'data-account-label', default=NotAvailable)(self)
+                    parts = self.obj__idparts()
+                    if parts:
+                        return parts[0]
 
 
 class CATPage(LoggedPage, HTMLPage):

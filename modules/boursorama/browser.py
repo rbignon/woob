@@ -35,7 +35,7 @@ from woob.browser.pages import FormNotFound
 from woob.browser.retry import RetryLoginBrowser, login_method, retry_on_logout
 from woob.browser.url import URL
 from woob.capabilities.bank import (
-    Account, AccountNotFound, AccountOwnership, AccountOwnerType, AddRecipientBankError,
+    Account, AccountNotFound, AccountOwnership, AddRecipientBankError,
     AddRecipientStep, AddRecipientTimeout, Emitter, NoAccountsException, Rate,
     RecipientNotFound, TransactionType, TransferBankError, TransferDateType,
     TransferError, TransferInvalidAmount, TransferInvalidEmitter, TransferInvalidLabel,
@@ -112,9 +112,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         OtpPage
     )
     minor = URL(r'/connexion/mineur', MinorPage)
-    accounts = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsPage)
+    accounts = URL(r'/produits/mes-produits', AccountsPage)
     accounts_error = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsErrorPage)
-    pro_accounts = URL(r'/dashboard/comptes-professionnels\?_hinclude=1', AccountsPage)
     no_account = URL(
         r'/dashboard/comptes\?_hinclude=300000',
         r'/dashboard/comptes-professionnels\?_hinclude=1',
@@ -637,16 +636,6 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             loans_list = []
             # Check that there is at least one account for this user
             has_account = False
-            self.pro_accounts.go()
-            if self.pro_accounts.is_here():
-                accounts_list.extend(self.get_filled_accounts(pro=True))
-                has_account = True
-            elif self.error.is_here():
-                self.check_security_action_needed(self.page.get_error_message())
-            else:
-                # We dont want to let has_account=False if we landed on an unknown page
-                # it has to be the no_accounts page
-                assert self.no_account.is_here()
 
             try:
                 self.accounts.go()
@@ -676,7 +665,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     # a Loan object and remove the corresponding Account:
                     self.location(account.url)
                     loan = self.page.get_loan()
-                    loan.url = account.url
+                    for attr in ['url', 'owner_type', 'bank_name']:
+                        setattr(loan, attr, getattr(account, attr))
                     loans_list.append(loan)
                     accounts_list.remove(account)
             accounts_list.extend(loans_list)
@@ -729,16 +719,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.ownership_guesser(accounts_list)
         return accounts_list
 
-    def get_filled_accounts(self, pro=False):
+    def get_filled_accounts(self):
         accounts_list = []
-        if pro:
-            owner_type = AccountOwnerType.ORGANIZATION
-        else:
-            owner_type = AccountOwnerType.PRIVATE
         # request for life insurance sometime failed, so we retry once just in case
         retrying_location = retry(ReadTimeout, tries=2)(self.location)
         for account in self.page.iter_accounts():
-            account.owner_type = owner_type
             try:
                 # With failed life insurance request where we wait about 59 seconds to have a response from boursorama
                 # The response is supposed to be 1 or 2s max. At first we set the TO at 5s but some user report that it
