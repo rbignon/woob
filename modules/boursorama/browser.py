@@ -114,6 +114,7 @@ from .pages import (
     NewTransferUnexpectedStep,
     NewTransferWizard,
     NoAccountPage,
+    OperationDetailPage,
     OtpCheckPage,
     OtpPage,
     PasswordPage,
@@ -195,6 +196,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     saving_pep = URL(r"/compte/epargne/pep", PEPPage)
     saving_cat = URL(r"/compte/epargne/cat", CATPage)
     incident = URL(r"/compte/cav/(?P<webid>.*)/mes-incidents.*", IncidentPage)
+    operation_detail = URL(
+        r"https://api.boursobank.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/bank/account/operation/(?P<resource_id>.*)",
+        OperationDetailPage,
+    )
 
     # transfer
     transfer_list = URL(
@@ -873,6 +878,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if self.otp_location("%s/mouvements" % account.url.rstrip("/"), params=params) is None:
             return
 
+        json_config = self.page.get_json_config()
         for transaction in self.page.iter_history():
             # Useful for authorization transactions that can be found up to a few weeks
             if coming and transaction.coming and transaction.date > (date.today() - relativedelta(days=30)):
@@ -884,6 +890,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 # at the first history transaction.
                 break
             elif not coming and not transaction.coming:
+                if transaction.id:
+                    operation_detail_page = self.operation_detail.open(
+                        user_hash=json_config["USER_HASH"], resource_id=transaction.id
+                    )
+                    operation_detail_page.fill_transaction(transaction)
                 yield transaction
 
     def get_html_past_card_transactions(self, account):

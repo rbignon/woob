@@ -231,7 +231,18 @@ class BoursoramaVirtKeyboard:
         return self.codesep.join(self.fingerprints[self.symbols[digit]] for digit in string)
 
 
-class AuthenticationFormPage(HTMLPage):
+class HasConfigurationPage(HTMLPage):
+    def get_json_config(self):
+        raw_json = Regexp(
+            CleanText('//script[contains(text(), "BRS_CONFIG = {")]'),
+            r"BRS_CONFIG = ({.+?});",
+        )(self.doc)
+        raw_config = json.loads(raw_json)
+
+        return raw_config
+
+
+class AuthenticationFormPage(HasConfigurationPage):
     def get_form_token(self):
         return CleanText('//input[@id="form__token"]/@value')(self.doc)
 
@@ -262,9 +273,7 @@ class AuthenticationPage(AuthenticationFormPage):
         ).groupdict()
 
     def get_api_config(self):
-        json_config = Regexp(CleanText('//script[contains(text(), "json config")]'), r"CONFIG = (.*}); /")(self.doc)
-
-        return json.loads(json_config)
+        return self.get_json_config()
 
     def get_otp_number(self):
         return Regexp(
@@ -702,7 +711,7 @@ def otp_pagination(func):
     return inner
 
 
-class HistoryPage(LoggedPage, HTMLPage):
+class HistoryPage(LoggedPage, HasConfigurationPage):
     """
     be carefull : `transaction_klass` is used in another page
     of an another module which is an abstract of this page
@@ -1965,11 +1974,7 @@ class TransferOtpPage(LoggedPage, HTMLPage):
         )
 
     def get_api_config(self):
-        raw_json = Regexp(
-            CleanText('//script[contains(text(), "BRS_CONFIG = {")]'),
-            r"BRS_CONFIG = ({.+?});",
-        )(self.doc)
-        raw_config = json.loads(raw_json)
+        raw_config = self.get_json_config()
 
         return {
             "baseurl": "https://%s%s"
@@ -2336,3 +2341,32 @@ class IdentityChooserPage(LoggedPage, HTMLPage):
             obj_id = Regexp(Link("."), r"\/connexion\/changer-identite\/(.+)")
             obj_label = CleanText(".")
             obj_link = Link(".")
+
+
+class OperationDetailPage(LoggedPage, JsonPage):
+    @method
+    class fill_transaction(ItemElement):
+        def obj_url(self):
+            return self.page.url
+
+        obj_coming = False
+
+        def obj_vdate(self):
+            dates = Dict("operation/dates")(self)
+            vdate = None
+            for dt in dates:
+                typ = dt["type"]
+                if typ == "value_date":
+                    vdate = Date().filter(dt["date"])
+                    break
+            return vdate
+
+        def obj_raw(self):
+            infos = Dict("operation/additionalInformations")(self)
+            raw = None
+            for info in infos:
+                id = info["id"]
+                if id == "additional_label":
+                    raw = CleanText().filter(info["value"])
+                    break
+            return raw
