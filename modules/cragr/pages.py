@@ -36,7 +36,7 @@ from woob.capabilities.contact import Advisor
 from woob.browser.elements import DictElement, ListElement, ItemElement, method
 from woob.browser.filters.standard import (
     CleanText, CleanDecimal, Currency as CleanCurrency, Format, Field, Map, Eval, Env,
-    Regexp, Date, Coalesce, MapIn, Lower,
+    Regexp, Date, Coalesce, MapIn, Lower, Upper,
 )
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.javascript import JSVar
@@ -533,7 +533,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 # Ignore insurances (plus they all have identical IDs)
                 # Ignore some credits not displayed on the website
                 return (
-                    CleanText(Dict('familleProduit/libelle', default=''))(self) not in self.IGNORED_ACCOUNT_FAMILIES
+                    Upper(Dict('familleProduit/libelle', default=''))(self) not in self.IGNORED_ACCOUNT_FAMILIES
                     and 'non affiche' not in CleanText(Dict('sousFamilleProduit/libelle', default=''))(self)
                     and 'Inactif' not in CleanText(Dict('libelleSituationContrat', default=''))(self)
                 )
