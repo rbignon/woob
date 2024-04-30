@@ -182,6 +182,10 @@ class StatsPage(LoggedMixin, HTMLPage):
         for unit in units:
             date_builder[unit] = int(self.params.get(unit, 1))
 
+        if 'mixed_cadrans' in yvalues:
+            yvalues = yvalues['mixed_cadrans']
+        elif 'puissance_max' in yvalues:
+            yvalues = yvalues['puissance_max']
         for x, y in reversed(list(zip(xvalues, yvalues))):
             date_builder.update(x)
             measure_date = datetime.datetime(**date_builder)
@@ -237,7 +241,7 @@ class HourlyPage(StatsPage):
             (h, m) = map(int, v.split(':'))
             xnew.append({"hour": h, "minute": m})
 
-        ynew = yvalues
+        ynew = yvalues['mixed_cadrans']
 
         assert len(xnew) == len(ynew)
 
