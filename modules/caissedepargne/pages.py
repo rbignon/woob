@@ -102,7 +102,7 @@ class JsFilePage(RawPage):
         return Regexp(pattern=r'\("nonce","([a-z0-9]+)"\)').filter(self.text)
 
     def get_snid(self, bank):
-        snid_dict = Regexp(pattern=r'const t=(\{BCP.*?\})\},', default=NotAvailable).filter(self.text)
+        snid_dict = Regexp(pattern=r'const e=(\{BCP.*?\})\},', default=NotAvailable).filter(self.text)
         assert snid_dict, 'Could not find SNIDs in main JS, check if it has been updated'
 
         # dict is formatted like a JS dict, keys aren't quoted, must be
