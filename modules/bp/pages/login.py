@@ -19,12 +19,13 @@
 
 import re
 
-from woob.browser.filters.standard import CleanText, Lower
-from woob.browser.pages import HTMLPage, LoggedPage
+from woob.browser.filters.standard import CleanText, Lower, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
 from woob.exceptions import (
     ActionNeeded, ActionType, BrowserIncorrectPassword,
-    BrowserUnavailable, NoAccountsException,
+    BrowserUnavailable, ParseError,
 )
+from woob.capabilities.bank import NoAccountsException
 
 from .base import MyHTMLPage
 
@@ -70,7 +71,28 @@ class PostLoginPage(HTMLPage):
         return CleanText('//h2[@id="title"]')(self.doc)
 
 
+class LienJavascript(HTMLPage):
+
+    def is_here(self):
+        try:
+            Regexp(
+                CleanText('//html/head/script[@type="text/javascript"]'),
+                r'^top.location.replace\(..*.\);$')(self.doc)
+            return True
+        except ParseError:
+            return False
+
+    def on_load(self):
+        if self.is_here():
+            url = Regexp(
+                CleanText('//script[@type="text/javascript"]'),
+                r'top.location.replace\(.(.*).\)')(self.doc)
+            self.browser.location(url)
+
+
 class repositionnerCheminCourant(LoggedPage, MyHTMLPage):
+    is_here = True
+
     def on_load(self):
         super().on_load()
         response = self.browser.open("https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/securite/authentification/initialiser-identif.ea")
@@ -102,9 +124,11 @@ class Initident(LoggedPage, MyHTMLPage):
 
 
 class CheckPassword(LoggedPage, MyHTMLPage):
+    is_here = True
+
     def on_load(self):
         MyHTMLPage.on_load(self)
-        self.browser.location("https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/comptesCommun/synthese_assurancesEtComptes/init-synthese.ea")
+        self.browser.location("https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/securite/authentification/retourDSP2-identif.ea")
 
 
 class BadLoginPage(MyHTMLPage):
@@ -124,19 +148,21 @@ class TwoFAPage(MyHTMLPage):
             self.browser.login_without_2fa()
 
     def get_auth_method(self):
+
         status_message = CleanText('//div[contains(@id, "DSP2") and @class="mtm"]')(self.doc)
+
         if re.search(
                 'avez pas de solution d’authentification forte'
                 + '|une authentification forte est désormais nécessaire'
                 + "|avez pas encore activé votre service gratuit d'authentification forte"
                 + '|Cette validation vous sera ensuite demandée tous les 90 jours'
-                + '|authentification forte n’a pas encore été activée'
-                + '|accès à votre Espace Client Internet requiert une authentification forte',
+                + '|authentification forte n’a pas encore été activée',
                 status_message
         ):
             return 'no2fa'
         elif re.search(
                 'Une authentification forte via Certicode Plus vous'
+                + '|Cette étape supplémentaire est obligatoire pour accéder à votre Espace Client Internet.'
                 + '|vous rendre sur l’application mobile La Banque Postale',
                 status_message
         ):
@@ -189,7 +215,12 @@ class TwoFAPage(MyHTMLPage):
         raise AssertionError('Unhandled login message: "%s"' % status_message)
 
 
+class Polling2FA(JsonPage):
+    pass
+
+
 class Validated2FAPage(MyHTMLPage):
+    is_here = True
     pass
 
 

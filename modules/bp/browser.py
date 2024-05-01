@@ -29,7 +29,7 @@ from requests.exceptions import HTTPError
 from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.adapters import LowSecHTTPAdapter
 from woob.browser.browsers import StatesMixin
-from woob.browser.exceptions import BrowserHTTPNotFound, ServerError
+from woob.browser.exceptions import ServerError
 from woob.capabilities.bank import (
     Account, AccountOwnership, AccountOwnerType, AddRecipientBankError,
     AddRecipientStep, Loan, Recipient, RecipientInvalidOTP, TransferBankError,
@@ -66,7 +66,7 @@ from .pages.accountlist import (
     UserTransactionIDPage,
 )
 from .pages.base import IncludedUnavailablePage, UselessPage
-from .pages.login import NoTerminalPage, PostLoginPage
+from .pages.login import NoTerminalPage, PostLoginPage, LienJavascript, Polling2FA
 from .pages.mandate import MandateAccountsList, MandateLife, MandateMarket, PreMandate, PreMandateBis
 from .pages.pro import (
     Detect2FAPage, DownloadRib, ProAccountHistory, ProAccountsList, RedirectAfterVKPage,
@@ -88,6 +88,13 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
     login_image = URL(r'.*wsost/OstBrokerWeb/loginform\?imgid=', UselessPage)
     login_page = URL(r'.*wsost/OstBrokerWeb/loginform.*', LoginPage)
+    lien_javascript = URL(
+        r'.*authentification/repositionnerCheminCourant-identif.ea',
+        r'.*/securite/authentification/verifierPresenceCompteOK-identif.ea',
+        r'.*/securite/authentification/retourDSP2-identif.ea',
+        r'voscomptes/canalXHTML/securite/authentification/retourDSP2-identif.ea',
+        LienJavascript
+    )
     repositionner_chemin_courant = URL(
         r'.*authentification/repositionnerCheminCourant-identif.ea',
         repositionnerCheminCourant
@@ -95,7 +102,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
     init_ident = URL(r'.*authentification/initialiser-identif.ea', Initident)
     check_password = URL(
         r'.*authentification/verifierMotDePasse-identif.ea',
-        r'/securite/authentification/verifierPresenceCompteOK-identif.ea',
+        r'.*/securite/authentification/verifierPresenceCompteOK-identif.ea',
         r'.*//voscomptes/identification/motdepasse.jsp',
         CheckPassword
     )
@@ -111,14 +118,23 @@ class BPBrowser(LoginBrowser, StatesMixin):
         TwoFAPage
     )
     validated_2fa_page = URL(
-        r'voscomptes/canalXHTML/securite/gestionAuthentificationForte/../../securite/authentification/retourDSP2-identif.ea',
         r'voscomptes/canalXHTML/securite/authentification/retourDSP2-identif.ea',
+        r'voscomptes/canalXHTML/securite/gestionAuthentificationForte/../../securite/authentification/retourDSP2-identif.ea',
         Validated2FAPage
     )
     decoupled_page = URL(
         r'/voscomptes/canalXHTML/securite/gestionAuthentificationForte/validationTerminal-gestionAuthentificationForte.ea',
         DecoupledPage
     )
+    polling_page = URL(
+        '/voscomptes/canalXHTML/securite/gestionAuthentificationForte/validationOperation-gestionAuthentificationForte.ea',
+        Polling2FA
+    )
+    polling_MPIN_page = URL(
+        '/voscomptes/canalXHTML/securisation/mpin/validerOperation-securisationMPIN.ea',
+        Polling2FA
+    )
+
     sms_page = URL(
         r'/voscomptes/canalXHTML/securite/gestionAuthentificationForte/authenticateCerticode-gestionAuthentificationForte.ea',
         SmsPage
@@ -496,6 +512,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             raise BrowserUserBanned()
 
     def do_login(self):
+
         self.code = self.config['code'].get()
         if self.resume:
             return self.handle_polling()
@@ -504,20 +521,18 @@ class BPBrowser(LoginBrowser, StatesMixin):
 
         self.login_without_2fa()
 
-        try:
-            self.auth_page.go()
-        except BrowserHTTPNotFound:
-            # Instability of the website. We can try do_login again without 2fa request
-            self.login_without_2fa()
-
         if self.auth_page.is_here():
             auth_method = self.page.get_auth_method()
 
-            if self.request_information is None and auth_method != 'no2fa':
-                # We don't want to raise this exception if 2FA is absent
-                raise NeedInteractiveFor2FA()
-
             if auth_method == 'cer+':
+                # We try to request the validated 2fa page
+                self.validated_2fa_page.go()
+                # if it leads to afficheSyntheseCCP-synthese_ccp.ea, we are in.
+                if self.par_accounts_checking.is_here():
+                    return
+                else:
+                    self.logger.warning("The bp module should now trigger an authentication challenge on your cell phone, but this part has never been tested (2024-05-02)")
+
                 # We force here the first device present
                 self.decoupled_page.go(params={'deviceSelected': '0'})
                 if self.no_terminal.is_here() and self.page.has_no_terminal():
@@ -525,7 +540,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
                         locale="fr-FR", message="Veuillez associer votre téléphone à votre compte bancaire pour réaliser l'authentification forte",
                         action_type=ActionType.ENABLE_MFA,
                     )
-                raise AppValidation(self.page.get_decoupled_message())
+                self.handle_polling()
 
             elif auth_method == 'cer':
                 self.location('/voscomptes/canalXHTML/securite/gestionAuthentificationForte/authenticateCerticode-gestionAuthentificationForte.ea')
@@ -540,17 +555,21 @@ class BPBrowser(LoginBrowser, StatesMixin):
                     action_type=ActionType.ENABLE_MFA,
                 )
 
+            elif self.request_information is None and auth_method != 'no2fa':
+                # We don't want to raise this exception if 2FA is absent
+                raise NeedInteractiveFor2FA()
+
         # If we are here, we don't need 2FA, we are logged
 
-    def do_polling(self, polling_url):
+    def do_polling(self, url):
         timeout = time.time() + 300.00
         while time.time() < timeout:
-            polling = self.location(polling_url, allow_redirects=False)
-            if polling.status_code == 302:
+            réponse = url.open()
+            if not isinstance(réponse, Polling2FA):
                 # Session expired.
                 raise AppValidationExpired()
 
-            result = polling.json()['statutOperation']
+            result = réponse.get('statutOperation')
             if result == '1':
                 # Waiting for PSU validation
                 time.sleep(5)
@@ -568,11 +587,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             raise AppValidationExpired()
 
     def handle_polling(self):
-        polling_url = self.absurl(
-            '/voscomptes/canalXHTML/securite/gestionAuthentificationForte/validationOperation-gestionAuthentificationForte.ea',
-            base=True
-        )
-        self.do_polling(polling_url=polling_url)
+        self.do_polling(url=self.polling_page)
         self.location(self.absurl(
             '/voscomptes/canalXHTML/securite/gestionAuthentificationForte/finalisation-gestionAuthentificationForte.ea',
             base=True
@@ -1069,11 +1084,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
         return True
 
     def end_with_polling(self, obj):
-        polling_url = self.absurl(
-            '/voscomptes/canalXHTML/securisation/mpin/validerOperation-securisationMPIN.ea',
-            base=True
-        )
-        self.do_polling(polling_url=polling_url)
+        self.do_polling(url=self.polling_MPIN_page)
         self.location(self.absurl(
             '/voscomptes/canalXHTML/securisation/mpin/operationSucces-securisationMPIN.ea',
             base=True
