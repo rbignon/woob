@@ -21,7 +21,6 @@ from woob.browser import URL, need_login
 from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bill.documents import sorted_documents
 from woob_modules.franceconnect.browser import FranceConnectBrowser
-from woob_modules.franceconnect.pages import ImpotsLoginAccessPage, ImpotsLoginAELPage, ImpotsGetContextPage
 
 from .pages import (
     ProfilePage, DocumentsPage, ThirdPartyDocPage, NoDocumentPage,
@@ -34,9 +33,6 @@ class ImpotsParBrowser(FranceConnectBrowser):
     PARENT = 'franceconnect'
 
     authorize = URL(r'https://app.franceconnect.gouv.fr/api/v1/authorize', FCAuthorizePage)
-    impot_login_page = URL(r'/LoginAccess', ImpotsLoginAccessPage)
-    impot_login_ael = URL(r'/LoginAEL', ImpotsLoginAELPage)
-    impot_get_context = URL(r'/GetContexte', ImpotsGetContextPage)
     home = URL(
         r"/monprofil-webapp/connexion",
         r"/enp/accueilensupres.do",
@@ -93,6 +89,9 @@ class ImpotsParBrowser(FranceConnectBrowser):
         # 1) GET /LoginAccess (LoginAccessPage)
         self.impot_login_page.go()
         self.login_impots(fc_redirection=False)
+
+        self.home.go()
+
         if not self.page.logged:
             raise BrowserIncorrectPassword(bad_fields=['password'])
 

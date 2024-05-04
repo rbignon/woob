@@ -41,9 +41,9 @@ class FranceConnectBrowser(LoginBrowser):
     ameli_login_page = URL(r'/FRCO-app/login', AmeliLoginPage)
     ameli_wrong_login_page = URL(r'/FRCO-app/j_spring_security_check', WrongPassAmeliLoginPage)
 
-    impot_login_page = URL(r'https://idp.impots.gouv.fr/LoginAccess', ImpotsLoginAccessPage)
-    impot_login_ael = URL(r'https://idp.impots.gouv.fr/LoginAEL', ImpotsLoginAELPage)
-    impot_get_context = URL(r'https://idp.impots.gouv.fr/GetContexte', ImpotsGetContextPage)
+    impot_login_page = URL(r'https://cfspart-idp.impots.gouv.fr/oauth2/authorize', ImpotsLoginAccessPage)
+    impot_get_context = URL(r'https://cfspart-idp.impots.gouv.fr/GetContexte', ImpotsGetContextPage)
+    impot_login_ael = URL(r'https://cfspart-idp.impots.gouv.fr/', ImpotsLoginAELPage)
 
     def fc_call(self, provider, baseurl):
         self.BASEURL = baseurl
@@ -71,8 +71,13 @@ class FranceConnectBrowser(LoginBrowser):
         :param fc_redirection: whether or not to redirect to and out of the
         specific service
         """
+
+        # auth_type has to be set to 'idp' when connexion is done through FranceConnect
+        auth_type = ''
+
         if fc_redirection:
             self.fc_call('dgfip', 'https://idp.impots.gouv.fr')
+            auth_type = 'idp'
 
         context_url = self.page.get_url_context()
         url_login_password = self.page.get_url_login_password()
@@ -89,8 +94,8 @@ class FranceConnectBrowser(LoginBrowser):
             )
         assert context_page.has_next_step(), 'Unexpected behaviour after submitting login for France Connect impôts'
 
-        # POST /LoginAEL (ImpotsLoginAELPage)
-        self.page.login(self.username, self.password, url_login_password)
+        # POST / (ImpotsLoginAELPage)
+        self.page.login(login=self.username, password=self.password, url=url_login_password, auth_type=auth_type)
 
         if self.page.has_wrong_password():
             remaining_attemps = self.page.get_remaining_login_attempts()

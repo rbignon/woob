@@ -19,7 +19,7 @@
 
 import re
 
-from woob.browser.filters.javascript import JSValue, JSVar
+from woob.browser.filters.javascript import JSValue
 from woob.browser.filters.standard import (
     CleanText,
 )
@@ -51,24 +51,20 @@ class WrongPassAmeliLoginPage(HTMLPage):
 
 
 class ImpotsLoginAccessPage(HTMLPage):
-    def login(self, login, password, url):
+    def login(self, login, password, url, auth_type=''):
         form = self.get_form(id='formulairePrincipal')
         form.url = url
+        form['lmAuth'] = 'LDAP'
+        form['authType'] = auth_type
         form['spi'] = login
         form['pwd'] = password
         form.submit()
 
     def get_url_context(self):
-        return JSVar(
-            CleanText("//script[contains(text(), 'urlContexte')]"),
-            var="urlContexte",
-        )(self.doc)
+        return "/GetContexte"
 
     def get_url_login_password(self):
-        return JSVar(
-            CleanText("//script[contains(text(), 'urlLoginMotDePasse')]"),
-            var="urlLoginMotDePasse",
-        )(self.doc)
+        return "/"
 
 
 class MessageResultPage(HTMLPage):
