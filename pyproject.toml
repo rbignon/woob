@@ -38,7 +38,10 @@ classifiers = [
 requires-python = ">=3.7"
 dependencies = [
     "lxml",
-    "requests >= 2.0.0",
+    # `requests` versions 2.32.0, 2.32.1, and 2.32.2 are affected by a bug breaking the ability to specify
+    # custom SSLContexts in sub-classes of HTTPAdapter (https://github.com/psf/requests/issues/6715) and another
+    # breaking the ability to load certificates with HTTPAdapters (https://github.com/psf/requests/issues/6730)
+    "requests >= 2.0.0, != 2.32.0, != 2.32.1, != 2.32.2, != 2.32.3",
     "python-dateutil",
     "PyYAML",
     "html2text >= 3.200",
