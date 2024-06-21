@@ -996,7 +996,7 @@ class LoanPage(LoggedPage, JsonPage):
         return self.doc
 
     def get_client_id(self):
-        return Dict('cdcAuth/clientId')(self.doc)
+        return Dict('clientId')(self.doc)
 
 
 class SofincoRedirectionPage(LoanRedirectionPage):

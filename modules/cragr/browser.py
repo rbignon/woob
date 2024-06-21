@@ -253,7 +253,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         LoanPage
     )
     dcam_config = URL(
-        r'https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/fe01/configuration/app-config.json',
+        r'https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/fe01/assets/configuration/app-config.json',
         LoanPage
     )
     dcam_redirection = URL(
