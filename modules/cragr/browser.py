@@ -857,16 +857,28 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         # All the following dcam requests are necessary.
         # To access each loan details we have to follow this process:
-        # logout, login again, user and loan initialization.
+        # logout, authorize, user, login again and loan initialization.
         self.dcam_redirection.go(region=self.region, action='bff01/security/logout', data='')
 
-        params = {
-            'state': uuid_state,
-            'code': code,
-            'redirect_uri': f'https://dcam.credit-agricole.fr/{self.region}/fe01/authorize',
-        }
-        self.dcam_redirection.go(region=self.region, action='bff01/security/login', params=params)
+        self.dcam_redirection.go(
+            region=self.region,
+            action='fe01/authorize',
+            params={
+                'state': uuid_state,
+                'code': code,
+            }
+        )
         self.dcam_redirection.go(region=self.region, action='bff01/security/user')
+        self.dcam_redirection.go(
+            region=self.region,
+            action='bff01/security/login',
+            params={
+                'state': uuid_state,
+                'code': code,
+                'redirect_uri': f'https://dcam.credit-agricole.fr/{self.region}/fe01/authorize',
+            }
+        )
+        self.dcam_redirection.go(region=self.region, action=f'bff01/context/{context_id}')
         self.loan_details.go(region=self.region, action='bff01', context_id=context_id)
 
     def switch_account_to_loan(self, account, space):
