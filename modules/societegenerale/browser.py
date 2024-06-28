@@ -158,6 +158,11 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
             if terminals:
                 message += " sur l'un de vos périphériques actifs: " + ', '.join(terminals)
 
+            # We reset the current browser page. The next navigation on a '@need_login' page will trigger
+            # the verification of the logged-in status. This will fail, and enter the `do_login` procedure.
+            # Cf `need_login()` in `woob/browser/browsers.py`
+            self.page = None
+
             raise AppValidation(message)
 
         elif auth_method['type_proc'].lower() == 'auth_csa':
@@ -167,6 +172,12 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
                     '/sec/csa/send.json',
                     data={'csa_op': "auth"}
                 )
+
+                # We reset the current browser page. The next navigation on a '@need_login' page will trigger
+                # the verification of the logged-in status. This will fail, and enter the `do_login` procedure.
+                # Cf `need_login()` in `woob/browser/browsers.py`
+                self.page = None
+
                 raise BrowserQuestion(
                     Value(
                         'code',
