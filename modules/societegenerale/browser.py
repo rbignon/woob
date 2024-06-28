@@ -30,8 +30,9 @@ from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bill import Document, DocumentTypes
 from woob.exceptions import (
     BrowserIncorrectPassword, ActionNeeded, ActionType, BrowserUnavailable,
-    AppValidation, BrowserQuestion, AppValidationError, AppValidationCancelled,
+    AppValidation, AppValidationError, AppValidationCancelled,
     AppValidationExpired, BrowserPasswordExpired, BrowserUserBanned,
+    OTPSentType, SentOTPQuestion,
 )
 from woob.capabilities.bank import (
     Account, TransferBankError, AddRecipientStep,
@@ -178,11 +179,11 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
                 # Cf `need_login()` in `woob/browser/browsers.py`
                 self.page = None
 
-                raise BrowserQuestion(
-                    Value(
-                        'code',
-                        label='Entrez le Code Sécurité reçu par SMS sur le numéro ' + auth_method['ts']
-                    )
+                raise SentOTPQuestion(
+                    field_name='code',
+                    medium_type=OTPSentType.SMS,
+                    medium_label=auth_method['ts'],
+                    message='Entrez le Code Sécurité reçu par SMS sur le numéro ' + auth_method['ts'],
                 )
 
             self.logger.warning('Unknown CSA method "%s" found', auth_method['mod'])
