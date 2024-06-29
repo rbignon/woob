@@ -89,6 +89,17 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
             state.pop('url', None)
         super(SocieteGeneraleTwoFactorBrowser, self).load_state(state)
 
+    def clear_init_cookies(self):
+        # Keep the 2FA cookie(s) to prevent a 2FA trigger
+        cookies_to_keep = []
+        for cookie in self.session.cookies:
+            if cookie.name.startswith('NAVID-'):
+                cookies_to_keep.append(cookie)
+        super().clear_init_cookies()
+        if len(cookies_to_keep) > 0:
+            for cookie in cookies_to_keep:
+                self.session.cookies.set_cookie(cookie)
+
     def check_password(self):
         if not self.password.isdigit() or len(self.password) not in (6, 7):
             raise BrowserIncorrectPassword()
@@ -294,6 +305,7 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
 class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     BASEURL = 'https://particuliers.sg.fr'
     STATE_DURATION = 10
+    TWOFA_DURATION = 60 * 24 * 90
 
     # documents
     documents = URL(r'/icd/epe/data/get-all-releves-authsec.json', DocumentsPage)
