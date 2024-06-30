@@ -66,8 +66,8 @@ __all__ = ['CaisseEpargne']
 class CaisseEpargneLogin(TwoFactorBrowser):
     HTTP_ADAPTER_CLASS = LowSecHTTPAdapter
     BASEURL = 'https://www.caisse-epargne.fr'
-    AS_ATH_GROUP_BASEURL = 'https://www.as-ex-ath-groupe.caisse-epargne.fr'
-    RS_ATH_GROUP_BASEURL = 'https://www.rs-ex-ath-groupe.caisse-epargne.fr'
+    AS_ATH_GROUP_BASEURL = 'https://www.as-ext-bad-ce.caisse-epargne.fr'
+    RS_ATH_GROUP_BASEURL = 'https://www.rs-ext-bad-ce.caisse-epargne.fr'
 
     # This class is also used by cenet browser
     HAS_CREDENTIALS_ONLY = True
