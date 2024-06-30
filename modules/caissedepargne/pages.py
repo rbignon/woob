@@ -17,12 +17,12 @@
 
 # flake8: compatible
 
-import json
 import re
 from io import BytesIO
 from decimal import Decimal
 from datetime import date, datetime
 
+import chompjs
 from dateutil.tz import tz
 from dateutil.parser import parse as parse_date
 from PIL import Image, ImageFilter
@@ -80,13 +80,46 @@ class ConfigPage(JsonPage):
 
 
 class JsFilePage(RawPage):
+    gateway_access = None
+    class_b = None
+
+    def get_json_gateway_access(self):
+        if not self.gateway_access:
+            result = Regexp(pattern=r',gatewayAccess:(.*),appDynamics:').filter(self.text)
+            assert result, 'Could not find "gatewayAccess:" in main JS, check if it has been updated'
+            self.gateway_access = chompjs.parse_js_object(result)
+        return self.gateway_access
+
+    def get_class_b(self):
+        if not self.class_b:
+            result = Regexp(pattern=r';class B({.*?})const').filter(self.text)
+            assert result, 'Could not find the definition of "snippetId"s in main JS, check if it has been updated'
+            # The result is a JS Class definition - which is difficult to parse:
+            # e.g.: `{static#e=this.forCe={snippetId:"224837",domainBank:U.K.CE};static#t=this.forBp={...`
+            #
+            # We convert it to a (kind of) dictionnary
+            # e.g.: `{CE:{snippetId:"224837",domainBank:U.K.CE},BP:{...`
+            #
+            # 1) remove the `static...=`
+            result = re.sub(r"static#[^=]+=", "", result)
+            # 2) transform assignment (... = ) in dict definition (... : ) ; transform name in UPPER CASE and remove `this.for` prefix
+            result = re.sub(r"this\.for([^=]+)=", lambda m: f"{m.group(1).upper()}:", result)
+            # 3) dict entries are separated with `,`
+            result = re.sub(r";", ",", result)
+            self.class_b = chompjs.parse_js_object(result)
+        return self.class_b
+
     def get_first_client_id(self):
         # Needed for pre-login
-        return Regexp(pattern=r'anonymous:{clientId:\"(.*?)\"').filter(self.text)
+        self.get_json_gateway_access()
+        result = self.gateway_access.get("EXT-ATH", {}).get("anonymous", {}).get("clientId", NotAvailable)
+        return result
 
     def get_second_client_id(self):
         # Needed for login initialization
-        return Regexp(pattern=r'{authenticated:{clientId:"([^"]+)"').filter(self.text)
+        self.get_json_gateway_access()
+        result = self.gateway_access.get("EXT-ATH", {}).get("authenticated", {}).get("clientId", NotAvailable)
+        return result
 
     def get_third_client_id(self):
         # Needed for login finalization
@@ -102,14 +135,11 @@ class JsFilePage(RawPage):
         return Regexp(pattern=r'\("nonce","([a-z0-9]+)"\)').filter(self.text)
 
     def get_snid(self, bank):
-        snid_dict = Regexp(pattern=r'const e=(\{BCP.*?\})\},', default=NotAvailable).filter(self.text)
-        assert snid_dict, 'Could not find SNIDs in main JS, check if it has been updated'
+        self.get_class_b()
+        result = self.class_b.get(bank, {}).get("snippetId", NotAvailable)
+        assert result, f'Could not find SNIDs for {bank} in main JS, check if it has been updated'
 
-        # dict is formatted like a JS dict, keys aren't quoted, must be
-        # fixed for python to handle it correctly.
-        json_snid_dict = json.loads(re.sub('([A-Z]+)', '"\\1"', snid_dict))
-
-        return json_snid_dict[bank]
+        return result
 
 
 class AuthorizePage(HTMLPage):
