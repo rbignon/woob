@@ -721,7 +721,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
                         'env': None,
                     },
                     'id_token': {
-                        'auth_time': {'essential': 'true'},
+                        'auth_time': {'essential': True},
                         'last_login': None,
                         'cdetab': None,
                         'pro': None,
