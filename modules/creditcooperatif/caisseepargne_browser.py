@@ -27,10 +27,12 @@ class CaisseEpargneBrowser(CaisseEpargne):
     enseigne = 'ccoop'
 
     login = CaisseEpargne.login.with_urls(
-        r'https://www.credit-cooperatif.coop/se-connecter/sso'
+        r'https://www.credit-cooperatif.coop/se-connecter/sso',
+        r'https://(?P<domain>www.icgauth.[^/]+)/se-connecter/sso'
     )
     js_file = CaisseEpargne.js_file.with_urls(
         r'https://www.credit-cooperatif.coop/se-connecter/main\..*.js$',
+        r'https://(?P<domain>www.icgauth.[^/]+)/se-connecter/main\..*.js$',
         r'https://www.caisse-epargne.fr/espace-client/main\..*\.js',
         r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js',
         r'https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js',
