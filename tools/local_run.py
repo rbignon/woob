@@ -61,6 +61,9 @@ run_quiet([
     sys.executable, '-m', 'venv', '--system-site-packages', venv,
 ])
 run_quiet([
+    venv_exe, '-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools',
+])
+run_quiet([
     venv_exe, '-m', 'pip', 'install', '--no-deps', '--editable', project,
 ])
 run_quiet([os.path.join(venv, 'bin', 'woob'), 'config', 'update', '-d'])
