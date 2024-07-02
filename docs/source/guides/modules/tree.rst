@@ -13,7 +13,7 @@ module tree. There are several templates available:
 
 For example, use this command::
 
-    $ tools/boilerplate.py cap example CapBank
+    $ tools/boilerplate/boilerplate.py cap example CapBank
 
 In a module directory, there are commonly these files:
 
