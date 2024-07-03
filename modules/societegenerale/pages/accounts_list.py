@@ -306,7 +306,7 @@ class RevolvingDetailsPage(LoggedPage, JsonPage):
             account.rate = CleanDecimal().filter(rate)
 
 
-class LoansPage(LoggedPage, JsonPage):
+class LoansPage(JsonBasePage):
     def get_loan_details(self, loan):
         loan_types_fields = ('creditImmo', 'creditConsoAmortissable', 'creditConsoRenouvelable')
 
