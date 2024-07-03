@@ -31,7 +31,6 @@ class BtpbanqueModule(CaisseEpargneModule, CapBank):
     DESCRIPTION = 'BTP Banque'
     MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
-    VERSION = '3.6'
     DEPENDENCIES = ('caissedepargne',)
     LICENSE = 'LGPLv3+'
 

@@ -1,2 +1,3 @@
-woob ~= 3.2
+woob ~= 3.6
 python-jose
+chompjs

@@ -33,7 +33,6 @@ class BanquePopulaireModule(Module, CapBankWealth):
     NAME = 'banquepopulaire'
     MAINTAINER = 'Etienne RABY'
     EMAIL = 'mail@eraby.fr'
-    VERSION = '3.6'
     DEPENDENCIES = ('caissedepargne', 'linebourse')
     DESCRIPTION = 'Banque Populaire'
     LICENSE = 'LGPLv3+'

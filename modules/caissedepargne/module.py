@@ -35,7 +35,6 @@ class CaisseEpargneModule(Module, CapBankWealth, CapDocument):
     NAME = 'caissedepargne'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.6'
     DEPENDENCIES = ('linebourse',)
     DESCRIPTION = 'Caisse d\'Épargne'
     LICENSE = 'LGPLv3+'
