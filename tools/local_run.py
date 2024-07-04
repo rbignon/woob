@@ -64,7 +64,7 @@ run_quiet([
     venv_exe, '-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools',
 ])
 run_quiet([
-    venv_exe, '-m', 'pip', 'install', '--no-deps', '--editable', project,
+    venv_exe, '-m', 'pip', 'install', '--editable', project,
 ])
 run_quiet([os.path.join(venv, 'bin', 'woob'), 'config', 'update', '-d'])
 
