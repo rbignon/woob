@@ -358,8 +358,15 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 ibans=ibans,
                 is_pro=is_pro,
             ))
-            self.market_syn.go(json={})
-            market_accounts = self.page.get_list()  # get the list of 'Comptes Titres'
+
+            # 'Comptes Titres' retrieval is broken
+            try:
+                self.market_syn.go(json={})
+                market_accounts = self.page.get_list()  # get the list of 'Comptes Titres'
+            except HTTPNotFound:
+                self.logger.warn('Could not retrieve "Comptes Titres" accounts')
+                market_accounts = []
+
             checked_accounts = set()
             for account in accounts:
                 if self.is_loan(account):
