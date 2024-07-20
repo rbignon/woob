@@ -45,8 +45,6 @@ class Number26Browser(TwoFactorBrowser):
     # get an access token.
     INITIAL_TOKEN = 'bmF0aXZld2ViOg=='
 
-    BASE_URL = 'https://api.tech26.de'
-
     HAS_CREDENTIALS_ONLY = True
 
     twofa_challenge = URL(r'/api/mfa/challenge')
@@ -70,7 +68,7 @@ class Number26Browser(TwoFactorBrowser):
         self.is_first_sync = False
         # do not delete, useful for a child connector
         self.direct_access = True
-        self.BASEURL = self.BASE_URL
+        self.BASEURL = 'https://api.tech26.de'
 
         self.__states__ = (
             'access_token', 'device_token', 'is_first_sync', 'mfa_token',
@@ -113,8 +111,7 @@ class Number26Browser(TwoFactorBrowser):
         )
 
     def init_login(self):
-        # The refresh token last between one and two hours, be carefull, otp asked frequently
-        self.BASEURL = self.BASE_URL
+        # The refresh token lasts between one and two hours, be carefull, otp asked frequently
         if self.refresh_token:
             if self.has_refreshed():
                 return
@@ -153,7 +150,6 @@ class Number26Browser(TwoFactorBrowser):
 
                 self.is_first_sync = True
                 self.mfa_token = json_response['mfaToken']
-                self.BASEURL = self.BASE_URL
                 self.trigger_2fa()
 
             elif json_response.get('error') == 'invalid_grant':
