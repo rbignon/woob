@@ -286,6 +286,7 @@ class PasswordPage(LoginPage, AuthenticationFormPage):
 
         form = self.get_form()
         form['form[clientNumber]'] = username
+        form['form[fakePassword]'] = '•' * len(password)
         form['form[password]'] = vk.get_string_code(password)
         form['form[matrixRandomChallenge]'] = Regexp(CleanText('//script'), r'val\("(.*)"')(keyboard_page.doc)
         form['platformAuthenticatorAvailable'] = -1
