@@ -94,7 +94,13 @@ class JsonBasePage(LoggedPage, JsonPage):
             self.logger.warning('Handled Error "%s"', reason)
 
 
-class AccountsMainPage(LoggedPage, HTMLPage):
+class HTMLLoggedPage(LoggedPage, HTMLPage):
+    @property
+    def logged(self):
+        return self.doc.xpath('//a[@data-cms-callback-url="/page-deconnexion"]')
+
+
+class AccountsMainPage(HTMLLoggedPage):
     def is_old_website(self):
         return Link('//a[contains(text(), "Afficher la nouvelle consultation")]', default=None)(self.doc)
 
@@ -599,7 +605,7 @@ class CardHistoryPage(LoggedPage, HTMLPage):
                 return NotAvailable
 
 
-class CreditPage(LoggedPage, HTMLPage):
+class CreditPage(HTMLLoggedPage):
     def get_history_url(self):
         redirection_script = CleanText('//script[contains(text(), "setPrestationURL")]')(self.doc)
         history_link = re.search(r'setPrestationURL\("(.*)"\)', redirection_script)
@@ -636,7 +642,7 @@ class CreditHistoryPage(LoggedPage, HTMLPage):
                 return MyDecimal(CleanText('./td[contains(@headers, "Debit")]', replace=[('&nbsp;', '')]))(self)
 
 
-class OldHistoryPage(LoggedPage, HTMLPage):
+class OldHistoryPage(HTMLLoggedPage):
     def get_history_url(self):
         redirection = CleanText('//body/@onload')(self.doc)
         history_link = re.search(r",'(/.*)',", redirection)
@@ -671,7 +677,7 @@ class OldHistoryPage(LoggedPage, HTMLPage):
         return CleanText('//div[@class="error_content"]//span[@class="error_msg"]')(self.doc)
 
 
-class LifeInsurance(LoggedPage, HTMLPage):
+class LifeInsurance(HTMLLoggedPage):
     def on_load(self):
         errors_msg = (
             CleanText('//span[@class="error_msg"]')(self.doc),
@@ -880,7 +886,7 @@ class LifeInsuranceHistory(LifeInsurance):
                 return Date(dayfirst=True).filter(tr_date)
 
 
-class MarketPage(LoggedPage, HTMLPage):
+class MarketPage(HTMLLoggedPage):
     def get_dropdown_menu(self):
         # Get the 'idCptSelect' in a drop-down menu that corresponds the current account
         return Attr('//select[@id="idCptSelect"]//option[@value and @selected="selected"]', 'value')(self.doc)
@@ -1096,7 +1102,7 @@ class AdvisorPage(LoggedPage, XMLPage):
         yield advisor
 
 
-class HTMLProfilePage(LoggedPage, HTMLPage):
+class HTMLProfilePage(HTMLLoggedPage):
     def on_load(self):
         msg = CleanText('//div[@id="connecteur_partenaire"]', default='')(self.doc) or \
               CleanText('//body', default='')(self.doc)
