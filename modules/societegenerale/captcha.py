@@ -87,30 +87,7 @@ class Captcha(object):
 
 
 class Tile(object):
-    hash = {'ff1441b2c5f90703ef04e688e399aca5': 1,
-            '53d7f3dfd64f54723b231fc398b6be57': 2,
-            '5bcba7fa2107ba9a606e8d0131c162eb': 3,
-            '9db6e7ed063e5f9a69ab831e6cc0d721': 4,
-            '30ebb75bfa5077f41ccfb72e8c9cc15b': 5,
-            '61e27275e494038e524bc9fbbd0be130': 6,
-            '0e0816f1b743f320ca561f090df0fbb1': 7,
-            '11e7d4a6d447e66a5a112c1d9f7fc442': 8,
-            '2ea3c82768030d91571d360acf7a0f75': 9,
-            '28a834ebbf0238b46d3fffae1a0b781b': 0,
-            '04211db029ce488e07010f618a589c71': -1,
-
-            '9a1bdf493d4067e98d3f364586c81e9d': 1,
-            '932032493860463bb4a3df7c99a900ad': 2,
-            '59cd90f1fa0b416ecdb440bc16d0b8e7': 3,
-            '53fe822c5efebe5f6fdef0f272c29638': 4,
-            '2082a9c830c0c7c9c22e9c809c6cadf7': 5,
-            '7f24aa97f0037bddcf2a4c8c2dbf5948': 6,
-            '725b6f11f44ecc2e9f6e79e86e3a82a5': 7,
-            '61d57da23894b96fab11f7b83c055bba': 8,
-            '18f6290c1cfaecadc5992e7ef6047a49': 9,
-            '1ce77709ec1d7475685d7b50d6f1c89e': 0,
-            '6718858a509fff4b86604f3096cf65e1': -1,
-
+    hash = {
             'e7438dc8d0b7db73a9611c2880700d23': 1,
             '111d88d6ea8671a7ca2982e08558743b': 2,
             '8d37303d0a23833cacd79d5f2ec1c4fd': 3,
