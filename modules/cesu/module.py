@@ -20,8 +20,9 @@
 
 from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
-from woob.tools.backend import BackendConfig, Module
+from woob.tools.backend import BackendConfig
 from woob.tools.value import Value, ValueBackendPassword
+from woob_modules.franceconnect.module import FranceConnectModule
 
 from .browser import CesuBrowser
 
@@ -29,17 +30,26 @@ from .browser import CesuBrowser
 __all__ = ["CesuModule"]
 
 
-class CesuModule(Module, CapDocument):
+class CesuModule(FranceConnectModule, CapDocument):
     NAME = "cesu"
     DESCRIPTION = "Le Cesu est une offre simplifiée pour déclarer facilement la rémunération de votre salarié à domicile pour des activités de service à la personne."
     MAINTAINER = "Ludovic LANGE"
     EMAIL = "llange@users.noreply.github.com"
     LICENSE = "LGPLv3+"
-    VERSION = "3.7"
+    DEPENDENCIES = ("franceconnect",)
 
     CONFIG = BackendConfig(
         Value("username", label="User ID"),
         ValueBackendPassword("password", label="Password"),
+        Value(
+            "login_source",
+            label="Méthode d'authentification",
+            default="direct",
+            choices={
+                "direct": "Directe",
+                "fc_impots": "France Connect Impôts",
+            },
+        ),
     )
 
     BROWSER = CesuBrowser
@@ -54,7 +64,7 @@ class CesuModule(Module, CapDocument):
     )
 
     def create_default_browser(self):
-        return self.create_browser(self.config["username"].get(), self.config["password"].get())
+        return self.create_browser(self.config, self.config["username"].get(), self.config["password"].get())
 
     def download_document(self, document):
         if not isinstance(document, Document):

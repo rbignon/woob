@@ -22,10 +22,11 @@ from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 
-from woob.browser import URL, LoginBrowser, need_login
+from woob.browser import URL, need_login
 from woob.browser.exceptions import ClientError
 from woob.capabilities.bill import Subscription
 from woob.exceptions import BrowserIncorrectPassword
+from woob_modules.franceconnect.browser import FranceConnectBrowser
 
 from .pages import (
     CurrentFiscalAdvantagePage,
@@ -36,22 +37,33 @@ from .pages import (
     EmployeesDashboardPage,
     EmployeesPage,
     EmployerPage,
+    FranceConnectFinalizePage,
+    FranceConnectGetUrlPage,
+    FranceConnectRedirectPage,
     HomePage,
     LastDayMonthPage,
     LoginPage,
     PayslipDownloadPage,
     RegistrationDashboardPage,
     RegistrationPage,
+    StartPage,
     StatusPage,
     TaxCertificateDownloadPage,
     TaxCertificatesPage,
 )
 
 
-class CesuBrowser(LoginBrowser):
+class CesuBrowser(FranceConnectBrowser):
     BASEURL = "https://www.cesu.urssaf.fr"
 
+    france_connect_get_url = URL(
+        r"/cesuwebdec/login-franceconnect\?callback=https%3A%2F%2Fwww.cesu.urssaf.fr%2Fdecla%2Findex.html%3FLANG%3DFR%26page%3Dpage_se_connecter%26callback%3Dlogin-franceconnect",
+        FranceConnectGetUrlPage,
+    )
+    france_connect_redirect = URL(r"https://app.franceconnect.gouv.fr/api/v1/authorize\?.*", FranceConnectRedirectPage)
+    france_connect_finalize = URL(r"/cesuwebdec/authentication-or-franceconnect-complement", FranceConnectFinalizePage)
     login = URL(r"/cesuwebdec/authentication$", LoginPage)
+    start = URL(r"/decla/index.html", StartPage)
     homepage = URL(r"/info/accueil\.login\.do$", HomePage)
     logout = URL(r"/cesuwebdec/deconnexion$")
     status = URL(r"/cesuwebdec/status", StatusPage)
@@ -97,33 +109,60 @@ class CesuBrowser(LoginBrowser):
     employer = None
     compteur = 0
 
+    def __init__(self, config, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.login_source = config["login_source"].get()
+
     def do_login(self):
         self.session.cookies.clear()
-        self.session.headers.update(
-            {
-                "Accept": "*/*",
-                "Content-Type": "application/json; charset=utf-8",
-                "X-Requested-With": "XMLHttpRequest",
-            }
-        )
 
-        try:
-            self.login.go(
-                json={
-                    "username": self.username,
-                    "password": self.password,
+        if self.login_source == "direct":
+            self.session.headers.update(
+                {
+                    "Accept": "*/*",
+                    "Content-Type": "application/json; charset=utf-8",
+                    "X-Requested-With": "XMLHttpRequest",
                 }
             )
-        except ClientError as error:
-            response = error.response.json()
 
-            error_messages_list = response.get("listeMessages", [])
+            try:
+                self.login.go(
+                    json={
+                        "username": self.username,
+                        "password": self.password,
+                    }
+                )
+            except ClientError as error:
+                response = error.response.json()
 
-            for error_message in error_messages_list:
-                if error_message.get("contenu", "") == "Identifiant / mot de passe non reconnus":
-                    raise BrowserIncorrectPassword(error_message["contenu"])
+                error_messages_list = response.get("listeMessages", [])
 
-            raise
+                for error_message in error_messages_list:
+                    if error_message.get("contenu", "") == "Identifiant / mot de passe non reconnus":
+                        raise BrowserIncorrectPassword(error_message["contenu"])
+
+                raise
+
+        else:
+            page = self.france_connect_get_url.open()
+            if not isinstance(page, FranceConnectGetUrlPage):
+                raise AssertionError(f"Unexpected page: {self.page} while getting FranceConnect URL")
+
+            fc_url = page.value()
+            self.location(fc_url)
+
+            if self.login_source == "fc_impots":
+                self.login_impots()
+            else:
+                raise AssertionError(f"Unexpected login source: {self.login_source}")
+
+            self.page = self.start.handle(self.response)
+            if not isinstance(self.page, StartPage):
+                raise AssertionError(f"Unexpected page: {self.page} after FranceConnect redirects")
+
+            self.france_connect_finalize.go(
+                json={"code": self.page.parameters["code"], "state": self.page.parameters["state"]}
+            )
 
         self.status.go()
         self.employer = self.page.get_object().get("numero")

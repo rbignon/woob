@@ -18,6 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from urllib.parse import parse_qsl, urlparse
+
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import BrowserURL, CleanText, Date, Env, Field, Format, Lower, Regexp
@@ -34,6 +36,16 @@ class CesuPage(HTMLPage):
 class LoginPage(CesuPage):
     def is_here(self):
         return not bool(self.doc.xpath('//*[@id="deconnexion_link"]'))
+
+
+class StartPage(CesuPage):
+    _params = None
+
+    @property
+    def parameters(self):
+        if not self._params:
+            self._params = dict(parse_qsl(urlparse(self.url).query))
+        return self._params
 
 
 class HomePage(LoggedPage, JsonPage):
@@ -198,4 +210,17 @@ class TaxCertificateDownloadPage(RawPage):
 
 
 class PayslipDownloadPage(RawPage):
+    pass
+
+
+class FranceConnectGetUrlPage(CesuApiPage):
+    def value(self):
+        return self.get_object().get("redirectToFranceConnectUrl")
+
+
+class FranceConnectFinalizePage(CesuApiPage):
+    pass
+
+
+class FranceConnectRedirectPage(RawPage):
     pass
