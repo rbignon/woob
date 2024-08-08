@@ -1103,7 +1103,7 @@ class Transaction(FrenchTransaction):
         # For the following pattern, CARTE has space (e.g.: PAIEMENT CB 0209 PARIS CARTE 00747350)
         # whereas PAYWEB has not (e.g.: PAIEMENT CB 2209 LEVALLOIS PAYWEB00747350 )
         (
-            re.compile(r'^PAIEMENT (PSC|CB)\s+(?P<dd>\d{2})(?P<mm>\d{2}) (?P<text>.*) (CARTE |PAYWEB)\d+ ?(.*)$'),
+            re.compile(r'^PAIEMENT (PSC|CB|MOB)\s+(?P<dd>\d{2})(?P<mm>\d{2}) (?P<text>.*) (CARTE |PAYWEB)\d+ ?(.*)$'),
             FrenchTransaction.TYPE_CARD,
         ),
         (re.compile(r'^Regroupement \d+ PAIEMENTS (?P<dd>\d{2})(?P<mm>\d{2}) (?P<text>.*) CARTE \d+ ?(.*)$'), FrenchTransaction.TYPE_CARD),
