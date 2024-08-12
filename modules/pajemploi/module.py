@@ -24,8 +24,9 @@ from woob.capabilities.bill import (
     DocumentTypes,
     Subscription,
 )
-from woob.tools.backend import BackendConfig, Module
+from woob.tools.backend import BackendConfig
 from woob.tools.value import Value, ValueBackendPassword
+from woob_modules.franceconnect.module import FranceConnectModule
 
 from .browser import PajemploiBrowser
 
@@ -33,7 +34,7 @@ from .browser import PajemploiBrowser
 __all__ = ["PajemploiModule"]
 
 
-class PajemploiModule(Module, CapDocument):
+class PajemploiModule(FranceConnectModule, CapDocument):
     NAME = "pajemploi"
     DESCRIPTION = (
         "Pajemploi est une offre de service du réseau des Urssaf"
@@ -44,11 +45,20 @@ class PajemploiModule(Module, CapDocument):
     MAINTAINER = "Ludovic LANGE"
     EMAIL = "llange@users.noreply.github.com"
     LICENSE = "LGPLv3+"
-    VERSION = "3.7"
+    DEPENDENCIES = ("franceconnect",)
 
     CONFIG = BackendConfig(
         Value("username", label="User ID"),
         ValueBackendPassword("password", label="Password"),
+        Value(
+            "login_source",
+            label="Méthode d'authentification",
+            default="direct",
+            choices={
+                "direct": "Directe",
+                "fc_impots": "France Connect Impôts",
+            },
+        ),
     )
     BROWSER = PajemploiBrowser
 
@@ -59,7 +69,7 @@ class PajemploiModule(Module, CapDocument):
     document_categories = {DocumentCategory.ADMINISTRATIVE}
 
     def create_default_browser(self):
-        return self.create_browser(self.config["username"].get(), self.config["password"].get())
+        return self.create_browser(self.config, self.config["username"].get(), self.config["password"].get())
 
     def download_document(self, document):
         if not isinstance(document, Document):

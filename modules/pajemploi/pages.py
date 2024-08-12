@@ -289,3 +289,11 @@ class DeclarationDetailPage(PajemploiPage):
             dc.label = "Décompte de cotisations {} {}".format(subscription.label, date.strftime("%d/%m/%Y"))
             dc.url = Attr(".", "action")(frm[0])
             yield dc
+
+
+class FranceConnectLoginPage(HTMLPage):
+    pass
+
+
+class FranceConnectRedirectPage(HTMLPage):
+    pass

@@ -16,9 +16,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import URL, LoginBrowser, need_login
+from woob.browser import URL, need_login
 from woob.capabilities.bill import Subscription
 from woob.exceptions import BrowserIncorrectPassword
+from woob_modules.franceconnect.browser import FranceConnectBrowser
 
 from .pages import (
     AjaxDetailSocialInfoPage,
@@ -28,6 +29,8 @@ from .pages import (
     DeclarationSetupPage,
     EmployeesPage,
     ErrorMaintenancePage,
+    FranceConnectLoginPage,
+    FranceConnectRedirectPage,
     HomePage,
     LoginPage,
     MonthlyReportDownloadPage,
@@ -37,13 +40,17 @@ from .pages import (
 )
 
 
-class PajemploiBrowser(LoginBrowser):
+class PajemploiBrowser(FranceConnectBrowser):
     BASEURL = "https://www.pajemploi.urssaf.fr"
 
+    fc_login = URL(r"/pajeweb/login-franceconnect.htm", FranceConnectLoginPage)
+    france_connect_redirect = URL(r"https://app.franceconnect.gouv.fr/api/v1/authorize\?.*", FranceConnectRedirectPage)
     logout = URL(r"/pajeweb/j_spring_security_logout$", r"/pajeweb/quit.htm$")
+    fc_logout = URL(r"/pajeweb/logout-franceconnect.htm$")
 
     login = URL(
         r"/pajeweb/logindec\.htm$",
+        r"/pajeweb/login-pajemploi\.htm$",
         r"/info/accueil.html$",
         r"/portail/accueil.html$",
         r"/pajewebinfo/cms/sites/pajewebinfo/accueil.html$",
@@ -75,15 +82,31 @@ class PajemploiBrowser(LoginBrowser):
     ajax_detail_social_info = URL(r"/pajeweb/ajaxdetailvs.jsp$", AjaxDetailSocialInfoPage)
     error_maintenance = URL(r"/pajeweb/logindec.htm", ErrorMaintenancePage)
 
+    def __init__(self, config, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.login_source = config["login_source"].get()
+
     def do_login(self):
         self.session.cookies.clear()
         self.login.go()
-        self.page.login(self.username, self.password, "XXXXX")
+        if self.login_source == "direct":
+            self.page.login(self.username, self.password, "XXXXX")
+        elif self.login_source == "fc_impots":
+            self.fc_login.go()
+            self.login_impots()
+            self.page = self.homepage.handle(self.response)
+            if not isinstance(self.page, HomePage):
+                raise AssertionError(f"Unexpected page: {self.page} after FranceConnect redirects")
+        else:
+            raise AssertionError(f"Unexpected login source: {self.login_source}")
         if not self.page.logged:
             raise BrowserIncorrectPassword()
 
     def do_logout(self):
-        self.logout.go()
+        if self.login_source == "direct":
+            self.logout.go()
+        else:
+            self.fc_logout.go()
         self.session.cookies.clear()
 
     @need_login
