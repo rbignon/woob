@@ -936,7 +936,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         ConsumerCreditDetailsPage,
         base='RS_ATH_GROUP_BASEURL',
     )
-    loan_home = URL(r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/$', HomePage)
+    loan_home = URL(r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/', HomePage)
     loan_details = URL(
         r'/bapi/loan/v1/loans/(?P<loan_id>.*)',
         LoanDetailsPage,
