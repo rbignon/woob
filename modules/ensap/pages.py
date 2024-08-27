@@ -43,8 +43,10 @@ class SubscriptionPage(LoggedPage, JsonPage):
         obj_subscriber = CleanText(Dict('identification/identite'))
         obj_label = Format('Account of %s', Field('subscriber'))
 
+
+class YearsPage(LoggedPage, JsonPage):
     def get_years(self):
-        return self.doc['listeAnneeRemuneration']
+        return self.doc["listeAnnee"]
 
 
 class DocumentsPage(LoggedPage, JsonPage):
@@ -57,6 +59,6 @@ class DocumentsPage(LoggedPage, JsonPage):
             obj_id = Format('%s-%s', Regexp(Dict('libelle2'), r'(^[\w]*)'), Dict('documentUuid'))
             obj_date = Date(Dict('dateDocument'))
             obj_format = 'pdf'
-            obj_label = CleanText(Dict('nomDocument'))
+            obj_label = CleanText(Dict('libelle2'))
             obj_url = BrowserURL('document_download', doc_uuid=Dict('documentUuid'))
             obj_type = DocumentTypes.PAYSLIP

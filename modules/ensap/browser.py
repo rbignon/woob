@@ -21,7 +21,7 @@ from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bill.documents import sorted_documents
 
-from .pages import LandingPage, SubscriptionPage, DocumentsPage
+from .pages import LandingPage, SubscriptionPage, YearsPage, DocumentsPage
 
 
 class MyURL(URL):
@@ -38,6 +38,7 @@ class EnsapBrowser(LoginBrowser):
 
     landing = URL(r'/$', LandingPage)
     subscription = MyURL(r'/prive/initialiserhabilitation/v1', SubscriptionPage)
+    years = URL(r'/prive/listeranneeremunerationpaie/v1', YearsPage)
     documents = URL(r'/prive/remunerationpaie/v1\?annee=(?P<year>\d+)', DocumentsPage)
     document_download = URL(r'/prive/telechargerremunerationpaie/v1\?documentUuid=(?P<doc_uuid>.*)')
 
@@ -65,7 +66,7 @@ class EnsapBrowser(LoginBrowser):
 
     @need_login
     def iter_documents(self):
-        self.subscription.stay_or_go()
+        self.years.stay_or_go()
         for year in self.page.get_years():
             self.documents.stay_or_go(year=year)
             yield from sorted_documents(self.page.iter_documents())
