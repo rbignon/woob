@@ -51,6 +51,8 @@ class Launcher:
         try:
             app_module = importlib.import_module("woob.applications.%s" % app)
         except ImportError:
+            if woob_applications is None:
+                raise
             app_module = importlib.import_module("woob_applications.%s" % app)
 
         return getattr(app_module, app_module.__all__[0])
