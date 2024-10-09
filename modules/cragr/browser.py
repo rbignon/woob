@@ -1310,6 +1310,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         except ServerError as e:
             if e.response.status_code == 503 and "temporairement inaccessible" in e.response.text:
                 raise BrowserUnavailable("Désolé, le site internet du Crédit Agricole est temporairement inaccessible.")
+
+            self.logger.info('Netfinca page is not available: error.' + str(e.response.status_code))
+            return False
+
         url = self.page.get_url()
         if 'netfinca' in url:
             self.location(url)
