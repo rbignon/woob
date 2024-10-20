@@ -18,9 +18,12 @@
 # flake8: compatible
 
 import json
+import base64
+import os
 from datetime import datetime, timedelta
 from functools import wraps
 from uuid import uuid4
+from hashlib import sha256
 
 from woob.browser import URL, need_login
 from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
@@ -53,10 +56,12 @@ from .pages import (
     InfoTokensPage,
     JsFilePage,
     JsFilePageEspaceClient,
+    JsFilePageEspaceClientChunk,
     LastConnectPage,
     LoggedOut,
     LoginPage,
     LoginTokensPage,
+    RootDashBoardPage,
     NewLoginPage,
     RedirectErrorPage,
     SynthesePage,
@@ -134,16 +139,17 @@ class BanquePopulaireAccount(Account):
 class BanquePopulaire(TwoFactorBrowser):
     TWOFA_DURATION = 90 * 24 * 60
 
-    first_login_page = URL(r"/$")
-    new_first_login_page = URL(r"/se-connecter/identifier")
-    login_page = URL(r"https://[^/]+/auth/UI/Login.*", LoginPage)
-    new_login = URL(r"https://www.banquepopulaire.fr/se-connecter/identifier", NewLoginPage)
-    js_file = URL(r"https://[^/]+/.*se-connecter/main\..*.js$", JsFilePage)
-    js_espaceclient_file = URL(r"https://[^/]+/.*espace-client/main\..*.js", JsFilePageEspaceClient)
-    root_clientdashboard_page = URL(r"/espace-client/", NewLoginPage)
-    authorize = URL(r"https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/authorize", AuthorizePage)
-    login_tokens = URL(r"https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume", LoginTokensPage)
-    info_tokens = URL(r"https://www.as-ex-ano-groupe.banquepopulaire.fr/api/oauth/v2/token", InfoTokensPage)
+    first_login_page = URL(r'/$')
+    new_first_login_page = URL(r'/se-connecter/sso')
+    login_page = URL(r'https://[^/]+/auth/UI/Login.*', LoginPage)
+    new_login = URL(r'https://www.icgauth.banquepopulaire.fr/se-connecter/sso', NewLoginPage)
+    js_file = URL(r'https://[^/]+/.*se-connecter/main\..*.js$', JsFilePage)
+    js_espaceclient_file = URL(r'/espace-client/main.*.js', JsFilePageEspaceClient)
+    js_espaceclient_chunk = URL(r'/espace-client/chunk-.*.js', JsFilePageEspaceClientChunk)
+    root_clientdashboard_page = URL(r'/espace-client/', RootDashBoardPage)
+    authorize = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/authorize', AuthorizePage)
+    login_tokens = URL(r'https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume', LoginTokensPage)
+    info_tokens = URL(r'https://www.as-ex-ano-groupe.banquepopulaire.fr/api/oauth/v2/token', InfoTokensPage)
 
     authentication_step = URL(
         r"https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step",
@@ -208,6 +214,9 @@ class BanquePopulaire(TwoFactorBrowser):
         self.redirect_url = "https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/"
         self.token = None
 
+        self.login_verifier = None
+        self.login_challenge = None
+
         self.documents_headers = None
 
         self.AUTHENTICATION_METHODS = {
@@ -261,7 +270,7 @@ class BanquePopulaire(TwoFactorBrowser):
             self.term_id = str(uuid4())
 
         try:
-            self.new_first_login_page.go()
+            self.new_first_login_page.go(params={'service': 'cyber'})
         except (ClientError, HTTPNotFound) as e:
             if e.response.status_code in (403, 404):
                 # Sometimes the website makes some redirections that leads
@@ -662,12 +671,6 @@ class BanquePopulaire(TwoFactorBrowser):
         payload = self.page.get_payload()
         self.location(next_url, data={keyword: payload}, headers=headers)
 
-        if self.login_tokens.is_here():
-            self.access_token = self.page.get_access_token()
-
-            if self.access_token is None:
-                raise AssertionError("Did not obtain the access_token mandatory to finalize the login")
-
         if self.redirect_error_page.is_here() and self.page.is_unavailable():
             # website randomly unavailable, need to retry login from the beginning
             self.do_logout()  # will delete cookies, or we'll always be redirected here
@@ -717,22 +720,55 @@ class BanquePopulaire(TwoFactorBrowser):
         self.access_token_expire = expire_dt.strftime("%m/%d/%Y %H:%M:%S")
         self.access_token = token
 
+    def code_challenge(self, verifier):
+        digest = sha256(verifier.encode('utf8')).digest()
+        return base64.b64encode(digest).decode('ascii')
+
+    def code_verifier(self):
+        return base64.b64encode(os.urandom(128)).decode('ascii')
+
+    def get_pkce_codes(self):
+        verifier = self.code_verifier()
+        return verifier, self.code_challenge(verifier)
+    
     def updateBearerForDataConsumptionIfNeeded(self):
         if self.isSSOBearerValid():
             return
+        
+        self.login_verifier, self.login_challenge = self.get_pkce_codes()
 
         self.root_clientdashboard_page.go()
-        main_js_file = self.page.get_main_js_file_url()
-        self.location(main_js_file)
-        client_id = self.page.get_client_id()
+
+        #Aller youpi...
+        main_js_file, chunk_version = self.page.get_main_js_file_url_and_version()
+
+        self.location(main_js_file, params={'v': chunk_version})
+
+        client_id_token: str = ""
+        client_id_authorize: str = ""
+        chunk_list_urls = self.page.getChunkList()
+
+        #https://www.banquepopulaire.fr/espace-client/main-GBHVAG3I.js?v=1.51.0  importe : /chunk-NZDNNXUI.js
+        #-> from"./chunk-Z4B5GV7J.js
+
+        #https://www.banquepopulaire.fr/espace-client/chunk-Z4B5GV7J.js?v=1.51.0
+        #$E=\"9b0573f7-0da4-4d50-a6f6-6fa4e92d2cf3\"
+        for chunk_url in chunk_list_urls:
+            self.location(chunk_url, params={'v': chunk_version})
+            if self.page.contains_client_id():
+                client_id_token, client_id_authorize = self.page.get_client_ids()
+                break
+       
+        if client_id_token == "" or client_id_authorize == "":
+            self.logger.debug('No client_id found in chunks')
+            raise BrowserUnavailable('No client_id found in chunks')
 
         data = {
-            "grant_type": "client_credentials",
-            "client_id": self.page.get_user_info_client_id(),
-            "scope": "readTypology readAgencyV2",
+            'grant_type': 'client_credentials',
+            'client_id': client_id_token,
+            'scope': ''
         }
         self.info_tokens.go(data=data)
-
         bpcesta = self.get_bpcesta_SSO()
         claims = {
             "id_token": {
@@ -755,17 +791,21 @@ class BanquePopulaire(TwoFactorBrowser):
                 "env": None,
             },
         }
+
         params = {
-            "cdetab": self.cdetab,
-            "client_id": client_id,
-            "response_type": "id_token token",
-            "nonce": str(uuid4()),
-            "response_mode": "form_post",
-            "claims": json.dumps(claims),
-            "bpcesta": json.dumps(bpcesta),
-            "login_hint": self.user_code,
-            "display": "page",
+            'cdetab': self.cdetab,
+            'client_id': client_id_authorize,
+            'response_type': 'code',
+            'nonce': str(uuid4()),
+            'response_mode': 'form_post',
+            'claims': json.dumps(claims),
+            'bpcesta': json.dumps(bpcesta),
+            'login_hint': self.user_code,
+            'display': 'page',
+            'code_challenge': '9cOl8hwQT9IUg9tplvp-Sya6stpsItj01p4HjKtcRfI',   #IMPLEMENT PKCE CHALLENGE HERE!!!
+            'code_challenge_method': 'S256' #IMPLEMENT PKCE CHALLENGE HERE!!!
         }
+
         headers = {
             "Accept": "application/json, text/plain, */*",  # Mandatory, else you've got an HTML page.
             "Content-Type": "application/x-www-form-urlencoded",
@@ -775,20 +815,20 @@ class BanquePopulaire(TwoFactorBrowser):
         }
         self.authorize.go(params=params, method="POST", headers=headers)
 
-        #       Authorize response gave a SAML request in the payload
-        #       Play it by "do_redirect" will give us a json with a samlResponse and the response consumer :
-        #       {
-        #           "id":"blahblah",
-        #           "locale":"en",
-        #           "response":{
-        #               "status":"AUTHENTICATION_SUCCESS",
-        #               "saml2_post":{
-        #                   "samlResponse":"a very hug lot of blah blah, probably in base64, but we don't really care",
-        #                   "action":"https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume",
-        #                   "method":"POST"
-        #               }
-        #           }
-        #       }
+        #Authorize response gave a SAML request in the payload
+        #Play it by "do_redirect" will give us a json with a samlResponse and the response consumer :
+        #{
+        #    "id":"blahblah",
+        #    "locale":"en",
+        #    "response":{
+        #        "status":"AUTHENTICATION_SUCCESS",
+        #        "saml2_post":{
+        #            "samlResponse":"a very hug lot of blah blah, probably in base64, but we don't really care",
+        #            "action":"https://www.as-ex-ath-groupe.banquepopulaire.fr/api/oauth/v2/consume",
+        #            "method":"POST"
+        #        }
+        #    }
+        #}
         headers = {
             "Accept": "application/json, text/plain, */*",  # Mandatory, else you've got an HTML page.
             "Content-Type": "application/x-www-form-urlencoded",
@@ -796,16 +836,16 @@ class BanquePopulaire(TwoFactorBrowser):
         }
         self.do_redirect("SAMLRequest", headers=headers)
 
-        #       Last but not least, we have to call the v2/consume with the SAML Response and that will provide us the wanted Token in json:
-        #       ##{
-        #       ##    "method" : "POST",
-        #       ##    "enctype" : "application/x-www-form-urlencoded",
-        #       ##    "action" : "https://www.banquepopulaire.fr/espace-client/implicit/callback",
-        #       ##    "parameters" : {
-        #       ##        "access_token" : "0Ylr9f5RxYGBQCAeOxh2....."
+        #Last but not least, we have to call the v2/consume with the SAML Response and that will provide us the wanted Token in json:
+        #{
+        #    "method" : "POST",
+        #    "enctype" : "application/x-www-form-urlencoded",
+        #    "action" : "https://www.banquepopulaire.fr/espace-client/implicit/callback",
+        #    "parameters" : {
+        #        "access_token" : "0Ylr9f5RxYGBQCAeOxh2....."
         self.do_redirect("SAMLResponse", headers=headers)
 
-        #       ## Wonderfull in this json we have the acces_token mandatory to reach user data (like balances)
+        #Wonderfull in this json we have the acces_token mandatory to reach user data (like balances)
         self.saveSSOBearer(token=self.page.get_access_token(), expire=self.page.get_access_expire())
         self.access_token = self.page.get_access_token()
 
