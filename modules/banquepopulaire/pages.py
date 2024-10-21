@@ -148,7 +148,7 @@ class JsFilePageEspaceClient(_JsFilePage):
 
 class JsFilePageEspaceClientChunk(_JsFilePage):
     def contains_client_id(self):
-        print(re.findall(r'"[a-z0-9-]{36}', self.text))
+        #print(re.findall(r'"[a-z0-9-]{36}', self.text))
         return bool(re.search(r'\$E=\"[a-z0-9-]{36}\"', self.text))
 
     def get_client_ids(self):
@@ -189,13 +189,22 @@ class AuthorizePage(JsonPage):
 
 class LoginTokensPage(_LoginTokensPage):
     def get_access_token(self):
-        return Dict("parameters/access_token", default=None)(self.doc)
+        return Dict("parameters/access_token", default=None)(self.doc) #To Del?
+
+    def get_code(self):
+        return Dict("parameters/code", default=None)(self.doc)
 
     def get_access_expire(self):
-        return Dict('parameters/expires_in', default=None)(self.doc)
+        return Dict("parameters/expires_in", default=None)(self.doc) # To Del?
 
 class InfoTokensPage(JsonPage):
-    pass
+    def get_access_token(self):
+        value = Dict('access_token', default=None)(self.doc)
+        return value
+    
+    def get_access_expire(self):
+        value = Dict('expires_in', default=None)(self.doc)
+        return value
 
 
 class AuthenticationMethodPage(_AuthenticationMethodPage):
