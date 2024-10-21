@@ -132,7 +132,10 @@ class JsFilePage(_JsFilePage):
         return Regexp(pattern=r'authorizePath:"/api/oauth/v2/authorize",clientId:"([^"]+)"').filter(self.text)
 
     def get_user_info_client_id(self):
-        return Regexp(pattern=r'https://www.as-ano-bad-ib.banquepopulaire.fr/api/oauth/v2/token",resourceServerUrl:"https://www.rs-ano-bad-ib.banquepopulaire.fr",clientId:"([^"]+)"').filter(self.text)
+        return Regexp(
+            pattern=r'https://www.as-ano-bad-ib.banquepopulaire.fr/api/oauth/v2/token",resourceServerUrl:"https://www.rs-ano-bad-ib.banquepopulaire.fr",clientId:"([^"]+)"'
+        ).filter(self.text)
+
 
 class RootDashBoardPage(HTMLPage):
     def get_main_js_file_url_and_version(self):
@@ -142,13 +145,14 @@ class RootDashBoardPage(HTMLPage):
             return left_part, right_part
         raise BrowserUnavailable("Could not find main js file url into RootDashBoardPage, pleaseraise an issue")
 
+
 class JsFilePageEspaceClient(_JsFilePage):
     def getChunkList(self):
         return re.findall(r'chunk-[A-Z0-9]{8}.js', self.text)
 
+
 class JsFilePageEspaceClientChunk(_JsFilePage):
     def contains_client_id(self):
-        #print(re.findall(r'"[a-z0-9-]{36}', self.text))
         return bool(re.search(r'\$E=\"[a-z0-9-]{36}\"', self.text))
 
     def get_client_ids(self):
@@ -159,6 +163,7 @@ class JsFilePageEspaceClientChunk(_JsFilePage):
         client_id_XE = re.search(r'[a-z0-9-]{36}', match_xe).group(0)
 
         return client_id_E, client_id_XE
+
 
 class SynthesePage(JsonPage):
     def get_raw_json(self):
@@ -189,19 +194,20 @@ class AuthorizePage(JsonPage):
 
 class LoginTokensPage(_LoginTokensPage):
     def get_access_token(self):
-        return Dict("parameters/access_token", default=None)(self.doc) #To Del?
+        return Dict("parameters/access_token", default=None)(self.doc)
 
     def get_code(self):
         return Dict("parameters/code", default=None)(self.doc)
 
     def get_access_expire(self):
-        return Dict("parameters/expires_in", default=None)(self.doc) # To Del?
+        return Dict("parameters/expires_in", default=None)(self.doc)
+
 
 class InfoTokensPage(JsonPage):
     def get_access_token(self):
         value = Dict('access_token', default=None)(self.doc)
         return value
-    
+
     def get_access_expire(self):
         value = Dict('expires_in', default=None)(self.doc)
         return value
