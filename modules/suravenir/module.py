@@ -33,7 +33,7 @@ class SuravenirModule(Module, CapBankWealth):
     NAME = 'suravenir'
     MAINTAINER = 'Arthur Huillet'
     EMAIL = 'arthur.huillet+weboob@free.fr'
-    VERSION = '3.6'
+    VERSION = '3.7'
     LICENSE = 'AGPLv3+'
     DESCRIPTION = u'Assurance-vie Suravenir à travers différents courtiers (assurancevie.com, linxea, ...)'
     CONFIG = BackendConfig(

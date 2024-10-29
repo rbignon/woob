@@ -32,7 +32,7 @@ class YggtorrentModule(Module, CapTorrent):
     NAME = 'yggtorrent'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'eneiluj@posteo.net'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DESCRIPTION = 'YGG BitTorrent tracker'
     LICENSE = 'AGPLv3+'
     CONFIG = BackendConfig(Value('username', label='Username'), ValueBackendPassword('password', label='Password'))

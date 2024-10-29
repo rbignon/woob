@@ -32,7 +32,7 @@ class ParolesmaniaModule(Module, CapLyrics):
     NAME = 'parolesmania'
     MAINTAINER = u'Julien Veyssier'
     EMAIL = 'eneiluj@gmx.fr'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DESCRIPTION = 'Paroles Mania lyrics website'
     LICENSE = 'AGPLv3+'
     BROWSER = ParolesmaniaBrowser

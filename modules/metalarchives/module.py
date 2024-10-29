@@ -34,7 +34,7 @@ class MetalarchivesModule(Module, CapBands):
     MAINTAINER = 'Quentin Defenouillère'
     EMAIL = 'quentin.defenouillere@gmail.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
     BROWSER = MetalArchivesBrowser
 
     CONFIG = BackendConfig(

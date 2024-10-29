@@ -25,7 +25,7 @@ from .tools import rssid
 class Newspaper20minutesModule(GenericNewspaperModule, CapMessages):
     MAINTAINER = 'Julien Hebert'
     EMAIL = 'juke@free.fr'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DEPENDENCIES = ('genericnewspaper',)
     LICENSE = 'AGPLv3+'
     STORAGE = {'seen': {}}

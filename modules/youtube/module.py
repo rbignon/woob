@@ -35,7 +35,7 @@ class YoutubeModule(Module, CapVideo):
     NAME = 'youtube'
     MAINTAINER = u'Vincent A'
     EMAIL = 'dev@indigo.re'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DESCRIPTION = 'YouTube video streaming website'
     LICENSE = 'LGPLv3+'
     BROWSER = YoutubeBrowser

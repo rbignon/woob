@@ -30,7 +30,7 @@ class SmcModule(CreditDuNordModule, CapBankWealth, CapProfile):
     NAME = 'smc'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DEPENDENCIES = ('creditdunord',)
     DESCRIPTION = 'Société Marseillaise de Crédit'
     LICENSE = 'LGPLv3+'

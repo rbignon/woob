@@ -36,7 +36,7 @@ class AmeliModule(Module, CapDocument, CapProfile):
     MAINTAINER = 'Florian Duguet'
     EMAIL = 'florian.duguet@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DEPENDENCIES = ('franceconnect',)
 
     BROWSER = AmeliBrowser

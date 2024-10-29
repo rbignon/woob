@@ -33,7 +33,7 @@ class NugerModule(CreditDuNordModule, CapBankWealth, CapProfile):
     NAME = 'nuger'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DEPENDENCIES = ('creditdunord',)
     DESCRIPTION = 'Banque Nuger'
     LICENSE = 'LGPLv3+'

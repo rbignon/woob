@@ -30,7 +30,7 @@ class ColissimoModule(Module, CapParcel):
     DESCRIPTION = u'Colissimo parcel tracking website'
     MAINTAINER = u'Florent Fourcot'
     EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.6'
+    VERSION = '3.7'
     LICENSE = 'AGPLv3+'
 
     BROWSER = ColissimoBrowser

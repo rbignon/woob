@@ -31,7 +31,7 @@ class PastealaconModule(Module, BasePasteModule):
     NAME = 'pastealacon'
     MAINTAINER = u'Laurent Bachelier'
     EMAIL = 'laurent@bachelier.name'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DESCRIPTION = u'Paste à la con text sharing tool'
     LICENSE = 'AGPLv3+'
     BROWSER = PastealaconBrowser

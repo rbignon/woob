@@ -33,7 +33,7 @@ class CarrefourBanqueModule(Module, CapBankWealth):
     NAME = 'carrefourbanque'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DESCRIPTION = 'Carrefour Banque'
     LICENSE = 'LGPLv3+'
     CONFIG = BackendConfig(

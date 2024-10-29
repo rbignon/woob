@@ -10,7 +10,7 @@ include = ["woob", "woob.*", "weboob"]
 
 [project]
 name = "woob"
-version = "3.6"
+version = "3.7"
 description = "Woob, Web Outside Of Browsers"
 authors = [
     { name="Romain Bignon", email="romain@woob.dev" }
@@ -69,7 +69,7 @@ woob = "woob.launcher:Launcher.run"
 name = "cz_conventional_commits"
 tag_format = "$version"
 update_changelog_on_bump = true
-version = "3.6"
+version = "3.7"
 version_files = [
     "pyproject.toml:version",
 ]

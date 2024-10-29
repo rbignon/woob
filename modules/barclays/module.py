@@ -31,7 +31,7 @@ class BarclaysModule(AbstractModule, CapBankWealth, CapProfile):
     NAME = 'barclays'
     MAINTAINER = u'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DEPENDENCIES = ('milleis',)
     LICENSE = 'LGPLv3+'
     DESCRIPTION = 'Milleis'

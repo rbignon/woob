@@ -31,7 +31,7 @@ class KiwibankModule(Module, CapBank):
     NAME = 'kiwibank'
     MAINTAINER = u'Cédric Félizard'
     EMAIL = 'cedric@felizard.fr'
-    VERSION = '3.6'
+    VERSION = '3.7'
     LICENSE = 'AGPLv3+'
     DESCRIPTION = u'Kiwibank'
     CONFIG = BackendConfig(

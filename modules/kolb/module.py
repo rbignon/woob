@@ -33,7 +33,7 @@ class KolbModule(CreditDuNordModule, CapBankWealth, CapProfile):
     NAME = 'kolb'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DEPENDENCIES = ('creditdunord',)
     DESCRIPTION = 'Banque Kolb'
     LICENSE = 'LGPLv3+'

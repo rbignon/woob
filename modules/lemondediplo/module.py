@@ -36,7 +36,7 @@ class LemondediploModule(Module, CapMessages, CapCollection):
     MAINTAINER = 'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
     STORAGE = {'seen': {}}
     BROWSER = LemondediploBrowser
     CONFIG = BackendConfig(ValueBackendPassword('login', label='Identifiant', masked=False),

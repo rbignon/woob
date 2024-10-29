@@ -201,7 +201,7 @@ class BumbleModule(Module, CapDating, CapMessages, CapMessagesPost):
     MAINTAINER = 'Roger Philibert'
     EMAIL = 'roger.philibert@gmail.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
     CONFIG = BackendConfig(Value('phone',  label='Phone number'),
                            Value('city', label='City where to like people (optional)', required=False),
                            Value('chatgpt_key', label='ChatGPT API Key (optional)', required=False),

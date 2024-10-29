@@ -33,7 +33,7 @@ class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
     MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
 
     accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.REPORT)
 

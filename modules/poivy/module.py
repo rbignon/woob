@@ -34,7 +34,7 @@ class PoivyModule(Module, CapDocument):
     NAME = 'poivy'
     MAINTAINER = u'Florent Fourcot'
     EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.6'
+    VERSION = '3.7'
     LICENSE = 'LGPLv3+'
     DESCRIPTION = 'Poivy website'
     CONFIG = BackendConfig(ValueBackendPassword('login',

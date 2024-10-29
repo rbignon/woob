@@ -40,7 +40,7 @@ __all__ = ['AppSmtp']
 class AppSmtp(ReplApplication):
     APPNAME = 'smtp'
     OLD_APPNAME = 'monboob'
-    VERSION = '3.6'
+    VERSION = '3.7'
     COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
     DESCRIPTION = 'Daemon allowing to regularly check for new messages on various websites, ' \
                   'and send an email for each message, and post a reply to a message on a website.'

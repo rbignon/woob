@@ -104,7 +104,7 @@ _woob()
                     COMPREPLY=( $(compgen -o default -W "--auto-update --backends --condition --count --debug --exclude-backends --export-session --force-ipv4 --force-ipv6 --formatter --help --insecure --logging-file --no-header --no-keys --nss --outfile --quiet --save-responses --select --verbose --version -I -O -a -b -c -d -e -f -h -n -q -s -v backends cd help items ls orders payments storage" -- "$cur" ) )
                     ;;
                 smtp)
-                    COMPREPLY=( $(compgen -o default -W "--auto-update --backends --condition --count --debug --exclude-backends --export-session --force-ipv4 --force-ipv6 --formatter --help --insecure --logging-file --no-header --no-keys --nss --outfile --quiet --save-responses --select --smtpd --verbose --version -I -O -S -a -b -c -d -e -f -h -n -q -s -v backends cd help ls once post run storage" -- "$cur" ) )
+                    COMPREPLY=( $(compgen -o default -W "--auto-update --backends --condition --count --debug --exclude-backends --export-session --force-ipv4 --force-ipv6 --formatter --help --insecure --logging-file --no-header --no-keys --nss --outfile --quiet --save-responses --select --verbose --version -I -O -a -b -c -d -e -f -h -n -q -s -v backends cd help ls once post run storage" -- "$cur" ) )
                     ;;
                 subtitles)
                     COMPREPLY=( $(compgen -o default -W "--auto-update --backends --condition --count --debug --exclude-backends --export-session --force-ipv4 --force-ipv6 --formatter --help --insecure --logging-file --no-header --no-keys --nss --outfile --quiet --save-responses --select --verbose --version -I -O -a -b -c -d -e -f -h -n -q -s -v backends cd download help info ls search storage" -- "$cur" ) )

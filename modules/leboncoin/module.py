@@ -32,7 +32,7 @@ class LeboncoinModule(Module, CapHousing):
     MAINTAINER = u'Bezleputh'
     EMAIL = 'carton_ben@yahoo.fr'
     LICENSE = 'AGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
 
     BROWSER = LeboncoinBrowser
 

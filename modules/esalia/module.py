@@ -35,7 +35,7 @@ class EsaliaModule(ErehsbcModule, CapBankWealth, CapDocument, CapProfile):
     MAINTAINER = 'Edouard Lambert'
     EMAIL = 'elambert@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DEPENDENCIES = ('erehsbc',)
 
     CONFIG = BackendConfig(

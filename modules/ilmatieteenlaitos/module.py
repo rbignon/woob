@@ -31,7 +31,7 @@ class IlmatieteenlaitosModule(Module, CapWeather):
     NAME = 'ilmatieteenlaitos'
     MAINTAINER = u'Matthieu Weber'
     EMAIL = 'mweber+weboob@free.fr'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DESCRIPTION = 'Get forecasts from the Ilmatieteenlaitos.fi website'
     LICENSE = 'AGPLv3+'
     BROWSER = IlmatieteenlaitosBrowser

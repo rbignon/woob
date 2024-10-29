@@ -34,7 +34,7 @@ class LdlcModule(MaterielnetModule, CapDocument):
     MAINTAINER = 'Vincent Paredes'
     EMAIL = 'vparedes@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DEPENDENCIES = ('materielnet',)
     CONFIG = MaterielnetModule.CONFIG.with_values(
         Value('website', label='Site web', default='part', choices={'pro': 'Professionnels', 'part': 'Particuliers'}),

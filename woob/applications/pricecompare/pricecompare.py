@@ -71,7 +71,7 @@ class PricesFormatter(PrettyFormatter):
 
 class AppPriceCompare(ReplApplication):
     APPNAME = 'pricecompare'
-    VERSION = '3.6'
+    VERSION = '3.7'
     COPYRIGHT = 'Copyright(C) 2012-YEAR Romain Bignon'
     DESCRIPTION = "Console application to compare products."
     SHORT_DESCRIPTION = "compare products"

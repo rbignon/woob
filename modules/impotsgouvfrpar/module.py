@@ -39,7 +39,7 @@ class ImpotsGouvFrParModule(FranceConnectModule, CapDocument, CapProfile):
     MAINTAINER = 'Florian Duguet'
     EMAIL = 'florian.duguet@budget-insight.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DEPENDENCIES = ('franceconnect',)
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label="Identifiant (dépend de votre méthode d'authentification)"),

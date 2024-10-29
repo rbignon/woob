@@ -33,7 +33,7 @@ class BforbankModule(Module, CapBankWealth, CapProfile):
     MAINTAINER = 'Baptiste Delpey'
     EMAIL = 'b.delpey@hotmail.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
     DEPENDENCIES = ('lcl', 'spirica')
     CONFIG = BackendConfig(
         ValueBackendPassword('login', label='Identifiant', masked=False),

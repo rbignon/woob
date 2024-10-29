@@ -1,3 +1,79 @@
+Woob 3.7 (2024-10-29)
+
+	General
+	* New aumagasin module (CapDirectory)
+	* New ccf module (CapBank, CapTransfer, CapDocument, CapBankTransfer, CapCollection, CapProfile, CapContact, CapCredentialsCheck, CapBankWealth)
+	* New mafrenchbank module (CapBank, CapCredentialsCheck)
+	* New nrjmobile module (CapCredentialsCheck, CapDocument, CapProfile)
+	* New orangebank module (CapBank, CapBankTransfer, CapBankTransferAddRecipient, CapCredentialsCheck, CapProfile, CapTransfer)
+	* Deleted hsbc module
+
+	General: Core
+	* launcher: do not try to load from `woob_applications` if the namespace doesn't exist
+	* Skip buggy `requests` versions and resolve "certificate verify failed: self-signed certificate in certificate chain" error
+	* [woob/core/modules] Require importlib-metadata on python < 3.8
+	* [woob/core/modules] Replace use of the deprecated pkg_resources
+	* woob.tools.pkce: fix verifier generation of incorrect length
+	* woob.exceptions: add the phone call OTP sent type
+	* woob.tools.backend: make state loading optional
+	* [pyproject.toml] relax setuptools dependency
+	* [pyproject.toml] Introduce `[build-system]` section
+	* table formatter: display the real name of the python package dependence
+	* [pyproject.toml] add browser/filters/file.py to testpath
+	* [tools/request] Add request tool "to_curl"
+	* woob.tools.pkce: Change verifier generation
+	* woob.tools.pkce: add PKCE utilities
+	* formatters: fix crash if outfile is a file-like object but not stdout
+	* launcher: check version of python
+	* [tools] fix a deprecation warning
+	* [woob/tools/capabilities/bank] Moving transaction_codes.py
+	* [woob/core/module] improve ModulesLoader/LoadedModule dependancy
+	* pyproject.toml: add dependence to termcolor
+
+	Browser
+	* [woob/browser] Fix location in SeleniumBrowser
+	* woob.browser.url: add timeout parameter
+	* [OAuth2Mixin] set callback_error_description as class attribute
+	* woob.browser.browsers: add plaintext request logging to browsers
+	* [woob/browser/browsers] Update save_response docstring
+	* [woob/browser/browsers] Add WOOB_CURLIFY_REQUEST support
+	* woob.browser.url: add MIME type matching
+	* woob.browser.url: add URL.with_base method
+	* woob.browser.url: add stored headers to URLs
+
+	Browser: Filters
+	* [filters/standard] Handle scientific notation with CleanDecimal
+	* [browser/filters] Add FileExtension and MimeType Filters
+	* [python3.11] fix for error 'global flags not at the start of the expression'
+
+	Capabilities
+	* [capabilities/bank] Set management_type's default value to None
+	* [core] Add new saving AccountTypes
+	* Add management_type to Account
+	* [core] Add new wealth transaction types
+	* [woob/capabilities/bank] Remove old code related to AccountOwnerProfile
+	* [capabilities/bank] Add attachments attribute to Transaction
+	* [capabilities/file] Add last_update & mime_type to BaseFile obj
+	* [bank/base] rename repayment_start_date to start_repayment_date
+	* [bank/base] Add deferred related fields to the Loans class
+	* [woob] Export BankTransactionCode + Balance + BalanceType
+	* [woob/capabilities/bank] Adding bankTransactionCode
+	* [woob/capabilities/bank] Add BANK scheme name and fix party object
+	* [capabilities/bank/base] better repr for Balance
+	* [woob/capabilities/bank/base] Add calculated attribute to balance
+	* [woob/capabilities/bank] Add TPAN and MPAN scheme names + fix roles
+
+	Applications: smtp
+	* remove the -S option as it depends on a deprecated lib
+
+	Applications: video
+	* [core] remove shebang from non-executable file
+
+	Documentation
+	* Adding correct path for boilerplate creation
+	* doc: explicit minimum version of python required
+
+
 Woob 3.6 (2023-05-23)
 
 	General

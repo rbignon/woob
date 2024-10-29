@@ -35,7 +35,7 @@ class OrangeBankModule(Module, CapBankTransferAddRecipient, CapProfile):
     MAINTAINER = 'Powens'
     EMAIL = 'dev@powens.com'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.6'
+    VERSION = '3.7'
 
     BROWSER = OrangeBankBrowser
 

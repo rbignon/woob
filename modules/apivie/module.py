@@ -32,7 +32,7 @@ class ApivieModule(Module, CapBankWealth):
     DESCRIPTION = 'Apivie'
     MAINTAINER = 'Romain Bignon'
     EMAIL = 'romain@weboob.org'
-    VERSION = '3.6'
+    VERSION = '3.7'
 
     BROWSER = ApivieBrowser
 
