@@ -19,18 +19,14 @@ from email.mime.text import MIMEText
 from smtplib import SMTP
 from email.header import Header, decode_header
 from email.utils import parseaddr, formataddr, formatdate
-from email import message_from_file, message_from_string
-from smtpd import SMTPServer
+from email import message_from_file
 import time
 import re
 import logging
-import asyncore
 import subprocess
-import socket
 import shlex
 
-from woob.core import Woob, CallErrors
-from woob.core.scheduler import Scheduler
+from woob.core import CallErrors
 from woob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
 from woob.tools.application.repl import ReplApplication
 from woob.tools.date import utc2local
@@ -39,49 +35,6 @@ from woob.tools.misc import get_backtrace, to_unicode
 
 
 __all__ = ['AppSmtp']
-
-
-class FakeSMTPD(SMTPServer):
-    def __init__(self, app, bindaddr, port):
-        super().__init__((bindaddr, port), None)
-        self.app = app
-
-    def process_message(self, peer, mailfrom, rcpttos, data):
-        msg = message_from_string(data)
-        self.app.process_incoming_mail(msg)
-
-
-class AppSmtpScheduler(Scheduler):
-    def __init__(self, app):
-        super(AppSmtpScheduler, self).__init__()
-        self.app = app
-
-    def run(self):
-        if self.app.options.smtpd:
-            if ':' in self.app.options.smtpd:
-                host, port = self.app.options.smtpd.split(':', 1)
-            else:
-                host = '127.0.0.1'
-                port = self.app.options.smtpd
-            try:
-                FakeSMTPD(self.app, host, int(port))
-            except socket.error as e:
-                self.logger.error('Unable to start the SMTP daemon: %s' % e)
-                return False
-
-        # XXX Fuck, we shouldn't copy this piece of code from
-        # woob.scheduler.Scheduler.run().
-        try:
-            while True:
-                self.stop_event.wait(0.1)
-                if self.app.options.smtpd:
-                    asyncore.loop(timeout=0.1, count=1)
-        except KeyboardInterrupt:
-            self._wait_to_stop()
-            raise
-        else:
-            self._wait_to_stop()
-        return True
 
 
 class AppSmtp(ReplApplication):
@@ -100,12 +53,6 @@ class AppSmtp(ReplApplication):
               'html':      0}
     CAPS = CapMessages
     DISABLE_REPL = True
-
-    def add_application_options(self, group):
-        group.add_option('-S', '--smtpd', help='run a fake smtpd server and set the port')
-
-    def create_woob(self):
-        return Woob(scheduler=AppSmtpScheduler(self))
 
     def load_default_backends(self):
         self.load_backends(CapMessages, storage=self.create_storage())
