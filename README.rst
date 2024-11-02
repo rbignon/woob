@@ -89,5 +89,5 @@ etc.), `read this <https://woob.dev/guides/contribute/>`_.
 Chat with us
 ============
 
-* `#woob @ liberachat <ircs://irc.libera.chat/woob>`_
+* `#woob @ OFTC <ircs://irc.oftc.net/woob>`_
 * `#woob @ matrix.org <https://matrix.to/#/#woob:matrix.org>`_
