@@ -20,7 +20,7 @@
 from decimal import Decimal
 import re
 
-from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
+from woob.browser.pages import HTMLPage, JsonPage, XMLPage, LoggedPage, RawPage
 from woob.browser.elements import ItemElement, DictElement, method
 from woob.browser.filters.standard import (
     CleanText, Date, Regexp, CleanDecimal,
@@ -190,10 +190,13 @@ class AccountsPage(LoggedPage, JsonPage):
                 self.env['original_currency'] = currency
 
 
-class AccountDetailsPage(LoggedPage, JsonPage):
+class AccountDetailsPage(LoggedPage, XMLPage):
     def get_currency(self):
-        return Currency(Dict('data/baseCurrency'))(self.doc)
-
+        base_currency = self.doc.xpath('//baseCurrency')
+        if base_currency:
+            return base_currency[0].text
+        else:
+            raise ValueError("baseCurrency not found in XML response.")
 
 class InvestmentPage(LoggedPage, JsonPage):
     def get_products(self):
