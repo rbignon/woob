@@ -762,28 +762,20 @@ class BanquePopulaire(TwoFactorBrowser):
 
         self.location(main_js_file, params={'v': chunk_version})
 
-        client_id_token: str = ""
-        client_id_authorize: str = ""
+        client_id: str = ""
         chunk_list_urls = self.page.getChunkList()
 
-#      #Retieve the ids hidden in JS chunks
+#      #Retrieve the ids hidden in JS chunks
         for chunk_url in chunk_list_urls:
             self.location(chunk_url, params={'v': chunk_version})
             if self.page.contains_client_id():
-                client_id_token, client_id_authorize = self.page.get_client_ids()
+                client_id = self.page.get_client_id()
                 break
 
-        if client_id_token == "" or client_id_authorize == "":
+        if client_id == "":
             self.logger.debug('No client_id found in chunks')
             raise BrowserUnavailable('No client_id found in chunks')
 
-        data = {
-            'grant_type': 'client_credentials',
-            'client_id': client_id_token,
-            'scope': ''
-        }
-
-        self.info_tokens.go(data=data)
         bpcesta = self.get_bpcesta_SSO()
         claims = {
             "id_token": {
@@ -809,7 +801,7 @@ class BanquePopulaire(TwoFactorBrowser):
 
         params = {
             'cdetab': self.cdetab,
-            'client_id': client_id_authorize,
+            'client_id': client_id,
             'response_type': 'code',
             'nonce': str(uuid4()),
             'response_mode': 'form_post',
@@ -847,7 +839,7 @@ class BanquePopulaire(TwoFactorBrowser):
         headers = {
             "Accept": "application/json, text/plain, */*",  # Mandatory, else you've got an HTML page.
             "Content-Type": "application/x-www-form-urlencoded",
-            "Referer": "https://www.banquepopulaire.fr/se-connecter/identifier(redirect:authentifier)",  # Mandatory if not, you have 430 error
+            "Referer": "https://www.banquepopulaire.fr/se-connecter/identifier(redirect:authentifier)"  # Mandatory, otherwise you get a 430 error
         }
         self.do_redirect("SAMLRequest", headers=headers)
 
@@ -865,12 +857,12 @@ class BanquePopulaire(TwoFactorBrowser):
         headers = {
             'Accept': 'application/json, text/plain, */*',  # Mandatory, else you've got an HTML page.
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Referer': 'https://www.banquepopulaire.fr/',  # Mandatory if not, you have 430 error
+            'Referer': 'https://www.banquepopulaire.fr/',  # Mandatory, otherwise you get a 430 error
         }
 
         data = {
             'grant_type': 'authorization_code',
-            'client_id': client_id_authorize,
+            'client_id': client_id,
             'code': what_the_hell_is_this_code,
             'code_verifier': self.login_verifier,
         }

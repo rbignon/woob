@@ -143,7 +143,7 @@ class RootDashBoardPage(HTMLPage):
         if match:
             left_part, right_part = match.split("?v=")
             return left_part, right_part
-        raise BrowserUnavailable("Could not find main js file url into RootDashBoardPage, pleaseraise an issue")
+        raise BrowserUnavailable("Could not find main js file url into RootDashBoardPage, please raise an issue")
 
 
 class JsFilePageEspaceClient(_JsFilePage):
@@ -153,16 +153,13 @@ class JsFilePageEspaceClient(_JsFilePage):
 
 class JsFilePageEspaceClientChunk(_JsFilePage):
     def contains_client_id(self):
-        return bool(re.search(r'\$E=\"[a-z0-9-]{36}\"', self.text))
+        return bool(re.search(r'zE=\"[a-z0-9-]{36}\"', self.text))
 
-    def get_client_ids(self):
-        match_e = re.search(r'\$E=\"[a-z0-9-]{36}\"', self.text).group(0)
-        client_id_E = re.search(r'[a-z0-9-]{36}', match_e).group(0)
+    def get_client_id(self):
+        match_e = re.search(r'zE=\"[a-z0-9-]{36}\"', self.text).group(0)
+        client_id = re.search(r'[a-z0-9-]{36}', match_e).group(0)
 
-        match_xe = re.search(r',XE=\"[a-z0-9-]{36}\"', self.text).group(0)
-        client_id_XE = re.search(r'[a-z0-9-]{36}', match_xe).group(0)
-
-        return client_id_E, client_id_XE
+        return client_id
 
 
 class SynthesePage(JsonPage):
