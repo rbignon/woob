@@ -126,6 +126,9 @@ class AccountsPage(LoggedPage, JsonPage):
 
             def obj_code(self):
                 product_data = Field('_product_data')(self)
+                if 'isin' not in product_data:
+                    return NotAvailable
+
                 code = product_data['isin']
                 if is_isin_valid(code):
                     # Prefix CFD (Contrats for difference) ISIN codes with "XX-"
@@ -150,6 +153,8 @@ class AccountsPage(LoggedPage, JsonPage):
             def obj_stock_market(self):
                 exchanges = Env('exchanges')(self)
                 product_data = Field('_product_data')(self)
+                if 'exchangeId' not in product_data:
+                    return NotAvailable
                 exchange_id = product_data['exchangeId']
                 if exchange_id:
                     return exchanges.get(int(exchange_id), NotAvailable)
