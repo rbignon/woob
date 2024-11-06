@@ -574,15 +574,21 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             f"https://{self.website}.secure.lcl.fr/outil/UWBO/AccesBourse/temporisationCar?codeTicker=TICKERBOURSE{contract_type}",
             data="",
         )
-        if self.no_perm.is_here():
+        if self.no_perm.is_here() or self.forbidden_life_insurances.is_here():
             return False
-        next_page = self.page.get_next()
+
+        next_page = None
+        if self.page is not None:
+            next_page = self.page.get_next()
+
         if next_page:
             # go on a intermediate page to get a session cookie (jsessionid)
             self.location(next_page)
             # go to bourse page
             self.bourse.stay_or_go()
             return True
+
+        return False
 
     def deconnexion_bourse(self):
         self.disc.stay_or_go()
