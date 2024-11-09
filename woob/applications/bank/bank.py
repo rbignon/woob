@@ -101,7 +101,7 @@ class OfxFormatter(IFormatter):
             self.output('<BANKID>null')
             self.output('<BRANCHID>null')
             self.output('<ACCTID>%s' % account.id)
-            self.output('<ACCTTYPE>%s' % self.account_type)
+            self.output('<ACCTTYPE>%s' % self.TYPES_ACCTS[self.account_type])
             self.output('<ACCTKEY>null')
             self.output('</CCACCTFROM>')
         else:
@@ -111,7 +111,7 @@ class OfxFormatter(IFormatter):
             self.output('<BANKID>null')
             self.output('<BRANCHID>null')
             self.output('<ACCTID>%s' % account.id)
-            self.output('<ACCTTYPE>%s' % self.account_type)
+            self.output('<ACCTTYPE>%s' % self.TYPES_ACCTS[self.account_type])
             self.output('<ACCTKEY>null')
             self.output('</BANKACCTFROM>')
 
