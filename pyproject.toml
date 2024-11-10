@@ -23,8 +23,6 @@ classifiers = [
     "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -37,7 +35,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Text Processing :: Markup :: HTML"
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 dependencies = [
     "lxml",
     # `requests` versions 2.32.0, 2.32.1, and 2.32.2 are affected by a bug breaking the ability to specify
