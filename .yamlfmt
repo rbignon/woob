@@ -1,0 +1,5 @@
+formatter:
+  type: basic
+  drop_merge_tag: true
+  pad_line_comments: 2
+  retain_line_breaks: true
