@@ -22,6 +22,7 @@ import re
 from datetime import date, datetime
 from typing import Iterable, Iterator
 
+from deprecated.sphinx import deprecated
 from unidecode import unidecode
 
 from woob.capabilities.base import (
@@ -31,9 +32,8 @@ from woob.capabilities.base import (
 )
 from woob.capabilities.date import DateField
 from woob.exceptions import BrowserQuestion
-from woob.tools.capabilities.bank.iban import is_iban_valid
 
-from .base import ObjectNotFound, BaseAccount, CapBank, Account
+from .base import ObjectNotFound, BaseAccount, CapBank, Account, IBANField
 
 
 __all__ = [
@@ -176,6 +176,10 @@ class AddRecipientTimeout(AddRecipientError):
     code = 'timeout'
 
 
+@deprecated(
+    version="3.8",
+    reason="IBANs are now handled by IBANField which raises its own errors",
+)
 class RecipientInvalidIban(AddRecipientError):
     code = 'invalidIban'
 
@@ -194,7 +198,7 @@ class Recipient(BaseAccount):
     """
     enabled_at =     DateField('Date of availability')
     category =       StringField('Recipient category')
-    iban =           StringField('International Bank Account Number')
+    iban =           IBANField('International Bank Account Number')
 
     # Needed for multispaces case
     origin_account_id = StringField('Account id which recipient belong to')
@@ -671,8 +675,6 @@ class CapBankTransferAddRecipient(CapBankTransfer):
         :raises: :class:`AddRecipientError`
         :rtype: :class:`Recipient`
         """
-        if not is_iban_valid(recipient.iban):
-            raise RecipientInvalidIban('Iban is not valid.')
         if not recipient.label:
             raise RecipientInvalidLabel('Recipient label is mandatory.')
         return self.new_recipient(recipient, **params)
