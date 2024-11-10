@@ -257,7 +257,7 @@ class FingerprintPage(RawPage):
           "font-UkrainianTimesET": False,
           "font-UkrainianCourier": False,
           "font-Tiff-HeavyUkraine": False,
-          "font-䡵湧䱡渠䅲瑤敳楧渠㈰〲‭⁁汬⁲楧桴猠牥獥牶敤⹔桵⁰桡瀠噎周畦慰〲†乯牭慬ㄮ〠䍯摥⁖义⁦潲⁗楮摯睳周畦慰〲乯牭慬HungLan Artdesign - http://www.vietcomic.comVNI-Thufap2  Normalv2.0 Code VNI for WindowsVNI-Thufap2 Normal\u0002": True,
+          "font-䡵湧䱡渠䅲瑤敳楧渠㈰〲‭⁁汬⁲楧桴猠牥獥牶敤⹔桵⁰桡瀠噎周畦慰〲†乯牭慬ㄮ〠䍯摥⁖义⁦潲⁗楮摯睳周畦慰〲乯牭慬HungLan Artdesign - http://www.vietcomic.comVNI-Thufap2  Normalv2.0 Code VNI for WindowsVNI-Thufap2 Normal\u0002": True,  # nosec
           "font-Vietnam": False,
           "font-Bwviet": False,
           "font-Soviet": False,
