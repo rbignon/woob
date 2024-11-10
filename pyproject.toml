@@ -49,6 +49,7 @@ dependencies = [
     "pycountry",
     "rich ~= 13.0",
     "termcolor",
+    "schwifty >= 2024.1",
 ]
 
 [project.scripts]

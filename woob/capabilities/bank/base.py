@@ -21,6 +21,8 @@ from binascii import crc32
 import re
 from typing import Iterable, List
 
+from schwifty import IBAN
+
 from woob.capabilities.account import CapCredentialsCheck
 from woob.capabilities.base import (
     BaseObject, Capability, Field, StringField, DecimalField, IntField,
@@ -36,7 +38,7 @@ __all__ = [
     'CapBank', 'BaseAccount', 'Account', 'Loan', 'Transaction', 'AccountNotFound',
     'AccountType', 'AccountOwnership', 'Balance', 'AccountSchemeName', 'TransactionCounterparty',
     'PartyIdentity', 'AccountParty', 'AccountIdentification', 'PartyRole', 'CapAccountCheck',
-    'NoAccountsException', 'BalanceType', 'BankTransactionCode',
+    'NoAccountsException', 'BalanceType', 'BankTransactionCode', 'IBANField'
 ]
 
 
@@ -291,6 +293,16 @@ class AccountParty(BaseObject):
         return f'<AccountParty party_identities={self.party_identities} account_identifications={self.account_identifications}>'
 
 
+class IBANField(Field):
+    """A field which accepts only :class:`IBAN` types."""
+
+    def __init__(self, doc, **kwargs):
+        super().__init__(doc, IBAN, **kwargs)
+
+    def convert(self, value):
+        return IBAN(value)
+
+
 class Account(BaseAccount):
     """
     Bank account.
@@ -330,7 +342,7 @@ class Account(BaseAccount):
     owner_type = StringField('Usage of account')  # cf AccountOwnerType class
     balance =   DecimalField('Balance on this bank account')
     coming =    DecimalField('Sum of coming movements')
-    iban =      StringField('International Bank Account Number', mandatory=False)
+    iban =      IBANField('International Bank Account Number', mandatory=False)
     ownership = StringField('Relationship between the credentials owner (PSU) and the account')  # cf AccountOwnership class
 
     # card attributes
