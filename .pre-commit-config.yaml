@@ -70,5 +70,10 @@ repos:
     rev: v1.13.0
     hooks:
       - id: mypy
-        additional_dependencies: ["types-python-dateutil", "types-requests", "types-simplejson", "types-pyyaml"]
+        additional_dependencies:
+          - types-Deprecated
+          - types-python-dateutil
+          - types-pyyaml
+          - types-requests
+          - types-simplejson
         files: ^woob/

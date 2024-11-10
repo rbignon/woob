@@ -15,76 +15,76 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from deprecated.sphinx import deprecated
+from schwifty import BBAN, IBAN
+from schwifty.exceptions import InvalidAccountCode
 
-import re
+
+@deprecated(version="3.8", reason="Use :class:`schwifty.IBAN.compact` instead.")
+def clean(iban: str) -> str:
+    return IBAN(iban).compact
 
 
-_country2length = dict(
-    AL=28, AD=24, AT=20, AZ=28, BE=16, BH=22, BA=20, BR=29,
-    BG=22, CR=21, HR=21, CY=28, CZ=24, DK=18, DO=28, EE=20,
-    FO=18, FI=18, FR=27, GE=22, DE=22, GI=23, GR=27, GL=18,
-    GT=28, HU=28, IS=26, IE=22, IL=23, IT=27, KZ=20, KW=30,
-    LV=21, LB=28, LI=21, LT=20, LU=20, MK=19, MT=31, MR=27,
-    MU=30, MC=27, MD=24, ME=22, NL=18, NO=15, PK=24, PS=29,
-    PL=28, PT=25, RO=24, SM=27, SA=24, RS=22, SK=24, SI=19,
-    ES=24, SE=24, CH=21, TN=24, TR=26, AE=23, GB=22, VG=24,
-    MA=28, JO=30, TL=23, XK=20, QA=29,
-)
-
-def clean(iban):
-    return iban.replace(' ','').replace('\t', '')
-
-def is_iban_valid(iban):
+@deprecated(version="3.8", reason="Use :attr:`schwifty.IBAN.is_valid` instead.")
+def is_iban_valid(iban: str) -> bool:
     # Ensure upper alphanumeric input.
-    iban = clean(iban)
-    if not re.match(r'^[A-Z]{2}\d{2}[\dA-Z]+$', iban):
+    return IBAN(iban, allow_invalid=True).is_valid
+
+
+@deprecated(version="3.8", reason="Use :attr:`schwifty.IBAN.numeric` instead.")
+def iban2numeric(iban: str) -> int:
+    return IBAN(iban).numeric
+
+
+@deprecated(version="3.8", reason="Use :attr:`schwifty.IBAN.checksum_digits` instead.")
+def find_iban_checksum(iban: str) -> int:
+    return int(IBAN(iban).checksum_digits)
+
+
+@deprecated(version="3.8", reason="Use :meth:`schwifty.IBAN.from_bban` instead.")
+def rebuild_iban(iban: str) -> str:
+    return str(IBAN.from_bban(iban[:2], iban[4:]))
+
+
+# For helper functions below, a RIB is French BBAN
+
+
+@deprecated(version="3.8", reason="Use :meth:`schwifty.IBAN.from_bban` instead.")
+def rib2iban(rib: str) -> str:
+    return str(IBAN.from_bban("FR", rib))
+
+
+@deprecated(
+    version="3.8", reason="Use :attr:`schwifty.BBAN.national_checksum_digits` instead."
+)
+def find_rib_checksum(bank: str, counter: str, account: str) -> int:
+    return int(
+        BBAN.from_components(
+            "FR", bank_code=bank, branch_code=counter, account_code=account
+        ).national_checksum_digits
+    )
+
+
+@deprecated(version="3.8", reason="Use :meth:`schwifty.IBAN.from_bban` instead.")
+def is_rib_valid(rib: str) -> bool:
+    bban = BBAN("FR", rib)
+    if len(bban) > 23:
         return False
 
-    # Validate country code against expected length.
-    if iban[:2] in _country2length and len(iban) != _country2length[iban[:2]]:
+    try:
+        # Function raises if there is an issue. The bool is something else.
+        bban.validate_national_checksum()
+    except InvalidAccountCode:
         return False
+    return True
 
-    digits = iban2numeric(iban)
-    return digits % 97 == 1
 
-def iban2numeric(iban):
-    # Shift and convert.
-    iban = iban[4:] + iban[:4]
-    # BASE 36: 0..9,A..Z -> 0..35
-    digits = int(''.join(str(int(ch, 36)) for ch in iban))
-    return digits
-
-def find_iban_checksum(iban):
-    iban = iban[:2] + '00' + iban[4:]
-    digits = str(iban2numeric(iban))
-    checksum = 0
-    for char in digits:
-        checksum *= 10
-        checksum += int(char)
-        checksum %= 97
-    return 98-checksum
-
-def rebuild_iban(iban):
-    return iban[:2] + ('%02d' % find_iban_checksum(iban)) + iban[4:]
-
-def rib2iban(rib):
-    return rebuild_iban('FR00' + rib)
-
-def find_rib_checksum(bank, counter, account):
-    letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    digits = '12345678912345678923456789'
-    account = ''.join([(char if char.isdigit() else digits[letters.find(char.upper())]) for char in account])
-    rest = (89*int(bank) + 15*int(counter) + 3*int(account)) % 97
-    return 97 - rest
-
-def is_rib_valid(rib):
-    if len(rib) != 23:
-        return False
-
-    return find_rib_checksum(rib[:5], rib[5:10], rib[10:21]) == int(rib[21:23])
-
-def rebuild_rib(rib):
-    rib = clean(rib)
-    assert len(rib) >= 21
-    key = find_rib_checksum(rib[:5], rib[5:10], rib[10:21])
-    return rib[:21] + ('%02d' % key)
+@deprecated(version="3.8", reason="Use :meth:`schwifty.BBAN.from_components` instead.")
+def rebuild_rib(rib: str) -> str:
+    bban = BBAN("FR", rib)
+    return BBAN.from_components(
+        "FR",
+        bank_code=bban.bank_code,
+        branch_code=bban.branch_code,
+        account_code=bban.account_code,
+    ).compact
