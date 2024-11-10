@@ -72,6 +72,7 @@ from .base import (
     Balance,
     BalanceType,
     BankTransactionCode,
+    IBANField,
 )
 from .rate import Rate, CapCurrencyRate
 from .wealth import (
@@ -141,4 +142,5 @@ __all__ = [
     'Balance',
     'BalanceType',
     'BankTransactionCode',
+    'IBANField',
 ]
