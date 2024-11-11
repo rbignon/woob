@@ -116,18 +116,21 @@ class OfxFormatter(IFormatter):
             self.output("<CREDITCARDMSGSRSV1><CCSTMTTRNRS><TRNUID>%s" % uuid.uuid1())
             self.output("<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<CCSTMTRS>")
             self.output("<CURDEF>%s<CCACCTFROM>" % (account.currency or "EUR"))
-            self.output("<ACCTID>%s" % account.id)
-            self.output("<ACCTKEY>null")
+            self.output(f"<ACCTID>{account.iban.account_code}")
+            if account.iban.national_checksum_digits:
+                self.output(f"<ACCTKEY>{account.iban.national_checksum_digits}")
             self.output("</CCACCTFROM>")
         else:
             self.output("<BANKMSGSRSV1><STMTTRNRS><TRNUID>%s" % uuid.uuid1())
             self.output("<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<STMTRS>")
             self.output("<CURDEF>%s<BANKACCTFROM>" % (account.currency or "EUR"))
-            self.output("<BANKID>null")
-            self.output("<BRANCHID>null")
-            self.output("<ACCTID>%s" % account.id)
+            self.output(f"<BANKID>{account.iban.bank_code}")
+            if account.iban.branch_code:
+                self.output(f"<BRANCHID>{account.iban.branch_code}")
+            self.output(f"<ACCTID>{account.iban.account_code}")
             self.output("<ACCTTYPE>%s" % self.TYPES_ACCTS[self.account_type])
-            self.output("<ACCTKEY>null")
+            if account.iban.national_checksum_digits:
+                self.output(f"<ACCTKEY>{account.iban.national_checksum_digits}")
             self.output("</BANKACCTFROM>")
 
         self.output("<BANKTRANLIST>")

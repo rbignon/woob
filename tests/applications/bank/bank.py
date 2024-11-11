@@ -18,6 +18,8 @@
 import io
 import logging
 
+from schwifty import IBAN
+
 from woob.applications.bank.bank import OfxFormatter
 from woob.capabilities.bank import Account
 
@@ -29,6 +31,7 @@ def test_account_type_ofx_mapping():
     formatter = OfxFormatter(outfile=buffer)
     formatter.termrows = 0
 
+    account.iban = IBAN.random()
     account.type = Account.TYPE_CHECKING
     formatter.start_format(account=account)
     assert "<ACCTTYPE>CHECKING" in buffer.getvalue()
@@ -46,6 +49,7 @@ def test_account_type_default_ofx_mapping(caplog):
     formatter = OfxFormatter(outfile=buffer)
     formatter.termrows = 0
 
+    account.iban = IBAN.random()
     account.type = -1
     with caplog.at_level(logging.ERROR, logger="woob.applications.bank.bank"):
         formatter.start_format(account=account)
