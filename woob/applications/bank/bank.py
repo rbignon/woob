@@ -116,10 +116,7 @@ class OfxFormatter(IFormatter):
             self.output("<CREDITCARDMSGSRSV1><CCSTMTTRNRS><TRNUID>%s" % uuid.uuid1())
             self.output("<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<CCSTMTRS>")
             self.output("<CURDEF>%s<CCACCTFROM>" % (account.currency or "EUR"))
-            self.output("<BANKID>null")
-            self.output("<BRANCHID>null")
             self.output("<ACCTID>%s" % account.id)
-            self.output("<ACCTTYPE>%s" % self.TYPES_ACCTS[self.account_type])
             self.output("<ACCTKEY>null")
             self.output("</CCACCTFROM>")
         else:
