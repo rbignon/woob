@@ -23,7 +23,7 @@ from decimal import Decimal
 from schwifty import IBAN
 
 from woob.applications.bank.bank import OfxFormatter
-from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.bank import Account, Recipient, Transaction
 
 
 def test_account_type_ofx_mapping():
@@ -81,3 +81,27 @@ def test_ofx_tr_with_memo():
 
     formatter.flush()
     assert "<MEMO>06xxxxxx01 MANDAT XYZ</MEMO>" in buffer.getvalue()
+
+
+def test_ofx_tr_with_ref():
+    """Format a transaction with a reference."""
+    buffer = io.StringIO()
+    formatter = OfxFormatter(outfile=buffer)
+    formatter.termrows = 0
+    today = datetime.datetime.now()
+
+    account = Account()
+    account.iban = IBAN.random()
+
+    formatter.start_format(account=account)
+
+    tr = Transaction()
+    tr.date = today - datetime.timedelta(days=1)
+    tr.type = Transaction.TYPE_ORDER
+    tr.label = "ACME INC"
+    tr.amount = Decimal("-99.98")
+    tr._ref = "BILL-XYZ-1"
+    formatter.format(tr)
+
+    formatter.flush()
+    assert "<REFNUM>BILL-XYZ-1" in buffer.getvalue()

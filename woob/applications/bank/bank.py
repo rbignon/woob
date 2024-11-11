@@ -163,6 +163,9 @@ class OfxFormatter(IFormatter):
         elif obj.category:
             result += "<MEMO>%s</MEMO>\n" % obj.category.replace("&", "&amp;")
 
+        if hasattr(obj, "_ref") and not empty(obj._ref):
+            result += "<REFNUM>%s\n" % obj._ref.replace("&", "&amp;")
+
         result += "</STMTTRN>\n"
 
         return result
