@@ -151,7 +151,7 @@ class OfxFormatter(IFormatter):
         if obj.rdate:
             result += "<DTUSER>%s\n" % obj.rdate.strftime("%Y%m%d")
         result += "<TRNAMT>%s\n" % obj.amount
-        result += "<FITID>%s\n" % obj.unique_id(self.seen)
+        result += "<FITID>%s\n" % (obj.id or obj.unique_id(self.seen))
 
         if hasattr(obj, "label") and not empty(obj.label):
             result += "<NAME>%s\n" % obj.label.replace("&", "&amp;")
