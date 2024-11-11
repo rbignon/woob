@@ -195,6 +195,19 @@ class OfxFormatter(IFormatter):
         if obj.rdate:
             stmt.append(E.DTUSER(obj.rdate.strftime("%Y%m%d")))
         stmt.append(E.TRNAMT(str(obj.amount)))
+
+        if obj.type == Transaction.TYPE_LOAN_PAYMENT:
+            if hasattr(obj, "_loan_payment"):
+                _loan = E.LOANPMTINFO(
+                    E.PRINAMT(str(obj._loan_payment["principal_amount"])),
+                    E.INTAMT(str(obj._loan_payment["interest_amount"])),
+                )
+                if obj._loan_payment["insurance_amount"]:
+                    _loan.append(E.INSURANCE(str(obj._loan_payment["insurance_amount"])))
+                stmt.append(_loan)
+            else:
+                LOGGER.warning("Loan payment not implemented for this backend.")
+
         stmt.append(E.FITID(obj.id or obj.unique_id(self.seen)))
         if hasattr(obj, "_ref") and not empty(obj._ref):
             stmt.append(E.REFNUM(obj._ref))

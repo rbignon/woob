@@ -25,6 +25,7 @@ from schwifty import IBAN
 
 from woob.applications.bank.bank import OfxFormatter
 from woob.capabilities.bank import Account, Recipient, Transaction
+from woob.capabilities.base import NotAvailable
 
 
 def test_ofx_header():
@@ -160,6 +161,62 @@ def test_ofx_tr_with_ref():
 
     formatter.flush()
     assert "<REFNUM>BILL-XYZ-1</REFNUM>" in buffer.getvalue()
+
+
+def test_ofx_tr_posted_loan_payment_format(caplog):
+    """Format a loan payment transaction."""
+    buffer = io.StringIO()
+    formatter = OfxFormatter(outfile=buffer)
+    formatter.termrows = 0
+    today = datetime.datetime.now()
+
+    account = Account()
+    account.iban = IBAN.random()
+
+    formatter.start_format(account=account)
+
+    tr = Transaction()
+    tr.date = today - datetime.timedelta(days=1)
+    tr.type = Transaction.TYPE_LOAN_PAYMENT
+    tr.label = "Loan #123"
+    tr.amount = Decimal("-1342.56")
+
+    with caplog.at_level(logging.WARNING, logger="woob.applications.bank.bank"):
+        formatter.format(tr)
+        assert "Loan payment not implemented for this backend." in caplog.text
+
+    tr.date = today - datetime.timedelta(days=30)
+    tr._loan_payment = {
+        "principal_amount": Decimal("1164.42"),
+        "interest_amount": Decimal("178.14"),
+        "insurance_amount": NotAvailable,
+        "principal_balance": NotAvailable,
+    }
+    formatter.format(tr)
+
+    tr.date = today - datetime.timedelta(days=2)
+    tr.label = "Loan #111"
+    tr.amount = Decimal("-100.00")
+    tr._loan_payment = {
+        "principal_amount": Decimal("98.00"),
+        "interest_amount": Decimal("1.00"),
+        "insurance_amount": Decimal("1.00"),
+        "principal_balance": NotAvailable,
+    }
+    formatter.format(tr)
+
+    formatter.flush()
+    output = re.findall(r"<STMTTRN>.+?</STMTTRN>", buffer.getvalue(), re.DOTALL)
+    assert "LOANPMTINFO" not in output[0]
+    assert "<TRNTYPE>INT</TRNTYPE>" in output[0]
+    assert "<TRNAMT>-1342.56</TRNAMT>" in output[0]
+    assert "<NAME>Loan #123</NAME>" in output[0]
+
+    assert "LOANPMTINFO" in output[1]
+    assert "<PRINAMT>1164.42</PRINAMT>" in output[1]
+    assert "<INTAMT>178.14</INTAMT>" in output[1]
+
+    assert "<INSURANCE>1.00</INSURANCE>" in output[2]
 
 
 def test_ofx_tr_posted_transfer_format():
