@@ -15,13 +15,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import io
 import logging
+from decimal import Decimal
 
 from schwifty import IBAN
 
 from woob.applications.bank.bank import OfxFormatter
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, Transaction
 
 
 def test_account_type_ofx_mapping():
@@ -55,3 +57,27 @@ def test_account_type_default_ofx_mapping(caplog):
         formatter.start_format(account=account)
         assert "<ACCTTYPE>CHECKING" in buffer.getvalue()
         assert "cannot be mapped to OFX format" in caplog.text
+
+
+def test_ofx_tr_with_memo():
+    """Format a transaction with MEMO / motive."""
+    buffer = io.StringIO()
+    formatter = OfxFormatter(outfile=buffer)
+    formatter.termrows = 0
+    today = datetime.datetime.now()
+
+    account = Account()
+    account.iban = IBAN.random()
+
+    formatter.start_format(account=account)
+
+    tr = Transaction()
+    tr.date = today - datetime.timedelta(days=1)
+    tr.type = Transaction.TYPE_CARD
+    tr.label = "ACME INC"
+    tr.amount = Decimal("-15.42")
+    tr._memo = "06xxxxxx01 MANDAT XYZ"  # phone recurring payment with SEPA mandate
+    formatter.format(tr)
+
+    formatter.flush()
+    assert "<MEMO>06xxxxxx01 MANDAT XYZ</MEMO>" in buffer.getvalue()

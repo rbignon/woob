@@ -157,9 +157,13 @@ class OfxFormatter(IFormatter):
             result += "<NAME>%s\n" % obj.label.replace("&", "&amp;")
         else:
             result += "<NAME>%s\n" % obj.raw.replace("&", "&amp;")
-        if obj.category:
-            result += "<MEMO>%s\n" % obj.category.replace("&", "&amp;")
-        result += "</STMTTRN>"
+
+        if hasattr(obj, "_memo") and not empty(obj._memo):
+            result += "<MEMO>%s</MEMO>\n" % obj._memo.replace("&", "&amp;")
+        elif obj.category:
+            result += "<MEMO>%s</MEMO>\n" % obj.category.replace("&", "&amp;")
+
+        result += "</STMTTRN>\n"
 
         return result
 
