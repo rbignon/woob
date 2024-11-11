@@ -158,6 +158,20 @@ class OfxFormatter(IFormatter):
         else:
             result += "<NAME>%s\n" % obj.raw.replace("&", "&amp;")
 
+        if hasattr(obj, "_recipient") and not empty(obj._recipient):
+            result += (
+                "<BANKACCTTO>"
+                f"<BANKID>{obj._recipient.iban.bank_code}"
+                f"<BRANCHID>{obj._recipient.iban.branch_code}"
+                f"<ACCTID>{obj._recipient.iban.account_code}"
+                # schwifty supports extracting this information via account_type property,
+                # however it does not work for all countries. It also does not map the value to an enum.
+                # OFX specification requires this field so set an acceptable default: CHECKING.
+                f"<ACCTTYPE>CHECKING"
+                f"<ACCTKEY>{obj._recipient.iban.national_checksum_digits}"
+                "</BANKACCTTO>\n"
+            )
+
         if hasattr(obj, "_memo") and not empty(obj._memo):
             result += "<MEMO>%s</MEMO>\n" % obj._memo.replace("&", "&amp;")
         elif obj.category:

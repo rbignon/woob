@@ -18,6 +18,7 @@
 import datetime
 import io
 import logging
+import re
 from decimal import Decimal
 
 from schwifty import IBAN
@@ -105,3 +106,39 @@ def test_ofx_tr_with_ref():
 
     formatter.flush()
     assert "<REFNUM>BILL-XYZ-1" in buffer.getvalue()
+
+
+def test_ofx_tr_posted_transfer_format():
+    """Format a fund transfer transaction."""
+    buffer = io.StringIO()
+    formatter = OfxFormatter(outfile=buffer)
+    formatter.termrows = 0
+    today = datetime.datetime.now()
+
+    account = Account()
+    account.iban = IBAN.random()
+
+    formatter.start_format(account=account)
+
+    tr = Transaction()
+    tr.date = today - datetime.timedelta(days=1)
+    tr.type = Transaction.TYPE_TRANSFER
+    tr.label = "John Doe"
+    tr.amount = Decimal("-1000.00")
+    tr._recipient = Recipient()
+    tr._recipient.iban = IBAN.random(country_code="DE")
+    formatter.format(tr)
+
+    tr._recipient.iban = IBAN.random(country_code="FR")
+    formatter.format(tr)
+
+    formatter.flush()
+    output = re.findall(r"<STMTTRN>.+?</STMTTRN>", buffer.getvalue(), re.DOTALL)
+    assert "<TRNAMT>-1000.00" in output[0]
+    assert "<NAME>John Doe" in output[0]
+    assert "<BRANCHID><" in output[0]
+    assert "<ACCTKEY><" in output[0]
+
+    assert f"<BRANCHID>{tr._recipient.iban.branch_code}" in output[1]
+    assert f"<ACCTID>{tr._recipient.iban.account_code}" in output[1]
+    assert "<ACCTKEY>" in output[1]
