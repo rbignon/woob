@@ -27,6 +27,20 @@ from woob.applications.bank.bank import OfxFormatter
 from woob.capabilities.bank import Account, Recipient, Transaction
 
 
+def test_ofx_header():
+    """OFX 2.2 header compliance."""
+    account = Account()
+    buffer = io.StringIO()
+    formatter = OfxFormatter(outfile=buffer)
+    formatter.termrows = 0
+
+    account.iban = IBAN.random()
+    account.type = Account.TYPE_CHECKING
+    formatter.start_format(account=account)
+    formatter.flush()
+    assert '<?OFX OFXHEADER="200" VERSION="220"' in buffer.getvalue()
+
+
 def test_account_type_ofx_mapping():
     """Basic Account types are mapped to valid OFX ACCTTYPE values."""
     account = Account()
@@ -37,12 +51,14 @@ def test_account_type_ofx_mapping():
     account.iban = IBAN.random()
     account.type = Account.TYPE_CHECKING
     formatter.start_format(account=account)
-    assert "<ACCTTYPE>CHECKING" in buffer.getvalue()
+    formatter.flush()
+    assert "<ACCTTYPE>CHECKING</ACCTTYPE>" in buffer.getvalue()
 
     account.type = Account.TYPE_SAVINGS
     buffer.truncate()
     formatter.start_format(account=account)
-    assert "<ACCTTYPE>SAVINGS" in buffer.getvalue()
+    formatter.flush()
+    assert "<ACCTTYPE>SAVINGS</ACCTTYPE>" in buffer.getvalue()
 
 
 def test_account_type_default_ofx_mapping(caplog):
@@ -56,7 +72,8 @@ def test_account_type_default_ofx_mapping(caplog):
     account.type = -1
     with caplog.at_level(logging.ERROR, logger="woob.applications.bank.bank"):
         formatter.start_format(account=account)
-        assert "<ACCTTYPE>CHECKING" in buffer.getvalue()
+        formatter.flush()
+        assert "<ACCTTYPE>CHECKING</ACCTTYPE>" in buffer.getvalue()
         assert "cannot be mapped to OFX format" in caplog.text
 
 
@@ -105,7 +122,7 @@ def test_ofx_tr_with_ref():
     formatter.format(tr)
 
     formatter.flush()
-    assert "<REFNUM>BILL-XYZ-1" in buffer.getvalue()
+    assert "<REFNUM>BILL-XYZ-1</REFNUM>" in buffer.getvalue()
 
 
 def test_ofx_tr_posted_transfer_format():
@@ -134,12 +151,12 @@ def test_ofx_tr_posted_transfer_format():
 
     formatter.flush()
     output = re.findall(r"<STMTTRN>.+?</STMTTRN>", buffer.getvalue(), re.DOTALL)
-    assert "<TRNTYPE>XFER" in output[0]
-    assert "<TRNAMT>-1000.00" in output[0]
-    assert "<NAME>John Doe" in output[0]
-    assert "<BRANCHID><" in output[0]
-    assert "<ACCTKEY><" in output[0]
+    assert "<TRNTYPE>XFER</TRNTYPE>" in output[0]
+    assert "<TRNAMT>-1000.00</TRNAMT>" in output[0]
+    assert "<NAME>John Doe</NAME>" in output[0]
+    assert "<BRANCHID>" not in output[0]
+    assert "<ACCTKEY>" not in output[0]
 
-    assert f"<BRANCHID>{tr._recipient.iban.branch_code}" in output[1]
-    assert f"<ACCTID>{tr._recipient.iban.account_code}" in output[1]
+    assert f"<BRANCHID>{tr._recipient.iban.branch_code}</BRANCHID>" in output[1]
+    assert f"<ACCTID>{tr._recipient.iban.account_code}</ACCTID>" in output[1]
     assert "<ACCTKEY>" in output[1]

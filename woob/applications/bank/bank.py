@@ -23,6 +23,8 @@ from decimal import Decimal, InvalidOperation
 
 from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
+from lxml import etree as ET
+from lxml.builder import E
 
 from woob.capabilities.bank import (
     Account,
@@ -84,8 +86,8 @@ class OfxFormatter(IFormatter):
     account_type = ""
     seen = set()
 
-    def start_format(self, **kwargs):
-        account = kwargs["account"]
+    def start_format(self, **kwargs) -> None:
+        account: Account = kwargs["account"]
         self.balance = account.balance
         self.coming = account.coming
         self.account_type = account.type
@@ -98,108 +100,133 @@ class OfxFormatter(IFormatter):
             )
             self.account_type = account.TYPE_CHECKING
 
-        self.output("OFXHEADER:100")
-        self.output("DATA:OFXSGML")
-        self.output("VERSION:102")
-        self.output("SECURITY:NONE")
-        self.output("ENCODING:UTF-8")
-        self.output("CHARSET:UTF-8")
-        self.output("COMPRESSION:NONE")
-        self.output("OLDFILEUID:NONE")
-        self.output("NEWFILEUID:%s\n" % uuid.uuid1())
-        self.output("<OFX><SIGNONMSGSRSV1><SONRS><STATUS><CODE>0<SEVERITY>INFO</STATUS>")
+        self.output('<?xml version="1.0" encoding="UTF-8" standalone="no"?>')
         self.output(
-            "<DTSERVER>%s113942<LANGUAGE>ENG</SONRS></SIGNONMSGSRSV1>" % datetime.date.today().strftime("%Y%m%d")
+            f'<?OFX OFXHEADER="200" VERSION="220" SECURITY="NONE" OLDFILEUID="NONE" NEWFILEUID="{uuid.uuid1()}"?>'
+        )
+        self.document = E.OFX(
+            E.SIGNONMSGSRSV1(
+                E.SONRS(E.STATUS(E.CODE("0"), E.SEVERITY("INFO"))),
+                E.DTSERVER(datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")),
+                E.LANGUAGE("ENG"),
+            ),
         )
 
+        bank_acct_from = []
         if self.account_type == Account.TYPE_CARD:
-            self.output("<CREDITCARDMSGSRSV1><CCSTMTTRNRS><TRNUID>%s" % uuid.uuid1())
-            self.output("<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<CCSTMTRS>")
-            self.output("<CURDEF>%s<CCACCTFROM>" % (account.currency or "EUR"))
-            self.output(f"<ACCTID>{account.iban.account_code}")
+
+            bank_acct_from = [E.ACCTID(account.iban.account_code)]
             if account.iban.national_checksum_digits:
-                self.output(f"<ACCTKEY>{account.iban.national_checksum_digits}")
-            self.output("</CCACCTFROM>")
-        else:
-            self.output("<BANKMSGSRSV1><STMTTRNRS><TRNUID>%s" % uuid.uuid1())
-            self.output("<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<STMTRS>")
-            self.output("<CURDEF>%s<BANKACCTFROM>" % (account.currency or "EUR"))
-            self.output(f"<BANKID>{account.iban.bank_code}")
-            if account.iban.branch_code:
-                self.output(f"<BRANCHID>{account.iban.branch_code}")
-            self.output(f"<ACCTID>{account.iban.account_code}")
-            self.output("<ACCTTYPE>%s" % self.TYPES_ACCTS[self.account_type])
-            if account.iban.national_checksum_digits:
-                self.output(f"<ACCTKEY>{account.iban.national_checksum_digits}")
-            self.output("</BANKACCTFROM>")
+                bank_acct_from.append(E.ACCTKEY(account.iban.national_checksum_digits))
 
-        self.output("<BANKTRANLIST>")
-        self.output("<DTSTART>%s" % datetime.date.today().strftime("%Y%m%d"))
-        self.output("<DTEND>%s" % datetime.date.today().strftime("%Y%m%d"))
-
-    def format_obj(self, obj, alias):
-        # special case of coming operations with card ID
-        result = "<STMTTRN>\n"
-        if obj.coming and hasattr(obj, "obj._cardid") and not empty(obj._cardid):
-            result += "<TRNTYPE>%s\n" % obj._cardid
-        elif obj.type in self.TYPES_TRANS:
-            result += "<TRNTYPE>%s\n" % self.TYPES_TRANS[obj.type]
-        else:
-            result += "<TRNTYPE>%s\n" % ("DEBIT" if obj.amount < 0 else "CREDIT")
-
-        result += "<DTPOSTED>%s\n" % obj.date.strftime("%Y%m%d")
-        if obj.rdate:
-            result += "<DTUSER>%s\n" % obj.rdate.strftime("%Y%m%d")
-        result += "<TRNAMT>%s\n" % obj.amount
-        result += "<FITID>%s\n" % (obj.id or obj.unique_id(self.seen))
-
-        if hasattr(obj, "label") and not empty(obj.label):
-            result += "<NAME>%s\n" % obj.label.replace("&", "&amp;")
-        else:
-            result += "<NAME>%s\n" % obj.raw.replace("&", "&amp;")
-
-        if hasattr(obj, "_recipient") and not empty(obj._recipient):
-            result += (
-                "<BANKACCTTO>"
-                f"<BANKID>{obj._recipient.iban.bank_code}"
-                f"<BRANCHID>{obj._recipient.iban.branch_code}"
-                f"<ACCTID>{obj._recipient.iban.account_code}"
-                # schwifty supports extracting this information via account_type property,
-                # however it does not work for all countries. It also does not map the value to an enum.
-                # OFX specification requires this field so set an acceptable default: CHECKING.
-                f"<ACCTTYPE>CHECKING"
-                f"<ACCTKEY>{obj._recipient.iban.national_checksum_digits}"
-                "</BANKACCTTO>\n"
+            message = E.CREDITCARDMSGSRSV1(
+                E.CCSTMTTRNRS(
+                    E.TRNUID(str(uuid.uuid1())),
+                    E.STATUS(E.CODE("0"), E.SEVERITY("INFO")),
+                    E.CCSTMTRS(
+                        E.CURDEF(account.currency or "EUR"),
+                        E.CCBANKACCTFROM(*bank_acct_from),
+                    ),
+                )
             )
+            stmtrs = message.find(".//CCSTMTRS")
 
-        if hasattr(obj, "_memo") and not empty(obj._memo):
-            result += "<MEMO>%s</MEMO>\n" % obj._memo.replace("&", "&amp;")
-        elif obj.category:
-            result += "<MEMO>%s</MEMO>\n" % obj.category.replace("&", "&amp;")
+        else:
+            bank_acct_from = [E.BANKID(account.iban.bank_code)]
+            if account.iban.branch_code:
+                bank_acct_from.append(E.BRANCHID(account.iban.branch_code))
+            bank_acct_from.append(E.ACCTID(account.iban.account_code))
+            bank_acct_from.append(E.ACCTTYPE(self.TYPES_ACCTS[self.account_type]))
+            if account.iban.national_checksum_digits:
+                bank_acct_from.append(E.ACCTKEY(account.iban.national_checksum_digits))
 
-        if hasattr(obj, "_ref") and not empty(obj._ref):
-            result += "<REFNUM>%s\n" % obj._ref.replace("&", "&amp;")
+            message = E.BANKMSGSRSV1(
+                E.STMTTRNRS(
+                    E.TRNUID(str(uuid.uuid1())),
+                    E.STATUS(E.CODE("0"), E.SEVERITY("INFO")),
+                    E.STMTRS(
+                        E.CURDEF(account.currency or "EUR"),
+                        E.BANKACCTFROM(*bank_acct_from),
+                    ),
+                )
+            )
+            stmtrs = message.find(".//STMTRS")
 
-        result += "</STMTTRN>\n"
-
-        return result
-
-    def flush(self):
-        self.output("</BANKTRANLIST>")
-        self.output("<LEDGERBAL><BALAMT>%s" % self.balance)
-        self.output("<DTASOF>%s" % datetime.date.today().strftime("%Y%m%d"))
-        self.output("</LEDGERBAL>")
+        stmtrs.extend(
+            [
+                E.BANKTRANLIST(  # Statement-transaction
+                    E.DTSTART(datetime.date.today().strftime("%Y%m%d")),
+                    E.DTEND(datetime.date.today().strftime("%Y%m%d")),
+                ),
+                E.BANKTRANLISTP(),  # Pending statement transaction
+                E.LEDGERBAL(
+                    E.BALAMT(str(self.balance)),
+                    E.DTASOF(datetime.date.today().strftime("%Y%m%d")),
+                ),
+            ]
+        )
 
         try:
-            self.output("<AVAILBAL><BALAMT>%s" % (self.balance + self.coming))
+            available_balance = E.BALAMT(str(self.balance + self.coming))
         except TypeError:
-            self.output("<AVAILBAL><BALAMT>%s" % self.balance)
-        self.output("<DTASOF>%s</AVAILBAL>" % datetime.date.today().strftime("%Y%m%d"))
+            available_balance = E.BALAMT(str(self.balance))
 
-        if self.account_type == Account.TYPE_CARD:
-            self.output("</CCSTMTRS></CCSTMTTRNRS></CREDITCARDMSGSRSV1></OFX>")
+        stmtrs.append(
+            E.AVAILBAL(
+                available_balance,
+                E.DTASOF(datetime.date.today().strftime("%Y%m%d")),
+            )
+        )
+        self.document.append(message)
+        self.stmtrs = stmtrs
+
+    def format_obj(self, obj, alias):
+        stmt = E.STMTTRN()
+
+        # special case of coming operations with card ID
+        if obj.coming and hasattr(obj, "obj._cardid") and not empty(obj._cardid):
+            stmt.append(E.TRNTYPE(obj._cardid))
+        elif obj.type in self.TYPES_TRANS:
+            stmt.append(E.TRNTYPE(self.TYPES_TRANS[obj.type]))
         else:
-            self.output("</STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>")
+            stmt.append(E.TRNTYPE("DEBIT" if obj.amount < 0 else "CREDIT"))
+
+        stmt.append(E.DTPOSTED(obj.date.strftime("%Y%m%d")))
+        if obj.rdate:
+            stmt.append(E.DTUSER(obj.rdate.strftime("%Y%m%d")))
+        stmt.append(E.TRNAMT(str(obj.amount)))
+        stmt.append(E.FITID(obj.id or obj.unique_id(self.seen)))
+        if hasattr(obj, "_ref") and not empty(obj._ref):
+            stmt.append(E.REFNUM(obj._ref))
+
+        if hasattr(obj, "label") and not empty(obj.label):
+            stmt.append(E.NAME(obj.label))
+        else:
+            stmt.append(E.NAME(obj.raw))
+
+        if hasattr(obj, "_recipient") and not empty(obj._recipient):
+            _transfer = [E.BANKID(obj._recipient.iban.bank_code)]
+            if obj._recipient.iban.branch_code:
+                _transfer.append(E.BRANCHID(obj._recipient.iban.branch_code))
+            _transfer.append(E.ACCTID(obj._recipient.iban.account_code))
+            # schwifty supports extracting this information via account_type property,
+            # however it does not work for all countries. It also does not map the value to an enum.
+            # OFX specification requires this field so set an acceptable default: CHECKING.
+            _transfer.append(E.ACCTTYPE("CHECKING"))
+            if obj._recipient.iban.national_checksum_digits:
+                _transfer.append(E.ACCTKEY(obj._recipient.iban.national_checksum_digits))
+            stmt.append(E.BANKACCTTO(*_transfer))
+
+        if hasattr(obj, "_memo") and not empty(obj._memo):
+            stmt.append(E.MEMO(obj._memo))
+        elif obj.category:
+            stmt.append(E.MEMO(obj.category))
+
+        self.stmtrs.find(".//BANKTRANLIST").append(stmt)
+        return
+
+    def flush(self):
+        self.output(ET.tostring(self.document, encoding="UTF-8", pretty_print=True).decode("utf-8"))
 
 
 class QifFormatter(IFormatter):
