@@ -17,6 +17,7 @@
 
 from contextlib import contextmanager
 import datetime
+import logging
 import uuid
 from dateutil.relativedelta import relativedelta
 from dateutil.parser import parse as parse_date
@@ -45,6 +46,7 @@ from woob.tools.misc import to_unicode
 
 
 __all__ = ['Appbank']
+LOGGER = logging.getLogger(__name__)
 
 
 class OfxFormatter(IFormatter):
@@ -81,6 +83,14 @@ class OfxFormatter(IFormatter):
         self.balance = account.balance
         self.coming = account.coming
         self.account_type = account.type
+
+        if self.account_type not in self.TYPES_ACCTS:
+            LOGGER.error(
+                "Account %s type cannot be mapped to OFX format. Will default to %s",
+                account,
+                account.TYPE_CHECKING,
+            )
+            self.account_type = account.TYPE_CHECKING
 
         self.output('OFXHEADER:100')
         self.output('DATA:OFXSGML')
