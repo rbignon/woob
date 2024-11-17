@@ -198,6 +198,8 @@ class OfxFormatter(IFormatter):
         stmt.append(E.DTPOSTED(obj.date.strftime("%Y%m%d")))
         if obj.rdate:
             stmt.append(E.DTUSER(obj.rdate.strftime("%Y%m%d")))
+        if obj.vdate:
+            stmt.append(E.DTAVAIL(obj.vdate.strftime("%Y%m%d")))
         stmt.append(E.TRNAMT(str(obj.amount)))
 
         if obj.type == Transaction.TYPE_LOAN_PAYMENT:
