@@ -86,8 +86,12 @@ class OfxFormatter(IFormatter):
     account_type = ""
     seen = set()
 
-    def start_format(self, **kwargs) -> None:
-        account: Account = kwargs["account"]
+    def start_format(
+        self,
+        account: Account,
+        start_date: datetime.datetime,
+        end_date: datetime.datetime,
+    ) -> None:
         self.balance = account.balance
         self.coming = account.coming
         self.account_type = account.type
@@ -155,8 +159,8 @@ class OfxFormatter(IFormatter):
         stmtrs.extend(
             [
                 E.BANKTRANLIST(  # Statement-transaction
-                    E.DTSTART(datetime.date.today().strftime("%Y%m%d")),
-                    E.DTEND(datetime.date.today().strftime("%Y%m%d")),
+                    E.DTSTART(start_date.strftime("%Y%m%d")),
+                    E.DTEND(end_date.strftime("%Y%m%d")),
                 ),
                 E.BANKTRANLISTP(),  # Pending statement transaction
                 E.LEDGERBAL(
@@ -791,10 +795,19 @@ class Appbank(CaptchaMixin, ReplApplication):
             old_count = self.options.count
             self.options.count = None
 
-        self.start_format(account=account)
+        transactions = []
         for transaction in self.do(command, account, backends=account.backend):
             if end_date is not None and transaction.date < end_date:
                 break
+            transactions.append(transaction)
+
+        self.start_format(
+            account=account,
+            start_date=transactions[-1].date,
+            end_date=datetime.date.today(),
+        )
+
+        for transaction in transactions:
             self.format(transaction)
 
         if end_date is not None:

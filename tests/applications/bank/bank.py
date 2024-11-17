@@ -34,10 +34,11 @@ def test_ofx_header():
     buffer = io.StringIO()
     formatter = OfxFormatter(outfile=buffer)
     formatter.termrows = 0
+    today = datetime.datetime.now()
 
     account.iban = IBAN.random()
     account.type = Account.TYPE_CHECKING
-    formatter.start_format(account=account)
+    formatter.start_format(account=account, start_date=today - datetime.timedelta(days=7), end_date=today)
     formatter.flush()
     assert '<?OFX OFXHEADER="200" VERSION="220"' in buffer.getvalue()
 
@@ -48,16 +49,17 @@ def test_account_type_ofx_mapping():
     buffer = io.StringIO()
     formatter = OfxFormatter(outfile=buffer)
     formatter.termrows = 0
+    today = datetime.datetime.now()
 
     account.iban = IBAN.random()
     account.type = Account.TYPE_CHECKING
-    formatter.start_format(account=account)
+    formatter.start_format(account=account, start_date=today - datetime.timedelta(days=7), end_date=today)
     formatter.flush()
     assert "<ACCTTYPE>CHECKING</ACCTTYPE>" in buffer.getvalue()
 
     account.type = Account.TYPE_SAVINGS
     buffer.truncate()
-    formatter.start_format(account=account)
+    formatter.start_format(account=account, start_date=today - datetime.timedelta(days=7), end_date=today)
     formatter.flush()
     assert "<ACCTTYPE>SAVINGS</ACCTTYPE>" in buffer.getvalue()
 
@@ -68,11 +70,12 @@ def test_account_type_default_ofx_mapping(caplog):
     buffer = io.StringIO()
     formatter = OfxFormatter(outfile=buffer)
     formatter.termrows = 0
+    today = datetime.datetime.now()
 
     account.iban = IBAN.random()
     account.type = -1
     with caplog.at_level(logging.ERROR, logger="woob.applications.bank.bank"):
-        formatter.start_format(account=account)
+        formatter.start_format(account=account, start_date=today - datetime.timedelta(days=7), end_date=today)
         formatter.flush()
         assert "<ACCTTYPE>CHECKING</ACCTTYPE>" in buffer.getvalue()
         assert "cannot be mapped to OFX format" in caplog.text
@@ -88,7 +91,7 @@ def test_ofx_tr_posted_simple_format():
     account = Account()
     account.iban = IBAN.random()
 
-    formatter.start_format(account=account)
+    formatter.start_format(account=account, start_date=today - datetime.timedelta(days=7), end_date=today)
 
     tr = Transaction()
     tr.date = today - datetime.timedelta(days=1)
@@ -125,7 +128,7 @@ def test_ofx_tr_with_memo():
     account = Account()
     account.iban = IBAN.random()
 
-    formatter.start_format(account=account)
+    formatter.start_format(account=account, start_date=today - datetime.timedelta(days=7), end_date=today)
 
     tr = Transaction()
     tr.date = today - datetime.timedelta(days=1)
@@ -149,7 +152,7 @@ def test_ofx_tr_with_ref():
     account = Account()
     account.iban = IBAN.random()
 
-    formatter.start_format(account=account)
+    formatter.start_format(account=account, start_date=today - datetime.timedelta(days=7), end_date=today)
 
     tr = Transaction()
     tr.date = today - datetime.timedelta(days=1)
@@ -173,7 +176,7 @@ def test_ofx_tr_posted_loan_payment_format(caplog):
     account = Account()
     account.iban = IBAN.random()
 
-    formatter.start_format(account=account)
+    formatter.start_format(account=account, start_date=today - datetime.timedelta(days=7), end_date=today)
 
     tr = Transaction()
     tr.date = today - datetime.timedelta(days=1)
@@ -229,7 +232,7 @@ def test_ofx_tr_posted_transfer_format():
     account = Account()
     account.iban = IBAN.random()
 
-    formatter.start_format(account=account)
+    formatter.start_format(account=account, start_date=today - datetime.timedelta(days=7), end_date=today)
 
     tr = Transaction()
     tr.date = today - datetime.timedelta(days=1)
