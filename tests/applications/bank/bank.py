@@ -81,6 +81,33 @@ def test_account_type_default_ofx_mapping(caplog):
         assert "cannot be mapped to OFX format" in caplog.text
 
 
+def test_ofx_tr_coming_format():
+    """Format an upcoming transaction."""
+    buffer = io.StringIO()
+    formatter = OfxFormatter(outfile=buffer)
+    formatter.termrows = 0
+    today = datetime.datetime.now()
+
+    account = Account()
+    account.iban = IBAN.random()
+
+    formatter.start_format(account=account, start_date=today - datetime.timedelta(days=7), end_date=today)
+
+    tr = Transaction()
+    tr.date = today - datetime.timedelta(days=1)
+    tr.type = Transaction.TYPE_CARD
+    tr.label = "ACME INC"
+    tr.amount = Decimal("-15.42")
+    tr.coming = True
+    formatter.format(tr)
+
+    formatter.flush()
+    output = re.findall(r"<STMTTRNP>.+?</STMTTRNP>", buffer.getvalue(), re.DOTALL)
+    assert "<TRNTYPE>POS</TRNTYPE>" in output[0]
+    assert "<TRNAMT>-15.42</TRNAMT>" in output[0]
+    assert "<NAME>ACME INC</NAME>" in output[0]
+
+
 def test_ofx_tr_posted_simple_format():
     """Format a very simple posted transaction."""
     buffer = io.StringIO()

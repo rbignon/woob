@@ -83,7 +83,7 @@ class OfxFormatter(IFormatter):
 
     balance = Decimal(0)
     coming = Decimal(0)
-    account_type = ""
+    account_type = 0
     seen = set()
 
     def start_format(
@@ -162,7 +162,9 @@ class OfxFormatter(IFormatter):
                     E.DTSTART(start_date.strftime("%Y%m%d")),
                     E.DTEND(end_date.strftime("%Y%m%d")),
                 ),
-                E.BANKTRANLISTP(),  # Pending statement transaction
+                E.BANKTRANLISTP(  # Pending statement transaction
+                    E.DTASOF(datetime.date.today().strftime("%Y%m%d")),
+                ),
                 E.LEDGERBAL(
                     E.BALAMT(str(self.balance)),
                     E.DTASOF(datetime.date.today().strftime("%Y%m%d")),
@@ -185,7 +187,10 @@ class OfxFormatter(IFormatter):
         self.stmtrs = stmtrs
 
     def format_obj(self, obj, alias):
-        stmt = E.STMTTRN()
+        if obj.coming:
+            stmt = E.STMTTRNP()
+        else:
+            stmt = E.STMTTRN()
 
         # special case of coming operations with card ID
         if obj.coming and hasattr(obj, "obj._cardid") and not empty(obj._cardid):
@@ -195,26 +200,31 @@ class OfxFormatter(IFormatter):
         else:
             stmt.append(E.TRNTYPE("DEBIT" if obj.amount < 0 else "CREDIT"))
 
-        stmt.append(E.DTPOSTED(obj.date.strftime("%Y%m%d")))
-        if obj.rdate:
-            stmt.append(E.DTUSER(obj.rdate.strftime("%Y%m%d")))
-        if obj.vdate:
-            stmt.append(E.DTAVAIL(obj.vdate.strftime("%Y%m%d")))
+        if obj.coming:
+            stmt.append(E.DTTRAN(obj.date.strftime("%Y%m%d")))
+        else:
+            stmt.append(E.DTPOSTED(obj.date.strftime("%Y%m%d")))
+            if obj.rdate:
+                stmt.append(E.DTUSER(obj.rdate.strftime("%Y%m%d")))
+            if obj.vdate:
+                stmt.append(E.DTAVAIL(obj.vdate.strftime("%Y%m%d")))
         stmt.append(E.TRNAMT(str(obj.amount)))
 
-        if obj.type == Transaction.TYPE_LOAN_PAYMENT:
-            if hasattr(obj, "_loan_payment"):
-                _loan = E.LOANPMTINFO(
-                    E.PRINAMT(str(obj._loan_payment["principal_amount"])),
-                    E.INTAMT(str(obj._loan_payment["interest_amount"])),
-                )
-                if obj._loan_payment["insurance_amount"]:
-                    _loan.append(E.INSURANCE(str(obj._loan_payment["insurance_amount"])))
-                stmt.append(_loan)
-            else:
-                LOGGER.warning("Loan payment not implemented for this backend.")
+        if not obj.coming:
+            if obj.type == Transaction.TYPE_LOAN_PAYMENT:
+                if hasattr(obj, "_loan_payment"):
+                    _loan = E.LOANPMTINFO(
+                        E.PRINAMT(str(obj._loan_payment["principal_amount"])),
+                        E.INTAMT(str(obj._loan_payment["interest_amount"])),
+                    )
+                    if obj._loan_payment["insurance_amount"]:
+                        _loan.append(E.INSURANCE(str(obj._loan_payment["insurance_amount"])))
+                    stmt.append(_loan)
+                else:
+                    LOGGER.warning("Loan payment not implemented for this backend.")
 
-        stmt.append(E.FITID(obj.id or obj.unique_id(self.seen)))
+            stmt.append(E.FITID(obj.id or obj.unique_id(self.seen)))
+
         if hasattr(obj, "_ref") and not empty(obj._ref):
             stmt.append(E.REFNUM(obj._ref))
 
@@ -223,25 +233,29 @@ class OfxFormatter(IFormatter):
         else:
             stmt.append(E.NAME(obj.raw))
 
-        if hasattr(obj, "_recipient") and not empty(obj._recipient):
-            _transfer = [E.BANKID(obj._recipient.iban.bank_code)]
-            if obj._recipient.iban.branch_code:
-                _transfer.append(E.BRANCHID(obj._recipient.iban.branch_code))
-            _transfer.append(E.ACCTID(obj._recipient.iban.account_code))
-            # schwifty supports extracting this information via account_type property,
-            # however it does not work for all countries. It also does not map the value to an enum.
-            # OFX specification requires this field so set an acceptable default: CHECKING.
-            _transfer.append(E.ACCTTYPE("CHECKING"))
-            if obj._recipient.iban.national_checksum_digits:
-                _transfer.append(E.ACCTKEY(obj._recipient.iban.national_checksum_digits))
-            stmt.append(E.BANKACCTTO(*_transfer))
+        if not obj.coming:
+            if hasattr(obj, "_recipient") and not empty(obj._recipient):
+                _transfer = [E.BANKID(obj._recipient.iban.bank_code)]
+                if obj._recipient.iban.branch_code:
+                    _transfer.append(E.BRANCHID(obj._recipient.iban.branch_code))
+                _transfer.append(E.ACCTID(obj._recipient.iban.account_code))
+                # schwifty supports extracting this information via account_type property,
+                # however it does not work for all countries. It also does not map the value to an enum.
+                # OFX specification requires this field so set an acceptable default: CHECKING.
+                _transfer.append(E.ACCTTYPE("CHECKING"))
+                if obj._recipient.iban.national_checksum_digits:
+                    _transfer.append(E.ACCTKEY(obj._recipient.iban.national_checksum_digits))
+                stmt.append(E.BANKACCTTO(*_transfer))
 
         if hasattr(obj, "_memo") and not empty(obj._memo):
             stmt.append(E.MEMO(obj._memo))
         elif obj.category:
             stmt.append(E.MEMO(obj.category))
 
-        self.stmtrs.find(".//BANKTRANLIST").append(stmt)
+        if obj.coming:
+            self.stmtrs.find(".//BANKTRANLISTP").append(stmt)
+        else:
+            self.stmtrs.find(".//BANKTRANLIST").append(stmt)
         return
 
     def flush(self):
