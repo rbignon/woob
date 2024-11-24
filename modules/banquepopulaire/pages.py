@@ -153,10 +153,10 @@ class JsFilePageEspaceClient(_JsFilePage):
 
 class JsFilePageEspaceClientChunk(_JsFilePage):
     def contains_client_id(self):
-        return bool(re.search(r'XE=\"[a-z0-9-]{36}\"', self.text))
+        return bool(re.search(r'[Xz]E=\"[a-z0-9-]{36}\"', self.text))
 
     def get_client_id(self):
-        match_e = re.search(r'XE=\"[a-z0-9-]{36}\"', self.text).group(0)
+        match_e = re.search(r'[Xz]E=\"[a-z0-9-]{36}\"', self.text).group(0)
         client_id = re.search(r'[a-z0-9-]{36}', match_e).group(0)
 
         return client_id
