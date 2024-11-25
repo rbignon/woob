@@ -19,6 +19,7 @@ import re
 
 from woob.browser.elements import DictElement, ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import Attr, TableCell
+from woob.browser.filters.javascript import JSValue
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Field, Regexp
 from woob.browser.pages import CsvPage, HTMLPage, JsonPage, LoggedPage, PartialHTMLPage
@@ -31,6 +32,10 @@ from .transaction import Transaction
 class LoginHomePage(HTMLPage):
     def get_login_token(self):
         return Attr('//input[@name="logonToken"]', "value")(self.doc)
+
+    def get_login_public_key(self):
+        parameters = Regexp(CleanText("//body"), r"\s*var pcTools = new PCTools\(([^\n;]*)\);")(self.doc)
+        return JSValue(nth=-1).filter(parameters)
 
 
 class LoginPage(JsonPage):

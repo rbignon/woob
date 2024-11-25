@@ -16,6 +16,15 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+from base64 import b64decode, b64encode
+
+
+try:
+    from Cryptodome.Cipher import PKCS1_v1_5
+    from Cryptodome.PublicKey import RSA
+except ImportError:
+    from Crypto.Cipher import PKCS1_v1_5
+    from Crypto.PublicKey import RSA
 
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
@@ -47,6 +56,7 @@ class NefBrowser(TwoFactorBrowser):
     def __init__(self, config, *args, **kwargs):
         super().__init__(config, *args, **kwargs)
         self.login_token = None
+        self.login_public_key = None
         self.otp_sms = config["otp_sms"].get()
 
         self.AUTHENTICATION_METHODS = {
@@ -58,17 +68,24 @@ class NefBrowser(TwoFactorBrowser):
             return
         super().locate_browser(state)
 
+    def encrypt(self, value):
+        public_key = RSA.importKey(b64decode(self.login_public_key))
+        cipher = PKCS1_v1_5.new(public_key)
+        cipher_text = cipher.encrypt(value.encode())
+        return b64encode(cipher_text).decode("utf-8")
+
     def init_login(self):
         self.login_home.go()
         self.login_token = self.page.get_login_token()
+        self.login_public_key = self.page.get_login_public_key()
         self.login.go(
             data={
                 "method": "logonAuthentication",
-                "logonId": self.username,
-                "userId": self.username,
-                "subUserId": "",
+                "logonId": self.encrypt(self.username),
+                "userId": self.encrypt(self.username),
+                "subUserId": self.encrypt(""),
                 "factor": "LOGPAS",
-                "password": self.password,
+                "password": self.encrypt(self.password),
             }
         )
 
@@ -94,11 +111,11 @@ class NefBrowser(TwoFactorBrowser):
         self.login.go(
             data={
                 "method": "logonAuthentication",
-                "logonId": self.username,
-                "userId": self.username,
-                "subUserId": "",
+                "logonId": self.encrypt(self.username),
+                "userId": self.encrypt(self.username),
+                "subUserId": self.encrypt(""),
                 "factor": "OTPSMS",
-                "otpVal": self.otp_sms,
+                "otpVal": self.encrypt(self.otp_sms),
             }
         )
 
@@ -121,7 +138,7 @@ class NefBrowser(TwoFactorBrowser):
                 "logonToken": self.login_token,
                 "USERID": self.username,
                 "SUBUSERID": "",
-                "STATIC": self.password,
+                "STATIC": self.encrypt(self.password),
                 "OTP": self.otp_sms,
                 "AUTOMATEDID": "",
             }
