@@ -18,15 +18,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 import itertools
 import logging
 import os
 import re
 import sys
 import urllib
-import urlparse
+import urllib.parse as urlparse
 from datetime import datetime, timedelta
 from math import log
 from random import choice, randint
