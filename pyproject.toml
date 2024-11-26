@@ -96,13 +96,17 @@ per-file-ignores = [
 ]
 
 [tool.isort]
-include_trailing_comma = true
-known_first_party = ["woob", "woob_modules"]
+filter_files = true
+known_first_party = [
+    "woob",
+    "weboob",
+    "woob_modules",
+]
 line_length = 120
 lines_after_imports = 2
 multi_line_output = 5
-no_inline_sort = true
-use_parentheses = true
+profile = "black"
+py_version = "39"
 
 [tool.mypy]
 show_error_codes = true
