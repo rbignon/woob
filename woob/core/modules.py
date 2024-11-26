@@ -20,13 +20,9 @@ import logging
 import pkgutil
 import sys
 import warnings
+from importlib import metadata
 from inspect import getmodule
 from pathlib import Path
-
-try:
-    from importlib import metadata
-except ImportError: # for Python<3.8
-    import importlib_metadata as metadata
 
 from packaging.version import Version
 

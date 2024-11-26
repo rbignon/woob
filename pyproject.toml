@@ -52,7 +52,6 @@ dependencies = [
     "pycountry",
     "rich ~= 13.0",
     "termcolor",
-    "importlib-metadata ~= 6.7 ; python_version < '3.8'",
 ]
 
 [project.urls]
