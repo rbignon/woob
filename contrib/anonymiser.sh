@@ -16,7 +16,7 @@ else
 	exit 1
 fi
 
-if [ ! -f $anonymise_list ] 
+if [ ! -f $anonymise_list ]
 then
 	echo "Please create the $anonymise_list file (see documentation)"
 	exit 1
@@ -28,15 +28,15 @@ rm -rf $dossier/Anonyme
 
 for file_to_anonymise in `find $dossier -type f`
 do
-	file=$file_to_anonymise"_anonymised"	
+	file=$file_to_anonymise"_anonymised"
 	cp $file_to_anonymise $file
-	
+
 	cat $anonymise_list | tr '\t' '_' | while read line
 	do
 		to_replace=$(echo "$line"|cut -d_ -f1)
 		replace_with=$(echo "$line"|cut -d_ -f2)
 		sed -i "s%$to_replace%$replace_with%Ig" $file
-	done 
+	done
 done
 mkdir $dossier/Anonyme
 

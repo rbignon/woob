@@ -124,7 +124,7 @@ REG QUERY %KEY_NAME% > nul 2>NUL || (
 
 echo.
 echo 6.Install WeBoob
-%PythonPath%Scripts\easy_install.exe woob==!WOOB_VERSION! || goto 
+%PythonPath%Scripts\easy_install.exe woob==!WOOB_VERSION! || goto
 :InstallFailed
 
 set StartupFolder=%AppData%\Microsoft\Windows\Start Menu\Programs
