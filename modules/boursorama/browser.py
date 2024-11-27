@@ -1584,7 +1584,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     @need_login
     def iter_documents(self, subscription):
         self.rib_page.go()
-        yield from self.page.get_document(subid=subscription.id)
+        yield from self.page.get_document(subid=subscription.id, key=subscription._account_key)
 
         params = {
             "FiltersType[accountsKeys][]": subscription._account_key,

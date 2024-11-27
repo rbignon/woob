@@ -116,7 +116,10 @@ class BankIdentityPage(LoggedPage, HTMLPage):
             klass = Document
 
             def condition(self):
-                return Env("subid")(self) == Regexp(CleanText(".//td[2]/a"), r"(\d+)")(self)
+                is_rib = CleanText(".//td[2]/a")(self) == "RIB"
+                if is_rib:
+                    is_rib = Env("key")(self) == Regexp(Link(".//td[2]/a"), r"rib\/(.+)\/telecharger")(self)
+                return is_rib
 
             obj_id = Format("%s_RIB", Env("subid"))
 
