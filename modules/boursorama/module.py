@@ -28,7 +28,7 @@ from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, Docu
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig, Module
-from woob.tools.value import ValueBackendPassword, ValueTransient
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import BoursoramaBrowser
 
@@ -54,6 +54,7 @@ class BoursoramaModule(
     CONFIG = BackendConfig(
         ValueBackendPassword("login", label="Identifiant", masked=False, regexp=r"^[0-9]+$"),
         ValueBackendPassword("password", label="Mot de passe", regexp=r"[a-zA-Z0-9]+"),
+        Value("identity", label="ID d'identité", required=False),
         ValueTransient("code"),
         ValueTransient("email_code"),
         ValueTransient("resume"),

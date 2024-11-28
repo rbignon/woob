@@ -102,6 +102,7 @@ from .pages import (
     HistoryPage,
     HomePage,
     IbanPage,
+    IdentityChooserPage,
     IncidentPage,
     IncidentTradingPage,
     LoanPage,
@@ -172,6 +173,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         r"/connexion/\?deconnexion=$",
         PasswordPage,
     )
+    identity_chooser = URL(r"/connexion/lister-identites$", IdentityChooserPage)
     otp_page = URL(
         r"https://api.boursobank.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/(?P<otp_challenge>(challenge|otp))/(?P<otp_operation>(check|start))(?P<otp_type>.*)/(?P<otp_number>.*)",
         OtpPage,
@@ -620,6 +622,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             if message:
                 raise ActionNeeded(locale="fr-FR", message=message, action_type=ActionType.PAYMENT)
             raise AssertionError("Land on incident page but didn't found any error message")
+
+        elif self.identity_chooser.is_here():
+            identities = list(self.page.iter_identities())
+            self.go(identities[0].link)
 
         # After login, we might be redirected to the two factor authentication page.
         self.handle_authentication()

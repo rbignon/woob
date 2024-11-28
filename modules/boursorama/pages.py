@@ -20,6 +20,7 @@
 import datetime
 import hashlib
 import re
+import types
 from decimal import Decimal
 from functools import wraps
 from urllib.parse import parse_qs, urlencode, urljoin, urlparse
@@ -2323,3 +2324,15 @@ class AccountsErrorPage(LoggedPage, HTMLPage):
 class IncidentTradingPage(HTMLPage):
     def get_error_message(self):
         return CleanText('//p[contains(text(), "incident")]')(self.doc)
+
+
+class IdentityChooserPage(LoggedPage, HTMLPage):
+    @method
+    class iter_identities(ListElement):
+        item_xpath = "//a[@data-switch-account]"
+
+        class item(ItemElement):
+            klass = types.SimpleNamespace
+            obj_id = Regexp(Link("."), r"\/connexion\/changer-identite\/(.+)")
+            obj_label = CleanText(".")
+            obj_link = Link(".")
