@@ -43,7 +43,7 @@ class NefBrowser(TwoFactorBrowser):
     home = URL("/templates/home.cfm", HomePage)
     main = URL("/templates/main.cfm", HomePage)
     download = URL(
-        r"/templates/account/accountActivityListDownload.cfm\?viewMode=CSV&orderBy=TRANSACTION_DATE_DESCENDING&page=1&startDate=2016-01-01&endDate=%s&showBalance=true&AccNum=(?P<account_id>.*)"
+        r"/templates/account/accountActivityListDownload.cfm\?viewMode=CSV&orderBy=TRANSACTION_DATE_DESCENDING&page=1&startDate=2016-01-01&endDate=%s&showBalance=true&AccNum=(?P<account_id>.*)&startAmount=0&endAmount=999999999999"
         % next_week_string(),
         TransactionsPage,
     )
