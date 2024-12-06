@@ -25,7 +25,7 @@ from .pages import LoginPage, LoginErrorPage, HomePage, MyAccountPage, Subscript
 class EspacecitoyensBrowser(LoginBrowser):
     BASEURL = 'https://www.espace-citoyens.net'
 
-    login = URL('/(?P<city>\w+)/espace-citoyens/$', LoginPage)
+    login = URL('/(?P<city>\w+)/espace-citoyens/Home/AccueilPublic$', LoginPage)
     home  = URL('/(?P<city>\w+)/espace-citoyens/CompteCitoyen', HomePage)
     loginerror = URL('/(?P<city>\w+)/espace-citoyens/Home/Logon', LoginErrorPage)
     my_account = URL('/(?P<city>\w+)/espace-citoyens/MonCompte$', MyAccountPage)
