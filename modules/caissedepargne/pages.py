@@ -54,6 +54,24 @@ from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, Is
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.captcha.virtkeyboard import SplitKeyboard
 
+BANK_SNIPPET_ID_REGEX = r'''(?x) # regex extended mode
+\b
+class\ [A-Z]         # the class we are looking for is not necessarily named 'B'
+(?P<class_contents>
+    {
+        (?:
+            static\#[a-z]=this\.for
+            ([^=]+)  # bank name
+            =
+            {[^}]+}  # bank data, assuming a simple dict
+            ;? # no semicolon after the last bank=data pair
+        )+
+    }
+)
+'''
+NULL_UUID = '00000000-0000-0000-0000-000000000000'
+UUID_REGEX_PATTERN = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+
 
 def float_to_decimal(f):
     return Decimal(str(f))
@@ -92,8 +110,9 @@ class JsFilePage(RawPage):
 
     def get_class_b(self):
         if not self.class_b:
-            result = Regexp(pattern=r';class B({.*?})const').filter(self.text)
+            result = re.search(BANK_SNIPPET_ID_REGEX, self.text)
             assert result, 'Could not find the definition of "snippetId"s in main JS, check if it has been updated'
+            result = result.group('class_contents')
             # The result is a JS Class definition - which is difficult to parse:
             # e.g.: `{static#e=this.forCe={snippetId:"224837",domainBank:U.K.CE};static#t=this.forBp={...`
             #
@@ -108,6 +127,15 @@ class JsFilePage(RawPage):
             result = re.sub(r";", ",", result)
             self.class_b = chompjs.parse_js_object(result)
         return self.class_b
+
+    def get_chunk_list(self):
+        return re.findall(r'\bchunk-[A-Z0-9]{8}.js\b', self.text)
+
+    def get_uuids(self, pattern=fr'\b{UUID_REGEX_PATTERN}\b', prefix='', suffix='', ignore=(NULL_UUID)):
+        for match in re.finditer(f'{prefix}(?P<id>{pattern}){suffix}', self.text):
+            client_id = match.group('id')
+            if client_id not in ignore:
+                yield client_id
 
     def get_first_client_id(self):
         # Needed for pre-login

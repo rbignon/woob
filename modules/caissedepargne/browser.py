@@ -79,11 +79,10 @@ class CaisseEpargneLogin(TwoFactorBrowser):
     # In order to prevent child modules using their own BASEURL,
     # do not remove BASEURL from URLs here except if this URL is
     # redefined in the child.
-    login = URL(r'https://www.caisse-epargne.fr/se-connecter/sso', LoginPage)
+    login = URL(r'https://www.icgauth.caisse-epargne.fr/se-connecter/identifier', LoginPage)
     # Each js_file URL contains a different client_id that can be needed
     js_file = URL(
-        r'https://www.caisse-epargne.fr/se-connecter/main\..*\.js',
-        r'https://www.caisse-epargne.fr/espace-client/main\..*\.js',
+        r'https://www.(icgauth\.)?caisse-epargne.fr/.*?\.js($|\?)',  # Match .js files but not .json files
         r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js',
         r'https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js',
         JsFilePage
@@ -863,9 +862,19 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             }
             self.home_page.go(params=params)
 
+            # Iterate over chunk-*.js files referenced in the main-XXXXXXXX.js file:
             main_js_file = self.page.get_main_js_file_url()
             self.location(main_js_file)
-            self.third_client_id = self.page.get_third_client_id()
+            client_ids = []
+            for chunk_js_file in self.page.get_chunk_list():
+                self.location(chunk_js_file)
+                # Harvest double-quoted non-null UUIDs declared close to the "/se-connecter" URL:
+                client_ids.extend(self.page.get_uuids(prefix=r'/se-connecter.{2,1000}="', suffix='"'))
+            # Arbitrarily assume the first one is the good one:
+            if client_ids:
+                self.third_client_id = client_ids[0]
+            else:
+                self.third_client_id = self.page.get_third_client_id()
 
         self.login_hint = self.username
         if self.nuser:
