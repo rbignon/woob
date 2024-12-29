@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "setuptools>=63.0",
-    "wheel"
+    "wheel",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -10,10 +10,10 @@ name = "woob"
 version = "3.7"
 description = "Woob, Web Outside Of Browsers"
 authors = [
-    { name="Romain Bignon", email="romain@woob.dev" }
+    {name = "Romain Bignon", email = "romain@woob.dev"},
 ]
 readme = "README.rst"
-license = { text="LGPL-3.0-or-later" }
+license = {text = "LGPL-3.0-or-later"}
 keywords = ["scraping", "web", "banking"]
 classifiers = [
     "Environment :: Console",
@@ -30,7 +30,7 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: Browsers",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Text Processing :: Markup :: HTML"
+    "Topic :: Text Processing :: Markup :: HTML",
 ]
 requires-python = ">=3.9"
 dependencies = [
@@ -73,7 +73,7 @@ version_files = [
 [tool.flake8]
 max-line-length = 120
 exclude = ['dist', '*.egg-info', 'build', '.git', '__pycache__', 'boilerplate_data']
-extend-ignore =[
+extend-ignore = [
     # Disabled because it doesn't allow exceptions, for example URLs or log
     # messages shouldn't be split, less readable or searchable.
     'E501',
@@ -85,7 +85,7 @@ extend-ignore =[
     # flake8-future-import: postponed annotations
     'FI58',
     # do not perform function calls in argument defaults: breaks fastapi qs definitions
-    'B008'
+    'B008',
 ]
 
 [tool.isort]
@@ -110,7 +110,7 @@ testpaths = [
     "woob/browser/filters/json.py",
     "woob/tools/json.py",
     "woob/tools/misc.py",
-    "woob/browser/filters/file.py"
+    "woob/browser/filters/file.py",
 ]
 
 [tool.setuptools.packages.find]
