@@ -5,9 +5,6 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-include = ["woob", "woob.*", "weboob"]
-
 [project]
 name = "woob"
 version = "3.7"
@@ -54,15 +51,15 @@ dependencies = [
     "termcolor",
 ]
 
-[project.urls]
-"Homepage" = "https://woob.tech"
-"Source" = "https://gitlab.com/woob/woob"
-"Release notes" = "https://gitlab.com/woob/woob/-/releases"
-"Documentation" = "https://woob.dev"
-"Bug Tracker" = "https://gitlab.com/woob/woob/-/issues"
-
 [project.scripts]
 woob = "woob.launcher:Launcher.run"
+
+[project.urls]
+"Bug Tracker" = "https://gitlab.com/woob/woob/-/issues"
+"Documentation" = "https://woob.dev"
+"Homepage" = "https://woob.tech"
+"Release notes" = "https://gitlab.com/woob/woob/-/releases"
+"Source" = "https://gitlab.com/woob/woob"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
@@ -72,18 +69,6 @@ version = "3.7"
 version_files = [
     "pyproject.toml:version",
 ]
-
-[tool.isort]
-lines_after_imports = 2
-include_trailing_comma = true
-use_parentheses = true
-no_inline_sort = true
-multi_line_output = 5
-known_first_party = ["woob", "woob_modules"]
-line_length = 120
-
-[tool.mypy]
-show_error_codes = true
 
 [tool.flake8]
 max-line-length = 120
@@ -103,6 +88,17 @@ extend-ignore =[
     'B008'
 ]
 
+[tool.isort]
+include_trailing_comma = true
+known_first_party = ["woob", "woob_modules"]
+line_length = 120
+lines_after_imports = 2
+multi_line_output = 5
+no_inline_sort = true
+use_parentheses = true
+
+[tool.mypy]
+show_error_codes = true
 
 [tool.pytest.ini_options]
 python_files = "tests/*.py test.py"
@@ -116,3 +112,6 @@ testpaths = [
     "woob/tools/misc.py",
     "woob/browser/filters/file.py"
 ]
+
+[tool.setuptools.packages.find]
+include = ["woob", "woob.*", "weboob"]
