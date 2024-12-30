@@ -42,8 +42,11 @@ repos:
     rev: 7.1.1
     hooks:
       - id: flake8
-        args: ["--min-version=3.9", "--per-file-ignores=woob/tools/application/*:T201,woob/applications/*:T201"]
-        additional_dependencies: [flake8-bugbear==22.10.27, flake8-future-import==0.4.7, Flake8-pyproject==1.2.2, flake8-print==5.0.0]
+        additional_dependencies:
+          - flake8-bugbear==22.10.27
+          - flake8-future-import==0.4.7
+          - flake8-print==5.0.0
+          - flake8-pyproject==1.2.2
         files: ^woob/
 
   - repo: https://github.com/asottile/pyupgrade

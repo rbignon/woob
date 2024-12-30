@@ -87,6 +87,11 @@ extend-ignore = [
     # do not perform function calls in argument defaults: breaks fastapi qs definitions
     'B008',
 ]
+min-version = "3.9"
+per-file-ignores = [
+    "woob/tools/application/*:T201",
+    "woob/applications/*:T201",
+]
 
 [tool.isort]
 include_trailing_comma = true
