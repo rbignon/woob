@@ -22,7 +22,7 @@ import importlib
 
 from datetime import datetime
 from functools import wraps
-from typing import List, Any, Tuple
+from typing import Any, Callable
 
 from woob.tools.value import Value
 
@@ -76,11 +76,7 @@ class BrowserIncorrectPassword(Exception):
     :param bad_fields: list of config field names which are incorrect, if it is known
     """
 
-    def __init__(
-        self,
-        message: str = "",
-        bad_fields: List[str] | None = None
-    ):
+    def __init__(self, message: str = "", bad_fields: list[str] | None = None) -> None:
         super().__init__(*filter(None, [message]))
         self.bad_fields = bad_fields
 
@@ -116,11 +112,12 @@ class BrowserQuestion(BrowserInteraction):
 
     :param fields: The Value objects to be provided by the end user.
     """
-    def __init__(self, *fields):
+
+    def __init__(self, *fields: Value[Any]) -> None:
         super().__init__()
         self.fields = fields
 
-    def __str__(self):
+    def __str__(self) -> str:
         return ", ".join("{}: {}".format(
             field.id or field.label, field.description) for field in self.fields
         )
@@ -170,7 +167,7 @@ class SentOTPQuestion(OTPQuestion):
         medium_label: str | None = None,
         message: str = "",
         expires_at: datetime | None = None,
-    ):
+    ) -> None:
         super().__init__(Value(field_name, label=message))
         self.message = message
         self.medium_type = medium_type
@@ -206,8 +203,8 @@ class OfflineOTPQuestion(OTPQuestion):
         input: str | None = None,
         medium_label: str | None = None,
         message: str = "",
-        expires_at: datetime | None = None
-    ):
+        expires_at: datetime | None = None,
+    ) -> None:
         super().__init__(Value(field_name, label=message))
         self.input = input
         self.medium_label = medium_label
@@ -242,8 +239,8 @@ class DecoupledValidation(BrowserInteraction):
         medium_type: str = DecoupledMedium.UNKNOWN,
         medium_label: str | None = None,
         expires_at: datetime | None = None,
-        *values: Any
-    ):
+        *values: Any,
+    ) -> None:
         """
         :param message: message to display to user
         :type message: str
@@ -277,7 +274,7 @@ class DecoupledValidation(BrowserInteraction):
         self.resource = resource
         self.expires_at = expires_at
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.message
 
 
@@ -295,7 +292,7 @@ class AppValidation(DecoupledValidation):
     :param expires_at: date when the OTP expires and when replying is too late
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         kwargs['medium_type'] = DecoupledMedium.MOBILE_APP
         super().__init__(*args, **kwargs)
 
@@ -333,11 +330,8 @@ class BrowserRedirect(BrowserInteraction):
     :param url: The URL to redirect the end user to.
     :type url: str
     """
-    def __init__(
-        self,
-        url: str,
-        resource: Any = None
-    ):
+
+    def __init__(self, url: str, resource: Any = None) -> None:
         self.url = url
 
         if resource:
@@ -351,7 +345,7 @@ class BrowserRedirect(BrowserInteraction):
 
         self.resource = resource
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'Redirecting to %s' % self.url
 
 
@@ -365,11 +359,7 @@ class CaptchaQuestion(Exception):
     """
 
     # could be improved to pass the name of the backendconfig key
-    def __init__(
-        self,
-        type: str | None = None,
-        **kwargs
-    ):
+    def __init__(self, type: str | None = None, **kwargs: Any) -> None:
         super().__init__('The site requires solving a captcha')
         self.type = type
         for key, value in kwargs.items():
@@ -379,10 +369,7 @@ class CaptchaQuestion(Exception):
 class WrongCaptchaResponse(Exception):
     """The site signals to us that our captcha response is incorrect."""
 
-    def __init__(
-        self,
-        message: str | None = None
-    ):
+    def __init__(self, message: str | None = None) -> None:
         super().__init__(message or "Captcha response is wrong")
 
 
@@ -417,11 +404,7 @@ class ModuleInstallError(Exception):
 
 
 class ModuleLoadError(Exception):
-    def __init__(
-        self,
-        module_name: str,
-        msg: str
-    ):
+    def __init__(self, module_name: str, msg: str) -> None:
         super().__init__(msg)
         self.module = module_name
 
@@ -475,8 +458,8 @@ class ActionNeeded(Exception):
         action_type: int | None = None,
         url: str | None = None,
         page: Any = None,
-    ):
-        args: Tuple[str, ...] = ()
+    ) -> None:
+        args: tuple[str, ...] = ()
         if message:
             args = (message,)
 
@@ -517,7 +500,7 @@ class NeedInteractiveFor2FA(NeedInteractive):
     """Require an interactive call by user to perform a 2FA."""
 
 
-def implemented_websites(*cfg):
+def implemented_websites(*cfg: list[str]) -> Callable[..., Any]:
     """
     Decorator to raise NotImplementedWebsite for concerned website
     Will raise the exception for website not in arguments: ex ('ent', 'pro')
@@ -528,9 +511,10 @@ def implemented_websites(*cfg):
         stacklevel=2
     )
 
-    def decorator(func):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self: object, *args: Any, **kwargs: Any) -> Any:
+            assert hasattr(self, "config") and "website" in self.config
             if not self.config['website'].get() in cfg:
                 raise NotImplementedWebsite('This website is not yet implemented')
 
@@ -543,7 +527,7 @@ class NotImplementedWebsite(NotImplementedError):
     """
     Exception for modules when a website is not yet available.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         warnings.warn(
             'Do not use this exception.',
             DeprecationWarning,
@@ -583,5 +567,5 @@ def __getattr__(name: str) -> object:
     return klass
 
 
-def __dir__() -> List[str]:
+def __dir__() -> list[str]:
     return sorted(list(__all__) + list(__deprecated__.keys()))
