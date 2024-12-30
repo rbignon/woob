@@ -16,11 +16,6 @@ fi
 
 grep -n '[[:space:]]$' ${PYFILES} && echo 'Error: tabs or trailing whitespace found, remove them' && err=4
 grep -Fn '.setlocale' ${PYFILES} && echo 'Error: do not use setlocale' && err=5
-grep -n '__future__ import .*with_statement' ${PYFILES} && echo 'Error: with_statement useless as we do not support Python 2' && err=6
-grep -n '__future__ import .*print_function' ${PYFILES} && echo 'Error: print_function useless as we do not support Python 2' && err=6
-grep -n '__future__ import .*unicode_literals' ${PYFILES} && echo 'Error: unicode_literals useless as we do not support Python 2' && err=6
-grep -n '__future__ import .*absolute_import' ${PYFILES} && echo 'Error: absolute_import useless as we do not support Python 2' && err=6
-grep -n '__future__ import .*division' ${PYFILES} && echo 'Error: division useless as we do not support Python 2' && err=6
 grep -nE '^[[:space:]]+except [[:alnum:] ]+,[[:alnum:] ]+' ${PYFILES} && echo 'Error: use new "as" way of naming exceptions' && err=7
 grep -nE "^ *print " ${PYFILES} && echo 'Error: Use the print function' && err=8
 grep -Fn ".has_key" ${PYFILES} && echo 'Error: Deprecated, use operator "in"' && err=9
