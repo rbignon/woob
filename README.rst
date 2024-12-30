@@ -27,20 +27,17 @@ Overview
 
 There are three main concepts:
 
-* `Capabilities <https://woob.dev/guides/capabilities>`_: This is a standardized interface
-  to access a specific kind of website. It provides an unified API and standard
-  datamodels;
-* `Modules <https://woob.dev/guides/modules>`_: A module is dedicated to a specific
-  website. It can implements several capabilities (for example `paypal <https://paypal.com>`_ module may
-  implement ``CapBank`` to get bank
-  informations, ``CapTransfer`` to
-  initiate a transfer, ``CapProfile`` to get
+* `Capabilities <https://woob.dev/guides/capabilities>`_: Standardized interfaces to access specific kind of websites.
+  It provides a unified API and standard datamodels;
+* `Modules <https://woob.dev/guides/modules>`_: A module is dedicated to a specific website.
+  It can implement several capabilities. For example `paypal <https://paypal.com>`_ module may
+  implement ``CapBank`` to get bank informations, ``CapTransfer`` to initiate a transfer, ``CapProfile`` to get
   information about the customer, and ``CapDocument`` to get documents);
-* `Backends <https://woob.dev/guides/user/quickstart>`_: You can load a module several times,
+* `Backends <https://woob.dev/guides/user/quickstart>`_: Modules can be loaded several times,
   with different configurations. For example, if you have two PayPal accounts,
   you can create two backends of the same module with different credentials.
 
-The main ``Woob`` class let configure new backends and do aggregated calls to
+The main ``Woob`` class allows configuration of new backends and does aggregated calls to
 every backends loaded with a specific capability.
 
 For example, once backends are loaded, you can call ``iter_accounts()`` and
