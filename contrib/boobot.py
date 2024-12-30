@@ -280,14 +280,14 @@ class Boobot(SingleServerIRCBot):
         for ignore in IRC_IGNORE:
             if ignore.search(nick):
                 return
-        for m in re.findall('([\w\d_\-]+@\w+)', text):
+        for m in re.findall(r'([\w\d_\-]+@\w+)', text):
             for msg in self.on_boobid(m):
                 self.send_message(msg, channel)
-        for m in re.findall(u'(https?://[^\s\xa0+]+)', text):
+        for m in re.findall(r'(https?://[^\s\xa0+]+)', text):
             for msg in self.on_url(m):
                 self.send_message(msg, channel)
 
-        m = re.match('^%(?P<cmd>\w+)(?P<args>.*)$', text)
+        m = re.match(r'^%(?P<cmd>\w+)(?P<args>.*)$', text)
         if m and hasattr(self, 'cmd_%s' % m.groupdict()['cmd']):
             getattr(self, 'cmd_%s' % m.groupdict()['cmd'])(nick, channel, m.groupdict()['args'].strip())
 

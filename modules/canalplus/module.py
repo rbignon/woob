@@ -48,7 +48,7 @@ class CanalplusModule(Module, CapVideo, CapCollection):
         return self.browser.search_videos(pattern)
 
     def get_video(self, _id):
-        m = re.match('https?://www\.canal-?plus\.fr/.*\?vid=(\d+)', _id)
+        m = re.match(r'https?://www\.canal-?plus\.fr/.*\?vid=(\d+)', _id)
         if m:
             _id = m.group(1)
         return self.browser.get_video(_id)

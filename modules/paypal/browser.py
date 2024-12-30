@@ -38,40 +38,40 @@ __all__ = ['Paypal']
 class Paypal(LoginBrowser):
     BASEURL = 'https://www.paypal.com'
 
-    login = URL('https://\w+.paypal.com/signin.*',
-                '/cgi-bin/webscr\?cmd=_login-submit.+$',
+    login = URL(r'https://\w+\.paypal\.com/signin.*',
+                r'/cgi-bin/webscr\?cmd=_login-submit.+$',
                 '/fr/webapps/mpp/home', LoginPage)
     landing = URL('/home',
-                  '/(?!myaccount)\w+/home', # locale home
-                  '/$', LandingPage)
-    useless = URL('/cgi-bin/webscr\?cmd=_login-processing.+$',
-                  '/cgi-bin/webscr\?cmd=_account.*$',
-                  '/cgi-bin/webscr\?cmd=_login-done.+$',
+                  r'/(?!myaccount)\w+/home', # locale home
+                  r'/$', LandingPage)
+    useless = URL(r'/cgi-bin/webscr\?cmd=_login-processing.+$',
+                  r'/cgi-bin/webscr\?cmd=_account.*$',
+                  r'/cgi-bin/webscr\?cmd=_login-done.+$',
                   UselessPage)
     info = URL('/fr/merchantsignup/personalInfo', InfoPage)
-    home = URL('.*/cgi-bin/webscr\?cmd=_home&country_lang.x=true$',
-               'https://\w+.paypal.com/webapps/business/\?country_lang.x=true',
-               'https://\w+.paypal.com/myaccount/\?nav=0.0',
-               'https://\w+.paypal.com/webapps/business/\?nav=0.0',
-               'https://\w+.paypal.com/myaccount/$',
-               '/businessexp/summary.*',
-               '/myaccount/?\?country_lang.x=true',
+    home = URL(r'.*/cgi-bin/webscr\?cmd=_home&country_lang.x=true$',
+               r'https://\w+.paypal.com/webapps/business/\?country_lang.x=true',
+               r'https://\w+.paypal.com/myaccount/\?nav=0.0',
+               r'https://\w+.paypal.com/webapps/business/\?nav=0.0',
+               r'https://\w+.paypal.com/myaccount/$',
+               r'/businessexp/summary.*',
+               r'/myaccount/?\?country_lang.x=true',
                '/businessexp/fees/interchange-fees',
                '/mep/dashboard',
                '/myaccount/home',
                HomePage)
     error = URL('/auth/validatecaptcha$', ErrorPage)
-    history_details = URL('https://\w+.paypal.com/cgi-bin/webscr\?cmd=_history-details-from-hub&id=[\-A-Z0-9]+$',
-                          'https://\w+.paypal.com/myaccount/transaction/details/[\-A-Z0-9]+$',
+    history_details = URL(r'https://\w+\.paypal\.com/cgi-bin/webscr\?cmd=_history-details-from-hub&id=[\-A-Z0-9]+$',
+                          r'https://\w+\.paypal\.com/myaccount/transaction/details/[\-A-Z0-9]+$',
                           HistoryDetailsPage)
-    promo = URL('https://www.paypal.com/fr/webapps/mpp/clickthru/paypal-app-promo-2.*',
+    promo = URL(r'https://www\.paypal\.com/fr/webapps/mpp/clickthru/paypal-app-promo-2.*',
                 '/fr/webapps/mpp/clickthru.*', PromoPage)
     account = URL('https://www.paypal.com/myaccount/money',
                   'https://www.paypal.com/businessexp/money',
                   'https://www.paypal.com/webapps/business/money', AccountPage)
-    pro_history = URL('https://\w+.paypal.com/businessexp/transactions/activity\?.*',
+    pro_history = URL(r'https://\w+\.paypal\.com/businessexp/transactions/activity\?.*',
                       ProHistoryPage)
-    part_history = URL('https://\w+.paypal.com/myaccount/(activity|transactions)/.*', PartHistoryPage)
+    part_history = URL(r'https://\w+\.paypal\.com/myaccount/(activity|transactions)/.*', PartHistoryPage)
     old_website = URL('https://paypalmanager.paypal.com/login.do', OldWebsitePage)
 
     TIMEOUT = 180.0

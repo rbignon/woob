@@ -35,14 +35,14 @@ class TwitterBrowser(LoginBrowser):
 
     authenticity_token = None
 
-    thread_page = URL(u'(?P<user>.+)/status/(?P<_id>.+)', ThreadPage)
-    login_error = URL(u'login/error.+', LoginErrorPage)
+    thread_page = URL(r'(?P<user>.+)/status/(?P<_id>.+)', ThreadPage)
+    login_error = URL(r'login/error.+', LoginErrorPage)
     tweet = URL(u'i/tweet/create', Tweet)
-    trends = URL(u'i/trends\?pc=true&show_context=false&src=search-home&k=(?P<token>.*)', TrendsPage)
+    trends = URL(r'i/trends\?pc=true&show_context=false&src=search-home&k=(?P<token>.*)', TrendsPage)
     search = URL(u'i/search/timeline', SearchTimelinePage)
-    search_page = URL(u'search\?q=(?P<pattern>.+)&src=sprv',
+    search_page = URL(r'search\?q=(?P<pattern>.+)&src=sprv',
                       u'search-home', SearchPage)
-    profil = URL(u'i/profiles/show/(?P<path>.+)/timeline/tweets', HomeTimelinePage)
+    profil = URL(r'i/profiles/show/(?P<path>.+)/timeline/tweets', HomeTimelinePage)
     timeline = URL(u'i/timeline', TimelinePage)
     login = URL(u'', LoginPage)
 

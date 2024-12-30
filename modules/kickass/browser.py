@@ -34,10 +34,10 @@ class KickassBrowser(PagesBrowser):
     TIMEOUT = 30
 
     BASEURL = 'https://kat.cr/'
-    search = URL('usearch/(?P<pattern>.*)/\?field=seeders&sorder=desc',
+    search = URL(r'usearch/(?P<pattern>.*)/\?field=seeders&sorder=desc',
                  SearchPage)
-    torrent = URL('torrent-t(?P<id>.*).html',
-                  '.*-t[0-9]*\.html',
+    torrent = URL(r'torrent-t(?P<id>.*)\.html',
+                  r'.*-t[0-9]*\.html',
                   TorrentPage)
 
     def iter_torrents(self, pattern):

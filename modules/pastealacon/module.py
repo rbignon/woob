@@ -56,7 +56,7 @@ class PastealaconModule(Module, BasePasteModule):
             if self.get_closest_expiration(max_age) is None:
                 return 0
         # the "title" is filtered (does not even accepts dots)
-        if not title or re.match('^\w+$', title) and len(title) <= 24:
+        if not title or re.match(r'^\w+$', title) and len(title) <= 24:
             return 2
         return 1
 

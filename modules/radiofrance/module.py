@@ -332,7 +332,7 @@ class RadioFranceModule(Module, CapRadio, CapCollection, CapAudio):
         return audio
 
     def get_radio_id(self, audio_id):
-        m = re.match('^\w+\.(\w+)\..*', audio_id)
+        m = re.match(r'^\w+\.(\w+)\..*', audio_id)
         if m:
             return m.group(1)
         return ''
@@ -370,7 +370,7 @@ class RadioFranceModule(Module, CapRadio, CapCollection, CapAudio):
                 radio_url = radio if not radio.startswith('fb') else 'francebleu'
                 return self.browser.get_audio(_id, radio_url, selection_url, radio)
         elif radio == 'podcast':
-            m = re.match('audio\.podcast\.(\d*)-.*', _id)
+            m = re.match(r'audio\.podcast\.(\d*)-.*', _id)
             if m:
                 for item in self.browser.get_podcasts(m.group(1)):
                     if _id == item.id:

@@ -129,7 +129,7 @@ class RecipientConfirmationPage(LoggedPage, HTMLPage):
         # To display some errors, the website use javascript to modify the style of error blocks.
         # So we need to check the javascript for modification on the error div style.
         text_js = CleanText('//script[contains(text(), "codeErrorFormat")]')(self.doc)
-        if re.search('codeErrorFormat["\']\)\.style\.display = ["\']block["\']', text_js):
+        if re.search(r'codeErrorFormat["\']\)\.style\.display = ["\']block["\']', text_js):
             error_msg = CleanText('//div[@id="codeErrorFormat"]')(self.doc)
             raise AddRecipientBankError(message=error_msg)
 
@@ -460,10 +460,10 @@ class BaseScheduledTransferElement(ItemElement):
 class ScheduledTransfersPage(LoggedPage, HTMLPage):
     def js2args(self, s):
         args = {}
-        for sub in re.findall("\['([^']+)','([^']+)'\]", s):
+        for sub in re.findall(r"\['([^']+)','([^']+)'\]", s):
             args[sub[0]] = sub[1]
 
-        sub = re.search('oamSubmitForm.+?,\'([^:]+).([^\']+)', s)
+        sub = re.search(r'oamSubmitForm.+?,\'([^:]+).([^\']+)', s)
         args['%s:_idcl' % sub.group(1)] = "%s:%s" % (sub.group(1), sub.group(2))
         args['%s_SUBMIT' % sub.group(1)] = 1
         args['_form_name'] = sub.group(1)

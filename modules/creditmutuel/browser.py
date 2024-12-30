@@ -1122,7 +1122,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                                 m = re.search(r'fid=GoMonth&mois=(\d+)', self.url)
                                 if m:
                                     m = m.group(1)
-                                self.location('CRP8_SCIM_DEPCAR.aspx?_tabi=C&a__itaret=as=SCIM_ListeActivityStep\%3a\%3a\%2fSCIM_ListeRouter%3a%3a&a__mncret=SCIM_LST&a__ecpid=EID2011&_stack=_remote::moiSelectionner={},moiAfficher={},typeDepense=T&_pid=SCIM_DEPCAR_Details'.format(m, half_history), data=data)
+                                self.location('CRP8_SCIM_DEPCAR.aspx?_tabi=C&a__itaret=as=SCIM_ListeActivityStep%3a%3a%2fSCIM_ListeRouter%3a%3a&a__mncret=SCIM_LST&a__ecpid=EID2011&_stack=_remote::moiSelectionner={},moiAfficher={},typeDepense=T&_pid=SCIM_DEPCAR_Details'.format(m, half_history), data=data)
                             else:
                                 self.location(self.url, data=data)
 

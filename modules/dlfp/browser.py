@@ -65,7 +65,7 @@ class DLFP(LoginBrowser):
     _token = None
 
     def parse_id(self, _id):
-        if re.match('^https?://.*linuxfr.org/nodes/\d+/comments/\d+$', _id):
+        if re.match(r'^https?://.*linuxfr.org/nodes/\d+/comments/\d+$', _id):
             return _id, None
 
         url = id2url(_id)
@@ -160,7 +160,7 @@ class DLFP(LoginBrowser):
         if self.comment.is_here():
             content = self.page.get_comment()
         elif self.content.is_here():
-            m = re.match('.*#comment-(\d+)$', url)
+            m = re.match(r'.*#comment-(\d+)$', url)
             if m:
                 content = self.page.get_comment(int(m.group(1)))
             else:

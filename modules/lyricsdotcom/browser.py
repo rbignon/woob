@@ -32,11 +32,11 @@ class LyricsdotcomBrowser(PagesBrowser):
     TIMEOUT = 30
 
     BASEURL = 'http://www.lyrics.com'
-    search = URL('/serp.php\?st=(?P<pattern>.*)&qtype=(?P<criteria>1|2)',
+    search = URL(r'/serp\.php\?st=(?P<pattern>.*)&qtype=(?P<criteria>1|2)',
                  SearchPage)
-    songLyrics = URL('/lyric/(?P<id>\d*)',
+    songLyrics = URL(r'/lyric/(?P<id>\d*)',
                      LyricsPage)
-    artistsong = URL('/artist/(?P<id>.*)', ArtistPages)
+    artistsong = URL(r'/artist/(?P<id>.*)', ArtistPages)
 
     def iter_lyrics(self, criteria, pattern):
         if criteria == 'song':

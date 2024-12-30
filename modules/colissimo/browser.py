@@ -86,8 +86,8 @@ class ColissimoBrowser(PagesBrowser):
     BASEURL = 'https://www.laposte.fr'
     PROFILE = Firefox()
 
-    main_url = URL('/outils/suivre-vos-envois\?code=(?P<_id>.*)', MainPage)
-    tracking_url = URL('https://api.laposte.fr/ssu/v1/suivi-unifie/idship/(?P<_id>.*)', TrackingPage)
+    main_url = URL(r'/outils/suivre-vos-envois\?code=(?P<_id>.*)', MainPage)
+    tracking_url = URL(r'https://api\.laposte\.fr/ssu/v1/suivi-unifie/idship/(?P<_id>.*)', TrackingPage)
 
     def get_tracking_info(self, _id):
         self.main_url.stay_or_go(_id=_id)

@@ -62,7 +62,7 @@ class TorrentPage(LoggedPage, HTMLPage):
         klass = Torrent
         obj_description = CleanHTML('//div[has-class("description-header")]/following-sibling::div[1]')
         obj_name = CleanText('//div[@id="title"]')
-        obj_id = Regexp(CleanText('//a[has-class("butt")]/@href'), '/download_torrent\?id=([0-9]+)', '\\1')
+        obj_id = Regexp(CleanText('//a[has-class("butt")]/@href'), r'/download_torrent\?id=([0-9]+)', '\\1')
         obj_url = CleanText('//a[has-class("butt")]/@href')
         obj_filename = obj_name
         def obj_size(self):

@@ -36,13 +36,13 @@ class LyricsplanetBrowser(PagesBrowser):
     TIMEOUT = 30
 
     BASEURL = 'http://www.lyricsplanet.com/'
-    home = URL('$',
+    home = URL(r'$',
                  HomePage)
-    search = URL('search\.php$',
+    search = URL(r'search\.php$',
                  SearchPage)
-    artist = URL('search\.php\?field=artisttitle&value=(?P<artistid>[^/]*)$',
+    artist = URL(r'search\.php\?field=artisttitle&value=(?P<artistid>[^/]*)$',
                   ArtistPage)
-    lyrics = URL('lyrics\.php\?id=(?P<songid>[^/]*)$',
+    lyrics = URL(r'lyrics\.php\?id=(?P<songid>[^/]*)$',
                   LyricsPage)
 
     def iter_lyrics(self, criteria, pattern):

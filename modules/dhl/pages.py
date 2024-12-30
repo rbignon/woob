@@ -94,7 +94,7 @@ class DeutschePostDHLSearchPage(HTMLPage):
 
     def get_info_json(self, _id):
         script = self.doc.xpath('//script[contains(text(), "__INITIAL_APP_STATE__")]')[0]
-        data = json.loads(re.search('JSON.parse\("(.*)"\),', script.text.decode("unicode_escape")).group(1))
+        data = json.loads(re.search(r'JSON.parse\("(.*)"\),', script.text.decode("unicode_escape")).group(1))
         result_id = data["sendungen"][0]["id"]
         if not result_id:
             raise ParcelNotFound("No such ID: %s" % _id)

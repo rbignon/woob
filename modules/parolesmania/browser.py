@@ -36,13 +36,13 @@ class ParolesmaniaBrowser(PagesBrowser):
     TIMEOUT = 30
 
     BASEURL = 'http://www.parolesmania.com/'
-    searchSong = URL('recherche.php\?c=title&k=(?P<pattern>[^/]*).*',
+    searchSong = URL(r'recherche\.php\?c=title&k=(?P<pattern>[^/]*).*',
                  SearchSongPage)
-    searchArtist = URL('recherche.php\?c=artist&k=(?P<pattern>[^/]*).*',
+    searchArtist = URL(r'recherche\.php\?c=artist&k=(?P<pattern>[^/]*).*',
                   SearchArtistPage)
-    songLyrics = URL('paroles_(?P<artistid>[^/]*)/paroles_(?P<songid>[^/]*)\.html',
+    songLyrics = URL(r'paroles_(?P<artistid>[^/]*)/paroles_(?P<songid>[^/]*)\.html',
                   LyricsPage)
-    artistSongs = URL('paroles_(?P<artistid>[^/]*)\.html',
+    artistSongs = URL(r'paroles_(?P<artistid>[^/]*)\.html',
                   ArtistSongsPage)
 
 

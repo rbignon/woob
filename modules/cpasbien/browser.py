@@ -34,9 +34,9 @@ class CpasbienBrowser(PagesBrowser):
     TIMEOUT = 30
 
     BASEURL = 'http://www.cpasbien.cm/'
-    search = URL('recherche/(?P<pattern>.*).html,trie-seeds-d',
+    search = URL(r'recherche/(?P<pattern>.*).html,trie-seeds-d',
                  SearchPage)
-    torrent = URL('dl-torrent/(?P<id>.*)\.html',
+    torrent = URL(r'dl-torrent/(?P<id>.*)\.html',
                   TorrentPage)
 
     def iter_torrents(self, pattern):

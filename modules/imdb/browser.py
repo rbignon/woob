@@ -108,7 +108,7 @@ class ImdbBrowser(PagesBrowser):
             for g in jres['Genre'].split(', '):
                 genres.append(g)
         if 'Runtime' in jres:
-            m = re.search('(\d+?) min', jres['Runtime'])
+            m = re.search(r'(\d+?) min', jres['Runtime'])
             if m:
                 duration = int(m.group(1))
         if 'Released' in jres:

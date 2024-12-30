@@ -30,11 +30,11 @@ class InaBrowser(PagesBrowser):
     BASEURL = 'https://www.ina.fr/'
 
     search_page = URL(
-        '/ajax/recherche\?q=(?P<pattern>.*)&espace=1&media=(?P<type>(2|3))&sort=pertinence&order=desc&offset=(?P<first_item>\d+)',
+        r'/ajax/recherche\?q=(?P<pattern>.*)&espace=1&media=(?P<type>(2|3))&sort=pertinence&order=desc&offset=(?P<first_item>\d+)',
         SearchPage)
-    video_page = URL('/ina-eclaire-actu/video/(?P<id>.*)/.*$', MediaPage)
-    audio_page = URL('/ina-eclaire-actu/audio/(?P<id>.*)/.*$', MediaPage)
-    json_player_page = URL('https://apipartner.ina.fr/assets/(?P<id>.*)?sign=(?P<sign>.*)&partnerId=2', PlayerPage)
+    video_page = URL(r'/ina-eclaire-actu/video/(?P<id>.*)/.*$', MediaPage)
+    audio_page = URL(r'/ina-eclaire-actu/audio/(?P<id>.*)/.*$', MediaPage)
+    json_player_page = URL(r'https://apipartner.ina.fr/assets/(?P<id>.*)?sign=(?P<sign>.*)&partnerId=2', PlayerPage)
 
     @video_page.id2url
     def get_video(self, url, video=None):

@@ -42,7 +42,7 @@ class SearchPage(HTMLPage):
         item_xpath = '//div[@class="offer--content"]'
 
         def next_page(self):
-            p = re.match('https:\/\/www(.+)\&p=(\d+)\&mode=pagination(.*)', self.page.url)
+            p = re.match(r'https:\/\/www(.+)\&p=(\d+)\&mode=pagination(.*)', self.page.url)
             if p is not None:
                 return f'https://www{p.group(1)}&p={int(p.group(2))+1}&mode=pagination{p.group(3)}'
             else:
@@ -53,16 +53,16 @@ class SearchPage(HTMLPage):
 
             def condition(self):
                 return Regexp(CleanText('./div/h3/a/@href'),
-                              '/emplois/(.*)\.html',
+                              r'/emplois/(.*)\.html',
                               default=None)(self)
 
             def obj_id(self):
                 site = Regexp(CleanText('./div/h3/a/@href'),
-                              'https://www\.(.*)\.com', default=None)(self)
+                              r'https://www\.(.*)\.com', default=None)(self)
                 if site is None:
-                    site = Regexp(Env('domain'), 'https://www\.(.*)\.com')(self)
+                    site = Regexp(Env('domain'), r'https://www\.(.*)\.com')(self)
 
-                _id = Regexp(CleanText('./div/h3/a/@href'), '/emplois/(.*).html')(self)
+                _id = Regexp(CleanText('./div/h3/a/@href'), r'/emplois/(.*)\.html')(self)
                 return u'%s#%s' % (site, _id)
 
             obj_url = CleanText('./div/h3/a/@href')
@@ -93,7 +93,7 @@ class AdvertPage(HTMLPage):
         obj_id = Env('_id')
         obj_url = BrowserURL('advert_page', _id=Env('_id'))
         obj_publication_date = Date(Regexp(CleanText('//span[@class="retrait"]/span'),
-                                           '(\d{2}/\d{2}/\d{4})', default=NotAvailable), default=NotAvailable)
+                                           r'(\d{2}/\d{2}/\d{4})', default=NotAvailable), default=NotAvailable)
         obj_title = CleanText('//h1/span')
         obj_society_name = CleanText('//a[@id="link-company"]')
 

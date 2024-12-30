@@ -59,7 +59,7 @@ class WebsiteBrowser(LoginBrowser):
         except BrowserUnavailable:
             pass
 
-        if r is None or not re.match('https://www.adopteunmec.com/profile/\d+', r.url):
+        if r is None or not re.match(r'https://www.adopteunmec.com/profile/\d+', r.url):
             self.do_login()
             try:
                 r = self.open('https://www.adopteunmec.com/profile/%s' % id)
@@ -84,10 +84,10 @@ class WebsiteBrowser(LoginBrowser):
             text = script.text
             if text is None:
                 continue
-            m = re.search("'memberLat'\s*:\s*([\-\d\.]+),", text, re.IGNORECASE)
+            m = re.search(r"'memberLat'\s*:\s*([\-\d\.]+),", text, re.IGNORECASE)
             if m:
                 profile['lat'] = float(m.group(1))
-            m = re.search("'memberLng'\s*:\s*([\-\d\.]+),", text, re.IGNORECASE)
+            m = re.search(r"'memberLng'\s*:\s*([\-\d\.]+),", text, re.IGNORECASE)
             if m:
                 profile['lng'] = float(m.group(1))
 
@@ -96,11 +96,11 @@ class WebsiteBrowser(LoginBrowser):
 
 def url2id(func):
     def inner(self, id, *args, **kwargs):
-        m = re.match('^https?://.*adopteunmec.com.*/(\d+)$', str(id))
+        m = re.match(r'^https?://.*adopteunmec.com.*/(\d+)$', str(id))
         if m:
             id = int(m.group(1))
         else:
-            m = re.match('^https?://.*adopteunmec.com/(index.php/)?profile/(\d+).*', str(id))
+            m = re.match(r'^https?://.*adopteunmec.com/(index.php/)?profile/(\d+).*', str(id))
             if m:
                 id = int(m.group(2))
         return func(self, id, *args, **kwargs)

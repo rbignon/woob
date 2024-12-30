@@ -28,14 +28,14 @@ class Transilien(PagesBrowser):
 
     BASEURL = 'http://www.transilien.com'
     TIMEOUT = 20
-    stations_page = URL('aidesaisie/autocompletion\?saisie=(?P<pattern>.*)', StationsPage)
-    departures_page = URL('gare/pagegare/chargerGare\?nomGare=(?P<station>.*)',
-                          'gare/.*', DeparturesPage)
-    departures_page2 = URL('fichehoraire/fichehoraire/(?P<url>.*)',
-                           'fichehoraire/fichehoraire/.*', DeparturesPage2)
+    stations_page = URL(r'aidesaisie/autocompletion\?saisie=(?P<pattern>.*)', StationsPage)
+    departures_page = URL(r'gare/pagegare/chargerGare\?nomGare=(?P<station>.*)',
+                          r'gare/.*', DeparturesPage)
+    departures_page2 = URL(r'fichehoraire/fichehoraire/(?P<url>.*)',
+                           r'fichehoraire/fichehoraire/.*', DeparturesPage2)
 
-    horaires_page = URL('fiche-horaire/(?P<station>.*)--(?P<arrival>.*)-(?P<station2>.*)-(?P<arrival2>)-(?P<date>)',
-                        'fiche-horaire/.*', HorairesPage)
+    horaires_page = URL(r'fiche-horaire/(?P<station>.*)--(?P<arrival>.*)-(?P<station2>.*)-(?P<arrival2>)-(?P<date>)',
+                        r'fiche-horaire/.*', HorairesPage)
 
     roadmap_page = URL('itineraire/trajet', RoadMapPage)
 

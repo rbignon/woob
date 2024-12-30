@@ -48,7 +48,7 @@ class SubtitlesPage(HTMLPage):
 
         class item(ItemElement):
             klass = Subtitle
-            obj_id = Regexp(Attr('.//td[1]', 'id'), 'main(\d*)')
+            obj_id = Regexp(Attr('.//td[1]', 'id'), r'main(\d*)')
             obj_name = Regexp(
                 CleanText('.//td[1]'),
                 '(.*)Download at 25'
@@ -65,7 +65,7 @@ class SubtitlePage(HTMLPage):
         if id:
             subtitle.id = id
         else:
-            regexp = re.compile('https://www.opensubtitles.org/en/subtitles/(?P<id>\d+)/.*$')
+            regexp = re.compile(r'https://www\.opensubtitles\.org/en/subtitles/(?P<id>\d+)/.*$')
             result = regexp.match(self.url)
             subtitle.id = result.groupdict()['id']
 
@@ -82,7 +82,7 @@ class SeriesSubtitlePage(HTMLPage):
         season = ''
         series_name = CleanText('//div[has-class("msg")]//h1//span[@itemprop="name"]')(self.doc)
         # A regexp to recover the sub id from url
-        regexp = re.compile('.*/imdbid-(?P<episode_id>\d+)$')
+        regexp = re.compile(r'.*/imdbid-(?P<episode_id>\d+)$')
         for sub in self.doc.xpath('//table[@id="search_results"]//tbody//tr[not(contains(@class,"head"))]'):
             if not Attr('.', 'class', default=None)(sub):
                 season = CleanText('.//td[1]')(sub)

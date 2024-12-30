@@ -29,12 +29,12 @@ __all__ = ['OpensubtitlesBrowser']
 
 class OpensubtitlesBrowser(PagesBrowser):
     BASEURL = 'https://www.opensubtitles.org'
-    search = URL('/en/search2/sublanguageid-(?P<language>.*)/moviename-(?P<movie>.*)(/offset-\d*)?', SearchPage)
-    subtitles = URL('/en/search/sublanguageid-(?P<language>.*)/idmovie-(?P<id_movie>.*)',
-                    '/en/search/imdbid-\d*/sublanguageid-(?P<language>.*)/moviename-(?P<movie>.*)', SubtitlesPage)
-    subtitle = URL('/en/subtitles/(?P<id>.*)', SubtitlePage)
-    series_subtitle = URL('/en/ssearch/sublanguageid-(?P<language>.*)/idmovie-(?P<id_movie>.*)', SeriesSubtitlePage)
-    file = URL('/en/subtitleserve/sub/(?P<id>.+)')
+    search = URL(r'/en/search2/sublanguageid-(?P<language>.*)/moviename-(?P<movie>.*)(/offset-\d*)?', SearchPage)
+    subtitles = URL(r'/en/search/sublanguageid-(?P<language>.*)/idmovie-(?P<id_movie>.*)',
+                    r'/en/search/imdbid-\d*/sublanguageid-(?P<language>.*)/moviename-(?P<movie>.*)', SubtitlesPage)
+    subtitle = URL(r'/en/subtitles/(?P<id>.*)', SubtitlePage)
+    series_subtitle = URL(r'/en/ssearch/sublanguageid-(?P<language>.*)/idmovie-(?P<id_movie>.*)', SeriesSubtitlePage)
+    file = URL(r'/en/subtitleserve/sub/(?P<id>.+)')
 
     def iter_subtitles(self, language, pattern):
         lang = LANGUAGE_CONV[language]

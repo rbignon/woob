@@ -97,7 +97,7 @@ class SeasonPage(HTMLPage):
         desc = u"files :\n"
         desc += file_names
 
-        m = re.match('(.*?)\.(\w+)$', name)
+        m = re.match(r'(.*?)\.(\w+)$', name)
         if m:
             name = m.group(1)
             ext = m.group(2)

@@ -53,7 +53,7 @@ class SummaryPage(SomePage):
         else:
             rawtext = self.doc.xpath(
                 u'//li[contains(text(),"Due Date")]')[0].text_content()
-            datetext = re.match('.*(\d\d/\d\d/\d\d\d\d).*', rawtext).group(1)
+            datetext = re.match(r'.*(\d{2}/\d{2}/\d{4}).*', rawtext).group(1)
             paydate = datetime.strptime(datetext, '%m/%d/%Y')
         a = Account()
         a.id = label[-4:]
@@ -98,7 +98,7 @@ class StatementsPage(SomePage):
     def iter_statements(self):
         jss = self.doc.xpath(u'//a/@onclick[contains(.,"eBillViewPDFAction")]')
         for js in jss:
-            url = re.match("window.open\('([^']*).*\)", js).group(1)
+            url = re.match(r"window.open\('([^']*).*\)", js).group(1)
             for i in range(self.browser.MAX_RETRIES):
                 try:
                     self.browser.location(url)

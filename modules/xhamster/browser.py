@@ -25,8 +25,8 @@ from .pages import SearchPage, VideoPage
 class XHamsterBrowser(PagesBrowser):
     BASEURL = 'https://fr.xhamster.com'
 
-    video = URL('/videos/(?P<id>.+)', VideoPage)
-    search = URL('/search\?q=(?P<pattern>[^&]+)', SearchPage)
+    video = URL(r'/videos/(?P<id>.+)', VideoPage)
+    search = URL(r'/search\?q=(?P<pattern>[^&]+)', SearchPage)
 
     def do_search(self, pattern):
         self.location('/search', params={'q': pattern})

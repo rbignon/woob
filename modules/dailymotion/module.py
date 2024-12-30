@@ -61,7 +61,7 @@ class DailymotionModule(Module, CapVideo, CapCollection):
         return self.create_browser(resolution=resolution, format=format)
 
     def get_video(self, _id):
-        m = re.match('http://[w\.]*dailymotion\.com/video/(.*)', _id)
+        m = re.match(r'http://[w\.]*dailymotion\.com/video/(.*)', _id)
         if m:
             _id = m.group(1)
 

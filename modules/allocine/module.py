@@ -177,7 +177,7 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
 
     def search_events(self, query):
         if CATEGORIES.CINE in query.categories:
-            if query.city and re.match('\d{5}', query.city):
+            if query.city and re.match(r'\d{5}', query.city):
                 events = list(self.browser.search_events(query))
                 events.sort(key=lambda x: x.start_date, reverse=False)
                 return events

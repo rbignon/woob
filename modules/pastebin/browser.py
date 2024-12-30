@@ -120,14 +120,14 @@ class LimitExceeded(BrowserUnavailable):
 class PastebinBrowser(LoginBrowser):
     BASEURL = 'https://pastebin.com/'
 
-    warning = URL('warning\.php\?p=(?P<id>\d+)', WarningPage)
-    api = URL('api/api_post\.php', RawPage)
-    apilogin = URL('api/api_login\.php', RawPage)
+    warning = URL(r'warning\.php\?p=(?P<id>\d+)', WarningPage)
+    api = URL(r'api/api_post\.php', RawPage)
+    apilogin = URL(r'api/api_login\.php', RawPage)
     login = URL('login', LoginPage)
-    userprofile = URL('u/(?P<username>.+)', UserPage)
-    postpage = URL('$', PostPage)
-    paste = URL('(?P<id>\w+)', PastePage)
-    raw = URL('raw\.php\?i=(?P<id>\w+)', RawPage)
+    userprofile = URL(r'u/(?P<username>.+)', UserPage)
+    postpage = URL(r'$', PostPage)
+    paste = URL(r'(?P<id>\w+)', PastePage)
+    raw = URL(r'raw\.php\?i=(?P<id>\w+)', RawPage)
 
     def __init__(self, api_key, *args, **kwargs):
         super(PastebinBrowser, self).__init__(*args, **kwargs)
@@ -213,7 +213,7 @@ class PastebinBrowser(LoginBrowser):
 
     # TODO make it into a Page?
     def _validate_api_response(self, res):
-        matches = re.match('Bad API request, (?P<error>.+)', res)
+        matches = re.match(r'Bad API request, (?P<error>.+)', res)
         if matches:
             raise BadAPIRequest(matches.groupdict().get('error'))
 

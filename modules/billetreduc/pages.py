@@ -164,7 +164,7 @@ class ResultsPage(HTMLPage):
                     p.do_parse()
                     return p.res
 
-                m = re.match('le \w+ \d+ \w+ \d+ à (\d+)h(\d*)$', txt, re.UNICODE)
+                m = re.match(r'le \w+ \d+ \w+ \d+ à (\d+)h(\d*)$', txt, re.UNICODE)
                 return [(int(m.group(1)), int(m.group(2) or 0))]
 
             obj_start_date = Env('date')

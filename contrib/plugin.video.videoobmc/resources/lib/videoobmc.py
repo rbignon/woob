@@ -45,7 +45,7 @@ class Videoobmc(Woobmc):
         video.title = u'%s' % _video['title']
 
         if _video['date']:
-            _date = re.search('(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}).*', _video['date'])
+            _date = re.search(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}).*', _video['date'])
 
             try:
                 datetime.strptime(_date.group(1), '%Y-%m-%d %H:%M:%S')

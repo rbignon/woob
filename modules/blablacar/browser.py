@@ -28,7 +28,7 @@ from .pages import DeparturesPage
 class BlablacarBrowser(PagesBrowser):
     BASEURL = 'https://www.blablacar.fr'
 
-    departures = URL('/search_xhr\?(?P<qry>.*)', DeparturesPage)
+    departures = URL(r'/search_xhr\?(?P<qry>.*)', DeparturesPage)
 
     def get_roadmap(self, departure, arrival, filters):
         pass

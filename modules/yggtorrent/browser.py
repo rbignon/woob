@@ -36,11 +36,11 @@ class YggtorrentBrowser(LoginBrowser):
     TIMEOUT = 30
 
     BASEURL = 'https://yggtorrent.to/'
-    home = URL('$', HomePage)
-    login = URL('/user/login$', LoginPage)
+    home = URL(r'$', HomePage)
+    login = URL(r'/user/login$', LoginPage)
     search = URL(r'/engine/search\?name=(?P<pattern>.*)&order=desc&sort=seed&do=search', SearchPage)
-    download = URL('/engine/download_torrent\?id=(?P<torrent_id>[0-9]+)', DownloadPage)
-    torrent = URL('/torrent/(?P<torrent_cat>.+)/(?P<torrent_subcat>.+)/(?P<torrent_id>[0-9]+)-(?P<torrent_name>.*)', TorrentPage)
+    download = URL(r'/engine/download_torrent\?id=(?P<torrent_id>[0-9]+)', DownloadPage)
+    torrent = URL(r'/torrent/(?P<torrent_cat>.+)/(?P<torrent_subcat>.+)/(?P<torrent_id>[0-9]+)-(?P<torrent_name>.*)', TorrentPage)
 
     def do_login(self):
         self.home.go()

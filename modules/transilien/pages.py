@@ -207,6 +207,6 @@ class DeparturesPage(HTMLPage):
             obj_type = DepartureTypeFilter(TableCell('type'))
             obj_departure_station = CleanText(Env('station'))
             obj_arrival_station = CleanText(TableCell('arrival'))
-            obj_information = TableCell('time') & CleanText & Regexp(pattern='([^\d:]+)') | u''
+            obj_information = TableCell('time') & CleanText & Regexp(pattern=r'([^\d:]+)') | u''
             obj_plateform = CleanText(TableCell('plateform'))
-            obj_id = Regexp(Link(Child(TableCell('id'))), '.*?numeroTrain=(.*?)&.*?')
+            obj_id = Regexp(Link(Child(TableCell('id'))), r'.*?numeroTrain=(.*?)&.*?')

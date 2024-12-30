@@ -26,14 +26,14 @@ __all__ = ['RadioFranceBrowser']
 
 
 class RadioFranceBrowser(PagesBrowser):
-    json_page = URL('sites/default/files/(?P<json_url>.*).json',
-                    'player-json/reecoute/(?P<json_url_fip>.*)',
-                    'station/(?P<fbplayer>.*)',
-                    'programmes\?xmlHttpRequest=1',
+    json_page = URL(r'sites/default/files/(?P<json_url>.*)\.json',
+                    r'player-json/reecoute/(?P<json_url_fip>.*)',
+                    r'station/(?P<fbplayer>.*)',
+                    r'programmes\?xmlHttpRequest=1',
                     'autocomplete/emissions.json',
                     JsonPage)
-    podcast_page = URL('podcast09/rss_(?P<podcast_id>.*)\.xml', PodcastPage)
-    radio_page = URL('(?P<page>.*)', RadioPage)
+    podcast_page = URL(r'podcast09/rss_(?P<podcast_id>.*)\.xml', PodcastPage)
+    radio_page = URL(r'(?P<page>.*)', RadioPage)
 
     def get_radio_url(self, radio, player):
         self.fill_base_url(radio)

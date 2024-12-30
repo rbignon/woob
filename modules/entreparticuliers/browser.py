@@ -28,8 +28,8 @@ from .pages import CitiesPage, HousingPage, SearchPage
 class EntreparticuliersBrowser(PagesBrowser):
     BASEURL = 'https://api.entreparticuliers.com'
 
-    cities = URL('/api/voiture/GetLocalisations/\?term=(?P<pattern>.*)', CitiesPage)
-    housing = URL('/api/immo/Getannonce/\?id=(?P<_id>.*)&rubrique=(?P<_rubrique>.*)',
+    cities = URL(r'/api/voiture/GetLocalisations/\?term=(?P<pattern>.*)', CitiesPage)
+    housing = URL(r'/api/immo/Getannonce/\?id=(?P<_id>.*)&rubrique=(?P<_rubrique>.*)',
                   HousingPage)
     search_house = URL('/api/immo/GetBiens', SearchPage)
 

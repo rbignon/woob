@@ -148,13 +148,13 @@ class IndexPage(HTMLPage):
 
         def _get_low_tide_value(self, AM=True, jour=0):
             slow_tide_pos = 1 if self._is_low_tide_first(jour) else 2
-            m = re.findall('(\d{2}h\d{2})', CleanText('//tr[@id="MareeJours_%s"]/td[1]' % jour)(self))
+            m = re.findall(r'(\d{2}h\d{2})', CleanText('//tr[@id="MareeJours_%s"]/td[1]' % jour)(self))
 
-            re_time = '(\d{2}h\d{2}).*(\d{2}h\d{2}).*(\d{2}h\d{2})'
-            re_value = '(.*)m(.*)m(.*)m'
+            re_time = r'(\d{2}h\d{2}).*(\d{2}h\d{2}).*(\d{2}h\d{2})'
+            re_value = r'(.*)m(.*)m(.*)m'
             if len(m) > 3:
-                re_time = '(\d{2}h\d{2}).*(\d{2}h\d{2}).*(\d{2}h\d{2}).*(\d{2}h\d{2})'
-                re_value = '(.*)m(.*)m(.*)m(.*)m'
+                re_time = r'(\d{2}h\d{2}).*(\d{2}h\d{2}).*(\d{2}h\d{2}).*(\d{2}h\d{2})'
+                re_value = r'(.*)m(.*)m(.*)m(.*)m'
 
             if AM:
                 time = DateTime(Regexp(CleanText('//tr[@id="MareeJours_%s"]/td[1]' % jour),

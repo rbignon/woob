@@ -30,7 +30,7 @@ from woob.capabilities.job import BaseJobAdvert
 class IndeedDate(Filter):
     def filter(self, date):
         now = datetime.now()
-        number = re.search("\d+", date)
+        number = re.search(r"\d+", date)
         if number:
             if 'heures' in date:
                 return now - timedelta(hours=int(number.group(0)))

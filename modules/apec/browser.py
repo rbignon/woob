@@ -38,7 +38,7 @@ class ApecBrowser(PagesBrowser):
     start = 0
     json_count = URL('/cms/webservices/rechercheOffre/count', IdsPage)
     json_ids = URL('/cms/webservices/rechercheOffre/ids', IdsPage)
-    json_offre = URL('/cms/webservices/offre/public\?numeroOffre=(?P<_id>.*)', OffrePage)
+    json_offre = URL(r'/cms/webservices/offre/public\?numeroOffre=(?P<_id>.*)', OffrePage)
 
     def create_parameters(self, pattern='', fonctions='[]', lieux='[]', secteursActivite='[]', typesContrat='[]',
                           typesConvention='[]', niveauxExperience='[]', salaire_min='', salaire_max='',

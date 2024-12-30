@@ -36,7 +36,7 @@ class SearchPage(HTMLPage):
 
         class item(ItemElement):
             klass = Torrent
-            obj_id = Regexp(CleanText('.//a[has-class("list_tor_title")]/@href'), '/(.*)\.torrent\.html$', '\\1')
+            obj_id = Regexp(CleanText('.//a[has-class("list_tor_title")]/@href'), r'/(.*)\.torrent\.html$', '\\1')
             obj_name = CleanText('.//a[has-class("list_tor_title")]')
             obj_seeders = CleanDecimal('.//b[has-class("green")]/text()', default=0)
             obj_leechers = CleanDecimal('.//b[has-class("red")]/text()', default=0)
@@ -57,7 +57,7 @@ class TorrentPage(HTMLPage):
         klass = Torrent
         obj_name = CleanText('.//div[@id="middle_content"]/h1')
         obj_description = CleanText('//div[@id="descriptionContent"]', default=NotAvailable)
-        obj_id = Regexp(CleanText('//div[@id="middle_content"]/a[@title="Download torrent"]/@href'), '/(.*)\.torrent', '\\1')
+        obj_id = Regexp(CleanText('//div[@id="middle_content"]/a[@title="Download torrent"]/@href'), r'/(.*)\.torrent', '\\1')
         obj_url = AbsoluteLink('//div[@id="middle_content"]/a[@title="Download torrent"]')
         obj_filename = Format('%s.torrent', obj_name)
         def obj_size(self):

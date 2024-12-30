@@ -25,7 +25,7 @@ class AntiSpam(object):
         resume = thread['title']
 
         # Check if there is an email address in the offer.
-        if re.match('^[\w\d\.\-_]+@[\w\d\.]+ vous offre la pos', resume):
+        if re.match(r'^[\w\d\.\-_]+@[\w\d\.]+ vous offre la pos', resume):
             return False
         if thread['who']['pseudo'] == 'Ekaterina':
             return False
@@ -64,7 +64,7 @@ class AntiSpam(object):
                 return False
             if ipaddr.startswith('196.47.'):
                 return False
-            if re.match('105\.13\d.*', ipaddr):
+            if re.match(r'105\.13\d.*', ipaddr):
                 return False
             if ipaddr in ('62.157.186.18', '198.36.222.8', '212.234.67.61', '203.193.158.210', '41.189.34.180', '41.66.12.36', '196.47.137.21', '213.136.125.122', '41.191.87.188'):
                 return False

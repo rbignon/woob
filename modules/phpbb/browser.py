@@ -153,7 +153,7 @@ class PhpBB(LoginBrowser):
             if not forum_id:
                 forums = self.get_forums()
                 forums_prompt = 'Forums list:\n%s' % ('\n'.join(['\t- %s' % f for f in forums.values()]))
-                m = re.match('\[(.*)\] (.*)', title or '')
+                m = re.match(r'\[(.*)\] (.*)', title or '')
                 if not m:
                     raise CantSendMessage('Please enter a title formatted like that:\n\t"[FORUM] SUBJECT"\n\n%s' % forums_prompt)
 

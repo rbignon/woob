@@ -32,7 +32,7 @@ from .index import BaseHTMLPage
 
 class BaseIssuePage(BaseHTMLPage):
     def parse_datetime(self, text):
-        m = re.match('(\d+)/(\d+)/(\d+) (\d+):(\d+) (\w+)', text)
+        m = re.match(r'(\d+)/(\d+)/(\d+) (\d+):(\d+) (\w+)', text)
         if m:
             date = datetime.datetime(int(m.group(3)),
                                      int(m.group(1)),
@@ -43,7 +43,7 @@ class BaseIssuePage(BaseHTMLPage):
                 date += datetime.timedelta(0,12*3600)
             return date
 
-        m = re.match('(\d+)-(\d+)-(\d+) (\d+):(\d+)', text)
+        m = re.match(r'(\d+)-(\d+)-(\d+) (\d+):(\d+)', text)
         if m:
             return datetime.datetime(int(m.group(1)),
                                      int(m.group(2)),
@@ -51,7 +51,7 @@ class BaseIssuePage(BaseHTMLPage):
                                      int(m.group(4)),
                                      int(m.group(5)))
 
-        m = re.match('(\d+) (\w+) (\d+) (\d+):(\d+)', text)
+        m = re.match(r'(\d+) (\w+) (\d+) (\d+):(\d+)', text)
         if m:
             return parse_french_date(text)
 
@@ -206,7 +206,7 @@ class IssuesPage(BaseIssuePage):
                 if field.endswith('_on'):
                     text = self.parse_datetime(text)
                 elif field.endswith('_date') and text is not None:
-                    m = re.match('(\d+)-(\d+)-(\d+)', text)
+                    m = re.match(r'(\d+)-(\d+)-(\d+)', text)
                     if m:
                         text = datetime.datetime(int(m.group(1)),
                                                  int(m.group(2)),

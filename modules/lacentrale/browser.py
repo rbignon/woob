@@ -28,9 +28,9 @@ __all__ = ['LaCentraleBrowser']
 class LaCentraleBrowser(PagesBrowser):
     BASEURL = 'http://www.lacentrale.fr'
 
-    list_page = URL('/listing_auto.php\?(?P<_request>.*)',
+    list_page = URL(r'/listing_auto\.php\?(?P<_request>.*)',
                     ListingAutoPage)
-    advert_page = URL('/auto-occasion-annonce-(?P<_id>.*).html', AdvertPage)
+    advert_page = URL(r'/auto-occasion-annonce-(?P<_id>.*).html', AdvertPage)
 
     def iter_prices(self, product):
         _request = '&'.join(['%s=%s' % (key, item) for key, item in product._criteria.items()])

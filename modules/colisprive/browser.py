@@ -24,7 +24,7 @@ from .pages import ErrorPage, TrackPage
 
 class ColispriveBrowser(PagesBrowser):
 
-    track_page = URL('https://www.colisprive.com/moncolis/pages/detailColis.aspx\?numColis=(?P<id>.+)', TrackPage)
+    track_page = URL(r'https://www\.colisprive\.com/moncolis/pages/detailColis\.aspx\?numColis=(?P<id>.+)', TrackPage)
     error_page = URL('https://www.colisprive.fr', ErrorPage)
 
     def get_tracking_info(self, _id):

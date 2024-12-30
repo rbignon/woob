@@ -34,9 +34,9 @@ class LyricsmodeBrowser(PagesBrowser):
     TIMEOUT = 30
 
     BASEURL = 'http://www.lyricsmode.com/'
-    search = URL('search\.php\?search=(?P<pattern>[^&/]*)$',
+    search = URL(r'search\.php\?search=(?P<pattern>[^&/]*)$',
                  SearchPage)
-    songLyrics = URL('lyrics/(?P<letterid>[^/]*)/(?P<artistid>[^/]*)/(?P<songid>[^/]*)\.html$',
+    songLyrics = URL(r'lyrics/(?P<letterid>[^/]*)/(?P<artistid>[^/]*)/(?P<songid>[^/]*)\.html$',
                   LyricsPage)
 
 

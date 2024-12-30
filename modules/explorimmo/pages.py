@@ -335,7 +335,7 @@ class HousingPage2(JsonPage):
         def obj_photos(self):
             photos = []
             for img in Dict('characteristics/images')(self):
-                m = re.search('http://thbr\.figarocms\.net.*(http://.*)', img.get('xl'))
+                m = re.search(r'http://thbr\.figarocms\.net.*(http://.*)', img.get('xl'))
                 if m:
                     photos.append(HousingPhoto(m.group(1)))
                 else:

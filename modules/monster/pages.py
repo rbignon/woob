@@ -32,7 +32,7 @@ from woob.capabilities.job import BaseJobAdvert
 class MonsterDate(Filter):
     def filter(self, date):
         now = datetime.now()
-        number = re.search("\d+", date)
+        number = re.search(r"\d+", date)
         if number:
             if 'heures' in date:
                 date = now - timedelta(hours=int(number.group(0)))
@@ -52,7 +52,7 @@ class AdvSearchPage(HTMLPage):
 
         def next_page(self):
             page = Regexp(CleanText('//a[@data-action="fetch"]/@href', default=''),
-                          '.*page=(\d*)', default=None)(self)
+                          r'.*page=(\d*)', default=None)(self)
             if page:
                 return BrowserURL('adv_search', search=Env('search'), page=int(page))(self)
 

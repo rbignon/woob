@@ -37,7 +37,7 @@ class AdvertPage(HTMLPage):
         obj_job_name = CleanText('//title')
         obj_society_name = CleanText('//div[2]/div[@class="col-md-9"]/h4[1]')
         obj_publication_date = Date(CleanText('//div[2]/div[@class="col-md-9"]/small', replace=[(u'Ajoutée le', '')]), parse_func=parse_french_date)
-        obj_place = Regexp(CleanText('//div[2]/div[@class="col-md-9"]/h4[2]'), '(.*) \(.*\)')
+        obj_place = Regexp(CleanText('//div[2]/div[@class="col-md-9"]/h4[2]'), r'(.*) \(.*\)')
         obj_description = CleanHTML('//div[4]/div[@class="col-md-9"]')
 
 
@@ -49,7 +49,7 @@ class SearchPage(HTMLPage):
         class item(ItemElement):
             klass = BaseJobAdvert
 
-            obj_id = Regexp(Link('.'), '.*fr/jobs/(\d+)/.*')
+            obj_id = Regexp(Link('.'), r'.*fr/jobs/(\d+)/.*')
             obj_title = CleanText('h4/span[@class="job-title"]')
             obj_society_name = CleanText('h4/span[@class="job-company"]')
             obj_publication_date = Date(CleanText('h4/span[@class="badge pull-right"]'), parse_func=parse_french_date)

@@ -28,11 +28,11 @@ from .pages import CitiesPage, HousingPage, PhonePage, SearchPage
 class LogicimmoBrowser(PagesBrowser):
     BASEURL = 'https://www.logic-immo.com/'
     PROFILE = Firefox()
-    city = URL('asset/t9/getLocalityT9.php\?site=fr&lang=fr&json=%22(?P<pattern>.*)%22',
+    city = URL(r'asset/t9/getLocalityT9\.php\?site=fr&lang=fr&json=%22(?P<pattern>.*)%22',
                CitiesPage)
-    search = URL('(?P<type>location-immobilier|vente-immobilier|recherche-colocation)-(?P<cities>.*)/options/(?P<options>.*)', SearchPage)
-    housing = URL('detail-(?P<_id>.*).htm', HousingPage)
-    phone = URL('(?P<urlcontact>.*)', PhonePage)
+    search = URL(r'(?P<type>location-immobilier|vente-immobilier|recherche-colocation)-(?P<cities>.*)/options/(?P<options>.*)', SearchPage)
+    housing = URL(r'detail-(?P<_id>.*)\.htm', HousingPage)
+    phone = URL(r'(?P<urlcontact>.*)', PhonePage)
 
     TYPES = {POSTS_TYPES.RENT: 'location-immobilier',
              POSTS_TYPES.SALE: 'vente-immobilier',

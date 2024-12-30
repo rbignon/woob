@@ -31,9 +31,9 @@ __all__ = ['YoupornBrowser']
 class YoupornBrowser(PagesBrowser):
     BASEURL = 'https://www.youporn.com'
 
-    home = URL('/$', IndexPage)
-    search = URL('/search/\?query=(?P<query>.*)', IndexPage)
-    video = URL('/watch/(?P<id>[0-9]+)/.*', VideoPage)
+    home = URL(r'/$', IndexPage)
+    search = URL(r'/search/\?query=(?P<query>.*)', IndexPage)
+    video = URL(r'/watch/(?P<id>[0-9]+)/.*', VideoPage)
 
     def get_video(self, _id):
         self.video.go(id=_id)

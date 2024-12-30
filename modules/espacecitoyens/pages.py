@@ -48,7 +48,7 @@ class HomePage(LoggedPage, HTMLPage):
             klass = Subscription
             def condition(self):
                 return 'href' in self.el.attrib and re.match('.*/FichePersonne/DetailPersonne[?]idDynamic=.*', self.el.attrib['href'])
-            obj_id = Regexp(Link('.'), '.*idDynamic=(\d+).*', '\\1')
+            obj_id = Regexp(Link('.'), r'.*idDynamic=(\d+).*', '\\1')
 
 class SubscriptionPage(LoggedPage, HTMLPage):
     @method

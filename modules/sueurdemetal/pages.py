@@ -104,7 +104,7 @@ class ConcertPage(JsonPage):
                 raise NoEvent()
 
         def obj_price(self):
-            return float(re.match('[\d.]+', self.el['prix']).group(0))
+            return float(re.match(r'[\d.]+', self.el['prix']).group(0))
 
         def obj_location(self):
             return '%s, %s' % (self.el['salle'], self.el['adresse'])

@@ -28,13 +28,13 @@ __all__ = ['IlmatieteenlaitosBrowser']
 
 class IlmatieteenlaitosBrowser(PagesBrowser):
     BASEURL = 'http://ilmatieteenlaitos.fi'
-    cities = URL('/etusivu\?p_p_id=locationmenuportlet_WAR_fmiwwwweatherportlets&p_p_lifecycle=2&p_p_state=normal&'
-                 'p_p_mode=view&p_p_cacheability=cacheLevelFull&term=(?P<pattern>.*)', SearchCitiesPage)
-    weather_query = URL('/paikallissaa\?p_p_id=locationmenuportlet_WAR_fmiwwwweatherportlets&p_p_lifecycle=1&'
+    cities = URL(r'/etusivu\?p_p_id=locationmenuportlet_WAR_fmiwwwweatherportlets&p_p_lifecycle=2&p_p_state=normal&'
+                 r'p_p_mode=view&p_p_cacheability=cacheLevelFull&term=(?P<pattern>.*)', SearchCitiesPage)
+    weather_query = URL(r'/paikallissaa\?p_p_id=locationmenuportlet_WAR_fmiwwwweatherportlets&p_p_lifecycle=1&'
                         'p_p_state=normal&p_p_mode=view&_locationmenuportlet_WAR_fmiwwwweatherportlets_action='
                         'changelocation')
-    weather = URL('/saa/(?P<city_url>.*)', WeatherPage)
-    observations = URL('/observation-data\?station=(?P<station_id>.*)', ObservationsPage)
+    weather = URL(r'/saa/(?P<city_url>.*)', WeatherPage)
+    observations = URL(r'/observation-data\?station=(?P<station_id>.*)', ObservationsPage)
 
     def iter_city_search(self, pattern):
         return self.cities.go(pattern=pattern).iter_cities()

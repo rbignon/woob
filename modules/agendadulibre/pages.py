@@ -48,8 +48,8 @@ class EventPage(HTMLPage):
             m = re.findall(r'\w* \w* \d?\d \w* \d{4} \w* \d{2}h\d{2}', CleanText('(//p)[1]')(self), re.UNICODE)
             if m:
                 return DateTime(Regexp(CleanText('(//p)[1]'),
-                                       '\w* \w* (\d?\d \w* \d{4}) \w* (\d{2}h\d{2}).*',
-                                       '\\1 \\2',
+                                       r'\w* \w* (\d?\d \w* \d{4}) \w* (\d{2}h\d{2}).*',
+                                       r'\1 \2',
                                        flags=re.UNICODE),
                                 parse_func=parse_french_date,
                                 strict=False)(self)
@@ -60,14 +60,14 @@ class EventPage(HTMLPage):
                 if len(m) == 1:
                     return DateTime(Regexp(CleanText('(//p)[1]'),
                                            r'\w* \w* (\d?\d \w* \d{4}) \w* \d{2}h\d{2} \w* (\d{2}h\d{2})',
-                                           '\\1 \\2',
+                                           r'\1 \2',
                                            flags=re.UNICODE),
                                     parse_func=parse_french_date,
                                     strict=False)(self)
                 else:
                     return DateTime(Regexp(CleanText('(//p)[1]'),
                                            r'\w* \w* (\d?\d \w* \d{4}) \w* (\d{2}h\d{2})',
-                                           '\\1 \\2',
+                                           r'\1 \2',
                                            nth=-1,
                                            flags=re.UNICODE),
                                     parse_func=parse_french_date,
@@ -81,7 +81,7 @@ class EventListPage(HTMLPage):
         item_xpath = '//td[starts-with(@class, "day")]/ul/li'
 
         def next_page(self):
-            m = re.match('.*/events\?start_date=(\d{4})-(\d{2})-(\d{2})(&region=.*)?', self.page.url)
+            m = re.match(r'.*/events\?start_date=(\d{4})-(\d{2})-(\d{2})(&region=.*)?', self.page.url)
             if m:
                 start = date(year=int(m.group(1)), month=int(m.group(2)), day=1)
                 region = m.group(4) if m.group(4) else ''
@@ -114,8 +114,8 @@ class EventListPage(HTMLPage):
                 m = re.findall(r'\w* \w* \d?\d \w* \d{4} \w* \d{2}h\d{2}', CleanText('./@title')(self), re.UNICODE)
                 if m:
                     return DateTime(Regexp(CleanText('./@title'),
-                                           '\w* \w* (\d?\d \w* \d{4}) \w* (\d{2}h\d{2}).*',
-                                           '\\1 \\2',
+                                           r'\w* \w* (\d?\d \w* \d{4}) \w* (\d{2}h\d{2}).*',
+                                           r'\1 \2',
                                            flags=re.UNICODE),
                                     parse_func=parse_french_date,
                                     strict=False)(self)
@@ -126,14 +126,14 @@ class EventListPage(HTMLPage):
                     if len(m) == 1:
                         return DateTime(Regexp(CleanText('./@title'),
                                                r'\w* \w* (\d?\d \w* \d{4}) \w* \d{2}h\d{2} \w* (\d{2}h\d{2})',
-                                               '\\1 \\2',
+                                               r'\1 \2',
                                                flags=re.UNICODE),
                                         parse_func=parse_french_date,
                                         strict=False)(self)
                     else:
                         return DateTime(Regexp(CleanText('./@title'),
                                                r'\w* \w* (\d?\d \w* \d{4}) \w* (\d{2}h\d{2})',
-                                               '\\1 \\2',
+                                               r'\1 \2',
                                                nth=-1,
                                                flags=re.UNICODE),
                                         parse_func=parse_french_date,

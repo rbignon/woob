@@ -100,7 +100,7 @@ class ThreadPage(HTMLPage):
                            CleanText('//div[has-class("permalink-inner permalink-tweet-container")]/div/div/p',
                                      replace=[('@ ', '@'), ('# ', '#'), ('http:// ', 'http://')]))
         obj_date = DateTime(Regexp(CleanText('//div[has-class("permalink-inner permalink-tweet-container")]/div/div/div[@class="client-and-actions"]/span/span'),
-                                   '(\d+:\d+).+- (.+\d{4})',
+                                   r'(\d+:\d+).+- (.+\d{4})',
                                    '\\2 \\1'), translations=DATE_TRANSLATE_FR)
 
     @method

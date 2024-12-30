@@ -21,8 +21,8 @@
 import re
 
 
-RSSID_RE = re.compile('tag:.*:(\w+)/(\d+)')
-ID2URL_RE = re.compile('^(\w)(.*)\.([^ \.]+)$')
+RSSID_RE = re.compile(r'tag:.*:(\w+)/(\d+)')
+ID2URL_RE = re.compile(r'^(\w)(.*)\.([^ \.]+)$')
 
 REGEXPS = {'/users/%s/journaux/%s': 'D%s.%s',
            '/news/%s':              'N.%s',
@@ -34,7 +34,7 @@ REGEXPS = {'/users/%s/journaux/%s': 'D%s.%s',
 
 
 def f2re(f):
-    return '.*' + f.replace('%s', '([^ /]+)')
+    return '.*' + f.replace('%s', r'([^ /]+)')
 
 
 def rssid(entry):

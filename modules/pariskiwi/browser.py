@@ -77,7 +77,7 @@ class ParisKiwiBrowser(APIBrowser):
             res['datetime'] = combine(res['date'], res['hour'])
             text = text[:match.start(0)] + text[match.end(0):]
 
-        match = re.search(u'\\b(\\d+([,.]\\d+)?)\s*(euros\\b|euro\\b|€)', text)
+        match = re.search(r'\\b(\\d+([,.]\\d+)?)\s*(euros\\b|euro\\b|€)', text)
         if match:
             res['price'] = float(match.group(1).replace(',', '.'))
             text = text[:match.start(0)] + text[match.end(0):]

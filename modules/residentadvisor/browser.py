@@ -33,9 +33,9 @@ class ResidentadvisorBrowser(LoginBrowser):
     ALBANIA_ID = 223
 
     login = URL('https://www.residentadvisor.net/login', LoginPage)
-    event = URL('/event.aspx\?(?P<id>\d+)', EventPage)
-    list_events = URL('/events.aspx\?ai=(?P<city>\d+)&v=(?P<v>.+)&yr=(?P<year>\d{4})&mn=(?P<month>\d\d?)&dy=(?P<day>\d\d?)', ListPage)
-    search_page = URL('/search.aspx\?searchstr=(?P<query>.+)&section=events&titles=1', SearchPage)
+    event = URL(r'/event\.aspx\?(?P<id>\d+)', EventPage)
+    list_events = URL(r'/events.aspx\?ai=(?P<city>\d+)&v=(?P<v>.+)&yr=(?P<year>\d{4})&mn=(?P<month>\d\d?)&dy=(?P<day>\d\d?)', ListPage)
+    search_page = URL(r'/search.aspx\?searchstr=(?P<query>.+)&section=events&titles=1', SearchPage)
     attends = URL('/Output/addhandler.ashx')
 
     def do_login(self):

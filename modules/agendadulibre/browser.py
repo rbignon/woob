@@ -27,8 +27,8 @@ from .pages import EventListPage, EventPage
 
 class AgendadulibreBrowser(PagesBrowser):
 
-    event_list_page = URL('events\?start_date=(?P<date_from>.*)(?P<region>.*)', EventListPage)
-    event_page = URL('events/(?P<_id>.*)', EventPage)
+    event_list_page = URL(r'events\?start_date=(?P<date_from>.*)(?P<region>.*)', EventListPage)
+    event_page = URL(r'events/(?P<_id>.*)', EventPage)
 
     def __init__(self, website, region, *args, **kwargs):
         self.BASEURL = u'%s/' % website

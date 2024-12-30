@@ -195,7 +195,7 @@ class EntryPage(HTMLPage):
             obj_sender = CleanText('.//a[has-class("author")]')
             obj_date = DateTime(Attr('.//time[@class="live-timestamp"]', 'datetime'))
             obj_url = AbsoluteLink('.//a[@data-event-action="permalink"]', default='')
-            obj_id = Regexp(Field('url'), '/(\w+)/$', default=None)
+            obj_id = Regexp(Field('url'), r'/(\w+)/$', default=None)
             obj__parent_part = Regexp(Link('.//a[@data-event-action="parent"]', default=''), r'#(\w+)', default=None)
 
             def obj_children(self):

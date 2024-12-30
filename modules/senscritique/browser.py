@@ -32,8 +32,8 @@ class SenscritiqueBrowser(PagesBrowser):
     BASEURL = 'https://www.senscritique.com'
 
     films_page = URL('/everymovie/programme-tv/cette-semaine', FilmsPage)
-    event_page = URL('/film/(?P<_id>.*)', EventPage)
-    json_page = URL('/sc2/product/storyline/(?P<_id>.*).json', JsonResumePage)
+    event_page = URL(r'/film/(?P<_id>.*)', EventPage)
+    json_page = URL(r'/sc2/product/storyline/(?P<_id>.*)\.json', JsonResumePage)
 
     def set_json_header(self):
         self.session.headers.update({"User-Agent": "Mozilla/5.0 (Windows; U; Windows "

@@ -35,7 +35,7 @@ class PoleEmploiDate(Filter):
         elif el == u'Publié hier':
             days = 1
         else:
-            m = re.search(u'Publié il y a (\d*) jours', el)
+            m = re.search(r'Publié il y a (\d*) jours', el)
             if m:
                 days = int(m.group(1))
 

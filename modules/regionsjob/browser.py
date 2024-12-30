@@ -27,9 +27,9 @@ __all__ = ['RegionsjobBrowser']
 
 class RegionsjobBrowser(PagesBrowser):
 
-    search_page = URL('emplois/recherche.html\?.*', SearchPage)
-    advert_page = URL('emplois/(?P<_id>.*)\.html', AdvertPage)
-    location_page = URL('search/getloc\?term=(?P<place>.*)', LocationPage)
+    search_page = URL(r'emplois/recherche\.html\?.*', SearchPage)
+    advert_page = URL(r'emplois/(?P<_id>.*)\.html', AdvertPage)
+    location_page = URL(r'search/getloc\?term=(?P<place>.*)', LocationPage)
 
     def __init__(self, website, *args, **kwargs):
         self.BASEURL = 'https://%s/' % website

@@ -50,7 +50,7 @@ class IndexPage(SomePage):
             '//script[contains(text(),"XXX_Extra")]/text()')[0]
         script = re.sub(APPEND, lambda m: 'return %s;' % m.group(1), script)
         script = re.sub(r'jQuery\(document\)[^\n]+\n', '', script)
-        for x in re.findall('function ([^(]+)\(', script):
+        for x in re.findall(r'function ([^(]+)\(', script):
             script += '\nvar x = %s(); if (x) return x;' % x
         js = Javascript("function run(){%s}" % script)
         html = js.call("run")

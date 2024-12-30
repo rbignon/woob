@@ -101,12 +101,12 @@ class HousingPage(HTMLPage):
 
         obj_title = CleanText(CleanHTML('//meta[@itemprop="name"]/@content'))
         obj_area = CleanDecimal(Regexp(CleanText(CleanHTML('//meta[@itemprop="name"]/@content')),
-                                       '(.*?)(\d*)m\xb2(.*?)', '\\2', default=NotAvailable),
+                                       r'(.*?)(\d*)m\xb2(.*?)', '\\2', default=NotAvailable),
                                 default=NotAvailable)
         obj_rooms = CleanDecimal(
                         Regexp(
                             CleanText('.//h2[@class="offerMainFeatures"]'),
-                            '(\d) pièce',
+                            r'(\d) pièce',
                             default=NotAvailable
                         ),
                         default=NotAvailable
@@ -125,7 +125,7 @@ class HousingPage(HTMLPage):
 
         obj_price_per_meter = PricePerMeterFilter()
         obj_date = Date(Regexp(CleanText('//p[@class="offer-description-notes"]|//p[has-class("darkergrey")]'),
-                               u'.* Mis à jour : (\d{2}/\d{2}/\d{4}).*'),
+                               r'.* Mis à jour : (\d{2}/\d{2}/\d{4}).*'),
                         dayfirst=True)
         obj_text = CleanHTML('//div[has-class("offer-description-text")]/meta[@itemprop="description"]/@content')
         obj_location = CleanText('//div[@itemprop="address"]')
@@ -172,7 +172,7 @@ class HousingPage(HTMLPage):
                     CleanText(
                         '//p[@class="offer-description-notes"]|//p[has-class("darkergrey")]'
                     ),
-                    u'.*Mis en ligne : (\d{2}/\d{2}/\d{4}).*'
+                    r'.*Mis en ligne : (\d{2}/\d{2}/\d{4}).*'
                 ),
                 dayfirst=True
             )(self)
@@ -244,7 +244,7 @@ class SearchPage(HTMLPage):
             )
 
             obj_date = Date(Regexp(CleanText('./div/header/section/p[has-class("update-date")]'),
-                                   ".*(\d{2}/\d{2}/\d{4}).*"))
+                                   r".*(\d{2}/\d{2}/\d{4}).*"))
 
             obj_location = CleanText(
                 '(./div/div[@class="content-offer"]/section[has-class("content-desc")]/p)[1]/span/@title',

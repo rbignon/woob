@@ -194,7 +194,7 @@ class PersonPage(HTMLPage):
     def iter_movies_ids(self):
         for role_div in self.doc.xpath('//div[@id="filmography"]//div[has-class("filmo-category-section")]/div'):
             for a in role_div.xpath('.//a'):
-                m = re.search('/title/(tt.*)/\.*', a.attrib.get('href'))
+                m = re.search(r'/title/(tt.*)/\.*', a.attrib.get('href'))
                 if m:
                     yield m.group(1)
 
@@ -212,6 +212,6 @@ class PersonPage(HTMLPage):
     def iter_movies(self, role_filter=None):
         for role_div in self.doc.xpath('//div[@id="filmography"]/div[has-class("filmo-category-section")]/div'):
             for a in role_div.xpath('.//a'):
-                m = re.search('/title/(tt.*)/\.*', a.attrib.get('href'))
+                m = re.search(r'/title/(tt.*)/\.*', a.attrib.get('href'))
                 if m:
                     yield Movie(m.group(1), a.text)

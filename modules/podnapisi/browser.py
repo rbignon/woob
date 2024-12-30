@@ -28,11 +28,11 @@ __all__ = ['PodnapisiBrowser']
 
 class PodnapisiBrowser(PagesBrowser):
     BASEURL = 'https://www.podnapisi.net'
-    search = URL('/subtitles/search/advanced\?keywords=(?P<keywords>.*)&language=(?P<language>.*)',
-                 '/en/subtitles/search/advanced\?keywords=(?P<keywords>.*)&language=(?P<language>.*)',
+    search = URL(r'/subtitles/search/advanced\?keywords=(?P<keywords>.*)&language=(?P<language>.*)',
+                 r'/en/subtitles/search/advanced\?keywords=(?P<keywords>.*)&language=(?P<language>.*)',
                  SearchPage)
-    file = URL('/subtitles/(?P<id>-*\w*)/download')
-    subtitle = URL('/subtitles/(?P<id>.*)', SubtitlePage)
+    file = URL(r'/subtitles/(?P<id>-*\w*)/download')
+    subtitle = URL(r'/subtitles/(?P<id>.*)', SubtitlePage)
 
     def iter_subtitles(self, language, pattern):
         return self.search.go(language=language, keywords=pattern).iter_subtitles()

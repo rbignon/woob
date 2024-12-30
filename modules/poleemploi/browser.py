@@ -30,9 +30,9 @@ __all__ = ['PoleEmploiBrowser']
 class PoleEmploiBrowser(PagesBrowser):
     BASEURL = 'https://candidat.pole-emploi.fr'
 
-    advert = URL('/offres/recherche/detail/(?P<id>.*)', AdvertPage)
-    search = URL('/offres/recherche\?(?P<param>.*?)',
-                  '/offres/recherche\?motsCles=(?P<pattern>.*?)', SearchPage)
+    advert = URL(r'/offres/recherche/detail/(?P<id>.*)', AdvertPage)
+    search = URL(r'/offres/recherche\?(?P<param>.*?)',
+                 r'/offres/recherche\?motsCles=(?P<pattern>.*?)', SearchPage)
 
     def search_job(self, pattern=None):
         return self.search.go(pattern=pattern).iter_job_adverts()

@@ -56,7 +56,7 @@ class ManpowerModule(Module, CapJob):
         'automobile/s2': u'Automobile',
         'banque-assurances-immobilier/s3': u'Banque - Assurances - Immobilier',
         'bijoux-horlogerie-lunetterie/s61': u'Bijoux - Horlogerie - Lunetterie',
-        'bureau-d-etudes-methodes-qualite/s4': u'Bureau d\études- Méthodes - Qualité',
+        'bureau-d-etudes-methodes-qualite/s4': u'Bureau d\'études- Méthodes - Qualité',
         'chimie-pharmacie-cosmetologie/s6': u'Chimie - Pharmacie - Cosmétologie',
         'communication/s73': u'Communication',
         'comptabilite-finance/s62': u'Comptabilité - Finance',

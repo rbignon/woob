@@ -154,7 +154,7 @@ class BoobankChecker():
             if isinstance(error, BrowserIncorrectPassword):
                 msg = 'invalid login/password.'
             elif isinstance(error, BrowserSSLError):
-                msg = '/!\ SERVER CERTIFICATE IS INVALID /!\\'
+                msg = '/!\\ SERVER CERTIFICATE IS INVALID /!\\'
             elif isinstance(error, BrowserForbidden):
                 msg = str(error) or 'Forbidden'
             elif isinstance(error, BrowserUnavailable):

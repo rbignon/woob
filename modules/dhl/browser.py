@@ -26,7 +26,7 @@ from .pages import DeutschePostDHLSearchPage, DHLExpressSearchPage
 class DHLExpressBrowser(PagesBrowser):
     BASEURL = 'https://www.dhl.com'
 
-    search_page = URL('/shipmentTracking\?AWB=(?P<id>.+)', DHLExpressSearchPage)
+    search_page = URL(r'/shipmentTracking\?AWB=(?P<id>.+)', DHLExpressSearchPage)
 
     def get_tracking_info(self, _id):
         return self.search_page.go(id=_id).get_info(_id)
@@ -35,7 +35,7 @@ class DHLExpressBrowser(PagesBrowser):
 class DeutschePostDHLBrowser(PagesBrowser):
     BASEURL = 'https://nolp.dhl.de'
 
-    search_page = URL('/nextt-online-public/set_identcodes.do\?lang=en&idc=(?P<id>.+)', DeutschePostDHLSearchPage)
+    search_page = URL(r'/nextt-online-public/set_identcodes\.do\?lang=en&idc=(?P<id>.+)', DeutschePostDHLSearchPage)
 
     def get_tracking_info(self, _id):
         return self.search_page.go(id=_id).get_info(_id)

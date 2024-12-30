@@ -73,7 +73,7 @@ class TorrentPage(HTMLPage):
         obj_magnet = CleanText('//div[has-class("downloadButtonGroup")]//a[starts-with(@href,"magnet")]/@href', default=NotAvailable)
 
         obj_id = Regexp(CleanText('//h1[has-class("novertmarg")]/a/@href'),
-                        '.*-t([0-9]*)\.html')
+                        r'.*-t([0-9]*)\.html')
         def obj_url(self):
             href = CleanText('//div[has-class("downloadButtonGroup")]//a[starts-with(@href,"//")]/@href')(self)
             return u'https:%s'%href

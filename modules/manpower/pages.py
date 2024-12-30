@@ -61,15 +61,15 @@ class AdvertPage(HTMLPage):
         obj_url = BrowserURL('advert_page', _id=Env('_id'))
         obj_title = CleanText('//div[@class="infos-lieu"]/h1')
         obj_place = CleanText('//div[@class="infos-lieu"]/h2')
-        obj_publication_date = Date(Regexp(CleanText('//div[@class="info-agency"]'), '.*Date de l\'annonce :(.*)',
+        obj_publication_date = Date(Regexp(CleanText('//div[@class="info-agency"]'), r'.*Date de l\'annonce :(.*)',
                                            default=''))
         obj_job_name = CleanText('//div[@class="infos-lieu"]/h1')
         obj_description = Format('\n%s%s',
                                  CleanHTML('//article[@id="post-description"]/div'),
                                  CleanHTML('//article[@id="poste"]'))
         obj_contract_type = Regexp(CleanText('//article[@id="poste"]/div/ul/li'),
-                                   'Contrat : (\w*)', default=NotAvailable)
+                                   r'Contrat : (\w*)', default=NotAvailable)
         obj_pay = Regexp(CleanText('//article[@id="poste"]/div/ul/li'),
-                         'Salaire : (.*) par mois', default=NotAvailable)
+                         r'Salaire : (.*) par mois', default=NotAvailable)
         obj_experience = Regexp(CleanText('//article[@id="poste"]/div/ul/li'),
-                                u'Expérience : (.* ans)', default=NotAvailable)
+                                r'Expérience : (.* ans)', default=NotAvailable)

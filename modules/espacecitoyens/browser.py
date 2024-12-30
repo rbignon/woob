@@ -26,12 +26,12 @@ from .pages import BillingDetailPage, HomePage, LoginErrorPage, LoginPage, MyAcc
 class EspacecitoyensBrowser(LoginBrowser):
     BASEURL = 'https://www.espace-citoyens.net'
 
-    login = URL('/(?P<city>\w+)/espace-citoyens/Home/AccueilPublic$', LoginPage)
-    home  = URL('/(?P<city>\w+)/espace-citoyens/CompteCitoyen', HomePage)
-    loginerror = URL('/(?P<city>\w+)/espace-citoyens/Home/Logon', LoginErrorPage)
-    my_account = URL('/(?P<city>\w+)/espace-citoyens/MonCompte$', MyAccountPage)
-    subscription = URL('/(?P<city>\w+)/espace-citoyens/FichePersonne/DetailPersonne[?]idDynamic=(?P<sub_id>.*)', SubscriptionPage)
-    billing_detail = URL('/(?P<city>\w+)/espace-citoyens/MonCompte/DetailFacture[?]IdFactureUnique=(?P<doc_id>.*)', BillingDetailPage)
+    login = URL(r'/(?P<city>\w+)/espace-citoyens/Home/AccueilPublic$', LoginPage)
+    home  = URL(r'/(?P<city>\w+)/espace-citoyens/CompteCitoyen', HomePage)
+    loginerror = URL(r'/(?P<city>\w+)/espace-citoyens/Home/Logon', LoginErrorPage)
+    my_account = URL(r'/(?P<city>\w+)/espace-citoyens/MonCompte$', MyAccountPage)
+    subscription = URL(r'/(?P<city>\w+)/espace-citoyens/FichePersonne/DetailPersonne[?]idDynamic=(?P<sub_id>.*)', SubscriptionPage)
+    billing_detail = URL(r'/(?P<city>\w+)/espace-citoyens/MonCompte/DetailFacture[?]IdFactureUnique=(?P<doc_id>.*)', BillingDetailPage)
 
     def __init__(self, username, password, city, *args, **kwargs):
         super().__init__(username, password, *args, **kwargs)

@@ -60,7 +60,7 @@ class SearchPage(HTMLPage):
 
             obj_filename = Format('%s.torrent', Regexp(
                              CleanText('.//a[has-class("titre")]/@href'),
-                             '/([^/]*)\.html')
+                             r'/([^/]*)\.html')
                            )
 
 
@@ -76,7 +76,7 @@ class TorrentPage(HTMLPage):
         obj_magnet = NotAvailable
 
         obj_id = Regexp(CleanText('//h2[has-class("h2fiche")]/a/@href'),
-                        '.*dl-torrent/(.*).html')
+                        r'.*dl-torrent/(.*)\.html')
         obj_url = Format('http://www.cpasbien.cm%s', CleanText('//a[@id="telecharger"]/@href'))
 
         def obj_size(self):

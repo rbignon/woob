@@ -74,7 +74,7 @@ class AdvertPage(HTMLPage):
 
         def obj_id(self):
             _id = Regexp(CleanText('//meta[@property="og:url"]/@content'),
-                         '.*\?ID=(.*)',
+                         r'.*\?ID=(.*)',
                          default=None)(self)
             if _id is None:
                 _id = JSVar(CleanText('//script'), var='_JobDetailsId')(self)
@@ -94,7 +94,7 @@ class AdvertPage(HTMLPage):
 
             if not place:
                 place = Regexp(CleanText('//meta[@property="og:title"]/@content'),
-                               u'.*\ à (.*)')(self)
+                               r'.*\ à (.*)')(self)
             return place
 
         def obj_publication_date(self):
@@ -109,7 +109,7 @@ class AdvertPage(HTMLPage):
 
         def obj_job_name(self):
             job_name = Regexp(CleanText('//meta[@property="og:title"]/@content'),
-                              '(.*)\|.*', default=None)(self)
+                              r'(.*)\|.*', default=None)(self)
             if job_name is None:
                 job_name = JSVar(CleanText('//script'), var='_JobTitle')(self)
             return job_name

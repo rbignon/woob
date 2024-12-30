@@ -55,7 +55,7 @@ class Date(Filter):
 
         str_date = CleanText('.')(el[0])
         _date = date.today()
-        m = re.search('\w* (\d\d?) .*', str_date)
+        m = re.search(r'\w* (\d\d?) .*', str_date)
         if (('Demain' in str_date and str_time[0] != "0") or ('Ce soir' in str_date and str_time[0] == "0")):
             _date += timedelta(days=1)
         elif 'Demain' in str_date:
@@ -99,7 +99,7 @@ class FilmsPage(HTMLPage):
             def condition(self):
                 if '_id' in self.env and self.env['_id']:
                     return Format(u'%s#%s#%s',
-                                  Regexp(Link('.'), '/film/(.*)'),
+                                  Regexp(Link('.'), r'/film/(.*)'),
                                   FormatDate("%Y%m%d%H%M",
                                              Date('div[@class="elgr-guide-details"]/div[@class="elgr-data-diffusion"]')),
                                   CleanText('./div/span[@class="d-offset"]',
@@ -123,7 +123,7 @@ class FilmsPage(HTMLPage):
                 return False
 
             obj_id = Format(u'%s#%s#%s',
-                            Regexp(Link('.'), '/film/(.*)'),
+                            Regexp(Link('.'), r'/film/(.*)'),
                             FormatDate("%Y%m%d%H%M", Date('div/div[@class="elgr-data-diffusion"]')),
                             CleanText('./div/span[@class="d-offset"]', replace=[(' ', '-')]))
             obj_start_date = Date('div/div[@class="elgr-data-diffusion"]')

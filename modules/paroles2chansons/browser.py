@@ -36,13 +36,13 @@ class Paroles2chansonsBrowser(PagesBrowser):
     TIMEOUT = 30
 
     BASEURL = 'http://paroles2chansons.lemonde.fr/'
-    home = URL('$',
+    home = URL(r'$',
                  HomePage)
     search = URL('search',
                  SearchPage)
-    artist = URL('paroles-(?P<artistid>[^/]*)$',
+    artist = URL(r'paroles-(?P<artistid>[^/]*)$',
                   ArtistPage)
-    lyrics = URL('paroles-(?P<artistid>[^/]*)/paroles-(?P<songid>[^/]*)\.html',
+    lyrics = URL(r'paroles-(?P<artistid>[^/]*)/paroles-(?P<songid>[^/]*)\.html',
                   LyricsPage)
 
     def iter_lyrics(self, criteria, pattern):

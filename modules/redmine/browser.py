@@ -251,6 +251,6 @@ class RedmineBrowser(LoginBrowser):
 
         # Element.replace("issue_category_id", "\u003Cselect id=\"issue_category_id\" name=\"issue[category_id]\"\u003E\u003Coption\u003E\u003C/option\u003E\u003Coption value=\"28\"\u003Ebnporc\u003C/option\u003E\n\u003Coption value=\"31\"\u003Ebp\u003C/option\u003E\n\u003Coption value=\"30\"\u003Ecrag2r\u003C/option\u003E\n\u003Coption value=\"29\"\u003Ecragr\u003C/option\u003E\n\u003Coption value=\"27\"\u003Ei\u003C/option\u003E\n\u003Coption value=\"32\"\u003Elol\u003C/option\u003E\n\u003Coption value=\"33\" selected=\"selected\"\u003Elouiel\u003C/option\u003E\u003C/select\u003E");
 
-        m = re.search('''value=\\\\"(\d+)\\\\" selected''', r)
+        m = re.search(r'''value=\\\\"(\d+)\\\\" selected''', r)
         if m:
             return m.group(1)

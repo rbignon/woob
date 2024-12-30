@@ -26,8 +26,8 @@ from .pages import CityListPage, HomePage, HousingListPage, HousingPage, PhonePa
 
 class LeboncoinBrowser(PagesBrowser):
     BASEURL = 'https://www.leboncoin.fr/'
-    city = URL('ajax/location_list.html\?city=(?P<city>.*)&zipcode=(?P<zip>.*)', CityListPage)
-    housing = URL('ventes_immobilieres/(?P<_id>.*).htm', HousingPage)
+    city = URL(r'ajax/location_list\.html\?city=(?P<city>.*)&zipcode=(?P<zip>.*)', CityListPage)
+    housing = URL(r'ventes_immobilieres/(?P<_id>.*)\.htm', HousingPage)
 
     home = URL('annonces/offres', HomePage)
     api = URL('https://api.leboncoin.fr/finder/search', HousingListPage)

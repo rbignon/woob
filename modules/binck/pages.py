@@ -141,7 +141,7 @@ class AccountsPage(BinckPage):
             def obj_label(self):
                 raw_label = ' '.join(CleanText('./td[1]')(self).split()[1:])
                 # Remove IBAN from label:
-                return re.sub(' [A-Z\d]{16,}', '', raw_label)
+                return re.sub(r' [A-Z\d]{16,}', '', raw_label)
 
             def obj_iban(self):
                 return CleanText('.//h6')(self) or NotAvailable
