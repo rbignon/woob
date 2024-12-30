@@ -565,27 +565,22 @@ __deprecated__ = {
 }
 
 
-def __getattr__(name: str) -> Exception:
-    if name in __deprecated__:
-        new_path = __deprecated__[name]
-        warnings.warn(
-            f"'{name}' is deprecated. Use '{new_path}' instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        module_name = '.'.join(new_path.split('.')[:-1])
-        class_name = new_path.split('.')[-1]
-        try:
-            module = importlib.import_module(module_name)
-        except ModuleNotFoundError as exc:
-            raise AttributeError(f"{name} is deprecated, but unable to import {new_path}") from exc
+def __getattr__(name: str) -> object:
+    if name not in __deprecated__:
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
-        try:
-            return getattr(module, class_name)
-        except AttributeError as exc:
-            raise AttributeError(f"{name} is deprecated, but unable to import {new_path}") from exc
-
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    new_path = __deprecated__[name]
+    warnings.warn(
+        f"'{name}' is deprecated. Use '{new_path}' instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    module_path, class_name = new_path.rsplit(".", 1)
+    try:
+        klass = getattr(importlib.import_module(module_path), class_name)
+    except (AttributeError, ModuleNotFoundError) as exc:
+        raise AttributeError(f"{name} is deprecated, but unable to import {new_path}") from exc
+    return klass
 
 
 def __dir__() -> List[str]:
