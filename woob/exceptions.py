@@ -70,9 +70,7 @@ __all__ = [
 class BrowserIncorrectPassword(Exception):
     """The site signals to us our credentials are invalid.
 
-    :type message: str
     :param message: compatibility message for the user (mostly when bad_fields is not given)
-    :type bad_fields: list[str]
     :param bad_fields: list of config field names which are incorrect, if it is known
     """
 
@@ -88,9 +86,7 @@ class BrowserForbidden(Exception):
 class BrowserUserBanned(BrowserIncorrectPassword):
     """The site signals to us the user we are logging in as is banned.
 
-    :type message: str
     :param message: compatibility message for the user (mostly when bad_fields is not given)
-    :type bad_fields: list[str]
     :param bad_fields: list of config field names which are incorrect, if it is known
     """
 
@@ -146,17 +142,12 @@ class SentOTPQuestion(OTPQuestion):
     phone number associated with the end user, and we need to ask the end
     user to provide this code to us to send it back to the site.
 
-    :type field_name: str
     :param field_name: name of the config field in which the OTP shall
                        be given to the module
-    :type medium_type: OTPSentType
     :param medium_type: if known, where the OTP was sent
-    :type medium_label: str
     :param medium_label: if known, label of where the OTP was sent,
                          e.g. the phone number in case of an SMS
-    :type message: str
     :param message: compatibility message (used as the Value label)
-    :type expires_at: datetime.datetime
     :param expires_at: date when the OTP expires and when replying is too late
     """
 
@@ -183,17 +174,12 @@ class OfflineOTPQuestion(OTPQuestion):
     provided, so this exception gets raised to obtain one we can send back
     to the site.
 
-    :type field_name: str
     :param field_name: name of the config field in which the OTP shall
                        be given to the module
-    :type input: str
     :param input: if relevant, input data for computing the OTP
-    :type message: str
     :param message: compatibility message (used as the Value label)
-    :type medium_label: str
     :param medium_label: if known, label of the device to use for generating
                          or reading the OTP, e.g. the card index for paper OTP
-    :type expires_at: datetime.datetime
     :param expires_at: date when the OTP expires and when replying is too late
     """
 
@@ -224,12 +210,10 @@ class DecoupledValidation(BrowserInteraction):
     For example, the site requires the user to click on a link sent in an
     e-mail to pursue logging in on the current session.
 
-    :type medium_type: DecoupledMedium
+    :param message: message to display to user
     :param medium_type: if known, where the decoupled validation was sent
-    :type medium_label: str
     :param medium_label: if known, label of where the decoupled validation was
                          sent, e.g. the phone number in case of an app
-    :type expires_at: datetime.datetime
     :param expires_at: date when the OTP expires and when replying is too late
     """
     def __init__(
@@ -242,15 +226,6 @@ class DecoupledValidation(BrowserInteraction):
         *values: Any,
     ) -> None:
         """
-        :param message: message to display to user
-        :type message: str
-        :param medium_type: if known, where the decoupled validation was sent
-        :type medium_type: DecoupledMedium
-        :param medium_label: if known, label of where the decoupled validation was sent,
-                             e.g. the phone number in case of an app
-        :type medium_label: str
-        :param expires_at: date when the OTP expires and when replying is too late
-        :type expires_at: datetime.datetime
         """
         if values:
             warnings.warn(
@@ -285,10 +260,8 @@ class AppValidation(DecoupledValidation):
     corresponding to the site, enter a specific password to the application,
     and click on "Validate" for the current operation to be validated.
 
-    :type medium_label: str
     :param medium_label: if known, label of where the decoupled validation was
                          sent, e.g. the phone number in case of an app
-    :type expires_at: datetime.datetime
     :param expires_at: date when the OTP expires and when replying is too late
     """
 
@@ -328,7 +301,6 @@ class BrowserRedirect(BrowserInteraction):
     be set to the callback URI with parameters for processing by the module.
 
     :param url: The URL to redirect the end user to.
-    :type url: str
     """
 
     def __init__(self, url: str, resource: Any = None) -> None:
@@ -440,14 +412,10 @@ class ActionNeeded(Exception):
     """An action must be performed directly, often on website.
 
     :param message: message from the site
-    :type message: str
     :param locale: ISO4646 language tag of `message` (e.g. "en-US")
-    :type locale: str
     :param action_type: type of action to perform
     :param url: URL of the page to go to resolve the action needed
-    :type url: str
     :param page: user hint for when no URL can be given and the place where to perform the action is not obvious
-    :type page: str
     """
 
     def __init__(
