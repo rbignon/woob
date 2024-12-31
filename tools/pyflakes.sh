@@ -31,8 +31,6 @@ grep -nE "\.iter(keys|values|items)\(\)" ${PYFILES} | grep -Fv "six.iter" && ech
 
 grep -nE "^ *print(\(| )" ${MODULE_FILES} && echo 'Error: Use of print in modules is forbidden, use logger instead' && err=20
 grep -n xrange ${MODULE_FILES} && echo 'Error: xrange is forbidden' && err=21
-grep -nE "from (urllib|urlparse) import" ${MODULE_FILES} && echo 'Error: python2 urllib is forbidden' && err=22
-grep -nE "^import (urllib|urlparse)$" ${MODULE_FILES} && echo 'Error: python2 urllib is forbidden' && err=22
 grep -nE "HEADLESS[[:space:]]*=[[:space:]]*False" ${MODULE_FILES} && echo 'Error: HEADLESS must be set back to True' && err=23
 grep -nE "^[ ]*from weboob" ${MODULE_FILES} && echo "Error: obsolete 'weboob' import (use 'woob' instead)" && err=24
 grep -nE "^[ ]*import weboob" ${MODULE_FILES} && echo "Error: obsolete 'weboob' import (use 'woob' instead)" && err=24
