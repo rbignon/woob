@@ -41,8 +41,8 @@ class CATEGORIES(Enum):
     SPORT = 'Sport'
 
 
-#the following elements deal with ICalendar stantdards
-#see https://fr.wikipedia.org/wiki/ICalendar#%C3%89v%C3%A9nements_(VEVENT)
+# the following elements deal with ICalendar standards
+# see https://fr.wikipedia.org/wiki/ICalendar#%C3%89v%C3%A9nements_(VEVENT)
 class TRANSP(Enum):
     OPAQUE = 'OPAQUE'
     TRANSPARENT = 'TRANSPARENT'
@@ -80,8 +80,8 @@ class BaseCalendarEvent(BaseObject):
     city = compat_field('address', 'city')
     location = compat_field('address', 'street')
 
-    #the following elements deal with ICalendar stantdards
-    #see https://fr.wikipedia.org/wiki/ICalendar#%C3%89v%C3%A9nements_(VEVENT)
+    # the following elements deal with ICalendar standards
+    # see https://fr.wikipedia.org/wiki/ICalendar#%C3%89v%C3%A9nements_(VEVENT)
     sequence = IntField('Number of updates, the first is number 1')
 
     # (TENTATIVE, CONFIRMED, CANCELLED)

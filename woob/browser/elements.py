@@ -308,7 +308,6 @@ class ListElement(AbstractElement):
 
         raise NextPage(value)
 
-
     def store(self, obj):
         if obj.id:
             if obj.id in self.objects:
@@ -558,7 +557,7 @@ class TableElement(ListElement):
             m = re.match('col_(.*)', attrname)
             if m:
                 cols = getattr(self, attrname)
-                if not isinstance(cols, (list,tuple)):
+                if not isinstance(cols, (list, tuple)):
                     cols = [cols]
                 columns[m.group(1)] = [s.lower() if isinstance(s, str) else s for s in cols]
 

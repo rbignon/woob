@@ -29,6 +29,7 @@ class NotFound:
     def __repr__(self):
         return 'NOT_FOUND'
 
+
 _NOT_FOUND = NotFound()
 
 

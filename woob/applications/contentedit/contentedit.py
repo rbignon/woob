@@ -189,7 +189,7 @@ class AppContentEdit(ReplApplication):
         revision = None
         if '-r' in _part_line:
             r_index = _part_line.index('-r')
-            if len(_part_line) -1 > r_index:
+            if len(_part_line) - 1 > r_index:
                 revision = Revision(_part_line[r_index+1])
                 _part_line.remove(revision.id)
             _part_line.remove('-r')

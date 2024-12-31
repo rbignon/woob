@@ -92,11 +92,11 @@ class AppHousing(ReplApplication):
     CONFIG = {'queries': {}}
     EXTRA_FORMATTERS = {'housing_list': HousingListFormatter,
                         'housing':      HousingFormatter,
-                       }
+                        }
     COMMANDS_FORMATTERS = {'search': 'housing_list',
                            'info': 'housing',
                            'load': 'housing_list'
-                          }
+                           }
 
     def main(self, argv):
         self.load_config(klass=YamlConfig)

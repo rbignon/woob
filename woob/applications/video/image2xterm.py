@@ -43,9 +43,11 @@ def make256xterm():
     """
     color256 = []
     # standard 16 colors
-    color256 += list(sum((PILColor.getrgb(c) for c in
+    color256 += list(sum((
+        PILColor.getrgb(c) for c in
         '''black maroon green olive navy purple teal silver
-        gray red lime yellow blue fuchsia aqua white'''.split()), ()))
+        gray red lime yellow blue fuchsia aqua white'''.split()
+    ), ()))
 
     steps = (0, 95, 135, 175, 215, 255)
     for r in steps:

@@ -506,7 +506,7 @@ class Woob(WoobBase):
                       caps: List[Capability | str] | None = None,
                       names: List[str] | None = None,
                       modules: List[str] | None = None,
-                      exclude: List[str] | None= None,
+                      exclude: List[str] | None = None,
                       storage: IStorage | None = None,
                       errors: List['Woob.LoadError'] | None = None) -> Dict[str, Module]:
         """

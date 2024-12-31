@@ -111,15 +111,15 @@ class MessageFormatter(IFormatter):
 
     def format_obj(self, obj, alias):
         result = '%sTitle:%s %s\n' % (self.BOLD,
-                                       self.NC, obj.title)
+                                      self.NC, obj.title)
         result += '%sDate:%s %s\n' % (self.BOLD,
-                                       self.NC, obj.date.strftime('%Y-%m-%d %H:%M'))
+                                      self.NC, obj.date.strftime('%Y-%m-%d %H:%M'))
         result += '%sFrom:%s %s\n' % (self.BOLD,
-                                       self.NC, obj.sender)
+                                      self.NC, obj.sender)
         if hasattr(obj, 'receivers') and obj.receivers:
             result += '%sTo:%s %s\n' % (self.BOLD,
-                                         self.NC,
-                                         ', '.join(obj.receivers))
+                                        self.NC,
+                                        ', '.join(obj.receivers))
 
         if obj.flags & Message.IS_HTML:
             content = html2text(obj.content)
@@ -156,13 +156,13 @@ class MessagesListFormatter(IFormatter):
         self.count += 1
         if self.interactive:
             result = '%s* (%d) %s (%s)%s' % (self.BOLD,
-                                              self.count,
-                                              obj.title, obj.backend,
-                                              self.NC)
+                                             self.count,
+                                             obj.title, obj.backend,
+                                             self.NC)
         else:
             result = '%s* (%s) %s%s' % (self.BOLD, obj.id,
-                                         obj.title,
-                                         self.NC)
+                                        obj.title,
+                                        self.NC)
         if obj.date:
             result += '\n             %s' % obj.date
         return result
@@ -196,23 +196,23 @@ class MessagesListFormatter(IFormatter):
 
         if self.interactive:
             result = '%s%s* (%d)%s %s <%s> %s (%s)\n' % (depth * '  ',
+                                                         self.BOLD,
+                                                         self.count,
+                                                         self.NC,
+                                                         flags,
+                                                         message.sender,
+                                                         message.title,
+                                                         backend)
+        else:
+            result = '%s%s* (%s.%s@%s)%s %s <%s> %s\n' % (depth * '  ',
                                                           self.BOLD,
-                                                          self.count,
+                                                          message.thread.id,
+                                                          message.id,
+                                                          backend,
                                                           self.NC,
                                                           flags,
                                                           message.sender,
-                                                          message.title,
-                                                          backend)
-        else:
-            result = '%s%s* (%s.%s@%s)%s %s <%s> %s\n' % (depth * '  ',
-                                                           self.BOLD,
-                                                           message.thread.id,
-                                                           message.id,
-                                                           backend,
-                                                           self.NC,
-                                                           flags,
-                                                           message.sender,
-                                                           message.title)
+                                                          message.title)
         if message.children:
             if depth >= 0:
                 depth += 1
@@ -242,15 +242,15 @@ class AppMsg(ReplApplication):
                         'msg':      MessageFormatter,
                         'xhtml':    XHtmlFormatter,
                         'atom':     AtomFormatter,
-                        'profile' : ProfileFormatter,
-                       }
+                        'profile':  ProfileFormatter,
+                        }
     COMMANDS_FORMATTERS = {'list':          'msglist',
                            'show':          'msg',
                            'export_thread': 'msg',
                            'export_all':    'msg',
                            'ls':            'msglist',
                            'profile':       'profile',
-                          }
+                           }
 
     def add_application_options(self, group):
         group.add_option('-E', '--accept-empty',  action='store_true',
@@ -317,9 +317,11 @@ class AppMsg(ReplApplication):
             receiver, backend_name = self.parse_id(receiver.strip(),
                                                    unique_backend=True)
             if not backend_name and len(self.enabled_backends) > 1:
-                self.logger.warning('No backend specified for receiver "%s": message will be sent with all the '
-                    'enabled backends (%s)' % (receiver,
-                    ','.join(backend.name for backend in self.enabled_backends)))
+                self.logger.warning(
+                    'No backend specified for receiver "%s": message will be sent with all the enabled backends (%s)',
+                    receiver,
+                    ','.join(backend.name for backend in self.enabled_backends)
+                )
 
             if '.' in receiver:
                 # It's a reply
@@ -330,7 +332,7 @@ class AppMsg(ReplApplication):
                 parent_id = None
                 try:
                     thread_id = self.threads[int(thread_id) - 1].id
-                except (IndexError,ValueError):
+                except (IndexError, ValueError):
                     pass
 
             thread = Thread(thread_id)

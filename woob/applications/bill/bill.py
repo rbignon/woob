@@ -52,9 +52,10 @@ class AppBill(CaptchaMixin, ReplApplication):
     EXTRA_FORMATTERS = {'subscriptions':   SubscriptionsFormatter,
                         }
     DEFAULT_FORMATTER = 'table'
-    COMMANDS_FORMATTERS = {'subscriptions':   'subscriptions',
-                           'ls':              'subscriptions',
-                          }
+    COMMANDS_FORMATTERS = {
+        'subscriptions':   'subscriptions',
+        'ls':              'subscriptions',
+    }
 
     def load_default_backends(self):
         self.load_backends(CapDocument, storage=self.create_storage())

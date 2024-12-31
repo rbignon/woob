@@ -136,7 +136,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                                 '',
                                 'Type "help" to display available commands.',
                                 '',
-                               ))
+                                ))
         self.formatters_loader = FormattersLoader()
         for key, klass in self.EXTRA_FORMATTERS.items():
             self.formatters_loader.register_formatter(key, klass)
@@ -179,7 +179,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         #    at the right place).
         # 2. when typing a line longer than term width, cursor goes at start
         #    of the same line instead of new line.
-        #self.prompt = self.BOLD + '%s> ' % self.APPNAME + self.NC
+        # self.prompt = self.BOLD + '%s> ' % self.APPNAME + self.NC
         if len(self.working_path.get()):
             wp_enc = str(self.working_path)
             self.prompt = '%s:%s> ' % (self.APPNAME, wp_enc)
@@ -223,7 +223,6 @@ class ReplApplication(ConsoleApplication, Cmd):
                             colored(backend.DESCRIPTION, 'green')
                         )
                     )
-
 
                 i = self.ask('Select a backend to proceed with "%s"' % id)
                 if not i.isdigit():
@@ -650,7 +649,6 @@ class ReplApplication(ConsoleApplication, Cmd):
         else:
             self.selected_fields = ['$direct']
 
-
         if self.options.count is not None:
             self._is_default_count = False
             if self.options.count <= 0:
@@ -951,13 +949,14 @@ class ReplApplication(ConsoleApplication, Cmd):
         * default is an alias for warning
         """
         args = self.parse_command_args(line, 1, 0)
-        levels = (('debug',   logging.DEBUG),
-                  ('info',    logging.INFO),
-                  ('warning', logging.WARNING),
-                  ('error',   logging.ERROR),
-                  ('quiet',   logging.ERROR),
-                  ('default', logging.WARNING)
-                 )
+        levels = (
+            ('debug',   logging.DEBUG),
+            ('info',    logging.INFO),
+            ('warning', logging.WARNING),
+            ('error',   logging.ERROR),
+            ('quiet',   logging.ERROR),
+            ('default', logging.WARNING),
+        )
 
         if not args[0]:
             current = None
@@ -1219,7 +1218,6 @@ class ReplApplication(ConsoleApplication, Cmd):
         if only is False or not hasattr(obj, 'id') or obj.id in only:
             self.cached_format(obj)
 
-
     def do_cd(self, line):
         """
         cd [PATH]
@@ -1269,7 +1267,6 @@ class ReplApplication(ConsoleApplication, Cmd):
                 yield res
         except CallErrors as errors:
             self.bcall_errors_handler(errors, CollectionNotFound)
-
 
     def all_collections(self):
         """
@@ -1413,7 +1410,7 @@ class ReplApplication(ConsoleApplication, Cmd):
             locs['browser'] = locs['backend'].browser
 
         banner = ('Woob debug shell\n\nAvailable variables:\n'
-         + '\n'.join(['  %s: %s' % (k, v) for k, v in locs.items()]))
+                  + '\n'.join(['  %s: %s' % (k, v) for k, v in locs.items()]))
 
         funcs = [app.ipython, app.bpython, app.python]
         app.launch(funcs, locs, banner)

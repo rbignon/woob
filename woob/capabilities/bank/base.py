@@ -430,8 +430,8 @@ class Loan(Account):
     insurance_label = StringField('Label of the insurance')
 
     total_amount = DecimalField('Total amount loaned')
-    available_amount = DecimalField('Amount available') # only makes sense for revolving credit
-    used_amount = DecimalField('Amount already used') # only makes sense for revolving credit
+    available_amount = DecimalField('Amount available')  # only makes sense for revolving credit
+    used_amount = DecimalField('Amount already used')  # only makes sense for revolving credit
 
     insurance_amount = DecimalField("Amount of the loan's insurance")
     insurance_rate = DecimalField("Rate of the loan's insurance")

@@ -58,7 +58,6 @@ class AppPaste(ReplApplication):
 
             self.format(paste)
 
-
     def do_get(self, line):
         """
         get ID

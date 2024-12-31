@@ -220,7 +220,7 @@ class Issue(BaseObject):
     version =       Field('Target version of this issue', Version)
     status =        Field('Status of this issue', Status)
     fields =        Field('Custom fields (key,value)', dict)
-    priority =      StringField('Priority of the issue') #XXX
+    priority =      StringField('Priority of the issue')  # XXX
     tags =          Field('Categories/Tags of the issue', tuple, list)
     related_issues = Field('Related issues', list)
 

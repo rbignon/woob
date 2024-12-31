@@ -60,11 +60,12 @@ class TorrentListFormatter(PrettyFormatter):
     def get_title(self, obj):
         return obj.name
 
-    NB2COLOR = ((0, 'red', None),
-                (1, 'blue', None),
-                (5, 'green', None),
-                (10, 'green', 'bold'),
-               )
+    NB2COLOR = (
+        (0, 'red', None),
+        (1, 'blue', None),
+        (5, 'green', None),
+        (10, 'green', 'bold'),
+    )
 
     def _get_color(self, nb):
         if empty(nb):
@@ -92,12 +93,14 @@ class AppTorrent(ReplApplication):
                   "and download .torrent files."
     SHORT_DESCRIPTION = "search and download torrents"
     CAPS = CapTorrent
-    EXTRA_FORMATTERS = {'torrent_list': TorrentListFormatter,
-                        'torrent_info': TorrentInfoFormatter,
-                       }
-    COMMANDS_FORMATTERS = {'search':    'torrent_list',
-                           'info':      'torrent_info',
-                          }
+    EXTRA_FORMATTERS = {
+        'torrent_list': TorrentListFormatter,
+        'torrent_info': TorrentInfoFormatter,
+    }
+    COMMANDS_FORMATTERS = {
+        'search':    'torrent_list',
+        'info':      'torrent_info',
+    }
 
     def complete_info(self, text, line, *ignored):
         args = line.split(' ')

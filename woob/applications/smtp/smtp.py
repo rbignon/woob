@@ -187,12 +187,15 @@ class AppSmtp(ReplApplication):
             content += '\n\t%s\n' % to_unicode(e)
             if logging.root.level <= logging.DEBUG:
                 content += '\n%s\n' % to_unicode(get_backtrace(e))
-            self.send_email(backend.name, Message(thread,
-                                             0,
-                                             title='Unable to send message',
-                                             sender='AppSmtp',
-                                             parent=Message(thread, parent_id) if parent_id else None,
-                                             content=content))
+            self.send_email(
+                backend.name,
+                Message(thread,
+                        0,
+                        title='Unable to send message',
+                        sender='AppSmtp',
+                        parent=Message(thread, parent_id) if parent_id else None,
+                        content=content)
+            )
 
     def do_run(self, line):
         """
@@ -230,7 +233,7 @@ class AppSmtp(ReplApplication):
             parent_message = parent_message.parent
         subject = mail.title
         sender = '"%s" <%s@%s>' % (mail.sender.replace('"', '""') if mail.sender else '',
-                                    backend_name, domain)
+                                   backend_name, domain)
 
         # assume that .date is an UTC datetime
         date = formatdate(time.mktime(utc2local(mail.date).timetuple()), localtime=True)

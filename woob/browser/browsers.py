@@ -785,7 +785,7 @@ class Browser:
             d = {
                 k: getattr(c, k) for k in ['name', 'value', 'domain', 'path', 'secure']
             }
-            #d['session'] = c.discard
+            # d['session'] = c.discard
             d['httpOnly'] = 'httponly' in [k.lower() for k in c._rest.keys()]
             d['expirationDate'] = getattr(c, 'expires', None)
             return d
@@ -1562,7 +1562,7 @@ class OAuth2Mixin(StatesMixin):
         self.update_token(auth_response)
 
     def update_token(self, auth_response: dict):
-        self.token_type = auth_response.get('token_type', 'Bearer').capitalize() # don't know yet if this is a good idea, but required by bnpstet
+        self.token_type = auth_response.get('token_type', 'Bearer').capitalize()  # don't know yet if this is a good idea, but required by bnpstet
         if 'refresh_token' in auth_response:
             self.refresh_token = auth_response['refresh_token']
         self.access_token = auth_response['access_token']

@@ -27,6 +27,7 @@ __all__ = ['Appbands', 'BandInfoFormatter', 'BandListFormatter', 'FavoritesForma
 
 class BandInfoFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ('id', 'name', 'genre', 'year', 'country', 'description')
+
     def format_obj(self, obj, alias):
         result = '\n%s%s%s\n' % (self.BOLD, obj.name, self.NC)
         if not empty(obj.genre):
@@ -51,7 +52,7 @@ class BandListFormatter(PrettyFormatter):
         result = ''
         if not empty(obj.short_description):
             result += '%s\n' % obj.short_description
-        result+='---------------------------------------------------------------------------'
+        result += '---------------------------------------------------------------------------'
         return result.strip()
 
 
@@ -67,7 +68,7 @@ class FavoritesFormatter(PrettyFormatter):
             result += '%s\n' % obj.short_description
         if not empty(obj.band_url):
             result += '\t%s\n' % obj.band_url
-        result+='---------------------------------------------------------------------------'
+        result += '---------------------------------------------------------------------------'
         return result.strip()
 
 
@@ -84,7 +85,7 @@ class AlbumsFormatter(PrettyFormatter):
             result += 'Year of release: %s\n' % obj.year
         if not empty(obj.reviews):
             result += 'Reviews: %s\n' % obj.reviews
-        result+='---------------------------------------------------------------------------'
+        result += '---------------------------------------------------------------------------'
         return result.strip()
 
 
@@ -100,9 +101,8 @@ class SuggestionsFormatter(PrettyFormatter):
             result += '%s\n' % obj.description
         if not empty(obj.url):
             result += '\tLink to band: %s\n' % obj.url
-        result+='---------------------------------------------------------------------------'
+        result += '---------------------------------------------------------------------------'
         return result.strip()
-
 
 
 class Appbands(ReplApplication):

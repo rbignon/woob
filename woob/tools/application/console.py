@@ -552,7 +552,7 @@ class ConsoleApplication(Application):
 
             if v.tiny:
                 question = '%s (%s)' % (question, '/'.join((s.upper() if s == v.default else s)
-                                                            for s in v.choices))
+                                                           for s in v.choices))
                 for s in v.choices:
                     if s == v.default:
                         aliases[s.upper()] = s
@@ -575,7 +575,7 @@ class ConsoleApplication(Application):
             if v.masked:
                 line = getpass.getpass(question)
                 if sys.platform != 'win32':
-                    if isinstance(line, bytes): # only for python2
+                    if isinstance(line, bytes):  # only for python2
                         line = line.decode(self.encoding)
             else:
                 self.stdout.write(question)
@@ -643,7 +643,7 @@ class ConsoleApplication(Application):
                     f.flush()
                 try:
                     params = editor_params[os.path.basename(editor)]
-                except (KeyError,TypeError):
+                except (KeyError, TypeError):
                     params = ''
                 cmd = shlex.split(editor) + shlex.split(params) + [filename]
                 subprocess.call(cmd)
@@ -652,7 +652,7 @@ class ConsoleApplication(Application):
         else:
             if self.stdin.isatty():
                 print('Reading content from stdin... Type ctrl-D '
-                          'from an empty line to stop.')
+                      'from an empty line to stop.')
             text = self.stdin.read()
         return to_unicode(text)
 

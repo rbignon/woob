@@ -39,7 +39,7 @@ class Subtitle(BaseObject):
     ext =       StringField('Extension of file')
     nb_cd =     IntField('Number of cd or files')
     language =  StringField('Language of the subtitle')
-    description=StringField('Description of corresponding video')
+    description = StringField('Description of corresponding video')
 
     def __init__(self, id='', name='', url=None):
         super(Subtitle, self).__init__(id, url)

@@ -23,7 +23,7 @@ if sys.platform == 'win32' \
         or not sys.stdout.isatty() \
         or os.getenv('NO_COLOR') is not None \
         or os.getenv('ANSI_COLORS_DISABLED') is not None:
-    #workaround to disable bold
+    # workaround to disable bold
     BOLD   = ''
     NC     = ''         # no color
 else:

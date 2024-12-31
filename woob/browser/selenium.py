@@ -338,7 +338,7 @@ class HTMLPage(BaseHTMLPage):
             url=browser.url,
             text=browser.page_source,
             content=browser.page_source.encode('utf-8'),
-            encoding = 'utf-8',
+            encoding='utf-8',
         )
 
         super(HTMLPage, self).__init__(browser, fake, encoding='utf-8')

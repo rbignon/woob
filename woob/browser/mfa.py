@@ -40,7 +40,6 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
     :type config: :class:`BackendConfig`
     """
 
-
     TWOFA_DURATION: ClassVar[int | float | None] = None
     """
     Period to keep the same state
@@ -53,7 +52,6 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
     """
     Config's key which is set to a non-empty value when we are in interactive mode.
     """
-
 
     AUTHENTICATION_METHODS: ClassVar[Dict[str, Callable]] = {}
     """

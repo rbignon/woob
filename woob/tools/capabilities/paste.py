@@ -71,7 +71,7 @@ def image_mime(data_base64, supported_formats=('gif', 'jpeg', 'png')):
     elif 'pdf' in supported_formats and b'%PDF' in beginning:
         return 'application/pdf'
     elif 'tiff' in supported_formats and (b'II\x00\x2a' in beginning or
-          b'MM\x2a\x00' in beginning):
+            b'MM\x2a\x00' in beginning):
         return 'image/tiff'
 
 

@@ -44,7 +44,7 @@ PLAYERS = (
 class MediaPlayerNotFound(Exception):
     def __init__(self):
         super(MediaPlayerNotFound, self).__init__('No media player found on this system. Please install one of them: %s.' %
-                           ', '.join(player[0] for player in PLAYERS))
+                                                  ', '.join(player[0] for player in PLAYERS))
 
 
 class InvalidMediaPlayer(Exception):

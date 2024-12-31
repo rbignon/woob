@@ -54,10 +54,10 @@ class IssueFormatter(IFormatter):
 
     def format_obj(self, obj, alias):
         result = '%s %s %s %s %s\n' % (self.colored(obj.project.name, 'blue', 'bold'),
-                                        self.colored('—', 'cyan', 'bold'),
-                                        self.colored(obj.fullid, 'red', 'bold'),
-                                        self.colored('—', 'cyan', 'bold'),
-                                        self.colored(obj.title, 'yellow', 'bold'))
+                                       self.colored('—', 'cyan', 'bold'),
+                                       self.colored(obj.fullid, 'red', 'bold'),
+                                       self.colored('—', 'cyan', 'bold'),
+                                       self.colored(obj.title, 'yellow', 'bold'))
         result += '\n%s\n\n' % obj.body
         result += self.format_key('Author', '%s (%s)' % (obj.author.name, obj.creation))
         result += self.format_attr(obj, 'status')
@@ -106,15 +106,17 @@ class AppBugTracker(ReplApplication):
     DESCRIPTION = "Console application allowing to create, edit, view bug tracking issues."
     SHORT_DESCRIPTION = "manage bug tracking issues"
     CAPS = CapBugTracker
-    EXTRA_FORMATTERS = {'issue_info': IssueFormatter,
-                        'issues_list': IssuesListFormatter,
-                       }
-    COMMANDS_FORMATTERS = {'get':     'issue_info',
-                           'post':    'issue_info',
-                           'edit':    'issue_info',
-                           'search':  'issues_list',
-                           'ls':      'issues_list',
-                          }
+    EXTRA_FORMATTERS = {
+        'issue_info': IssueFormatter,
+        'issues_list': IssuesListFormatter,
+    }
+    COMMANDS_FORMATTERS = {
+        'get':     'issue_info',
+        'post':    'issue_info',
+        'edit':    'issue_info',
+        'search':  'issues_list',
+        'ls':      'issues_list',
+    }
     COLLECTION_OBJECTS = (Project, Issue, )
 
     def add_application_options(self, group):
@@ -247,16 +249,17 @@ class AppBugTracker(ReplApplication):
         id, backend_name = self.parse_id(line, unique_backend=True)
         self.do('remove_issue', id, backends=backend_name).wait()
 
-    ISSUE_FIELDS = (('title',    (None,       False)),
-                    ('assignee', ('members',  True)),
-                    ('version',  ('versions', True)),
-                    ('tracker',  (None,       False)),#XXX
-                    ('category', ('categories', False)),
-                    ('status',   ('statuses', True)),
-                    ('priority', (None,       False)),#XXX
-                    ('start',    (None,       False)),
-                    ('due',      (None,       False)),
-                   )
+    ISSUE_FIELDS = (
+        ('title',    (None,       False)),
+        ('assignee', ('members',  True)),
+        ('version',  ('versions', True)),
+        ('tracker',  (None,       False)),  # XXX
+        ('category', ('categories', False)),
+        ('status',   ('statuses', True)),
+        ('priority', (None,       False)),  # XXX
+        ('start',    (None,       False)),
+        ('due',      (None,       False)),
+    )
 
     def get_list_item(self, objects_list, name):
         if name is None:
@@ -337,7 +340,7 @@ class AppBugTracker(ReplApplication):
             # FIXME: autodetect
             if key in ['start', 'due']:
                 if len(value) > 0:
-                    #value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+                    # value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
                     value = parse_french_date(value)
                 else:
                     value = None

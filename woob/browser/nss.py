@@ -76,7 +76,7 @@ LOGGER = getLogger(__name__)
 
 def nss_version():
     version_str = nss.nss.nss_get_version()
-    version_str = re.match(r'\d+\.\d+', version_str).group(0) # can be "3.21.3 Extended ECC"
+    version_str = re.match(r'\d+\.\d+', version_str).group(0)  # can be "3.21.3 Extended ECC"
     return tuple(int(x) for x in version_str.split('.'))
     # see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/NSS_3.35_release_notes
 
@@ -383,9 +383,9 @@ def ssl_wrap_socket(sock, *args, **kwargs):
     else:
         nsssock.set_auth_certificate_callback(auth_cert_with_aia)
 
-    nsssock.reset_handshake(False) # marks handshake as not-done
+    nsssock.reset_handshake(False)  # marks handshake as not-done
     try:
-        wrapper.send(b'') # performs handshake
+        wrapper.send(b'')  # performs handshake
     except nss.error.NSPRError as e:
         if e.error_code == nss.error.PR_END_OF_FILE_ERROR:
             # the corresponding openssl error isn't exactly socket.timeout()

@@ -33,7 +33,7 @@ __all__ = ['CSS', 'XPath', 'XPathNotFound', 'AttributeNotFound',
            'CleanHTML', 'FormValue', 'HasElement',
            'TableCell', 'ColumnNotFound',
            'ReplaceEntities',
-          ]
+           ]
 
 
 class XPathNotFound(ItemNotFound):

@@ -67,7 +67,7 @@ class Temperature(BaseObject):
     value =      FloatField('Temperature value')
     unit =       StringField('Input unit')
 
-    def __init__(self, value=NotLoaded, unit = '', url=None):
+    def __init__(self, value=NotLoaded, unit='', url=None):
         super(Temperature, self).__init__(str(value), url)
         self.value = value
         if unit not in ['C', 'F']:

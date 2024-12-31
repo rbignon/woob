@@ -108,15 +108,16 @@ class ModuleInfo:
         return self.url is None
 
     def dump(self):
-        return (('version', self.version),
-                ('capabilities', ' '.join(self.capabilities)),
-                ('dependencies', ' '.join(self.dependencies)),
-                ('description', self.description),
-                ('maintainer', self.maintainer),
-                ('license', self.license),
-                ('icon', self.icon or ''),
-                ('woob_spec', str(self.woob_spec)),
-               )
+        return (
+            ('version', self.version),
+            ('capabilities', ' '.join(self.capabilities)),
+            ('dependencies', ' '.join(self.dependencies)),
+            ('description', self.description),
+            ('maintainer', self.maintainer),
+            ('license', self.license),
+            ('icon', self.icon or ''),
+            ('woob_spec', str(self.woob_spec)),
+        )
 
 
 class RepositoryUnavailable(Exception):
@@ -1020,8 +1021,8 @@ class Keyring:
                     ],
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE) as proc:
-
+                    stderr=subprocess.PIPE,
+                ) as proc:
                     out, err = proc.communicate(data)
                     return_code = proc.returncode
             finally:

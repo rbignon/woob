@@ -101,6 +101,7 @@ def empty(value: Any) -> bool:
 
 T = TypeVar('T')
 
+
 @overload
 def find_object(
     mylist: Iterable[T],
@@ -108,6 +109,7 @@ def find_object(
     **kwargs
 ) -> T | None:
     ...
+
 
 @overload
 def find_object(
@@ -117,9 +119,10 @@ def find_object(
 ) -> T:
     ...
 
+
 def find_object(
     mylist,
-    error = None,
+    error=None,
     **kwargs
 ):
     """
@@ -148,6 +151,7 @@ def find_object_any_match(
 ) -> T | None:
     ...
 
+
 @overload
 def find_object_any_match(
     objects: Iterable[T],
@@ -157,6 +161,7 @@ def find_object_any_match(
     ignore_empty: bool = True
 ) -> T:
     ...
+
 
 def find_object_any_match(
     objects: Iterable[T],

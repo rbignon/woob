@@ -245,11 +245,15 @@ class IFormatter:
         """
         if only is False or collection.basename in only:
             if collection.basename and collection.title:
-                self.output('%s~ (%s) %s (%s)%s' %
-                     (self.BOLD, collection.basename, collection.title, collection.backend, self.NC))
+                self.output(
+                    '%s~ (%s) %s (%s)%s' %
+                    (self.BOLD, collection.basename, collection.title, collection.backend, self.NC)
+                )
             else:
-                self.output('%s~ (%s) (%s)%s' %
-                     (self.BOLD, collection.basename, collection.backend, self.NC))
+                self.output(
+                    '%s~ (%s) (%s)%s' %
+                    (self.BOLD, collection.basename, collection.backend, self.NC)
+                )
 
 
 class PrettyFormatter(IFormatter):
@@ -259,13 +263,13 @@ class PrettyFormatter(IFormatter):
 
         if alias is not None:
             result = '%s %s %s (%s)' % (self.colored('%2s' % alias, 'red', 'bold'),
-                                         self.colored('—', 'cyan', 'bold'),
-                                         self.colored(title, 'yellow', 'bold'),
-                                         self.colored(obj.backend, 'blue', 'bold'))
+                                        self.colored('—', 'cyan', 'bold'),
+                                        self.colored(title, 'yellow', 'bold'),
+                                        self.colored(obj.backend, 'blue', 'bold'))
         else:
             result = '%s %s %s' % (self.colored(obj.fullid, 'red', 'bold'),
-                                    self.colored('—', 'cyan', 'bold'),
-                                    self.colored(title, 'yellow', 'bold'))
+                                   self.colored('—', 'cyan', 'bold'),
+                                   self.colored(title, 'yellow', 'bold'))
 
         if desc is not None:
             result += '%s\t%s' % (os.linesep, self.colored(desc, 'white'))

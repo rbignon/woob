@@ -108,7 +108,7 @@ class FrenchTransaction(Transaction):
         """
         Clean a string containing an amount.
         """
-        text = text.replace('.','').replace(',','.')
+        text = text.replace('.', '').replace(',', '.')
         return re.sub(r'[^\d\-\.]', '', text)
 
     def set_amount(self, credit='', debit=''):

@@ -257,7 +257,6 @@ class AppConfig(ReplApplication):
         self.start_format()
         self.format(self.create_minfo_dict(minfo, module))
 
-
     def create_minfo_dict(self, minfo, module):
         module_info = {}
         module_info['name'] = minfo.name

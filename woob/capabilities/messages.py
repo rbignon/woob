@@ -50,18 +50,21 @@ class Message(BaseObject):
     children =      Field('Children fields', list)
     flags =         IntField('Flags (IS_* constants)', default=0)
 
-    def __init__(self, thread=NotLoaded,
-                       id=NotLoaded,
-                       title=NotLoaded,
-                       sender=NotLoaded,
-                       receivers=NotLoaded,
-                       date=None,
-                       parent=NotLoaded,
-                       content=NotLoaded,
-                       signature=NotLoaded,
-                       children=NotLoaded,
-                       flags=0,
-                       url=None):
+    def __init__(
+        self,
+        thread=NotLoaded,
+        id=NotLoaded,
+        title=NotLoaded,
+        sender=NotLoaded,
+        receivers=NotLoaded,
+        date=None,
+        parent=NotLoaded,
+        content=NotLoaded,
+        signature=NotLoaded,
+        children=NotLoaded,
+        flags=0,
+        url=None
+    ):
         super(Message, self).__init__(id, url)
         self.thread = thread
         self.title = title

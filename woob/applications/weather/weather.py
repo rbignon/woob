@@ -74,14 +74,16 @@ class AppWeather(ReplApplication):
     SHORT_DESCRIPTION = "display weather and forecasts"
     CAPS = CapWeather
     DEFAULT_FORMATTER = 'table'
-    EXTRA_FORMATTERS = {'cities':    CitiesFormatter,
-                        'current':   CurrentFormatter,
-                        'forecasts': ForecastsFormatter,
-                       }
-    COMMANDS_FORMATTERS = {'cities':    'cities',
-                           'current':   'current',
-                           'forecasts': 'forecasts',
-                          }
+    EXTRA_FORMATTERS = {
+        'cities':    CitiesFormatter,
+        'current':   CurrentFormatter,
+        'forecasts': ForecastsFormatter,
+    }
+    COMMANDS_FORMATTERS = {
+        'cities':    'cities',
+        'current':   'current',
+        'forecasts': 'forecasts',
+    }
 
     def main(self, argv):
         self.load_config()

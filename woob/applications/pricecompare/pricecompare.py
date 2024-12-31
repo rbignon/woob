@@ -77,12 +77,14 @@ class AppPriceCompare(ReplApplication):
     DESCRIPTION = "Console application to compare products."
     SHORT_DESCRIPTION = "compare products"
     DEFAULT_FORMATTER = 'table'
-    EXTRA_FORMATTERS = {'prices':       PricesFormatter,
-                        'price':        PriceFormatter,
-                       }
-    COMMANDS_FORMATTERS = {'prices':    'prices',
-                           'info':      'price',
-                          }
+    EXTRA_FORMATTERS = {
+        'prices':       PricesFormatter,
+        'price':        PriceFormatter,
+    }
+    COMMANDS_FORMATTERS = {
+        'prices':    'prices',
+        'info':      'price',
+    }
     CAPS = CapPriceComparison
 
     @defaultcount(10)

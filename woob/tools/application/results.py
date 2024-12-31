@@ -56,6 +56,7 @@ def is_inf(left, right):
 def is_in(left, right):
     return left in right
 
+
 functions = {'!=': is_notegal, '=': is_egal, '>': is_sup, '<': is_inf, '|': is_in}
 
 
@@ -75,7 +76,7 @@ class ResultsCondition(IResultsCondition):
                 self.limit = int(_condition_str[1])
             except ValueError:
                 raise ResultsConditionError('Syntax error in the condition expression, please check documentation')
-        condition_str= _condition_str[0]
+        condition_str = _condition_str[0]
         for _or in condition_str.split(' OR '):
             and_list = []
             for _and in _or.split(' AND '):

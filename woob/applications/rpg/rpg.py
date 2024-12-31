@@ -86,7 +86,7 @@ class AppRPG(ReplApplication):
         """
         character_id, skill_type = self.parse_command_args(line, 2, 1)
         self.start_format()
-        for skill in  self.do('iter_skill_set', character_id, skill_type):
+        for skill in self.do('iter_skill_set', character_id, skill_type):
             self.format(skill)
 
     @defaultcount(20)

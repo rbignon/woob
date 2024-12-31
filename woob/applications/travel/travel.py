@@ -68,12 +68,14 @@ class AppTravel(ReplApplication):
     SHORT_DESCRIPTION = "search for train stations and departures"
     CAPS = CapTravel
     DEFAULT_FORMATTER = 'table'
-    EXTRA_FORMATTERS = {'stations': StationsFormatter,
-                        'departures': DeparturesFormatter,
-                       }
-    COMMANDS_FORMATTERS = {'stations':     'stations',
-                           'departures':   'departures',
-                          }
+    EXTRA_FORMATTERS = {
+        'stations': StationsFormatter,
+        'departures': DeparturesFormatter,
+    }
+    COMMANDS_FORMATTERS = {
+        'stations':     'stations',
+        'departures':   'departures',
+    }
 
     def add_application_options(self, group):
         group.add_option('--departure-time')

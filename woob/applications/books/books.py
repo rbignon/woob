@@ -46,10 +46,11 @@ class AppBooks(ReplApplication):
     EXTRA_FORMATTERS = {'rented_list':   RentedListFormatter,
                         }
     DEFAULT_FORMATTER = 'table'
-    COMMANDS_FORMATTERS = {'ls':          'rented_list',
-                           'list':        'rented_list',
-                           'rented':      'rented_list',
-                          }
+    COMMANDS_FORMATTERS = {
+        'ls':          'rented_list',
+        'list':        'rented_list',
+        'rented':      'rented_list',
+    }
 
     COLLECTION_OBJECTS = (Book, )
 

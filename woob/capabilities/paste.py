@@ -40,7 +40,7 @@ class BasePaste(BaseObject):
     public =        BoolField('Is this paste public?')
 
     def __init__(self, _id, title=NotLoaded, language=NotLoaded, contents=NotLoaded,
-            public=NotLoaded, url=None):
+                 public=NotLoaded, url=None):
         super(BasePaste, self).__init__(str(_id), url)
 
         self.title = title

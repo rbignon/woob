@@ -55,7 +55,7 @@ class AppDebug(Application):
 
         locs = dict(backend=backend, browser=backend.browser,
                     application=self, woob=self.woob,
-                   )
+                    )
         banner = 'Woob debug shell\nBackend "%s" loaded.\nAvailable variables:\n' % backend_name \
                  + '\n'.join(['  %s: %s' % (k, v) for k, v in locs.items()])
 

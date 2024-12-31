@@ -37,8 +37,8 @@ class OrdersFormatter(IFormatter):
         date = obj.date.strftime('%Y-%m-%d') if not empty(obj.date) else ''
         total = obj.total or Decimal('0')
         result = '%s  %s  %s' % (self.colored('%-28s' % obj.fullid, 'yellow'),
-                                  self.colored('%-10s' % date, 'blue'),
-                                  self.colored('%9.2f' % total, 'green'))
+                                 self.colored('%-10s' % date, 'blue'),
+                                 self.colored('%9.2f' % total, 'green'))
 
         return result
 
@@ -56,8 +56,8 @@ class ItemsFormatter(IFormatter):
     def format_obj(self, obj, alias):
         price = obj.price or Decimal('0')
         result = '%s  %s  %s' % (self.colored('%-75s' % obj.label[:75], 'yellow'),
-                                  self.colored('%-43s' % obj.url, 'magenta'),
-                                  self.colored('%9.2f' % price, 'green'))
+                                 self.colored('%-43s' % obj.url, 'magenta'),
+                                 self.colored('%9.2f' % price, 'green'))
 
         return result
 
@@ -76,8 +76,8 @@ class PaymentsFormatter(IFormatter):
         date = obj.date.strftime('%Y-%m-%d') if not empty(obj.date) else ''
         amount = obj.amount or Decimal('0')
         result = '%s  %s  %s' % (self.colored('%-10s' % date, 'blue'),
-                                  self.colored('%-17s' % obj.method, 'yellow'),
-                                  self.colored('%9.2f' % amount, 'green'))
+                                 self.colored('%-17s' % obj.method, 'yellow'),
+                                 self.colored('%9.2f' % amount, 'green'))
 
         return result
 
@@ -93,16 +93,18 @@ class AppShop(ReplApplication):
     SHORT_DESCRIPTION = "obtain details and status of e-commerce orders"
     CAPS = CapShop
     COLLECTION_OBJECTS = (Order, )
-    EXTRA_FORMATTERS = {'orders':   OrdersFormatter,
-                        'items':   ItemsFormatter,
-                        'payments':   PaymentsFormatter
-                        }
+    EXTRA_FORMATTERS = {
+        'orders':   OrdersFormatter,
+        'items':   ItemsFormatter,
+        'payments':   PaymentsFormatter
+    }
     DEFAULT_FORMATTER = 'table'
-    COMMANDS_FORMATTERS = {'orders':    'orders',
-                           'items':     'items',
-                           'payments':  'payments',
-                           'ls':        'orders',
-                           }
+    COMMANDS_FORMATTERS = {
+        'orders':    'orders',
+        'items':     'items',
+        'payments':  'payments',
+        'ls':        'orders',
+    }
 
     def main(self, argv):
         self.load_config()

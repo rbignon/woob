@@ -259,11 +259,11 @@ class AppCinema(ReplApplication):
                 year = movie.release_date.year
             else:
                 year = '????'
-            movie.short_description = '(%s) %s as %s ; %s as %s'%(year, person1.name, ', '.join(role1), person2.name, ', '.join(role2))
+            movie.short_description = '(%s) %s as %s ; %s as %s' % (year, person1.name, ', '.join(role1), person2.name, ', '.join(role2))
             if movie:
                 i = 0
-                while (i<len(chrono_list) and movie.release_date != NotAvailable and
-                      (chrono_list[i].release_date == NotAvailable or year > chrono_list[i].release_date.year)):
+                while (i < len(chrono_list) and movie.release_date != NotAvailable and
+                       (chrono_list[i].release_date == NotAvailable or year > chrono_list[i].release_date.year)):
                     i += 1
                 chrono_list.insert(i, movie)
 
@@ -306,7 +306,7 @@ class AppCinema(ReplApplication):
             role2 = person.get_roles_by_movie_id(movie2.id)
             if not role2:
                 role2 = person.get_roles_by_movie_title(movie2.original_title)
-            person.short_description = '%s in %s ; %s in %s'%(', '.join(role1), movie1.original_title, ', '.join(role2), movie2.original_title)
+            person.short_description = '%s in %s ; %s in %s' % (', '.join(role1), movie1.original_title, ', '.join(role2), movie2.original_title)
             self.cached_format(person)
 
     def do_info_movie(self, id):

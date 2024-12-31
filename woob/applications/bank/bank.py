@@ -351,7 +351,8 @@ class InvestmentFormatter(IFormatter):
 
     def flush(self):
         self.output('-------------------------------+--------------+------------+------------+------------+---------')
-        self.output('                                                                  Total  %s %s'
+        self.output(
+            '                                                                  Total  %s %s'
             % (
                 self.colored('%11.2f' % self.tot_valuation, 'yellow'),
                 self.colored('%9.2f' % self.tot_diff, 'green' if self.tot_diff >= 0 else 'red')
@@ -568,7 +569,7 @@ class Appbank(CaptchaMixin, ReplApplication):
             for field in error.fields:
                 v = self.ask(field)
                 params[field.id] = v
-            #backend.config['accept_transfer'].set(v)
+            # backend.config['accept_transfer'].set(v)
             params['backends'] = backend
             self.start_format()
             for transfer in self.do('transfer', error.transfer, **params):

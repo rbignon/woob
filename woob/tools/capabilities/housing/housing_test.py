@@ -78,7 +78,7 @@ class HousingTest:
                     query.type in [POSTS_TYPES.RENT, POSTS_TYPES.FURNISHED_RENT]
                 ):
                     self.assertIn(x.type,
-                                [POSTS_TYPES.RENT, POSTS_TYPES.FURNISHED_RENT])
+                                  [POSTS_TYPES.RENT, POSTS_TYPES.FURNISHED_RENT])
                 else:
                     self.assertEqual(x.type, query.type)
             if 'advert_type' in self.FIELDS_ALL_HOUSINGS_LIST:

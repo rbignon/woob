@@ -454,7 +454,7 @@ class SimpleVirtualKeyboard:
                 )
             return
 
-        assert (not self.width%self.cols) & (not self.height%self.rows), \
+        assert (not self.width % self.cols) & (not self.height % self.rows), \
             "Image width and height are not multiple of cols and rows. Please resize image with attribute `margin`."
 
         # Tiles coords aren't given, calculate them
@@ -483,7 +483,7 @@ class SimpleVirtualKeyboard:
         y1 = y0 + self.tileH
 
         coords = (x0, y0, x1, y1)
-        return(coords)
+        return coords
 
     def cut_tiles(self, tile_margin=None):
         for tile in self.tiles:

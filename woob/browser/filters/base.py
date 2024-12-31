@@ -25,7 +25,7 @@ from woob.tools.misc import NO_DEFAULT as _NO_DEFAULT
 from woob.tools.misc import NoDefaultType
 
 
-__all__ = ['FilterError', 'ItemNotFound', 'Filter',]
+__all__ = ['FilterError', 'ItemNotFound', 'Filter']
 
 # Defined for compatibility.
 NoDefault = NoDefaultType

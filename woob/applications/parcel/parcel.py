@@ -25,11 +25,12 @@ from woob.tools.application.repl import ReplApplication
 __all__ = ['AppParcel']
 
 
-STATUS = {Parcel.STATUS_PLANNED:    ('PLANNED', 'red'),
-          Parcel.STATUS_IN_TRANSIT: ('IN TRANSIT', 'yellow'),
-          Parcel.STATUS_ARRIVED:    ('ARRIVED', 'green'),
-          Parcel.STATUS_UNKNOWN:    ('', 'white'),
-         }
+STATUS = {
+    Parcel.STATUS_PLANNED:    ('PLANNED', 'red'),
+    Parcel.STATUS_IN_TRANSIT: ('IN TRANSIT', 'yellow'),
+    Parcel.STATUS_ARRIVED:    ('ARRIVED', 'green'),
+    Parcel.STATUS_UNKNOWN:    ('', 'white'),
+}
 
 
 def get_backend_name(backend):
@@ -42,7 +43,7 @@ class HistoryFormatter(IFormatter):
     def format_obj(self, obj, alias):
         if isinstance(obj, Parcel):
             result =  'Parcel %s (%s)\n' % (self.colored(obj.id, 'red', 'bold'),
-                                              self.colored(obj.backend, 'blue', 'bold'))
+                                            self.colored(obj.backend, 'blue', 'bold'))
             result += '%sArrival:%s %s\n' % (self.BOLD, self.NC, obj.arrival)
             status, status_color = STATUS[obj.status]
             result += '%sStatus:%s  %s\n' % (self.BOLD, self.NC, self.colored(status, status_color))
@@ -72,9 +73,9 @@ class StatusFormatter(IFormatter):
         status, status_color = STATUS[obj.status]
         arrival = obj.arrival.strftime('%Y-%m-%d') if not empty(obj.arrival) else ''
         result = '%s %s %s %s  %s' % (id, self.colored('—', 'cyan'),
-                                       self.colored('%-10s' % status, status_color),
-                                       self.colored('%-10s' % arrival, 'blue'),
-                                       self.colored('%-20s' % obj.info, 'yellow'))
+                                      self.colored('%-10s' % status, status_color),
+                                      self.colored('%-10s' % arrival, 'blue'),
+                                      self.colored('%-20s' % obj.info, 'yellow'))
 
         return result
 
@@ -87,13 +88,15 @@ class AppParcel(ReplApplication):
     CAPS = CapParcel
     DESCRIPTION = "Console application to track your parcels."
     SHORT_DESCRIPTION = "manage your parcels"
-    EXTRA_FORMATTERS = {'status':   StatusFormatter,
-                        'history':  HistoryFormatter,
-                       }
+    EXTRA_FORMATTERS = {
+        'status':   StatusFormatter,
+        'history':  HistoryFormatter,
+    }
     DEFAULT_FORMATTER = 'table'
-    COMMANDS_FORMATTERS = {'status':      'status',
-                           'info':        'history',
-                          }
+    COMMANDS_FORMATTERS = {
+        'status':      'status',
+        'info':        'history',
+    }
     STORAGE = {'tracking': []}
 
     def do_track(self, line):

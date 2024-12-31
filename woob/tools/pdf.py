@@ -416,6 +416,7 @@ def get_pdf_rows(data, miner_layout=True):
         yield textrows
     device.close()
 
+
 # Export part #
 
 def html_to_pdf(browser, url=None, data=None, extra_options=None):
@@ -444,7 +445,7 @@ def html_to_pdf(browser, url=None, data=None, extra_options=None):
         pass
     else:
         options.update({
-            'cookie': [(cookie, value) for cookie, value in cookies.items() if value], # cookies of browser
+            'cookie': [(cookie, value) for cookie, value in cookies.items() if value],  # cookies of browser
         })
 
     if extra_options:

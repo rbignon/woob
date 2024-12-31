@@ -175,7 +175,6 @@ class CapRPG(CapCollection):
             self._restrict_level(split_path)
             return self.iter_characters()
 
-
     def iter_characters(self):
         """
         Iter characters.

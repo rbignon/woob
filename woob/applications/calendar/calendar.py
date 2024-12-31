@@ -146,7 +146,7 @@ class UpcomingFormatter(IFormatter):
                 days_diff = (obj.end_date - obj.start_date).days
                 if days_diff >= 1:
                     result += 'From: %s to %s ' % (obj.start_date.strftime('%A %d %B %Y'),
-                                                    obj.end_date.strftime('%A %d %B %Y'))
+                                                   obj.end_date.strftime('%A %d %B %Y'))
                 else:
                     result += 'Date: %s\n' % obj.start_date.strftime('%A %d %B %Y')
                     result += 'Hour: %s' % obj.start_date.strftime('%H:%M')
