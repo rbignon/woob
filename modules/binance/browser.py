@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2022      Florian Bezannier
 #
 # This file is part of a woob module.
@@ -17,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 from decimal import Decimal
 
 from woob.browser import PagesBrowser
@@ -33,11 +29,14 @@ from hashlib import sha256
 from datetime import datetime, timedelta
 
 
+__all__ = ['BinanceBrowser']
+
+
 class BinanceBrowser(PagesBrowser):
     BASEURL = "https://api.binance.com"
 
     def __init__(self, config, *args, **kwargs):
-        super(BinanceBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.api_key = config['api_key'].get()
         self.secret_key = config['secret_key'].get()

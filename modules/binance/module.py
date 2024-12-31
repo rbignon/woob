@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2022      Florian Bezannier
 #
 # This file is part of a woob module.
@@ -17,9 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
-
 from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.bank import CapBank
 from woob.tools.value import Value, ValueBackendPassword
@@ -36,7 +31,6 @@ class BinanceModule(Module, CapBank):
     MAINTAINER = 'Florian Bezannier'
     EMAIL = 'florian.bezannier@hotmail.fr'
     LICENSE = 'LGPLv3+'
-    VERSION = '3.1'
 
     BROWSER = BinanceBrowser
     CONFIG = BackendConfig(Value('api_key', label='Api key'),
