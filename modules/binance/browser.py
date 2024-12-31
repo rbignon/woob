@@ -16,23 +16,21 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from decimal import Decimal
-
-from woob.browser import PagesBrowser
-from woob.capabilities.bank import Account
-
-import requests
 import time
 import hmac
-from six.moves import urllib
+import urllib
 from hashlib import sha256
 
 from datetime import datetime, timedelta
+
+from woob.browser import APIBrowser
+from woob.capabilities.bank import Account
 
 
 __all__ = ['BinanceBrowser']
 
 
-class BinanceBrowser(PagesBrowser):
+class BinanceBrowser(APIBrowser):
     BASEURL = "https://api.binance.com"
 
     def __init__(self, config, *args, **kwargs):
@@ -48,8 +46,11 @@ class BinanceBrowser(PagesBrowser):
         data_st = urllib.parse.urlencode(data, doseq=False)
         signature = hmac.new(self.secret_key.encode("utf-8"), data_st.encode('utf-8'), sha256).hexdigest()
         data_st += "&signature=" + signature
-        res = requests.get(self.BASEURL + "/sapi/v1/accountSnapshot", params=data_st,
-                           headers={"X-MBX-APIKEY": self.api_key}).json()
+        res = self.request(
+            "/sapi/v1/accountSnapshot",
+            params=data_st,
+            headers={"X-MBX-APIKEY": self.api_key}
+        )
         return res
 
     def get_future_balance(self):
@@ -62,7 +63,7 @@ class BinanceBrowser(PagesBrowser):
         return float(my_item["walletBalance"])
 
     def get_ticker(self, symbol):
-        res = requests.get("https://www.binance.com/api/v3/ticker/price?symbol=" + symbol).json()
+        res = self.request("https://www.binance.com/api/v3/ticker/price?symbol=" + symbol)
         return float(res["price"])
 
     def get_spot_or_margin_balance(self, acc_type):
