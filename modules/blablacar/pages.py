@@ -17,16 +17,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.travel import Departure
-from woob.browser.filters.standard import CleanText, Regexp, CleanDecimal
+from datetime import datetime
+from io import StringIO
+
+import lxml.html as html
+
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Link
-from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.filters.standard import CleanDecimal, CleanText, Regexp
 from woob.browser.pages import JsonPage
 from woob.capabilities.base import Currency
-
-from io import StringIO
-import lxml.html as html
-from datetime import datetime
+from woob.capabilities.travel import Departure
 
 
 class DeparturesPage(JsonPage):

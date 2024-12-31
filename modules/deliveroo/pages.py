@@ -20,16 +20,13 @@
 # flake8: compatible
 
 import json
-from urllib.parse import urlparse, parse_qsl
+from urllib.parse import parse_qsl, urlparse
 
-from woob.browser.filters.json import Dict
-from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
-from woob.browser.elements import ItemElement, method, DictElement
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Env, Regexp,
-    Format, Currency, Date, Field,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Env, Field, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from woob.capabilities.bill import Bill, Subscription
 
 

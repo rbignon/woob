@@ -19,6 +19,7 @@
 
 from woob.capabilities.recipe import CapRecipe, Recipe
 from woob.tools.backend import Module
+
 from .browser import CuisineazBrowser
 
 

@@ -21,18 +21,14 @@ import re
 from datetime import datetime
 from decimal import Decimal
 
-from woob.browser.elements import ItemElement, method, DictElement
-from woob.browser.filters.standard import (
-    CleanDecimal, Date, Field, CleanText,
-    Env, Eval, Map, Regexp, Title, Format,
-    Coalesce,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
-from woob.browser.pages import LoggedPage, JsonPage, HTMLPage, RawPage
-from woob.capabilities.bank import (
-    Account, Transaction, AccountOwnerType, NoAccountsException,
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Coalesce, Date, Env, Eval, Field, Format, Map, Regexp, Title,
 )
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
+from woob.capabilities.bank import Account, AccountOwnerType, NoAccountsException, Transaction
 from woob.capabilities.bank.wealth import Investment, Pocket
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType

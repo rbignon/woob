@@ -24,6 +24,7 @@ from woob_modules.creditmutuel.browser import CreditMutuelBrowser
 
 from .pages import AdvisorPage
 
+
 __all__ = ['BECMBrowser']
 
 

@@ -22,10 +22,7 @@ from typing import Any
 
 from woob.exceptions import CaptchaQuestion
 
-from .base import (
-    BaseObject, BoolField, BytesField, Capability, Field, FloatField,
-    StringField, UserError,
-)
+from .base import BaseObject, BoolField, BytesField, Capability, Field, FloatField, StringField, UserError
 
 
 __all__ = [

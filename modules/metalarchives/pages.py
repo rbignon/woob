@@ -17,14 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import JsonPage, HTMLPage
-from woob.browser.elements import ItemElement, ListElement, DictElement, method
-from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    Regexp, CleanText, Format, Env,
-)
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.html import Link
-from woob.capabilities.bands import BandInfo, BandSearch, Favorite, Albums, Suggestion
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Env, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.capabilities.bands import Albums, BandInfo, BandSearch, Favorite, Suggestion
 
 
 class LoginPage(HTMLPage):

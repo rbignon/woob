@@ -17,15 +17,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime, timedelta
-from woob.tools.value import Value, ValueBackendPassword
-from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.messages import CapMessages, Thread, CapMessagesPost
-from woob.capabilities.collection import CapCollection, CollectionNotFound, Collection
-from woob.capabilities.base import find_object
-from woob.exceptions import BrowserForbidden
-from .browser import TwitterBrowser
 import itertools
+from datetime import datetime, timedelta
+
+from woob.capabilities.base import find_object
+from woob.capabilities.collection import CapCollection, Collection, CollectionNotFound
+from woob.capabilities.messages import CapMessages, CapMessagesPost, Thread
+from woob.exceptions import BrowserForbidden
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
+
+from .browser import TwitterBrowser
+
 
 __all__ = ['TwitterModule']
 

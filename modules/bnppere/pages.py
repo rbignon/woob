@@ -21,18 +21,13 @@
 
 import re
 
-from woob.browser.pages import HTMLPage, LoggedPage, RawPage
-from woob.browser.elements import method, ItemElement, ListElement
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Currency, Date, NumberFormatError,
-    Field, Env, MapIn,
-)
-from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import (
-    Account, Transaction, AccountOwnerType,
-)
-from woob.capabilities.bank.wealth import Investment, PerVersion
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Env, Field, MapIn, NumberFormatError
+from woob.browser.pages import HTMLPage, LoggedPage, RawPage
+from woob.capabilities.bank import Account, AccountOwnerType, Transaction
+from woob.capabilities.bank.wealth import Investment, PerVersion
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.profile import Profile
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 

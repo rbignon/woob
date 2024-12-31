@@ -19,14 +19,9 @@
 
 from woob.browser.browsers import LoginBrowser, StatesMixin, need_login
 from woob.browser.url import URL
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, RecaptchaV2Question,
-)
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, RecaptchaV2Question
 
-from .pages import (
-    HomePage, LoginPage, OrderBillsPage, PeriodicBillsPage,
-    ProfilePage, SubscriptionPage,
-)
+from .pages import HomePage, LoginPage, OrderBillsPage, PeriodicBillsPage, ProfilePage, SubscriptionPage
 
 
 class NRJMobileBrowser(LoginBrowser, StatesMixin):

@@ -20,10 +20,11 @@
 from urllib.parse import urlencode
 
 from woob.browser import URL, PagesBrowser
-from woob.browser.cloudscraper import CloudScraperSession, CloudScraperMixin
-from woob.capabilities.housing import TypeNotSupported, POSTS_TYPES
-from .constants import TYPES, RET
-from .pages import HousingPage, CitiesPage
+from woob.browser.cloudscraper import CloudScraperMixin, CloudScraperSession
+from woob.capabilities.housing import POSTS_TYPES, TypeNotSupported
+
+from .constants import RET, TYPES
+from .pages import CitiesPage, HousingPage
 
 
 __all__ = ['PapBrowser']

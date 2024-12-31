@@ -18,11 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 import re
 
-from woob.tools.backend import Module
 from woob.capabilities.base import find_object
-from woob.capabilities.gauge import CapGauge, GaugeSensor, Gauge, SensorNotFound
+from woob.capabilities.gauge import CapGauge, Gauge, GaugeSensor, SensorNotFound
+from woob.tools.backend import Module
 
 from .browser import VlilleBrowser
+
 
 __all__ = ['VlilleModule']
 

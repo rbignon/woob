@@ -21,4 +21,5 @@
 
 from .module import BoursoramaModule
 
+
 __all__ = ['BoursoramaModule']

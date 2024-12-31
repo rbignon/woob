@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.capabilities.base import UserError
-from .pages import IndexPage, ComparisonResultsPage, ShopInfoPage
+
+from .pages import ComparisonResultsPage, IndexPage, ShopInfoPage
 
 
 __all__ = ['PrixCarburantsBrowser']

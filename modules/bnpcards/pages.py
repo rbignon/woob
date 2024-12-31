@@ -21,15 +21,12 @@ import re
 from datetime import date
 from decimal import Decimal
 
-from woob.exceptions import BrowserPasswordExpired
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr, Link
+from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Eval, Field, Format, RawText
 from woob.browser.pages import HTMLPage, LoggedPage, pagination
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Field, Env, Format, RawText,
-    Eval,
-)
-from woob.browser.filters.html import Link, Attr, AbsoluteLink
 from woob.capabilities.bank import Account
+from woob.exceptions import BrowserPasswordExpired
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 

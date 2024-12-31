@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.elements import method, ItemElement, ListElement, SkipItem
-from woob.browser.filters.standard import CleanDecimal, CleanText, Field, Format, Date
+from woob.browser.elements import ItemElement, ListElement, SkipItem, method
 from woob.browser.filters.html import Attr
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Field, Format
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.base import NotAvailable

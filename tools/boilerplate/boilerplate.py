@@ -23,6 +23,7 @@ import subprocess
 import sys
 from importlib import import_module
 
+
 BOILERPLATE_PATH = os.getenv(
     'BOILERPLATE_PATH',
     os.path.realpath(os.path.join(os.path.dirname(__file__), 'boilerplate_data')))

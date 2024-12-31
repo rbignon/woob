@@ -20,10 +20,11 @@
 import hashlib
 import hmac
 
-from woob.browser import LoginBrowser, need_login, URL
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ClientError
 from woob.exceptions import BrowserIncorrectPassword
-from .pages import UserAccountsPage, UserInfoPage, DocumentsPage, CategoryPage
+
+from .pages import CategoryPage, DocumentsPage, UserAccountsPage, UserInfoPage
 
 
 class PayFitBrowser(LoginBrowser):

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
+
 import resources.lib.base.common_xbmc as common_xbmc
 import resources.lib.constants as constants
 from resources.lib.actions import actions
+
 
 # Plugin constants
 version = '3.7'

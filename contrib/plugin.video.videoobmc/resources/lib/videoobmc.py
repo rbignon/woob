@@ -1,14 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import time
 import re
+import time
+from datetime import datetime, timedelta
 
-from datetime import timedelta, datetime
-from .base.woobmc import Woobmc
-from woob.capabilities.video import BaseVideo
-from woob.capabilities.image import BaseImage
 from woob.capabilities.collection import Collection
+from woob.capabilities.image import BaseImage
+from woob.capabilities.video import BaseVideo
+
+from .base.woobmc import Woobmc
 
 
 class Videoobmc(Woobmc):

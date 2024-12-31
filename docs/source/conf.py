@@ -1,16 +1,20 @@
-import sys
-import os
-import time
-import re
 import inspect
+import os
+import re
+import sys
+import time
 
 import sphinx_autodoc_typehints
-from sphinx_autodoc_typehints import get_annotation_module, get_annotation_class_name, get_annotation_args, format_annotation
+from sphinx_autodoc_typehints import (
+    format_annotation, get_annotation_args, get_annotation_class_name, get_annotation_module,
+)
+
 
 parentdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, parentdir)
 
 from woob import __version__
+
 
 os.system('./genapi.py')
 

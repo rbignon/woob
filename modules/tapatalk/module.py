@@ -17,18 +17,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-import dateutil.parser
 import datetime
-import requests
 import re
 
+import dateutil.parser
+import requests
 from six import text_type
 from six.moves import urllib, xmlrpc_client
 
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value, ValueBackendPassword
-from woob.capabilities.messages import CapMessages, Thread, Message
+from woob.capabilities.messages import CapMessages, Message, Thread
 from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
+
 
 __all__ = ['TapatalkModule']
 

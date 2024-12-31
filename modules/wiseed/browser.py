@@ -19,15 +19,13 @@
 
 import re
 
-from woob.browser import LoginBrowser, need_login, URL, StatesMixin
+from woob.browser import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import ClientError, HTTPNotFound
 from woob.capabilities.bank import NoAccountsException
 from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import (
-    WalletPage, InvestmentsPage, ProfilePage, WebsiteKeyPage,
-)
+from .pages import InvestmentsPage, ProfilePage, WalletPage, WebsiteKeyPage
 
 
 # TODO implement documents

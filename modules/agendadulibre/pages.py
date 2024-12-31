@@ -19,13 +19,12 @@
 
 
 import re
+from datetime import date, datetime, time
 
-from datetime import time, datetime, date
-
-from woob.browser.pages import HTMLPage, pagination
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import Regexp, CleanText, DateTime, Env, Format, BrowserURL
-from woob.browser.filters.html import Link, XPath, CleanHTML
+from woob.browser.filters.html import CleanHTML, Link, XPath
+from woob.browser.filters.standard import BrowserURL, CleanText, DateTime, Env, Format, Regexp
+from woob.browser.pages import HTMLPage, pagination
 from woob.tools.date import parse_french_date
 
 from .calendar import AgendaDuLibreCalendarEvent

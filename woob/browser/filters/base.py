@@ -20,8 +20,9 @@ from functools import wraps
 import lxml.html
 
 from woob.exceptions import ParseError
-from woob.tools.log import getLogger, DEBUG_FILTERS
-from woob.tools.misc import NO_DEFAULT as _NO_DEFAULT, NoDefaultType
+from woob.tools.log import DEBUG_FILTERS, getLogger
+from woob.tools.misc import NO_DEFAULT as _NO_DEFAULT
+from woob.tools.misc import NoDefaultType
 
 
 __all__ = ['FilterError', 'ItemNotFound', 'Filter',]

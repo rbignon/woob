@@ -17,16 +17,15 @@
 
 # flake8: compatible
 
-from woob.browser.pages import HTMLPage, LoggedPage, RawPage
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Env, Format, Regexp,
-    Field, Eval, QueryValue, Slugify, Date,
-)
-from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Link
-from woob.capabilities.bill import DocumentTypes, Bill, Subscription, Document
-from woob.capabilities.profile import Profile
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Date, Env, Eval, Field, Format, QueryValue, Regexp, Slugify,
+)
+from woob.browser.pages import HTMLPage, LoggedPage, RawPage
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Bill, Document, DocumentTypes, Subscription
+from woob.capabilities.profile import Profile
 from woob.tools.date import parse_french_date
 
 

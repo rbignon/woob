@@ -19,10 +19,10 @@
 
 # flake8: compatible
 
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value
-from woob.capabilities.image import CapImage, BaseImage, Thumbnail
 from woob.capabilities.collection import CapCollection
+from woob.capabilities.image import BaseImage, CapImage, Thumbnail
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value
 
 from .browser import InstagramBrowser
 

@@ -21,13 +21,13 @@ from requests import ReadTimeout
 
 from woob.browser import URL
 from woob.browser.browsers import LoginBrowser, need_login
-from woob.exceptions import BrowserIncorrectPassword
 from woob.browser.exceptions import ClientError
-
+from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.decorators import retry
 
 from .akamai import AkamaiMixin
-from .pages import HomePage, SigninPage, UserPage, DocumentsPage
+from .pages import DocumentsPage, HomePage, SigninPage, UserPage
+
 
 SENSOR_DATA = (
     "7a74G7m23Vrp0o5c9361761.75"

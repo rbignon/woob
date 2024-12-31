@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
-from .pages import ListPage, SearchPage, EntryPage, CatchHTTP
+from .pages import CatchHTTP, EntryPage, ListPage, SearchPage
 
 
 class RedditBrowser(PagesBrowser):

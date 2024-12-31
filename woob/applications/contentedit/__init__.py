@@ -18,4 +18,5 @@
 
 from .contentedit import AppContentEdit
 
+
 __all__ = ['AppContentEdit']

@@ -17,14 +17,13 @@
 
 # flake8: compatible
 
-from woob.tools.backend import BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
-from woob.capabilities.base import find_object, NotAvailable
+from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription, Document, DocumentNotFound,
-    DocumentCategory,
+    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
 )
 from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig
+from woob.tools.value import Value, ValueBackendPassword
 from woob_modules.franceconnect.module import FranceConnectModule
 
 from .browser import ImpotsParBrowser

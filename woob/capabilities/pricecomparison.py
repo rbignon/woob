@@ -16,9 +16,9 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .base import Capability, BaseObject, Field, DecimalField, \
-                  StringField, UserError
+from .base import BaseObject, Capability, DecimalField, Field, StringField, UserError
 from .date import DateField
+
 
 __all__ = ['Shop', 'Price', 'Product', 'CapPriceComparison']
 

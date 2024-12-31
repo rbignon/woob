@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.exceptions import ParseError
+
 from .pages import EnseignesListPage, MagasinPage
 
 

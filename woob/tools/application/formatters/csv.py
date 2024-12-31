@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from codecs import open
 import csv
+from codecs import open
 
 from woob.tools.misc import to_unicode
 
 from .iformatter import IFormatter
+
 
 __all__ = ['CSVFormatter']
 

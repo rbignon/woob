@@ -20,7 +20,9 @@ import re
 
 import lxml.etree as ET
 import requests
+
 from woob.capabilities.base import empty
+
 
 __all__ = ['recipe_to_krecipes_xml']
 

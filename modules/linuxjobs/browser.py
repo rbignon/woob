@@ -19,9 +19,9 @@
 
 from urllib.parse import quote_plus
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
-from .pages import SearchPage, AdvertPage
+from .pages import AdvertPage, SearchPage
 
 
 class LinuxJobsBrowser(PagesBrowser):

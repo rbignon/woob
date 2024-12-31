@@ -19,10 +19,10 @@
 
 from decimal import Decimal
 
-from woob.browser.pages import LoggedPage, JsonPage, PartialHTMLPage
-from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import Eval, Regexp, CleanText
+from woob.browser.filters.standard import CleanText, Eval, Regexp
+from woob.browser.pages import JsonPage, LoggedPage, PartialHTMLPage
 from woob.capabilities.bank import Account
 
 

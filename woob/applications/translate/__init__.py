@@ -18,4 +18,5 @@
 
 from .translate import AppTranslate
 
+
 __all__ = ['AppTranslate']

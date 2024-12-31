@@ -20,8 +20,8 @@
 # flake8: compatible
 
 
-from woob.tools.backend import Module
 from woob.capabilities.bank import CapBank
+from woob.tools.backend import Module
 
 from .browser import LinebourseAPIBrowser
 

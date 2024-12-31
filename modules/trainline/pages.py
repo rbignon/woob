@@ -17,15 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import LoggedPage, JsonPage
 from woob.browser.elements import DictElement, ItemElement, method
-from woob.browser.filters.standard import (
-    Date, Format, CleanText,
-    Currency, CleanDecimal, Env, Coalesce,
-)
 from woob.browser.filters.json import Dict
-from woob.capabilities.bill import Subscription, Bill
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Format
+from woob.browser.pages import JsonPage, LoggedPage
 from woob.capabilities import NotAvailable
+from woob.capabilities.bill import Bill, Subscription
 
 from .akamai import AkamaiHTMLPage
 

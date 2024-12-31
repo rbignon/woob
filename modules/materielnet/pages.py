@@ -20,12 +20,12 @@
 
 import re
 
-from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage
-from woob.browser.filters.standard import CleanText, CleanDecimal, Format, Date, Async, Filter, Regexp, Field
-from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, Link
-from woob.capabilities.bill import Bill, Subscription
+from woob.browser.filters.standard import Async, CleanDecimal, CleanText, Date, Field, Filter, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Bill, Subscription
 from woob.exceptions import BrowserIncorrectPassword
 
 

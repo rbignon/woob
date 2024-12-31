@@ -17,14 +17,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from .calendar import RazibusCalendarEvent
-
 from datetime import time
 
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import CleanHTML, Link
-from woob.browser.filters.standard import Regexp, CleanText, DateTime, CombineDate, Filter, Env
+from woob.browser.filters.standard import CleanText, CombineDate, DateTime, Env, Filter, Regexp
+from woob.browser.pages import HTMLPage
+
+from .calendar import RazibusCalendarEvent
 
 
 class EndTime(Filter):

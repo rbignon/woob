@@ -24,20 +24,17 @@ from urllib.parse import parse_qs
 
 import requests
 
-from woob.browser.filters.html import TableCell, Link, Attr
-from woob.browser.pages import LoggedPage, JsonPage, HTMLPage, pagination
-from woob.browser.elements import ItemElement, method, DictElement, TableElement
-from woob.browser.filters.standard import (
-    CleanDecimal, Coalesce, Currency, Date, Eval, Format,
-    Lower, Map, MapIn, Base, CleanText, Regexp, Field, Env,
-)
+from woob.browser.elements import DictElement, ItemElement, TableElement, method
+from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval, Field, Format, Lower, Map, MapIn, Regexp,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
+from woob.capabilities.bank import Account, AccountOwnership, AccountOwnerType, Loan
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.profile import Person
-from woob.capabilities.bank import (
-    Account, Loan, AccountOwnership, AccountOwnerType,
-)
-from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 

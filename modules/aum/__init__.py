@@ -21,4 +21,5 @@
 from .browser import AuMBrowser
 from .module import AuMModule
 
+
 __all__ = ['AuMBrowser', 'AuMModule']

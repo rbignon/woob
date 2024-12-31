@@ -24,28 +24,25 @@ from urllib.parse import quote_plus
 
 import requests
 
-from woob.browser.pages import JsonPage, pagination
-from woob.browser.elements import ItemElement, method, DictElement
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Date, Eval, Format, BrowserURL, Env,
-    Field, MapIn, Regexp, Currency as CurrencyFilter,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.capabilities.bank.base import Loan
-from woob.capabilities.base import Currency, empty
+from woob.browser.filters.standard import BrowserURL, CleanDecimal, CleanText, Coalesce
+from woob.browser.filters.standard import Currency as CurrencyFilter
+from woob.browser.filters.standard import Date, Env, Eval, Field, Format, MapIn, Regexp
+from woob.browser.pages import JsonPage, pagination
 from woob.capabilities import NotAvailable
-from woob.capabilities.bank import Account, NoAccountsException
+from woob.capabilities.bank import Account, AccountOwnerType, NoAccountsException
+from woob.capabilities.bank.base import Loan
 from woob.capabilities.bank.wealth import Investment
-from woob.capabilities.bill import Document, Subscription, DocumentTypes
+from woob.capabilities.base import Currency, empty
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 from woob.capabilities.profile import Person
 from woob.exceptions import (
-    ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserPasswordExpired,
-    BrowserUnavailable,
+    ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserPasswordExpired, BrowserUnavailable,
 )
-from woob.capabilities.bank import AccountOwnerType
 from woob.tools.capabilities.bank.iban import is_iban_valid
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.capabilities.bank.investments import is_isin_valid
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 from .pages import Transaction
 

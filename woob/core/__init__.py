@@ -20,6 +20,7 @@ from warnings import warn
 from .bcall import CallErrors
 from .woob import Woob, WoobBase
 
+
 __all__ = ['CallErrors', 'Woob', 'WoobBase', 'Weboob', 'WebNip']
 
 

@@ -18,4 +18,5 @@
 
 from .cli import AppCli
 
+
 __all__ = ['AppCli']

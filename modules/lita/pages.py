@@ -22,8 +22,8 @@ from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Dat
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.bank import Account
-from woob.capabilities.profile import Person
 from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.profile import Person
 
 
 class LoginPage(HTMLPage):

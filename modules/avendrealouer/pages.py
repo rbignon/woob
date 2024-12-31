@@ -17,21 +17,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import HTMLPage, JsonPage, pagination
-from woob.browser.elements import ItemElement, ListElement, method, DictElement
-from woob.browser.filters.html import Attr, AbsoluteLink, XPath
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr, XPath
 from woob.browser.filters.json import Dict
-
-from woob.browser.filters.standard import CleanDecimal, CleanText, DateTime, Regexp, Env, Format, Join
-
-from woob.capabilities.housing import City, Housing, UTILITIES, HousingPhoto, ENERGY_CLASS, POSTS_TYPES, \
-    ADVERT_TYPES, HOUSE_TYPES
-from woob.capabilities.base import NotAvailable, Currency
-
+from woob.browser.filters.standard import CleanDecimal, CleanText, DateTime, Env, Format, Join, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, pagination
+from woob.capabilities.base import Currency, NotAvailable
+from woob.capabilities.housing import (
+    ADVERT_TYPES, ENERGY_CLASS, HOUSE_TYPES, POSTS_TYPES, UTILITIES, City, Housing, HousingPhoto,
+)
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 from woob.tools.json import json
 
-from .constants import QUERY_TYPES, FURNISHED_VALUES, QUERY_HOUSE_TYPES_LABELS, QUERY_TYPES_LABELS
+from .constants import FURNISHED_VALUES, QUERY_HOUSE_TYPES_LABELS, QUERY_TYPES, QUERY_TYPES_LABELS
 
 
 class CitiesPage(JsonPage):

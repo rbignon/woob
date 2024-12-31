@@ -21,50 +21,44 @@ from datetime import datetime, timedelta
 from itertools import groupby
 from operator import attrgetter
 from urllib.parse import urlparse
+
 from dateutil import tz
 from requests.exceptions import HTTPError, TooManyRedirects
 
-from woob.capabilities.bill import Subscription
-from woob.exceptions import (
-    ActionNeeded, AppValidation, AppValidationExpired, AppValidationCancelled,
-    AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable,
-    BrowserQuestion, NeedInteractiveFor2FA, BrowserUserBanned, ActionType,
-)
-from woob.tools.value import Value
-from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
-from woob.tools.decorators import retry
 from woob.browser.browsers import need_login
+from woob.browser.exceptions import ClientError, ServerError
+from woob.browser.filters.standard import QueryValue, Regexp
 from woob.browser.mfa import TwoFactorBrowser
+from woob.browser.pages import FormNotFound
 from woob.browser.profiles import Wget
 from woob.browser.url import URL
-from woob.browser.pages import FormNotFound
-from woob.browser.exceptions import ClientError, ServerError
+from woob.capabilities import NotAvailable
 from woob.capabilities.bank import (
-    Account, AddRecipientStep, Recipient, AccountOwnership,
-    AddRecipientTimeout, TransferStep, TransferBankError,
-    AddRecipientBankError, TransferTimeout,
-    AccountOwnerType, NoAccountsException
+    Account, AccountOwnership, AccountOwnerType, AddRecipientBankError, AddRecipientStep, AddRecipientTimeout,
+    NoAccountsException, Recipient, TransferBankError, TransferStep, TransferTimeout,
+)
+from woob.capabilities.base import empty, find_object
+from woob.capabilities.bill import Subscription
+from woob.exceptions import (
+    ActionNeeded, ActionType, AppValidation, AppValidationCancelled, AppValidationExpired, AuthMethodNotImplemented,
+    BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable, BrowserUserBanned, NeedInteractiveFor2FA,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
+from woob.tools.decorators import retry
 from woob.tools.pdf import extract_text as extract_text_from_pdf
-from woob.capabilities import NotAvailable
-from woob.capabilities.base import find_object, empty
-from woob.browser.filters.standard import QueryValue, Regexp
+from woob.tools.value import Value
 
 from .pages import (
-    InfoDocPage, LoginPage, LoginErrorPage, AccountsPage, UserSpacePage,
-    OperationsPage, CardPage, ComingPage, RecipientsListPage,
-    ChangePasswordPage, VerifCodePage, EmptyPage, PorPage,
-    IbanPage, NewHomePage, AdvisorPage, RedirectPage,
-    LIAccountsPage, CardsActivityPage, CardsListPage,
-    CardsOpePage, NewAccountsPage, InternalTransferPage,
-    ExternalTransferPage, RevolvingLoanDetails, RevolvingLoansList,
-    ErrorPage, SubscriptionPage, NewCardsListPage, NewCardsOpe, CardPage2, FiscalityConfirmationPage,
-    ConditionsPage, MobileConfirmationPage, UselessPage, DecoupledStatePage, CancelDecoupled,
-    OtpValidationPage, OtpBlockedErrorPage, TwoFAUnabledPage,
-    LoansOperationsPage, LoansInsurancePage, OutagePage, PorInvestmentsPage, PorHistoryPage, PorHistoryDetailsPage,
-    PorMarketOrdersPage, PorMarketOrderDetailsPage, SafeTransPage, InformationConfirmationPage,
-    AuthorityManagementPage, DigipassPage, GeneralAssemblyPage, AuthenticationModePage, SolidarityPage,
+    AccountsPage, AdvisorPage, AuthenticationModePage, AuthorityManagementPage, CancelDecoupled, CardPage, CardPage2,
+    CardsActivityPage, CardsListPage, CardsOpePage, ChangePasswordPage, ComingPage, ConditionsPage, DecoupledStatePage,
+    DigipassPage, EmptyPage, ErrorPage, ExternalTransferPage, FiscalityConfirmationPage, GeneralAssemblyPage, IbanPage,
+    InfoDocPage, InformationConfirmationPage, InternalTransferPage, LIAccountsPage, LoansInsurancePage,
+    LoansOperationsPage, LoginErrorPage, LoginPage, MobileConfirmationPage, NewAccountsPage, NewCardsListPage,
+    NewCardsOpe, NewHomePage, OperationsPage, OtpBlockedErrorPage, OtpValidationPage, OutagePage, PorHistoryDetailsPage,
+    PorHistoryPage, PorInvestmentsPage, PorMarketOrderDetailsPage, PorMarketOrdersPage, PorPage, RecipientsListPage,
+    RedirectPage, RevolvingLoanDetails, RevolvingLoansList, SafeTransPage, SolidarityPage, SubscriptionPage,
+    TwoFAUnabledPage, UselessPage, UserSpacePage, VerifCodePage,
 )
 
 

@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from shutil import which
-from datetime import timedelta
 import subprocess
+from datetime import timedelta
+from shutil import which
 
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.image import Thumbnail

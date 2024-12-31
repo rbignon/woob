@@ -22,17 +22,17 @@
 import re
 from decimal import Decimal
 
-from woob.capabilities.base import empty
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.bank import Account, NoAccountsException
 from woob.capabilities.bank.wealth import Investment
-from woob.browser import LoginBrowser, need_login, URL
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.capabilities.base import empty
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
 from woob.tools.capabilities.bank.investments import IsinType
 
 from .pages import (
-    LoginPage, HomePage, HistoryPage, AccountPage, ErrorPage,
-    InvestmentDetailPage, InvestmentPerformancePage, SituationPage, InvestmentAggregationPage,
-    PocketsPage, PocketDetailPage, ActionNeededPage, InvestPocketsPage, InvestPocketsDetailsPage,
+    AccountPage, ActionNeededPage, ErrorPage, HistoryPage, HomePage, InvestmentAggregationPage, InvestmentDetailPage,
+    InvestmentPerformancePage, InvestPocketsDetailsPage, InvestPocketsPage, LoginPage, PocketDetailPage, PocketsPage,
+    SituationPage,
 )
 
 

@@ -18,14 +18,14 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.exceptions import BrowserHTTPNotFound
-from woob.browser import PagesBrowser
-from woob.browser.url import URL
-from woob.browser.profiles import Firefox
-
-from .pages import ResultsPage, SongLyricsPage, HomePage, ArtistSongsPage
-
 import itertools
+
+from woob.browser import PagesBrowser
+from woob.browser.exceptions import BrowserHTTPNotFound
+from woob.browser.profiles import Firefox
+from woob.browser.url import URL
+
+from .pages import ArtistSongsPage, HomePage, ResultsPage, SongLyricsPage
 
 
 __all__ = ['ParolesnetBrowser']

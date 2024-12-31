@@ -19,14 +19,12 @@
 
 # flake8: compatible
 
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
-from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, DocumentNotFound,
-)
 from woob.capabilities.base import find_object
+from woob.capabilities.bill import CapDocument, DocumentNotFound, DocumentTypes
 from woob.capabilities.gauge import CapGauge
 from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import ValueBackendPassword
 
 from .browser import EnercoopBrowser
 

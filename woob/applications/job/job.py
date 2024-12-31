@@ -16,8 +16,9 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.capabilities.job import CapJob
-from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
+
 
 __all__ = ['AppJob']
 

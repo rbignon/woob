@@ -20,14 +20,12 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import tempfile
 from logging import DEBUG, basicConfig
 from os import linesep
 from sys import stderr
-import tempfile
 
-from woob.capabilities.picross import (
-    PicrossNotFound, PicrossSolution, PicrossSolutionKind, PicrossSolvedStatus,
-)
+from woob.capabilities.picross import PicrossNotFound, PicrossSolution, PicrossSolutionKind, PicrossSolvedStatus
 from woob.core.woob import Woob
 from woob.tools.log import settings as log_settings
 

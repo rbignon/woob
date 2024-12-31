@@ -28,6 +28,7 @@ from .pages.forum import ForumPage, PostingPage, TopicPage
 from .pages.index import LoginPage
 from .tools import id2url, url2id
 
+
 __all__ = ['PhpBB']
 
 

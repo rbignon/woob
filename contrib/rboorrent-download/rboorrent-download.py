@@ -90,8 +90,8 @@ def parsed_args():
 if __name__ == "__main__":
     args = parsed_args()
 
-    from woob.core import Woob
     from woob.browser.exceptions import HTTPNotFound
+    from woob.core import Woob
 
     r = RboorrentDownload(*args)
     try:

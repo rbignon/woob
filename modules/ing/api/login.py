@@ -19,9 +19,9 @@
 
 from io import BytesIO
 
-from woob.browser.pages import JsonPage, HTMLPage
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText
+from woob.browser.pages import HTMLPage, JsonPage
 from woob.exceptions import ActionNeeded
 
 from .transfer_page import TransferINGVirtKeyboard

@@ -24,26 +24,24 @@ import time
 from datetime import datetime
 from urllib.parse import quote, urlparse
 
-from requests.exceptions import HTTPError, TooManyRedirects, ConnectionError, ReadTimeout
+from requests.exceptions import ConnectionError, HTTPError, ReadTimeout, TooManyRedirects
 
-from woob.capabilities.bank import Account
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserPasswordExpired,
-    AuthMethodNotImplemented, BrowserUnavailable,
-    BrowserQuestion, ActionNeeded, AppValidation,
-    AppValidationExpired, BrowserUserBanned,
-)
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
-from woob.tools.value import Value
+from woob.capabilities.bank import Account
+from woob.exceptions import (
+    ActionNeeded, AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword,
+    BrowserPasswordExpired, BrowserQuestion, BrowserUnavailable, BrowserUserBanned,
+)
 from woob.tools.decorators import retry
+from woob.tools.value import Value
 
 from .pages import (
-    LoginPage, ClientPage, OperationsPage, ChoicePage,
-    ContextInitPage, SendUsernamePage, SendCompleteStepPage, ClientSpacePage,
-    OtherDashboardPage, OAuthPage, AccountsPage, JWTTokenPage, OtherOperationsPage,
-    SendRiskEvaluationPage, SendInitStepPage,
+    AccountsPage, ChoicePage, ClientPage, ClientSpacePage, ContextInitPage, JWTTokenPage, LoginPage, OAuthPage,
+    OperationsPage, OtherDashboardPage, OtherOperationsPage, SendCompleteStepPage, SendInitStepPage,
+    SendRiskEvaluationPage, SendUsernamePage,
 )
+
 
 __all__ = ['OneyBrowser']
 

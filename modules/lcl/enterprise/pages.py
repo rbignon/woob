@@ -20,13 +20,13 @@
 
 import re
 
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import Attr, Link, TableCell
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Env, Regexp
 from woob.browser.pages import HTMLPage, LoggedPage, pagination
-from woob.browser.elements import ListElement, ItemElement, TableElement, method
-from woob.browser.filters.standard import CleanText, Currency, Date, CleanDecimal, Env, Regexp
-from woob.browser.filters.html import Link, TableCell, Attr
 from woob.capabilities.bank import Account
-from woob.capabilities.profile import Profile
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.profile import Profile
 from woob.exceptions import BrowserPasswordExpired
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 

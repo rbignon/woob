@@ -21,7 +21,7 @@ from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bill.documents import sorted_documents
 
-from .pages import LandingPage, SubscriptionPage, YearsPage, DocumentsPage
+from .pages import DocumentsPage, LandingPage, SubscriptionPage, YearsPage
 
 
 class MyURL(URL):

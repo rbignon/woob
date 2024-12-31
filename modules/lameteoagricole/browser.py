@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
-from .pages import CitiesPage, HourPage, Days5Page, Days10Page
+from .pages import CitiesPage, Days5Page, Days10Page, HourPage
 
 
 class LameteoagricoleBrowser(PagesBrowser):

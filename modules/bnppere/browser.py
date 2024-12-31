@@ -17,16 +17,15 @@
 
 import requests
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Per
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
 from woob_modules.s2e.browser import BnppereBrowser as _BnppereBrowser
 
 from .pages import (
-    LoginPage, LoginStep2Page, LoginErrorPage, ProfilePage,
-    AccountPage, AccountSwitchPage,
-    InvestmentPage, TermPage, HistoryPage,
+    AccountPage, AccountSwitchPage, HistoryPage, InvestmentPage, LoginErrorPage, LoginPage, LoginStep2Page, ProfilePage,
+    TermPage,
 )
 
 

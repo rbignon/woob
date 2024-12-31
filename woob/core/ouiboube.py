@@ -21,7 +21,9 @@
 """
 
 import warnings
-from .woob import WoobBase, Woob, VersionsMismatchError  # noqa
+
+from .woob import VersionsMismatchError, Woob, WoobBase  # noqa
+
 
 __all__ = ["WoobBase", "Woob", "VersionsMismatchError", "Weboob", "WebNip"]
 

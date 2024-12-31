@@ -19,12 +19,12 @@
 
 import re
 
-from woob.capabilities.paste import BasePaste, PasteNotFound
+from woob.browser.browsers import PagesBrowser
+from woob.browser.elements import ItemElement, method
 from woob.browser.filters.standard import BrowserURL, CleanText, DateTime, Env, Field, RawText, Regexp
 from woob.browser.pages import HTMLPage
-from woob.browser.browsers import PagesBrowser
 from woob.browser.url import URL
-from woob.browser.elements import ItemElement, method
+from woob.capabilities.paste import BasePaste, PasteNotFound
 from woob.exceptions import BrowserHTTPNotFound
 
 

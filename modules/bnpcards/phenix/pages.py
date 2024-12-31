@@ -19,18 +19,13 @@
 
 from datetime import date
 
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Date, MapIn, Field,
-    Currency, Regexp, Format, Eval,
-)
-from woob.browser.filters.json import Dict
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, Link
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Eval, Field, Format, MapIn, Regexp
+from woob.browser.pages import CsvPage, HTMLPage, LoggedPage
 from woob.capabilities.bank import Account, Transaction
-from woob.browser.elements import (
-    DictElement, ListElement, ItemElement, method,
-)
 from woob.capabilities.base import NotAvailable
-from woob.browser.pages import HTMLPage, LoggedPage, CsvPage
 
 
 class LoginPage(HTMLPage):

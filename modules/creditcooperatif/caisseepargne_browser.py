@@ -18,6 +18,7 @@
 from woob_modules.caissedepargne.browser import CaisseEpargne
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
+
 __all__ = ['CaisseEpargneBrowser']
 
 

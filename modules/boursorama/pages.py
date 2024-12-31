@@ -33,14 +33,12 @@ from woob.browser.filters.standard import Base, CleanDecimal, CleanText, Coalesc
 from woob.browser.filters.standard import Currency as CleanCurrency
 from woob.browser.filters.standard import Date, Env, Eval, Field, Format, Lower, Map, MapIn, Regexp, Upper
 from woob.browser.pages import (
-    CsvPage, FormNotFound, HTMLPage, JsonPage, LoggedPage,
-    LoginPage, NextPage, PartialHTMLPage, RawPage, pagination,
+    CsvPage, FormNotFound, HTMLPage, JsonPage, LoggedPage, LoginPage, NextPage, PartialHTMLPage, RawPage, pagination,
 )
 from woob.capabilities.bank import Account as BaseAccount
 from woob.capabilities.bank import (
-    AccountNotFound, AccountOwnership, AddRecipientBankError, Emitter, Loan,
-    Recipient, Transfer, TransferBankError, TransferDateType, TransferInvalidAmount,
-    AccountOwnerType,
+    AccountNotFound, AccountOwnership, AccountOwnerType, AddRecipientBankError, Emitter, Loan, Recipient, Transfer,
+    TransferBankError, TransferDateType, TransferInvalidAmount,
 )
 from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
@@ -54,6 +52,7 @@ from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.date import parse_french_date
 from woob.tools.json import json
+
 
 # Country codes for creating beneficiaries, per alpha-2 code at start of IBAN.
 # Actually probably just are Alpha-3 codes, but could be exceptions.

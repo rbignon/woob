@@ -17,14 +17,15 @@
 
 # flake8: compatible
 
-from woob.tools.backend import BackendConfig
-from woob.tools.value import ValueBackendPassword, Value, ValueTransient
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.bill import CapDocument
 from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 from woob_modules.s2e.module import S2eModule
 
 from .browser import CapeasiBrowser
+
 
 __all__ = ['CapeasiModule']
 

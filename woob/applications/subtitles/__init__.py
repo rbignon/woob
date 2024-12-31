@@ -17,4 +17,5 @@
 
 from .subtitles import AppSubtitles
 
+
 __all__ = ['AppSubtitles']

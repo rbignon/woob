@@ -19,20 +19,14 @@
 
 import re
 
-from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
-from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Date, Eval, Lower, Format, Field, Map, Upper,
-    MapIn,
-)
-from woob.capabilities.bank import (
-    Account, AccountOwnership, Investment,
-    AccountOwnerType,
-)
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Eval, Field, Format, Lower, Map, MapIn, Upper
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.capabilities.bank import Account, AccountOwnership, AccountOwnerType, Investment
+from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.capabilities.base import NotAvailable
 
 
 class Transaction(FrenchTransaction):

@@ -18,15 +18,11 @@
 # flake8: compatible
 
 
-from woob.browser.elements import ItemElement, method, TableElement
+from woob.browser.elements import ItemElement, TableElement, method
 from woob.browser.filters.html import Link, TableCell
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanText, Date, Env, Field, Format, Regexp,
-)
-from woob.browser.pages import (
-    HTMLPage, JsonPage, LoggedPage, Form,
-)
+from woob.browser.filters.standard import CleanText, Date, Env, Field, Format, Regexp
+from woob.browser.pages import Form, HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 

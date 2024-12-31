@@ -19,4 +19,5 @@
 
 from .module import PastebinModule
 
+
 __all__ = ['PastebinModule']

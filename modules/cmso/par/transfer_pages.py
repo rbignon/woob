@@ -19,17 +19,14 @@
 
 # flake8: compatible
 
-from hashlib import md5
 import datetime as dt
+from hashlib import md5
 
-from woob.browser.pages import JsonPage, LoggedPage
 from woob.browser.elements import DictElement, ItemElement, method
-from woob.browser.filters.standard import (
-    CleanText, Currency, CleanDecimal, Env,
-    Format, Upper,
-)
 from woob.browser.filters.json import Dict
-from woob.capabilities.bank import Recipient, Transfer, TransferBankError, Emitter
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Env, Format, Upper
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.capabilities.bank import Emitter, Recipient, Transfer, TransferBankError
 from woob.capabilities.base import NotAvailable
 
 

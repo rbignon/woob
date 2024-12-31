@@ -17,44 +17,38 @@
 
 # flake8: compatible
 
-from collections import Counter
 import re
-from io import BytesIO
-from decimal import Decimal
+from collections import Counter
 from datetime import datetime, timedelta
+from decimal import Decimal
+from io import BytesIO
 from urllib.parse import unquote_plus
 
-from woob.browser.elements import DictElement, ListElement, TableElement, ItemElement, method
+from woob.browser.elements import DictElement, ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import TableCell
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    Format, Eval, Regexp, CleanText, Date, CleanDecimal,
-    Field, Coalesce, Map, MapIn, Env, Currency, FromTimestamp, Lower,
+    CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval, Field, Format, FromTimestamp, Lower, Map, MapIn,
+    Regexp,
 )
-from woob.browser.filters.html import TableCell
-from woob.browser.pages import JsonPage, LoggedPage, HTMLPage, PartialHTMLPage, RawPage
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import (
-    Account, Recipient, Transfer, TransferBankError,
-    AddRecipientBankError, AccountOwnership,
-    Emitter, EmitterNumberType, TransferStatus,
-    TransferDateType, TransferInvalidAmount,
-    AccountOwnerType,
+    Account, AccountOwnership, AccountOwnerType, AddRecipientBankError, Emitter, EmitterNumberType, Recipient, Transfer,
+    TransferBankError, TransferDateType, TransferInvalidAmount, TransferStatus,
 )
-from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderDirection,
-)
+from woob.capabilities.bank.wealth import Investment, MarketOrder, MarketOrderDirection
 from woob.capabilities.base import empty
 from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Person, ProfileMissing
 from woob.exceptions import (
-    BrowserUnavailable, AppValidationCancelled, AppValidationExpired,
-    AuthMethodNotImplemented, BrowserPasswordExpired,
+    AppValidationCancelled, AppValidationExpired, AuthMethodNotImplemented, BrowserPasswordExpired, BrowserUnavailable,
 )
-from woob.tools.capabilities.bank.iban import rib2iban, rebuild_rib, is_iban_valid
+from woob.tools.capabilities.bank.iban import is_iban_valid, rebuild_rib, rib2iban
+from woob.tools.capabilities.bank.investments import IsinCode, is_isin_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, parse_with_patterns
 from woob.tools.captcha.virtkeyboard import GridVirtKeyboard
 from woob.tools.date import parse_french_date
-from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 from woob.tools.html import html2text
 
 

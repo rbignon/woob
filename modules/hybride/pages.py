@@ -17,15 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from .calendar import HybrideCalendarEvent
-
 import woob.tools.date as date_util
-
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import Filter, CleanText, Env, Format, BrowserURL, Regexp, Decode
-from woob.browser.filters.html import CleanHTML
-from woob.browser.filters.html import Link
+from woob.browser.filters.html import CleanHTML, Link
+from woob.browser.filters.standard import BrowserURL, CleanText, Decode, Env, Filter, Format, Regexp
+from woob.browser.pages import HTMLPage
+
+from .calendar import HybrideCalendarEvent
 
 
 class Date(Filter):

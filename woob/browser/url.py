@@ -17,16 +17,17 @@
 
 from __future__ import annotations
 
-from functools import wraps
 import re
-from typing import Callable, Dict, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
+from functools import wraps
+from typing import TYPE_CHECKING, Callable, Dict, Optional, Tuple, Type, TypeVar
 from urllib.parse import unquote
 
 import requests
 
-from woob.browser.pages import Page
 from woob.browser.filters.base import _Filter
+from woob.browser.pages import Page
 from woob.tools.regex_helper import normalize
+
 
 if TYPE_CHECKING:
     from woob.browser.browsers import Browser

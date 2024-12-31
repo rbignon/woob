@@ -17,13 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import JsonPage
-from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict, ItemNotFound
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Field, Format
+from woob.browser.pages import JsonPage
 from woob.capabilities.base import NotAvailable, NotLoaded
-from woob.browser.filters.standard import CleanText, Date, CleanDecimal, Field, Format
-from woob.capabilities.housing import City, Housing, HousingPhoto, ENERGY_CLASS, POSTS_TYPES, \
-    ADVERT_TYPES, UTILITIES
+from woob.capabilities.housing import ADVERT_TYPES, ENERGY_CLASS, POSTS_TYPES, UTILITIES, City, Housing, HousingPhoto
 
 from .constants import HOUSE_TYPES_LABELS
 

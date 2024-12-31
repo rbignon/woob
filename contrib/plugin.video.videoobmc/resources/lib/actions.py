@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-import sys
-from . import constants
 
-from .base.actions import BaseAction
-from .menu import MenuItem, MenuItemVideo, MenuItemPath
+import sys
 from threading import Thread
+
+from . import constants
+from .base.actions import BaseAction
+from .menu import MenuItem, MenuItemPath, MenuItemVideo
 from .videoobmc import Videoobmc
+
 
 if hasattr(sys.modules["__main__"], "common_xbmc"):
     common_xbmc = sys.modules["__main__"].common_xbmc

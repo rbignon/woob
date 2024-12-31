@@ -18,4 +18,5 @@
 
 from .msg import AppMsg
 
+
 __all__ = ['AppMsg']

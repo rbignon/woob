@@ -17,25 +17,25 @@
 
 from __future__ import annotations
 
-from typing import Callable, Any, Type
 import importlib
 import os
 import re
 import sys
-from collections import OrderedDict
-from copy import deepcopy
 import traceback
 import warnings
+from collections import OrderedDict
+from copy import deepcopy
+from typing import Any, Callable, Type
 
 import lxml.html
 
-from woob.tools.log import getLogger, DEBUG_FILTERS
 from woob.browser.pages import NextPage
 from woob.capabilities.base import FetchError
+from woob.tools.log import DEBUG_FILTERS, getLogger
 
-from .filters.standard import _Filter, CleanText
 from .filters.html import AttributeNotFound, XPathNotFound
 from .filters.json import Dict
+from .filters.standard import CleanText, _Filter
 
 
 __all__ = [
@@ -608,9 +608,10 @@ class DictElement(ListElement):
 def magic_highlight(els, open_browser=True):
     """Open a web browser with the document open and the element highlighted"""
 
-    import lxml.html
-    import webbrowser
     import tempfile
+    import webbrowser
+
+    import lxml.html
 
     if not els:
         raise Exception('no elements to highlight')

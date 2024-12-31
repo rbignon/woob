@@ -23,8 +23,7 @@ from woob.tools.capabilities.bill.documents import sorted_documents
 from woob_modules.franceconnect.browser import FranceConnectBrowser
 
 from .pages import (
-    ProfilePage, DocumentsPage, ThirdPartyDocPage, NoDocumentPage,
-    ErrorDocumentPage, HomePage, FCAuthorizePage,
+    DocumentsPage, ErrorDocumentPage, FCAuthorizePage, HomePage, NoDocumentPage, ProfilePage, ThirdPartyDocPage,
 )
 
 

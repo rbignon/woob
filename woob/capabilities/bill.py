@@ -21,11 +21,11 @@ from woob.exceptions import BrowserIncorrectPassword
 
 from .account import CapCredentialsCheck
 from .base import (
-    BaseObject, BoolField, Currency, DecimalField, DeprecatedFieldWarning,
-    Enum, Field, StringField, UserError, empty, find_object,
+    BaseObject, BoolField, Currency, DecimalField, DeprecatedFieldWarning, Enum, Field, StringField, UserError, empty,
+    find_object,
 )
-from .date import DateField
 from .collection import CapCollection
+from .date import DateField
 
 
 __all__ = ['SubscriptionNotFound', 'DocumentNotFound', 'DocumentTypes', 'Detail', 'Document', 'Bill', 'Subscription', 'CapDocument']

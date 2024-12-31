@@ -21,12 +21,10 @@
 
 from datetime import datetime
 
-from woob.browser.pages import LoggedPage, JsonPage, pagination
-from woob.browser.elements import ItemElement, method, DictElement
-from woob.browser.filters.standard import (
-    CleanDecimal, Env, Format, Currency, Eval,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, Currency, Env, Eval, Format
+from woob.browser.pages import JsonPage, LoggedPage, pagination
 from woob.capabilities.bill import Bill, Subscription
 
 

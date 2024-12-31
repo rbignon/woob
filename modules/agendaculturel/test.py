@@ -18,9 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from datetime import datetime
+
 from woob.tools.test import BackendTest
 from woob.tools.value import Value
-from datetime import datetime
 
 
 class AgendaculturelTest(BackendTest):

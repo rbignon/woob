@@ -21,6 +21,7 @@ from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanDecimal, Type
 from woob.browser.pages import JsonPage
 
+
 __all__ = ['BalancePage', 'CaptchaPage']
 
 

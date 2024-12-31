@@ -19,9 +19,9 @@
 
 from datetime import datetime, timedelta
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
-from .pages import ResultsPage, EventPage, EventDatesPage, SearchPage
+from .pages import EventDatesPage, EventPage, ResultsPage, SearchPage
 
 
 class BilletreducBrowser(PagesBrowser):

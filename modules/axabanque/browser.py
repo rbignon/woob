@@ -17,42 +17,43 @@
 
 # flake8: compatible
 
-import re
-import random
-from datetime import date
-from base64 import b64encode
-from hashlib import sha256
 import os
+import random
+import re
+from base64 import b64encode
+from datetime import date
+from hashlib import sha256
 from urllib.parse import urljoin, urlparse
 
 from dateutil.relativedelta import relativedelta
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.browsers import OAuth2PKCEMixin
 from woob.browser.exceptions import BrowserUnavailable, ClientError, ServerError
 from woob.browser.filters.standard import QueryValue
 from woob.browser.switch import SiteSwitch
 from woob.capabilities.bank import Account
 from woob.exceptions import (
-    BrowserPasswordExpired, BrowserIncorrectPassword, ActionNeeded, ActionType, BrowserUserBanned,
+    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUserBanned,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 from woob_modules.allianzbanque.browser import AllianzbanqueBrowser
 
 from .pages.bank import AccountsPage
+from .pages.document import DocumentsPage, SubscriptionsPage
 from .pages.login import (
-    LoginPage, ChangepasswordPage, PredisconnectedPage, DeniedPage,
-    AccountSpaceLogin, ErrorPage, AuthorizePage, InfiniteLoopPage, LoginEndPage,
+    AccountSpaceLogin, AuthorizePage, ChangepasswordPage, DeniedPage, ErrorPage, InfiniteLoopPage, LoginEndPage,
+    LoginPage, PredisconnectedPage,
 )
+from .pages.wealth import AccessBoursePage, AccountDetailsPage
+from .pages.wealth import AccountsPage as WealthAccountsPage
 from .pages.wealth import (
-    AccountsPage as WealthAccountsPage, AccountDetailsPage, InvestmentPage,
-    InvestmentMonAxaPage, HistoryPage, HistoryInvestmentsPage, ProfilePage,
-    PerformanceMonAxaPage, InvestmentJsonPage, AccessBoursePage, FormHistoryPage,
-    BourseAccountsPage, WealthHistoryPage, NewInvestmentPage, InsuranceAccountsBouncerPage,
-    HomePage, ClearSessionPage, InvestmentErrorPage, OutremerProfilePage,
+    BourseAccountsPage, ClearSessionPage, FormHistoryPage, HistoryInvestmentsPage, HistoryPage, HomePage,
+    InsuranceAccountsBouncerPage, InvestmentErrorPage, InvestmentJsonPage, InvestmentMonAxaPage, InvestmentPage,
+    NewInvestmentPage, OutremerProfilePage, PerformanceMonAxaPage, ProfilePage, WealthHistoryPage,
 )
-from .pages.document import SubscriptionsPage, DocumentsPage
+
 
 WEALTH_ACCOUNTS = (
     Account.TYPE_LIFE_INSURANCE, Account.TYPE_MADELIN, Account.TYPE_PER, Account.TYPE_PERP,

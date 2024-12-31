@@ -19,4 +19,5 @@
 
 from .module import SevenFiftyGramsModule
 
+
 __all__ = ['SevenFiftyGramsModule']

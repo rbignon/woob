@@ -17,14 +17,13 @@
 
 # flake8: compatible
 
-from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.bank.transfer import (
-    CapBankTransferAddRecipient, TransferDateType,
-)
+from woob.capabilities.bank.transfer import CapBankTransferAddRecipient, TransferDateType
 from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import OrangeBankBrowser
+
 
 __all__ = ['OrangeBankModule']
 

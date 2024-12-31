@@ -17,11 +17,11 @@
 
 import re
 
-from woob.browser.pages import LoggedPage, HTMLPage
-from woob.capabilities.bill import Document, DocumentTypes, Subscription
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import Env, CleanText, Date, Regexp, Format
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Link
+from woob.browser.filters.standard import CleanText, Date, Env, Format, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 
 class SubscriptionsTransitionPage(LoggedPage, HTMLPage):

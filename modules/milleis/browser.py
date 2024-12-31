@@ -17,28 +17,27 @@
 
 # flake8: compatible
 
-from hashlib import sha256
+import string
 from base64 import b16encode
 from datetime import datetime
+from hashlib import sha256
 from random import choice
 from re import match
-import string
 from urllib.parse import quote_plus
 
 from dateutil.relativedelta import relativedelta
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ClientError, ServerError
-from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned, ActionNeeded, ActionType
 from woob.capabilities.bank import Account
+from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserUserBanned
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .document_pages import DocumentsPage, PdfPage
 from .pages import (
-    AccountsHistoryPage, AuthPage, CardsHistoryPage, CardsPage, CheckingAccountsPage,
-    GetMarketURLPage, TokenPage, LifeInsuranceAccountsPage, LifeInsuranceHistoryPage,
-    LoanAccountsPage, MarketAccountsPage, MarketHistoryPage, MarketInvestPage,
-    SavingAccountsPage, GetProfilePage, UserStatesPage, LoanAccountsDetailsPage,
+    AccountsHistoryPage, AuthPage, CardsHistoryPage, CardsPage, CheckingAccountsPage, GetMarketURLPage, GetProfilePage,
+    LifeInsuranceAccountsPage, LifeInsuranceHistoryPage, LoanAccountsDetailsPage, LoanAccountsPage, MarketAccountsPage,
+    MarketHistoryPage, MarketInvestPage, SavingAccountsPage, TokenPage, UserStatesPage,
 )
 
 

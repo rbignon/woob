@@ -27,6 +27,7 @@ import subprocess
 import sys
 import tempfile
 
+
 SECRET_KEYWORDS = ('password', 'secret')
 
 FILE = os.getenv('WOOB_BACKENDS') or os.path.expanduser('~/.config/woob/backends')

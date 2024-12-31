@@ -19,24 +19,22 @@
 
 # flake8: compatible
 
-from copy import deepcopy
-import re
 import json
+import re
+from copy import deepcopy
 from datetime import datetime
 
-from woob.browser.pages import LoggedPage, HTMLPage, JsonPage
 from woob.browser.elements import DictElement, ItemElement, method
-from woob.browser.filters.standard import (
-    Date, CleanDecimal, CleanText, Format, Field, Env, Regexp, Currency,
-)
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Env, Field, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities import NotAvailable
-from woob.capabilities.bank import Account, Loan, AccountOwnerType
+from woob.capabilities.bank import Account, AccountOwnerType, Loan
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Profile
-from woob.capabilities.bill import DocumentTypes, Subscription, Document
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.exceptions import BrowserUnavailable
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
 class Transaction(FrenchTransaction):

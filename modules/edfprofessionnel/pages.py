@@ -23,10 +23,7 @@ import re
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Date,
-    Env, Field, Format, Lower, Regexp,
-)
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Date, Env, Field, Format, Lower, Regexp
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.base import NotAvailable

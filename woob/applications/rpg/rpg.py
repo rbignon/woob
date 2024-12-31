@@ -16,7 +16,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.rpg import CapRPG, Character, Skill, CharacterClass, CollectableItem
+from woob.capabilities.rpg import CapRPG, Character, CharacterClass, CollectableItem, Skill
 from woob.tools.application.repl import ReplApplication, defaultcount
 
 

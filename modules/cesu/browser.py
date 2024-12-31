@@ -22,28 +22,15 @@ from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ClientError
 from woob.capabilities.bill import Subscription
 from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
-    LoginPage,
-    HomePage,
-    StatusPage,
-    EmployerPage,
-    EmployeesPage,
-    RegistrationPage,
-    RegistrationDashboardPage,
-    DirectDebitSummaryPage,
-    EmployeesDashboardPage,
-    CurrentFiscalAdvantagePage,
-    LastDayMonthPage,
-    DirectDebitsHeaderPage,
-    DirectDebitsDetailPage,
-    PayslipDownloadPage,
-    DirectDebitDownloadPage,
-    TaxCertificateDownloadPage,
+    CurrentFiscalAdvantagePage, DirectDebitDownloadPage, DirectDebitsDetailPage, DirectDebitsHeaderPage,
+    DirectDebitSummaryPage, EmployeesDashboardPage, EmployeesPage, EmployerPage, HomePage, LastDayMonthPage, LoginPage,
+    PayslipDownloadPage, RegistrationDashboardPage, RegistrationPage, StatusPage, TaxCertificateDownloadPage,
     TaxCertificatesPage,
 )
 

@@ -19,14 +19,17 @@
 
 
 import datetime
+
 from dateutil.relativedelta import relativedelta
 
-from woob.exceptions import BrowserHTTPError, BrowserIncorrectPassword, BrowserUnavailable
 from woob.browser.browsers import LoginBrowser, need_login
 from woob.browser.url import URL
+from woob.exceptions import BrowserHTTPError, BrowserIncorrectPassword, BrowserUnavailable
 
-from .pages import PromoPage, LoginPage, AccountPage, UselessPage, HomePage, ProHistoryPage, \
-                   PartHistoryPage, HistoryDetailsPage, ErrorPage, OldWebsitePage, LandingPage, InfoPage
+from .pages import (
+    AccountPage, ErrorPage, HistoryDetailsPage, HomePage, InfoPage, LandingPage, LoginPage, OldWebsitePage,
+    PartHistoryPage, ProHistoryPage, PromoPage, UselessPage,
+)
 
 
 __all__ = ['Paypal']

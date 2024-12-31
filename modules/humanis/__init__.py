@@ -19,4 +19,5 @@
 
 from .module import HumanisModule
 
+
 __all__ = ['HumanisModule']

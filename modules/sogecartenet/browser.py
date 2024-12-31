@@ -20,14 +20,11 @@
 from datetime import date
 
 from woob.browser import URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
-from woob.browser.selenium import (
-    SeleniumBrowser, webdriver, AnyCondition, IsHereCondition,
-    VisibleXPath,
-)
+from woob.browser.selenium import AnyCondition, IsHereCondition, SeleniumBrowser, VisibleXPath, webdriver
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
 
 from .ent_pages import AccueilPage
-from .pages import LoginPage, PreLoginPage, AccountsPage, HistoryPage
+from .pages import AccountsPage, HistoryPage, LoginPage, PreLoginPage
 
 
 class SogecarteTitulaireBrowser(SeleniumBrowser):

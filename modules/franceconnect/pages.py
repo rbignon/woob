@@ -20,9 +20,7 @@
 import re
 
 from woob.browser.filters.javascript import JSValue
-from woob.browser.filters.standard import (
-    CleanText,
-)
+from woob.browser.filters.standard import CleanText
 from woob.browser.pages import HTMLPage
 
 

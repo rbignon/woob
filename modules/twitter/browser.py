@@ -17,11 +17,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.messages import Message
-from .pages import LoginPage, LoginErrorPage, ThreadPage, Tweet, TrendsPage,\
-    TimelinePage, HomeTimelinePage, SearchTimelinePage, SearchPage
+from woob.exceptions import BrowserIncorrectPassword
+
+from .pages import (
+    HomeTimelinePage, LoginErrorPage, LoginPage, SearchPage, SearchTimelinePage, ThreadPage, TimelinePage, TrendsPage,
+    Tweet,
+)
 
 
 __all__ = ['TwitterBrowser']

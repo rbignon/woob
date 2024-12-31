@@ -54,11 +54,10 @@ pre-commit strict:
     # commitizen: waiting confirmation from project this is the expected standard
     # end-of-file-fixer: waiting for project to apply consistently
     # flake8: handled by custom scripts for now
-    # isort: waiting for project to apply consistently
     # mypy: run in another stage
     # pyupgrade: waiting for a commit applying the changes
     # trailing-whitespace: waiting for project to apply consistently
-    SKIP: black,commitizen,end-of-file-fixer,flake8,isort,mypy,pyupgrade,trailing-whitespace
+    SKIP: black,commitizen,end-of-file-fixer,flake8,mypy,pyupgrade,trailing-whitespace
   script:
     - python -m pre_commit run --all-files --verbose --hook-stage manual
 

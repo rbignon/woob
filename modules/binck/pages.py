@@ -19,22 +19,17 @@
 
 import re
 
-from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
-from woob.browser.elements import ItemElement, ListElement, DictElement, TableElement, method
-from woob.browser.filters.standard import (
-    CleanText, Date, Format, CleanDecimal,
-    Eval, Env, Field, Map,
-)
+from woob.browser.elements import DictElement, ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.json import Dict
-from woob.exceptions import BrowserPasswordExpired, ActionNeeded
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Env, Eval, Field, Format, Map
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.bank import Account
-from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderType, MarketOrderDirection,
-)
+from woob.capabilities.bank.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from woob.capabilities.base import NotAvailable, empty
+from woob.exceptions import ActionNeeded, BrowserPasswordExpired
+from woob.tools.capabilities.bank.investments import IsinCode, is_isin_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 
 
 def MyDecimal(*args, **kwargs):

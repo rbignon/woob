@@ -17,12 +17,11 @@
 
 
 import dbm.ndbm
+
 import yaml
 
 from .iconfig import ConfigError, IConfig
 from .yamlconfig import WoobDumper
-
-
 
 
 __all__ = ['DBMConfig']

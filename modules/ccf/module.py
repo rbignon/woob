@@ -17,19 +17,12 @@
 
 from typing import Iterable, List
 
-from woob.capabilities.base import BaseObject, find_object
 from woob.capabilities.bank import Account
-
-from woob.capabilities.bill import (
-    CapDocument,
-    Subscription,
-    Document,
-    DocumentNotFound,
-)
-from woob_modules.cmso.module import CmsoModule
+from woob.capabilities.base import BaseObject, find_object
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, Subscription
 from woob.tools.backend import BackendConfig
-
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
+from woob_modules.cmso.module import CmsoModule
 
 from .browser import CCFParBrowser, CCFProBrowser
 

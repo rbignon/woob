@@ -16,10 +16,12 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from collections import OrderedDict
 import warnings
+from collections import OrderedDict
 
 from urllib3.util.request import ACCEPT_ENCODING
+
+
 ENCODINGS = [e.strip() for e in ACCEPT_ENCODING.split(',')]
 
 from woob import __version__

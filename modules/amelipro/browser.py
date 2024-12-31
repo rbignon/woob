@@ -17,21 +17,20 @@
 
 # flake8: compatible
 
+import string
 from datetime import date
 from random import choices
-import string
 
 from dateutil.relativedelta import relativedelta
 
-from woob.browser import LoginBrowser, need_login, URL
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.captcha import ImageCaptchaQuestion
 from woob.exceptions import BrowserIncorrectPassword, WrongCaptchaResponse
 from woob.tools.capabilities.bill.documents import merge_iterators
 
-from .pages import (
-    AuthorizationPage, DocumentsDetailsPage, DocumentsSummaryPage,
-    LotPDF, SubscriptionPage, RelevePDF,
-)
+from .pages import AuthorizationPage, DocumentsDetailsPage, DocumentsSummaryPage, LotPDF, RelevePDF, SubscriptionPage
+
+
 __all__ = ['AmeliProBrowser']
 
 

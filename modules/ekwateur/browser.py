@@ -19,8 +19,7 @@
 
 import itertools
 
-
-from woob.browser import LoginBrowser, need_login, URL
+from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import BillsPage, DocumentsPage, LoginPage, ProfilePage

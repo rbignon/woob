@@ -42,6 +42,7 @@ from woob.tools.application.base import ApplicationStorage
 from woob.tools.misc import get_backtrace, to_unicode
 from woob.tools.storage import StandardStorage
 
+
 IRC_CHANNELS = os.getenv('BOOBOT_CHANNELS', '#woob').split(',')
 IRC_NICKNAME = os.getenv('BOOBOT_NICKNAME', 'boobot')
 IRC_SERVER = os.getenv('BOOBOT_SERVER', 'dickson.freenode.net')

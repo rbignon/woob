@@ -19,13 +19,13 @@
 
 from datetime import datetime
 
-from woob.capabilities.messages import Message
-from woob.capabilities.collection import Collection
-from woob.browser.pages import JsonPage, LoggedPage
-from woob.browser.elements import ItemElement, DictElement, method
-from woob.browser.filters.standard import CleanText, Format
-from woob.browser.filters.json import Dict
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import CleanHTML
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Format
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.capabilities.collection import Collection
+from woob.capabilities.messages import Message
 
 
 class ContentsPage(LoggedPage, JsonPage):

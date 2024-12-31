@@ -19,11 +19,9 @@
 
 # flake8: compatible
 
-from woob.browser import LoginBrowser, need_login, URL
+from woob.browser import URL, LoginBrowser, need_login
 
-from .pages import (
-    LoginPage, AfterLoginPage, AccountsPage, TaxDocsPage,
-)
+from .pages import AccountsPage, AfterLoginPage, LoginPage, TaxDocsPage
 
 
 class PrimonialreimBrowser(LoginBrowser):

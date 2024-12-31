@@ -16,11 +16,13 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from datetime import datetime, date
+from datetime import date, datetime
 
-from .base import Capability, BaseObject, Field, FloatField, \
-                  StringField, IntField, UserError, NotLoaded, EnumField, Enum
+from .base import (
+    BaseObject, Capability, Enum, EnumField, Field, FloatField, IntField, NotLoaded, StringField, UserError,
+)
 from .date import DateField
+
 
 __all__ = [
     'Forecast', 'Current', 'City', 'CityNotFound', 'Temperature', 'CapWeather',

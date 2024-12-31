@@ -24,18 +24,18 @@ import re
 
 from dateutil.relativedelta import relativedelta
 
-from woob.tools.capabilities.bank.transactions import sorted_transactions
-from woob.capabilities.base import find_object
-from woob.capabilities.bank import Account
-from woob.exceptions import BrowserIncorrectPassword
 from woob.browser import URL, need_login
 from woob.browser.exceptions import ServerError
+from woob.capabilities.bank import Account
+from woob.capabilities.base import find_object
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.date import LinearDateGuesser
 
 from ..par.browser import CmsoLoginBrowser
 from .pages import (
-    AccountsPage, HistoryPage, SubscriptionPage, InvestmentPage,
-    InvestmentAccountPage, SSODomiPage, AuthCheckUser, ErrorPage, LoansPage, ProfilePage, EmptyPage,
+    AccountsPage, AuthCheckUser, EmptyPage, ErrorPage, HistoryPage, InvestmentAccountPage, InvestmentPage, LoansPage,
+    ProfilePage, SSODomiPage, SubscriptionPage,
 )
 
 

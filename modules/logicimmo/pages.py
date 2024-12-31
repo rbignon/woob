@@ -19,17 +19,15 @@
 
 from urllib.parse import urljoin
 
-from woob.browser.pages import HTMLPage, JsonPage
-from woob.browser.elements import ItemElement, ListElement, DictElement, method
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.html import Attr, AttributeNotFound, CleanHTML, XPath
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (Currency, Format, CleanText,
-                                             Regexp, CleanDecimal, Date, Env,
-                                             BrowserURL)
-from woob.browser.filters.html import Attr, XPath, CleanHTML, AttributeNotFound
-from woob.capabilities.housing import (Housing, HousingPhoto, City,
-                                         UTILITIES, ENERGY_CLASS, POSTS_TYPES,
-                                         ADVERT_TYPES, HOUSE_TYPES)
+from woob.browser.filters.standard import BrowserURL, CleanDecimal, CleanText, Currency, Date, Env, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage
 from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.capabilities.housing import (
+    ADVERT_TYPES, ENERGY_CLASS, HOUSE_TYPES, POSTS_TYPES, UTILITIES, City, Housing, HousingPhoto,
+)
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 
 

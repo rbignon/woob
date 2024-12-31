@@ -16,22 +16,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    BrowserURL,
-    CleanDecimal,
-    CleanText,
-    Coalesce,
-    Date,
-    Env,
-    Eval,
-    Field,
-    Format,
-    Map,
-    Regexp,
+    BrowserURL, CleanDecimal, CleanText, Coalesce, Date, Env, Eval, Field, Format, Map, Regexp,
 )
-
 from woob.browser.pages import JsonPage, LoggedPage
 from woob.capabilities.bill import Document, DocumentTypes, Subscription
 from woob.tools.capabilities.bank.transactions import FrenchTransaction

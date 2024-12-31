@@ -17,13 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Dict, Callable, Tuple, Any, ClassVar
 from datetime import timedelta
+from typing import Any, Callable, ClassVar, Dict, Tuple
+
 from dateutil import parser, tz
 
-from woob.exceptions import (
-    NeedInteractiveFor2FA, BrowserInteraction,
-)
+from woob.exceptions import BrowserInteraction, NeedInteractiveFor2FA
 from woob.tools.date import now_as_utc
 from woob.tools.value import Value
 

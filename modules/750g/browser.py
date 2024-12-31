@@ -20,9 +20,9 @@
 import re
 from urllib.parse import quote_plus
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
-from .pages import RecipePage, ResultsPage, CommentPage
+from .pages import CommentPage, RecipePage, ResultsPage
 
 
 __all__ = ['SevenFiftyGramsBrowser']

@@ -22,23 +22,20 @@ from datetime import date
 from decimal import Decimal
 from json import loads
 
-from woob.tools.date import parse_french_date
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, AuthMethodNotImplemented,
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Coalesce, Currency, Env, Eval, Field, Format, FromTimestamp, QueryValue, Type,
 )
-from woob.browser.pages import JsonPage, LoggedPage, HTMLPage, pagination
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account, Loan
 from woob.capabilities.bank.wealth import Investment
-from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.capabilities.profile import Person
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Coalesce, Currency, Env, Eval,
-    Field, Format, FromTimestamp, QueryValue, Type,
-)
-from woob.browser.filters.json import Dict
-from woob.browser.elements import DictElement, ItemElement, method
+from woob.exceptions import AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable
+from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.date import parse_french_date
 
 
 class Transaction(FrenchTransaction):

@@ -19,4 +19,5 @@
 
 from .module import SprungeModule
 
+
 __all__ = ['SprungeModule']

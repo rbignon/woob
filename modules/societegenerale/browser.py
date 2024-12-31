@@ -26,38 +26,33 @@ from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import URL, need_login
-from woob.browser.mfa import TwoFactorBrowser
-from woob.capabilities.bill import Document, DocumentTypes
-from woob.exceptions import (
-    BrowserIncorrectPassword, ActionNeeded, ActionType, BrowserUnavailable,
-    AppValidation, AppValidationError, AppValidationCancelled,
-    AppValidationExpired, BrowserPasswordExpired, BrowserUserBanned,
-    OTPSentType, SentOTPQuestion,
-)
-from woob.capabilities.bank import (
-    Account, TransferBankError, AddRecipientStep,
-    TransactionType, AccountOwnerType, Loan,
-)
-from woob.capabilities.base import NotAvailable
 from woob.browser.exceptions import BrowserHTTPNotFound, ClientError
+from woob.browser.mfa import TwoFactorBrowser
+from woob.capabilities.bank import Account, AccountOwnerType, AddRecipientStep, Loan, TransactionType, TransferBankError
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Document, DocumentTypes
 from woob.capabilities.profile import ProfileMissing
-from woob.tools.value import Value, ValueBool
+from woob.exceptions import (
+    ActionNeeded, ActionType, AppValidation, AppValidationCancelled, AppValidationError, AppValidationExpired,
+    BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable, BrowserUserBanned, OTPSentType,
+    SentOTPQuestion,
+)
 from woob.tools.decorators import retry
+from woob.tools.value import Value, ValueBool
 
 from .pages.accounts_list import (
-    AccountsMainPage, AccountDetailsPage, AccountsPage, LoansPage, HistoryPage,
-    CardHistoryPage, PeaLiquidityPage, MarketOrderPage, MarketOrderDetailPage,
-    AdvisorPage, HTMLProfilePage, CreditPage, CreditHistoryPage, OldHistoryPage,
-    MarketPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvest, LifeInsuranceInvest2,
-    LifeInsuranceAPI, LifeInsuranceInvestAPI, LifeInsuranceInvestAPI2, LifeInsuranceInvestDetailsAPI,
-    UnavailableServicePage, TemporaryBrowserUnavailable, RevolvingDetailsPage,
+    AccountDetailsPage, AccountsMainPage, AccountsPage, AdvisorPage, CardHistoryPage, CreditHistoryPage, CreditPage,
+    HistoryPage, HTMLProfilePage, LifeInsurance, LifeInsuranceAPI, LifeInsuranceHistory, LifeInsuranceInvest,
+    LifeInsuranceInvest2, LifeInsuranceInvestAPI, LifeInsuranceInvestAPI2, LifeInsuranceInvestDetailsAPI, LoansPage,
+    MarketOrderDetailPage, MarketOrderPage, MarketPage, OldHistoryPage, PeaLiquidityPage, RevolvingDetailsPage,
+    TemporaryBrowserUnavailable, UnavailableServicePage,
 )
-from .pages.transfer import AddRecipientPage, SignRecipientPage, TransferJson, SignTransferPage
 from .pages.login import (
-    MainPage, LoginPage, BadLoginPage, ReinitPasswordPage,
-    ActionNeededPage, ErrorPage, VkImage, SkippableActionNeededPage,
+    ActionNeededPage, BadLoginPage, ErrorPage, LoginPage, MainPage, ReinitPasswordPage, SkippableActionNeededPage,
+    VkImage,
 )
 from .pages.subscription import DocumentsPage, RibPdfPage
+from .pages.transfer import AddRecipientPage, SignRecipientPage, SignTransferPage, TransferJson
 
 
 __all__ = ['SocieteGenerale']

@@ -19,6 +19,7 @@
 
 from woob_modules.creditmutuel.browser import CreditMutuelBrowser
 
+
 __all__ = ['CICBrowser']
 
 

@@ -18,4 +18,5 @@
 
 from .torrent import AppTorrent
 
+
 __all__ = ['AppTorrent']

@@ -18,14 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import (
-    CapDocument, Document, DocumentCategory, DocumentNotFound, Subscription,
-)
+from woob.capabilities.bill import CapDocument, Document, DocumentCategory, DocumentNotFound, Subscription
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
 
 from .gercop import GercopBrowser
+
 
 __all__ = ['LAdresseModule']
 

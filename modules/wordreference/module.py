@@ -19,7 +19,7 @@
 "backend for http://www.wordreference.com"
 
 
-from woob.capabilities.translate import CapTranslate, TranslationFail, LanguageNotSupported
+from woob.capabilities.translate import CapTranslate, LanguageNotSupported, TranslationFail
 from woob.tools.backend import Module
 
 from .browser import WordReferenceBrowser

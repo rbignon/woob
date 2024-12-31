@@ -18,14 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.backend import Module
+from datetime import timedelta
+
+from woob.capabilities.calendar import CATEGORIES, BaseCalendarEvent, CapCalendarEvent
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
-from woob.tools.backend import BackendConfig
-from woob.capabilities.calendar import CapCalendarEvent, BaseCalendarEvent, CATEGORIES
 
 from .browser import ResidentadvisorBrowser
-
-from datetime import timedelta
 
 
 __all__ = ['ResidentadvisorModule']

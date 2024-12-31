@@ -17,15 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 import re
+from datetime import date, datetime, timedelta
+
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import Link
+from woob.browser.filters.standard import BrowserURL, CleanText, Env, Filter, Format, Join, Regexp
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.capabilities.base import empty
 
 from .calendar import SensCritiquenCalendarEvent
-
-from datetime import date, datetime, timedelta
-from woob.capabilities.base import empty
-from woob.browser.pages import HTMLPage, JsonPage
-from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import Filter, CleanText, Regexp, Join, Format, BrowserURL, Env
-from woob.browser.filters.html import Link
 
 
 class Description(Filter):

@@ -17,14 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import JsonPage
-from woob.browser.elements import ItemElement, DictElement, method
-from woob.browser.filters.standard import (
-    Env, Format, Regexp, DateTime, CleanDecimal, Lower, Map,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, DateTime, Env, Format, Lower, Map, Regexp
+from woob.browser.pages import JsonPage
 from woob.capabilities.address import GeoCoordinates, PostalAddress
-from woob.capabilities.gauge import Gauge, GaugeSensor, GaugeMeasure
+from woob.capabilities.gauge import Gauge, GaugeMeasure, GaugeSensor
 
 
 SENSOR_NAMES = {

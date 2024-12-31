@@ -17,12 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
 
 from .browser import LitaBrowser
+
 
 __all__ = ['LitaModule']
 

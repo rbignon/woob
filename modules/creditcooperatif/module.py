@@ -22,6 +22,7 @@ from woob_modules.caissedepargne.module import CaisseEpargneModule
 
 from .proxy_browser import ProxyBrowser
 
+
 __all__ = ['CreditCooperatifModule']
 
 

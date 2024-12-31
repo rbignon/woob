@@ -22,15 +22,14 @@
 import datetime
 import re
 
-from woob.browser.pages import LoggedPage, HTMLPage
-from woob.browser.elements import method, ListElement, ItemElement
-from woob.browser.filters.standard import CleanText, Regexp
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import AbsoluteLink, Attr
-from woob.capabilities.base import BaseObject, Field, StringField, BoolField
+from woob.browser.filters.standard import CleanText, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.capabilities.base import BaseObject, BoolField, Field, StringField
 from woob.capabilities.date import DateField
-from woob.capabilities.messages import (
-    Thread as BaseThread, Message as BaseMessage,
-)
+from woob.capabilities.messages import Message as BaseMessage
+from woob.capabilities.messages import Thread as BaseThread
 from woob.tools.date import parse_french_date
 from woob.tools.json import json
 

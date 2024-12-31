@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from .base.woobmc2 import Woobmc
-from woob.capabilities.video import BaseVideo, CapVideo
 from woob.capabilities.collection import CapCollection, Collection
+from woob.capabilities.video import BaseVideo, CapVideo
+
+from .base.woobmc2 import Woobmc
 
 
 class Videoobmc(Woobmc):

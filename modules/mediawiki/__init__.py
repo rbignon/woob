@@ -20,4 +20,5 @@
 
 from .module import MediawikiModule
 
+
 __all__ = ['MediawikiModule']

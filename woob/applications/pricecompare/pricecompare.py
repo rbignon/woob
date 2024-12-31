@@ -16,11 +16,12 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.capabilities.pricecomparison import CapPriceComparison
-from woob.tools.html import html2text
-from woob.tools.application.repl import ReplApplication, defaultcount
-from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
 from woob.tools.application.base import MoreResultsAvailable
 from woob.tools.application.console import ConsoleApplication
+from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
+from woob.tools.html import html2text
+
 
 __all__ = ['AppPriceCompare']
 

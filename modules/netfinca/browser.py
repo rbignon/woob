@@ -23,8 +23,8 @@ from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 
-from woob.browser import LoginBrowser, URL
-from woob.exceptions import BrowserUnavailable, ActionNeeded
+from woob.browser import URL, LoginBrowser
+from woob.exceptions import ActionNeeded, BrowserUnavailable
 
 from .pages import AccountsPage, HistoryPage, InvestmentsPage, MarketOrdersPage
 

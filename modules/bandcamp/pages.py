@@ -20,12 +20,12 @@
 import json
 import re
 
-from woob.browser.pages import HTMLPage, pagination
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import CleanText, Regexp, Date, Env, Field, Format
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import AbsoluteLink, Attr
+from woob.browser.filters.standard import CleanText, Date, Env, Field, Format, Regexp
+from woob.browser.pages import HTMLPage, pagination
+from woob.capabilities.audio import Album, BaseAudio
 from woob.capabilities.collection import Collection
-from woob.capabilities.audio import BaseAudio, Album
 
 
 class ReleasesPage(HTMLPage):

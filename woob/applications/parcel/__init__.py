@@ -18,4 +18,5 @@
 
 from .parcel import AppParcel
 
+
 __all__ = ['AppParcel']

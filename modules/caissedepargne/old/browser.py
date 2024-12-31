@@ -26,36 +26,31 @@ from dateutil import parser, tz
 from requests.cookies import remove_cookie_by_name
 
 from woob.browser.browsers import need_login
+from woob.browser.exceptions import ClientError, LoggedOut, ServerError
+from woob.browser.retry import retry_on_logout
 from woob.browser.url import URL
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.profile import Profile
-from woob.browser.exceptions import ClientError, LoggedOut, ServerError
-from woob.browser.retry import retry_on_logout
-from woob.exceptions import (
-    BrowserUnavailable, BrowserHTTPError,
-)
-from woob.tools.capabilities.bank.transactions import (
-    sorted_transactions, FrenchTransaction, keep_only_card_transactions,
-    omit_deferred_transactions,
-)
+from woob.exceptions import BrowserHTTPError, BrowserUnavailable
 from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.capabilities.bank.transactions import (
+    FrenchTransaction, keep_only_card_transactions, omit_deferred_transactions, sorted_transactions,
+)
 from woob.tools.date import now_as_utc
-from woob.tools.json import json
 from woob.tools.decorators import retry
+from woob.tools.json import json
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from ..browser import CaisseEpargneLogin
 from .pages import (
-    ActivationSubscriptionPage, AuthentPage, CardsComingPage,
-    CardsOldWebsitePage, CardsPage, ConsLoanPage,
-    CreditCooperatifMarketPage, GarbagePage, IndexPage,
-    LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvestments,
-    LoadingPage, MarketPage, MeasurePage, MessagePage,
-    NatixisErrorPage, NatixisLIHis, NatixisLIInv, NatixisRedirectPage,
-    NewLeviesPage, OldLeviesPage, TransactionPopupPage,
-    TransactionsDetailsPage, TechnicalIssuePage, UnavailablePage,
+    ActivationSubscriptionPage, AuthentPage, CardsComingPage, CardsOldWebsitePage, CardsPage, ConsLoanPage,
+    CreditCooperatifMarketPage, GarbagePage, IndexPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvestments,
+    LoadingPage, MarketPage, MeasurePage, MessagePage, NatixisErrorPage, NatixisLIHis, NatixisLIInv,
+    NatixisRedirectPage, NewLeviesPage, OldLeviesPage, TechnicalIssuePage, TransactionPopupPage,
+    TransactionsDetailsPage, UnavailablePage,
 )
+
 
 __all__ = ['OldCaisseEpargneBrowser']
 

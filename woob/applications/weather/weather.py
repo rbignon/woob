@@ -18,8 +18,8 @@
 
 from woob.capabilities.base import empty
 from woob.capabilities.weather import CapWeather
-from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 
 
 __all__ = ['AppWeather']

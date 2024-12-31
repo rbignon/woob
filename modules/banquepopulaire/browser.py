@@ -18,32 +18,30 @@
 # flake8: compatible
 
 import json
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from uuid import uuid4
 
 from woob.browser import URL, need_login
 from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.browser.mfa import TwoFactorBrowser
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.base import find_object
 from woob.exceptions import (
-    AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword,
-    BrowserUnavailable, OfflineOTPQuestion, OTPSentType, SentOTPQuestion,
+    AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable,
+    OfflineOTPQuestion, OTPSentType, SentOTPQuestion,
 )
-from woob.capabilities.bank import Transaction
 from woob.tools.date import now_as_utc
 from woob.tools.misc import polling_loop
 from woob_modules.caissedepargne.pages import VkImagePage
 
 from .pages import (
-    AppValidationPage,
-    AuthenticationMethodPage, AuthenticationStepPage, AuthorizeErrorPage, AuthorizePage,
-    BPOVirtKeyboard, ErrorPage, HomePage,
-    InfoTokensPage, JsFilePage, JsFilePageEspaceClient, LastConnectPage, LoggedOut,
-    LoginPage, LoginTokensPage,
-    NewLoginPage, RedirectErrorPage, UnavailablePage, SynthesePage, TransactionPage,
+    AppValidationPage, AuthenticationMethodPage, AuthenticationStepPage, AuthorizeErrorPage, AuthorizePage,
+    BPOVirtKeyboard, ErrorPage, HomePage, InfoTokensPage, JsFilePage, JsFilePageEspaceClient, LastConnectPage,
+    LoggedOut, LoginPage, LoginTokensPage, NewLoginPage, RedirectErrorPage, SynthesePage, TransactionPage,
+    UnavailablePage,
 )
+
 
 __all__ = ['BanquePopulaire']
 

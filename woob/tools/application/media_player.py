@@ -16,15 +16,16 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from contextlib import closing
-from subprocess import PIPE, Popen
-import subprocess
 import shlex
+import subprocess
+from contextlib import closing
 from shutil import which
+from subprocess import PIPE, Popen
 
 import requests
 
 from woob.tools.log import getLogger
+
 
 __all__ = ['InvalidMediaPlayer', 'MediaPlayer', 'MediaPlayerNotFound']
 

@@ -17,6 +17,7 @@
 
 from .base import CapBank
 
+
 __all__ = [
     'CapBankMatching', 'AccountDiff',
 ]

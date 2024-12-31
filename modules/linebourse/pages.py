@@ -24,14 +24,12 @@ from decimal import Decimal
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Currency, Date, Env, Field, Format, FromTimestamp,
-    Map, Title, Type,
+    CleanDecimal, CleanText, Currency, Date, Env, Field, Format, FromTimestamp, Map, Title, Type,
 )
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.bank import Transaction
 from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment,
-    MarketOrderType,
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
 )
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType

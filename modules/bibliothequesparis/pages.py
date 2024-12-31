@@ -19,10 +19,10 @@
 
 from datetime import datetime
 
-from woob.browser.pages import JsonPage, LoggedPage
-from woob.browser.elements import ItemElement, method, DictElement
-from woob.browser.filters.standard import Regexp
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import Regexp
+from woob.browser.pages import JsonPage, LoggedPage
 from woob.capabilities.base import UserError
 from woob.capabilities.library import Book
 

@@ -23,13 +23,13 @@ from tempfile import NamedTemporaryFile
 
 from lxml import etree
 
-from woob.core import CallErrors
-from woob.capabilities.base import empty
-from woob.capabilities.messages import CapMessages, Message, Thread
 from woob.capabilities.account import CapAccount
+from woob.capabilities.base import empty
 from woob.capabilities.contact import CapContact
-from woob.tools.application.repl import ReplApplication, defaultcount
+from woob.capabilities.messages import CapMessages, Message, Thread
+from woob.core import CallErrors
 from woob.tools.application.formatters.iformatter import IFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.html import html2text
 
 

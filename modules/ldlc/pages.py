@@ -19,10 +19,7 @@
 
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, Link
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Currency, Date,
-    Field, Format, QueryValue, Regexp,
-)
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Field, Format, QueryValue, Regexp
 from woob.browser.pages import HTMLPage, LoggedPage, PartialHTMLPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.bill import Bill, DocumentTypes, Subscription

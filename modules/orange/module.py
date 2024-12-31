@@ -19,14 +19,13 @@
 
 # flake8: compatible
 
-from woob.capabilities.bill import (
-    DocumentCategory, DocumentTypes, CapDocument, Subscription,
-    Document, DocumentNotFound,
-)
-from woob.capabilities.base import find_object, NotAvailable
 from woob.capabilities.account import CapAccount
+from woob.capabilities.base import NotAvailable, find_object
+from woob.capabilities.bill import (
+    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
+)
 from woob.capabilities.profile import CapProfile
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import OrangeBillBrowser

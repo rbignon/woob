@@ -18,11 +18,9 @@
 import warnings
 
 from .address import PostalAddress, compat_field
-from .base import (
-    Capability, BaseObject, DecimalField, StringField, UserError, Field,
-    DeprecatedFieldWarning,
-)
+from .base import BaseObject, Capability, DecimalField, DeprecatedFieldWarning, Field, StringField, UserError
 from .date import DateField
+
 
 __all__ = ['Profile', 'Person', 'Company', 'CapProfile']
 

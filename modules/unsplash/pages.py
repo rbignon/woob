@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import JsonPage
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import DateTime, Field, Format
-from woob.capabilities.image import BaseImage, Thumbnail
+from woob.browser.pages import JsonPage
 from woob.capabilities.file import LICENSES
+from woob.capabilities.image import BaseImage, Thumbnail
 
 
 class CollectionSearch(JsonPage):

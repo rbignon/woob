@@ -19,13 +19,13 @@
 import re
 from datetime import timedelta
 
-from woob.browser.elements import ItemElement, ListElement, method, DictElement
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import Env, Join, Eval, BrowserURL, CleanText, Regexp, Time
+from woob.browser.filters.standard import BrowserURL, CleanText, Env, Eval, Join, Regexp, Time
 from woob.browser.pages import HTMLPage, JsonPage, pagination
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.image import BaseImage, Thumbnail
-from woob.capabilities.recipe import Recipe, Comment
+from woob.capabilities.recipe import Comment, Recipe
 from woob.tools.json import json
 
 

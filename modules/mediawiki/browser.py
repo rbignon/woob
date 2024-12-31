@@ -17,16 +17,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict
 import datetime
 import re
-from urllib.parse import urlsplit, urljoin
+from collections import OrderedDict
+from urllib.parse import urljoin, urlsplit
 
 import dateutil.parser
 
 from woob.browser.browsers import DomainBrowser
-from woob.exceptions import BrowserIncorrectPassword
 from woob.capabilities.content import Revision
+from woob.exceptions import BrowserIncorrectPassword
+
 
 __all__ = ['MediawikiBrowser']
 

@@ -19,4 +19,5 @@
 
 from .module import MaFrenchBankModule
 
+
 __all__ = ['MaFrenchBankModule']

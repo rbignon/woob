@@ -18,9 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.test import BackendTest
-from woob.capabilities.calendar import Query, CATEGORIES
 from datetime import datetime, timedelta
+
+from woob.capabilities.calendar import CATEGORIES, Query
+from woob.tools.test import BackendTest
 
 
 class SueurDeMetalTest(BackendTest):

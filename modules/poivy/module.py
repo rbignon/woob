@@ -18,10 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bill import (
-    CapDocument, Subscription, Detail, DocumentCategory,
-)
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.bill import CapDocument, Detail, DocumentCategory, Subscription
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
 
 from .browser import PoivyBrowser

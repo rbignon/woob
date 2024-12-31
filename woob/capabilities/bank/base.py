@@ -17,20 +17,19 @@
 
 from __future__ import annotations
 
-from binascii import crc32
 import re
+from binascii import crc32
 from typing import Iterable, List
 
 from schwifty import IBAN
 
 from woob.capabilities.account import CapCredentialsCheck
 from woob.capabilities.base import (
-    BaseObject, Capability, Field, StringField, DecimalField, IntField,
-    BoolField, UserError, Currency, NotAvailable, EnumField, Enum, empty,
-    find_object, NotLoaded, NotLoadedType, NotAvailableType
+    BaseObject, BoolField, Capability, Currency, DecimalField, Enum, EnumField, Field, IntField, NotAvailable,
+    NotAvailableType, NotLoaded, NotLoadedType, StringField, UserError, empty, find_object,
 )
-from woob.capabilities.date import DateField
 from woob.capabilities.collection import CapCollection
+from woob.capabilities.date import DateField
 from woob.exceptions import BrowserIncorrectPassword
 
 

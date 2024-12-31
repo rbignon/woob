@@ -16,11 +16,13 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .base import Capability, BaseObject, Field, IntField, DecimalField, \
-                  StringField, BytesField, Enum, EnumField, UserError
+from .address import PostalAddress, compat_field
+from .base import (
+    BaseObject, BytesField, Capability, DecimalField, Enum, EnumField, Field, IntField, StringField, UserError,
+)
 from .date import DateField
-from .address import compat_field, PostalAddress
 from .image import BaseImage
+
 
 __all__ = [
     'CapHousing', 'Housing', 'Query', 'City', 'UTILITIES', 'ENERGY_CLASS',

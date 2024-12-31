@@ -22,13 +22,13 @@ from urllib.parse import parse_qs, urlparse
 
 import requests
 
-from woob.browser import LoginBrowser, need_login, URL, OAuth2Mixin
-from woob.browser.exceptions import ClientError, BrowserTooManyRequests
-from woob.exceptions import BrowserIncorrectPassword
-from woob.capabilities.bill import Subscription
+from woob.browser import URL, LoginBrowser, OAuth2Mixin, need_login
+from woob.browser.exceptions import BrowserTooManyRequests, ClientError
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Subscription
+from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, ProfilePage, DocumentsPage, HomePage
+from .pages import DocumentsPage, HomePage, LoginPage, ProfilePage
 
 
 class AprilBrowser(OAuth2Mixin, LoginBrowser):

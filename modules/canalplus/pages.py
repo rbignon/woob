@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
 import re
+from datetime import datetime
 
 from woob.browser.pages import XMLPage
-from woob.capabilities.collection import Collection
 from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.capabilities.collection import Collection
 from woob.capabilities.image import Thumbnail
 
 from .video import CanalplusVideo

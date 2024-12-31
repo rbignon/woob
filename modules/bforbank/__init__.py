@@ -19,4 +19,5 @@
 
 from .module import BforbankModule
 
+
 __all__ = ['BforbankModule']

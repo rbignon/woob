@@ -17,10 +17,7 @@
 
 from decimal import Decimal
 
-from woob.capabilities.base import (
-    BaseObject, StringField, DecimalField, Currency,
-    Capability,
-)
+from woob.capabilities.base import BaseObject, Capability, Currency, DecimalField, StringField
 from woob.capabilities.date import DateField
 
 

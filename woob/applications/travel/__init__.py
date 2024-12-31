@@ -18,4 +18,5 @@
 
 from .travel import AppTravel
 
+
 __all__ = ['AppTravel']

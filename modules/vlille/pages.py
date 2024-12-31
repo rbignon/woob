@@ -19,13 +19,12 @@
 
 from decimal import Decimal
 
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, TableElement, method
-from woob.browser.filters.standard import CleanText, DateTime, Field
 from woob.browser.filters.html import TableCell
-
-from woob.capabilities.gauge import Gauge, GaugeMeasure, GaugeSensor
+from woob.browser.filters.standard import CleanText, DateTime, Field
+from woob.browser.pages import HTMLPage
 from woob.capabilities.base import NotLoaded
+from woob.capabilities.gauge import Gauge, GaugeMeasure, GaugeSensor
 
 
 class ListStationsPage(HTMLPage):

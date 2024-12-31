@@ -22,19 +22,16 @@
 import re
 from decimal import Decimal
 
-from woob.capabilities.base import find_object, NotAvailable
 from woob.capabilities.bank import (
-    CapBankTransferAddRecipient, AccountNotFound, RecipientNotFound,
-    Account, TransferInvalidLabel,
+    Account, AccountNotFound, CapBankTransferAddRecipient, RecipientNotFound, TransferInvalidLabel,
 )
 from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import NotAvailable, find_object
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
-from woob.capabilities.bill import (
-    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
-)
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import CreditMutuelBrowser

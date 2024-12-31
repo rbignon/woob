@@ -20,17 +20,15 @@
 import hashlib
 import re
 
-from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage, RawPage
-from woob.browser.filters.standard import (
-    CleanText, Env, Field, Regexp, Format, Date,
-)
-from woob.browser.filters.json import Dict
-from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, HasElement
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Date, Env, Field, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage, pagination
 from woob.capabilities.address import PostalAddress
-from woob.capabilities.bill import DocumentTypes, Document, Subscription
-from woob.capabilities.profile import Person
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
+from woob.capabilities.profile import Person
 from woob.tools.date import parse_french_date
 from woob_modules.franceconnect.pages import AuthorizePage
 

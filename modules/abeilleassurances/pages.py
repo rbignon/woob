@@ -19,17 +19,15 @@
 
 from urllib.parse import urljoin
 
-from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import (
-    CleanText, Format, Date, Regexp, CleanDecimal,
-    Currency, Field, Eval, Coalesce, MapIn, Lower, Type,
-)
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import AbsoluteLink, Attr
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Coalesce, Currency, Date, Eval, Field, Format, Lower, MapIn, Regexp, Type,
+)
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bank import Account, Transaction
-from woob.capabilities.base import empty
 from woob.capabilities.bank.wealth import Investment
-from woob.capabilities.base import NotAvailable
+from woob.capabilities.base import NotAvailable, empty
 from woob.exceptions import ActionNeeded, ActionType, BrowserUnavailable
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 

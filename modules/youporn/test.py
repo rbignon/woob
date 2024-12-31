@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.test import BackendTest
 from woob.capabilities.video import BaseVideo
+from woob.tools.test import BackendTest
 
 
 class YoupornTest(BackendTest):

@@ -18,14 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ClientError
-from woob.browser import LoginBrowser, URL, need_login
+from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
 
-from .pages import (
-    LoginPage, DashboardPage, TransactionPage, TransactionCSV,
-    PasswordExpiredPage,
-)
+from .pages import DashboardPage, LoginPage, PasswordExpiredPage, TransactionCSV, TransactionPage
+
 
 __all__ = ['BnpcartesentreprisePhenixBrowser']
 

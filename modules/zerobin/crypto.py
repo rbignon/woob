@@ -17,21 +17,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import math
 from base64 import b64decode, b64encode
 from collections import OrderedDict
-import math
 from os import urandom
+
 
 try:
     from Cryptodome.Cipher import AES
+    from Cryptodome.Hash import HMAC, SHA256
     from Cryptodome.Protocol.KDF import PBKDF2
-    from Cryptodome.Hash import SHA256
-    from Cryptodome.Hash import HMAC
 except ImportError:
     from Crypto.Cipher import AES
+    from Crypto.Hash import HMAC, SHA256
     from Crypto.Protocol.KDF import PBKDF2
-    from Crypto.Hash import SHA256
-    from Crypto.Hash import HMAC
 
 
 def log2(n):

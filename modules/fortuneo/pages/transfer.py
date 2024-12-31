@@ -24,16 +24,13 @@ from datetime import date, timedelta
 from itertools import chain
 from urllib.parse import parse_qs, urlparse
 
-from woob.browser.pages import FormNotFound, HTMLPage, PartialHTMLPage, LoggedPage
-from woob.browser.elements import method, ListElement, ItemElement, TableElement
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import Attr, Link, TableCell
-from woob.browser.filters.standard import (
-    CleanText, Date, Regexp, CleanDecimal, Currency, Field, Env,
-    Map, Base,
-)
+from woob.browser.filters.standard import Base, CleanDecimal, CleanText, Currency, Date, Env, Field, Map, Regexp
+from woob.browser.pages import FormNotFound, HTMLPage, LoggedPage, PartialHTMLPage
 from woob.capabilities.bank import (
-    Recipient, Transfer, TransferBankError, AddRecipientBankError,
-    TransferStatus, TransferFrequency, TransferDateType, Emitter,
+    AddRecipientBankError, Emitter, Recipient, Transfer, TransferBankError, TransferDateType, TransferFrequency,
+    TransferStatus,
 )
 from woob.capabilities.base import NotAvailable
 from woob.tools.json import json

@@ -25,18 +25,17 @@ from decimal import Decimal
 
 import requests
 
-from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import Account
-from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
-from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
-from woob.browser.elements import ListElement, ItemElement, method, DictElement
-from woob.browser.filters.standard import (
-    Env, CleanDecimal, CleanText, Field, Format,
-    Currency, Date, QueryValue, Map, Coalesce,
-)
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Field, Format, Map, QueryValue,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
+from woob.capabilities.bank import Account
+from woob.capabilities.base import NotAvailable, empty
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
 
 
 class Transaction(FrenchTransaction):

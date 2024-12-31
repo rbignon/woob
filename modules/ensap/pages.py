@@ -20,9 +20,9 @@
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanText, Date, Format, Regexp, Env, Field, BrowserURL
+from woob.browser.filters.standard import BrowserURL, CleanText, Date, Env, Field, Format, Regexp
 from woob.browser.pages import JsonPage, LoggedPage
-from woob.capabilities.bill import Document, Subscription, DocumentTypes
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 
 class LandingPage(JsonPage):

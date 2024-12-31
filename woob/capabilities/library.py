@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from .collection import CapCollection
 from .base import BaseObject, BoolField, StringField
+from .collection import CapCollection
 from .date import DateField
 
 

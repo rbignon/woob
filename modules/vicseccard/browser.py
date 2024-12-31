@@ -28,6 +28,7 @@ from woob.capabilities.bank import Account, AccountNotFound, Transaction
 from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
 
+
 __all__ = ['VicSecCard']
 
 

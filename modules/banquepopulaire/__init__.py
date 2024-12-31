@@ -17,4 +17,5 @@
 
 from .module import BanquePopulaireModule
 
+
 __all__ = ['BanquePopulaireModule']

@@ -19,9 +19,9 @@
 
 # flake8: compatible
 
-from woob.browser.pages import HTMLPage
 from woob.browser.filters.html import Attr
 from woob.browser.filters.standard import CleanText, Coalesce
+from woob.browser.pages import HTMLPage
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned
 
 

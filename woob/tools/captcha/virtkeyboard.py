@@ -19,7 +19,8 @@ from __future__ import annotations
 
 import hashlib
 import tempfile
-from typing import IO, ClassVar, TYPE_CHECKING
+from typing import IO, TYPE_CHECKING, ClassVar
+
 
 if TYPE_CHECKING:
     from woob.browser import Browser

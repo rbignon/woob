@@ -19,9 +19,9 @@
 
 from collections import OrderedDict
 
-from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.base import UserError
-from woob.capabilities.gauge import CapGauge, GaugeSensor, Gauge, GaugeMeasure, SensorNotFound
+from woob.capabilities.gauge import CapGauge, Gauge, GaugeMeasure, GaugeSensor, SensorNotFound
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import VelibBrowser

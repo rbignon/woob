@@ -17,11 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.json import json
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.base import UserError
 from woob.capabilities.collection import Collection
-from woob.browser import LoginBrowser, URL, need_login
-from .pages import EssentialsPage, TokenPage, ContentsPage, PreferencesPage, MarkerPage
+from woob.tools.json import json
+
+from .pages import ContentsPage, EssentialsPage, MarkerPage, PreferencesPage, TokenPage
 
 
 __all__ = ['FeedlyBrowser']

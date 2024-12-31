@@ -19,4 +19,5 @@
 
 from .module import PornhubModule
 
+
 __all__ = ['PornhubModule']

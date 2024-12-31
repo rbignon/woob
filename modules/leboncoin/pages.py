@@ -16,23 +16,22 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-import requests
-
-from woob.browser.pages import HTMLPage, JsonPage, pagination
-from woob.browser.elements import ItemElement, ListElement, method, DictElement
-from woob.capabilities.base import Currency as BaseCurrency
-from woob.browser.filters.standard import (CleanText, CleanDecimal, _Filter,
-                                             Env, DateTime, Format)
-from woob.browser.filters.json import Dict
-from woob.capabilities.housing import (City, Housing, HousingPhoto,
-                                         UTILITIES, ENERGY_CLASS, POSTS_TYPES,
-                                         ADVERT_TYPES, HOUSE_TYPES)
-from woob.capabilities.base import NotAvailable
-from woob.tools.capabilities.housing.housing import PricePerMeterFilter
-
-from decimal import Decimal
-from lxml import etree
 import json
+from decimal import Decimal
+
+import requests
+from lxml import etree
+
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, DateTime, Env, Format, _Filter
+from woob.browser.pages import HTMLPage, JsonPage, pagination
+from woob.capabilities.base import Currency as BaseCurrency
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.housing import (
+    ADVERT_TYPES, ENERGY_CLASS, HOUSE_TYPES, POSTS_TYPES, UTILITIES, City, Housing, HousingPhoto,
+)
+from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 
 
 class PopDetail(_Filter):

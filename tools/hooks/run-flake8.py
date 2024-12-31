@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 import os
-from pathlib import Path
 import runpy
 import sys
+from pathlib import Path
 from types import ModuleType
 
+import pkg_resources
 from flake8.main.cli import main
 from flake8_import_order.styles import PEP8
-import pkg_resources
 
 
 mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))

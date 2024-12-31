@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.backend import Module
 from woob.capabilities.recipe import CapRecipe, Recipe
+from woob.tools.backend import Module
 
 from .browser import JournaldesfemmesBrowser
 

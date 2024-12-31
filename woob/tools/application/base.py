@@ -18,21 +18,23 @@
 
 import logging
 import optparse
-from optparse import OptionGroup, OptionParser
-from datetime import datetime
 import os
 import sys
 import warnings
+from datetime import datetime
+from optparse import OptionGroup, OptionParser
 
-from woob.capabilities.base import ConversionWarning, BaseObject
-from woob.core import Woob, CallErrors
+from woob.capabilities.base import BaseObject, ConversionWarning
+from woob.core import CallErrors, Woob
 from woob.core.backendscfg import BackendsConfig
-from woob.tools.config.iconfig import ConfigError
 from woob.exceptions import FormFieldConversionWarning
-from woob.tools.log import createColoredFormatter, getLogger, DEBUG_FILTERS, settings as log_settings
+from woob.tools.config.iconfig import ConfigError
+from woob.tools.log import DEBUG_FILTERS, createColoredFormatter, getLogger
+from woob.tools.log import settings as log_settings
 from woob.tools.misc import guess_encoding
 
 from .results import ResultsConditionError
+
 
 __all__ = ['Application']
 
@@ -485,6 +487,7 @@ class Application:
 
     def setup_ipversion(self):
         import socket
+
         import requests.packages.urllib3.util.connection
         import urllib3.util.connection
 

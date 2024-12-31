@@ -27,6 +27,7 @@ from woob.tools.backend import Module
 
 from .browser import AllocineBrowser
 
+
 __all__ = ['AllocineModule']
 
 

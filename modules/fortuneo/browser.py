@@ -20,39 +20,36 @@
 
 # flake8: compatible
 
-import time
 import json
 import re
+import time
 from datetime import datetime, timedelta
 
 from woob.browser import URL, need_login
 from woob.browser.exceptions import ClientError
 from woob.browser.filters.standard import RegexpError
 from woob.browser.mfa import TwoFactorBrowser
-from woob.exceptions import (
-    AuthMethodNotImplemented, BrowserQuestion, BrowserIncorrectPassword, ActionNeeded,
-    BrowserUnavailable,
-)
 from woob.capabilities.bank import (
-    Account, AddRecipientStep, Recipient, Loan, Transaction,
-    AddRecipientBankError, TransferStep,
+    Account, AddRecipientBankError, AddRecipientStep, Loan, Recipient, Transaction, TransferStep,
 )
+from woob.exceptions import (
+    ActionNeeded, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable,
+)
+from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
-from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.value import Value
 
-from .pages.login import LoginPage, TwoFaPage, UnavailablePage
 from .pages.accounts_list import (
-    AccountsList, AccountHistoryPage, CardHistoryPage,
-    InvestmentHistoryPage, PeaHistoryPage, LoanPage,
-    ProfilePage, ProfilePageCSV, SecurityPage, FalseActionPage,
-    InformationsPage, ActionNeededPage, InvestmentApiPage,
+    AccountHistoryPage, AccountsList, ActionNeededPage, CardHistoryPage, FalseActionPage, InformationsPage,
+    InvestmentApiPage, InvestmentHistoryPage, LoanPage, PeaHistoryPage, ProfilePage, ProfilePageCSV, SecurityPage,
 )
+from .pages.login import LoginPage, TwoFaPage, UnavailablePage
 from .pages.transfer import (
-    RegisterTransferPage, ValidateTransferPage, ConfirmTransferPage, RecipientsPage, ConfirmRecipientPage,
-    TransferListPage, OTPSMSPage,
+    ConfirmRecipientPage, ConfirmTransferPage, OTPSMSPage, RecipientsPage, RegisterTransferPage, TransferListPage,
+    ValidateTransferPage,
 )
+
 
 __all__ = ['FortuneoBrowser']
 

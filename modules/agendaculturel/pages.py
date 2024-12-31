@@ -18,15 +18,16 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.pages import HTMLPage
+from datetime import datetime, time
+
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import CleanText, Date, Regexp, Filter, Env, Format, Decode, Time, Type
 from woob.browser.filters.html import CleanHTML, XPath
 from woob.browser.filters.json import Dict
-
+from woob.browser.filters.standard import CleanText, Date, Decode, Env, Filter, Format, Regexp, Time, Type
+from woob.browser.pages import HTMLPage
 from woob.capabilities.calendar import CATEGORIES
+
 from .calendar import AgendaculturelEvent
-from datetime import datetime, time
 
 
 class AgendaculturelCategory(Filter):

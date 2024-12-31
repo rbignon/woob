@@ -19,12 +19,11 @@
 
 # flake8: compatible
 
-from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.captcha import (
-    CapCaptchaSolver, ImageCaptchaJob, RecaptchaJob,
-    RecaptchaV3Job, RecaptchaV2Job, FuncaptchaJob,
-    HcaptchaJob, GeetestV4Job, TurnstileJob,
+    CapCaptchaSolver, FuncaptchaJob, GeetestV4Job, HcaptchaJob, ImageCaptchaJob, RecaptchaJob, RecaptchaV2Job,
+    RecaptchaV3Job, TurnstileJob,
 )
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
 
 from .browser import AnticaptchaBrowser

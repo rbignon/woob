@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
-from . import constants
-
 from datetime import datetime, timedelta
+
+from . import constants
 from .base.menu import BaseMenuItem, BaseMenuLink
+
 
 if hasattr(sys.modules["__main__"], "common_xbmc"):
     common_xbmc = sys.modules["__main__"].common_xbmc

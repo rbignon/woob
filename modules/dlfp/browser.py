@@ -17,22 +17,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import hashlib
-import lxml
+import re
 
+import lxml
 from requests.exceptions import HTTPError
 
-from woob.browser import LoginBrowser, need_login, URL
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import HTTPNotFound
-from woob.exceptions import BrowserIncorrectPassword, ParseError
 from woob.capabilities.messages import CantSendMessage
+from woob.exceptions import BrowserIncorrectPassword, ParseError
 
-from .pages.index import IndexPage, LoginPage
-from .pages.news import ContentPage, NewCommentPage, NodePage, CommentPage, NewTagPage, RSSComment
 from .pages.board import BoardIndexPage
+from .pages.index import IndexPage, LoginPage
+from .pages.news import CommentPage, ContentPage, NewCommentPage, NewTagPage, NodePage, RSSComment
 from .pages.wiki import WikiEditPage
 from .tools import id2url, url2id
+
 
 # Browser
 

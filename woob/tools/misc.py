@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-from time import time, sleep
-from typing import Optional, Union
 import itertools
 import locale
 import os
@@ -27,7 +25,11 @@ import sys
 import traceback
 import types
 import unicodedata
+from time import sleep, time
+from typing import Optional, Union
+
 import unidecode
+
 
 __all__ = [
     'NO_DEFAULT',

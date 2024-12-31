@@ -20,17 +20,16 @@
 import re
 from time import sleep
 
-from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.browser import URL, LoginBrowser, StatesMixin, need_login
+from woob.capabilities.bank import Account
 from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded,
-    AuthMethodNotImplemented, BrowserUserBanned, ActionType,
+    ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned,
 )
-from woob.capabilities.bank import Account
 
 from .pages import (
-    LoginPage, MaintenancePage, HomePage, IncapsulaResourcePage, LoanHistoryPage, CardHistoryPage,
-    SavingHistoryPage, LifeHistoryInvestmentsPage, CardHistoryJsonPage, KYCPage,
+    CardHistoryJsonPage, CardHistoryPage, HomePage, IncapsulaResourcePage, KYCPage, LifeHistoryInvestmentsPage,
+    LoanHistoryPage, LoginPage, MaintenancePage, SavingHistoryPage,
 )
 
 

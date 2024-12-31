@@ -16,9 +16,9 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .base import BaseObject, StringField, DecimalField, UserError
-from .date import DateField
+from .base import BaseObject, DecimalField, StringField, UserError
 from .collection import CapCollection
+from .date import DateField
 
 
 __all__ = ['OrderNotFound', 'Order', 'Payment', 'Item', 'CapShop']

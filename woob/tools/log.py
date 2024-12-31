@@ -17,7 +17,8 @@
 
 import sys
 from collections import defaultdict
-from logging import addLevelName, Formatter, getLogger as _getLogger, LoggerAdapter
+from logging import Formatter, LoggerAdapter, addLevelName
+from logging import getLogger as _getLogger
 
 
 __all__ = ['getLogger', 'createColoredFormatter', 'settings']

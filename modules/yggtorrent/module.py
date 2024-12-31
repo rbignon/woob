@@ -19,8 +19,8 @@
 from urllib.parse import quote_plus
 
 from woob.capabilities.torrent import CapTorrent, Torrent
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import YggtorrentBrowser
 

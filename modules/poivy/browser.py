@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword
-from .pages import HomePage, LoginPage, HistoryPage, BillsPage, ErrorPage
+
+from .pages import BillsPage, ErrorPage, HistoryPage, HomePage, LoginPage
 
 
 __all__ = ['PoivyBrowser']

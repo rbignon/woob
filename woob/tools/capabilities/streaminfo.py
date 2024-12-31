@@ -16,7 +16,8 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.base import BaseObject, StringField, NotLoaded
+from woob.capabilities.base import BaseObject, NotLoaded, StringField
+
 
 __all__ = ['StreamInfo']
 

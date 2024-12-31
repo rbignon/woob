@@ -19,10 +19,11 @@
 
 from woob.capabilities.bank import CapBank
 from woob.capabilities.profile import CapProfile
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import TiimeBrowser
+
 
 __all__ = ['TiimeModule']
 

@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.exceptions import ScrapingBlocked
-from woob.browser.pages import HTMLPage, LoggedPage, pagination
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import CleanText, CleanDecimal, Field, DateTime, Format
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, Link
-from woob.capabilities.bill import Subscription, Detail
+from woob.browser.filters.standard import CleanDecimal, CleanText, DateTime, Field, Format
+from woob.browser.pages import HTMLPage, LoggedPage, pagination
+from woob.capabilities.bill import Detail, Subscription
+from woob.exceptions import ScrapingBlocked
 
 
 class ErrorPage(HTMLPage):

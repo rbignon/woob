@@ -16,10 +16,10 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.base import empty
 from woob.capabilities.bands import CapBands
-from woob.tools.application.repl import ReplApplication, defaultcount
+from woob.capabilities.base import empty
 from woob.tools.application.formatters.iformatter import PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 
 
 __all__ = ['Appbands', 'BandInfoFormatter', 'BandListFormatter', 'FavoritesFormatter']

@@ -18,19 +18,20 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.base import NotLoaded
-from woob.capabilities.radio import CapRadio, Radio
-from woob.capabilities.audio import CapAudio, BaseAudio
-from woob.capabilities.audiostream import BaseAudioStream
-from woob.tools.capabilities.streaminfo import StreamInfo
-from woob.capabilities.collection import CapCollection, CollectionNotFound, Collection
-from woob.tools.backend import Module
-
-from .browser import RadioFranceBrowser
-
 import re
 import time
 from datetime import datetime
+
+from woob.capabilities.audio import BaseAudio, CapAudio
+from woob.capabilities.audiostream import BaseAudioStream
+from woob.capabilities.base import NotLoaded
+from woob.capabilities.collection import CapCollection, Collection, CollectionNotFound
+from woob.capabilities.radio import CapRadio, Radio
+from woob.tools.backend import Module
+from woob.tools.capabilities.streaminfo import StreamInfo
+
+from .browser import RadioFranceBrowser
+
 
 __all__ = ['RadioFranceModule']
 

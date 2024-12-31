@@ -21,11 +21,11 @@
 import datetime
 import re
 
+from woob.browser.filters.standard import CleanText
 from woob.capabilities.bugtracker import IssueError
 from woob.tools.date import parse_french_date
 from woob.tools.json import json
 from woob.tools.misc import to_unicode
-from woob.browser.filters.standard import CleanText
 
 from .index import BaseHTMLPage
 

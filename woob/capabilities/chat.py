@@ -18,7 +18,7 @@
 
 import datetime
 
-from .base import Capability, BaseObject, StringField, UserError
+from .base import BaseObject, Capability, StringField, UserError
 from .date import DateField
 
 

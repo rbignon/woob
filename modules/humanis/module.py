@@ -17,11 +17,12 @@
 
 # flake8: compatible
 
-from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.tools.value import ValueBackendPassword
 from woob_modules.cmes.module import CmesModule
 
 from .browser import HumanisBrowser
+
 
 __all__ = ['HumanisModule']
 

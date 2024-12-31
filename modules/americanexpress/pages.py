@@ -19,18 +19,16 @@
 
 from decimal import Decimal
 
-from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
-from woob.browser.elements import ItemElement, DictElement, method
-from woob.browser.filters.standard import (
-    Date, Eval, Env, CleanText, Field, CleanDecimal, Format,
-    Currency,
-)
+from dateutil.parser import parse as parse_date
+
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Env, Eval, Field, Format
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.browser.selenium import SeleniumPage
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.base import NotAvailable
 from woob.exceptions import ActionNeeded, BrowserUnavailable
-from woob.browser.selenium import SeleniumPage
-from dateutil.parser import parse as parse_date
 
 
 def float_to_decimal(f):

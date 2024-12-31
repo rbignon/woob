@@ -19,15 +19,12 @@
 
 
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Env, Regexp, Eval, Join
-)
 from woob.browser.filters.html import Attr, Link, XPath
+from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Eval, Join, Regexp
 from woob.browser.pages import HTMLPage
-
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.recipe import Comment, Recipe
 from woob.capabilities.image import BaseImage, Thumbnail
+from woob.capabilities.recipe import Comment, Recipe
 
 
 class SearchPage(HTMLPage):

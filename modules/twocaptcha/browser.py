@@ -20,8 +20,8 @@
 from woob.browser.browsers import PagesBrowser
 from woob.browser.url import URL
 from woob.capabilities.captcha import (
-    CaptchaError, FuncaptchaJob, HcaptchaJob, InsufficientFunds,
-    InvalidCaptcha, RecaptchaV2Job, RecaptchaV3Job, UnsolvableCaptcha,
+    CaptchaError, FuncaptchaJob, HcaptchaJob, InsufficientFunds, InvalidCaptcha, RecaptchaV2Job, RecaptchaV3Job,
+    UnsolvableCaptcha,
 )
 from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned
 

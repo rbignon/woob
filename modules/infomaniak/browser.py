@@ -19,12 +19,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ServerError
 from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion
 from woob.tools.value import Value
 
-from .pages import LoginPage, SubscriptionsPage, DocumentsPage
+from .pages import DocumentsPage, LoginPage, SubscriptionsPage
 
 
 class InfomaniakBrowser(LoginBrowser):

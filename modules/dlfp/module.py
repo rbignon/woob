@@ -18,18 +18,18 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from datetime import datetime, timedelta
 import time
+from datetime import datetime, timedelta
 
-from woob.tools.backend import Module, BackendConfig
-from woob.exceptions import BrowserForbidden
-from woob.tools.newsfeed import Newsfeed
-from woob.tools.value import Value, ValueBool, ValueBackendPassword
-from woob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread, CantSendMessage
 from woob.capabilities.content import CapContent, Content
+from woob.capabilities.messages import CantSendMessage, CapMessages, CapMessagesPost, Message, Thread
+from woob.exceptions import BrowserForbidden
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.newsfeed import Newsfeed
+from woob.tools.value import Value, ValueBackendPassword, ValueBool
 
 from .browser import DLFP
-from .tools import rssid, id2url
+from .tools import id2url, rssid
 
 
 __all__ = ['DLFPModule']

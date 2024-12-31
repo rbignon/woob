@@ -20,4 +20,5 @@
 
 from .module import FreeMobileModule
 
+
 __all__ = ['FreeMobileModule']

@@ -18,14 +18,14 @@
 from decimal import Decimal
 
 from woob.capabilities.bill import CapDocument, Detail, Subscription
+from woob.capabilities.captcha import exception_to_job
 from woob.capabilities.profile import CapProfile
-from woob.tools.application.repl import ReplApplication, defaultcount
-from woob.tools.application.formatters.iformatter import PrettyFormatter
-from woob.tools.application.base import MoreResultsAvailable
-from woob.tools.application.captcha import CaptchaMixin
 from woob.core import CallErrors
 from woob.exceptions import CaptchaQuestion
-from woob.capabilities.captcha import exception_to_job
+from woob.tools.application.base import MoreResultsAvailable
+from woob.tools.application.captcha import CaptchaMixin
+from woob.tools.application.formatters.iformatter import PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 
 
 __all__ = ['AppBill']

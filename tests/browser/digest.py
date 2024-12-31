@@ -19,9 +19,10 @@
 
 from base64 import b64encode
 from hashlib import sha256
+from unittest import TestCase
+
 from requests import PreparedRequest
 
-from unittest import TestCase
 from woob.browser.browsers import DigestMixin, OAuth2Mixin, PagesBrowser
 
 

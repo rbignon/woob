@@ -19,4 +19,5 @@
 
 from .module import PixNCrossModule
 
+
 __all__ = ['PixNCrossModule']

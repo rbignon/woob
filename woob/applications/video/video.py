@@ -15,21 +15,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from io import BytesIO
 import os
-from shutil import which
 import subprocess
+from io import BytesIO
+from shutil import which
 from urllib.parse import urlparse
 
 import requests
 
-from woob.capabilities.video import CapVideo, BaseVideo
 from woob.capabilities.base import empty
-from woob.tools.application.repl import ReplApplication, defaultcount
-from woob.tools.application.media_player import InvalidMediaPlayer, MediaPlayer, MediaPlayerNotFound
+from woob.capabilities.video import BaseVideo, CapVideo
 from woob.tools.application.formatters.iformatter import PrettyFormatter
+from woob.tools.application.media_player import InvalidMediaPlayer, MediaPlayer, MediaPlayerNotFound
+from woob.tools.application.repl import ReplApplication, defaultcount
 
-from .image2xterm import image2xterm, get_term_size
+from .image2xterm import get_term_size, image2xterm
+
 
 __all__ = ['AppVideo']
 

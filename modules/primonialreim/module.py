@@ -19,13 +19,11 @@
 
 # flake8: compatible
 
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.bank import Account, CapBank
 from woob.capabilities.base import find_object
-from woob.capabilities.bank import CapBank, Account
-from woob.capabilities.bill import (
-    CapDocument, Subscription, DocumentNotFound,
-)
+from woob.capabilities.bill import CapDocument, DocumentNotFound, Subscription
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import PrimonialreimBrowser
 

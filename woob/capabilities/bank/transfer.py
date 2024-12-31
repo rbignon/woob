@@ -26,14 +26,12 @@ from deprecated.sphinx import deprecated
 from unidecode import unidecode
 
 from woob.capabilities.base import (
-    BaseObject, Field, StringField, DecimalField,
-    UserError, Currency, EnumField, Enum,
-    Capability, empty, find_object,
+    BaseObject, Capability, Currency, DecimalField, Enum, EnumField, Field, StringField, UserError, empty, find_object,
 )
 from woob.capabilities.date import DateField
 from woob.exceptions import BrowserQuestion
 
-from .base import ObjectNotFound, BaseAccount, CapBank, Account, IBANField
+from .base import Account, BaseAccount, CapBank, IBANField, ObjectNotFound
 
 
 __all__ = [

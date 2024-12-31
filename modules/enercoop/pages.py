@@ -20,28 +20,20 @@
 # flake8: compatible
 
 import datetime
-from decimal import Decimal
 import json
 import re
+from decimal import Decimal
 
 from dateutil.tz import gettz
 
-from woob.browser.elements import (
-    ItemElement, ListElement, method,
-)
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import AbsoluteLink, FormValue
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Format, Regexp
 from woob.browser.pages import HTMLPage, NextPage, pagination
-from woob.browser.filters.standard import (
-    Date, CleanDecimal, CleanText, Format, Regexp,
-)
-from woob.browser.filters.html import (
-    AbsoluteLink, FormValue,
-)
 from woob.capabilities.address import PostalAddress
-from woob.capabilities.profile import Person
-from woob.capabilities.bill import (
-    DocumentTypes, Subscription, Bill,
-)
+from woob.capabilities.bill import Bill, DocumentTypes, Subscription
 from woob.capabilities.gauge import GaugeMeasure
+from woob.capabilities.profile import Person
 
 
 SITE_TZ = gettz("Europe/Paris")

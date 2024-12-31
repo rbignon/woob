@@ -19,23 +19,22 @@
 
 import re
 import string
+from datetime import date
 from io import BytesIO
 from itertools import chain
-from PIL import Image, ImageFilter
-from datetime import date
 
+from PIL import Image, ImageFilter
+
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import Attr, TableCell
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Field, Format, Map, Regexp
 from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.elements import method, TableElement, ItemElement, ListElement
-from woob.browser.filters.html import TableCell, Attr
-from woob.browser.filters.standard import (
-    CleanText, Date, Regexp, CleanDecimal, Currency, Format, Field, Map,
-)
 from woob.capabilities.bank import (
-    Recipient, TransferBankError, AddRecipientBankError, RecipientNotFound, Emitter,
-    Transfer, TransferDateType, TransferFrequency,
+    AddRecipientBankError, Emitter, Recipient, RecipientNotFound, Transfer, TransferBankError, TransferDateType,
+    TransferFrequency,
 )
+from woob.capabilities.base import NotAvailable, find_object
 from woob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
-from woob.capabilities.base import find_object, NotAvailable
 
 
 def remove_useless_form_params(form):

@@ -21,13 +21,14 @@ from itertools import chain
 
 from selenium import webdriver
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.browser.exceptions import HTTPNotFound
 from woob.browser.selenium import SeleniumBrowser, SubSeleniumMixin
 from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
-from .constants import QUERY_HOUSE_TYPES, QUERY_TYPES, BASE_URL, AVAILABLE_TYPES
-from .pages import CitiesPage, HousingPage, SearchResultsPage, IndexPage, AgencyPage
+from woob.capabilities.housing import HOUSE_TYPES, POSTS_TYPES
+
+from .constants import AVAILABLE_TYPES, BASE_URL, QUERY_HOUSE_TYPES, QUERY_TYPES
+from .pages import AgencyPage, CitiesPage, HousingPage, IndexPage, SearchResultsPage
 
 
 class FonciaSeleniumBrowser(SeleniumBrowser):

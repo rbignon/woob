@@ -18,9 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.backend import Module
-from woob.capabilities.calendar import CapCalendarEvent, BaseCalendarEvent, CATEGORIES, TRANSP, STATUS
 from datetime import datetime, time
+
+from woob.capabilities.calendar import CATEGORIES, STATUS, TRANSP, BaseCalendarEvent, CapCalendarEvent
+from woob.tools.backend import Module
 
 from .browser import ParisKiwiBrowser
 

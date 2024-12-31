@@ -19,12 +19,12 @@
 
 import re
 
-from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.filters.standard import CleanText, CleanDecimal, Env, Format, Date
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import Attr, TableCell
-from woob.browser.elements import ListElement, ItemElement, TableElement, method
-from woob.capabilities.bill import DocumentTypes, Bill, Document, Subscription
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Env, Format
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Bill, Document, DocumentTypes, Subscription
 from woob.exceptions import AuthMethodNotImplemented
 
 

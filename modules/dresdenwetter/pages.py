@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import CleanText, Field, Filter, Regexp, debug
 from woob.browser.pages import HTMLPage
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import CleanText, Regexp, Field, Filter, debug
-from woob.capabilities.gauge import GaugeMeasure, GaugeSensor
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.gauge import GaugeMeasure, GaugeSensor
 
 
 class Split(Filter):

@@ -19,9 +19,8 @@ import datetime
 
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import HTTPError
-from woob.exceptions import (
-    BrowserHTTPError, BrowserHTTPNotFound, BrowserUnavailable,
-)
+
+from woob.exceptions import BrowserHTTPError, BrowserHTTPNotFound, BrowserUnavailable
 
 
 class HTTPNotFound(HTTPError, BrowserHTTPNotFound):

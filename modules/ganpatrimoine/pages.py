@@ -20,18 +20,18 @@
 import re
 from decimal import Decimal
 
-from woob.browser.elements import method, DictElement, ItemElement, TableElement, ListElement
-from woob.browser.filters.html import Attr, TableCell, HasElement, Link
+from woob.browser.elements import DictElement, ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import Attr, HasElement, Link, TableCell
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval,
-    Field, Format, FromTimestamp, Lower, Map, MapIn, Regexp,
+    CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval, Field, Format, FromTimestamp, Lower, Map, MapIn,
+    Regexp,
 )
-from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from woob.capabilities.bank import Account
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.profile import Person
-from woob.capabilities.bank.wealth import Investment
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.date import parse_french_date

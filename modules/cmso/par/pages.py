@@ -19,31 +19,30 @@
 
 # flake8: compatible
 
-import re
-import json
 import datetime
+import json
+import re
 from collections import OrderedDict
 
 import requests
 
-from woob.exceptions import BrowserUnavailable
-from woob.browser.pages import HTMLPage, JsonPage, RawPage, LoggedPage, pagination
-from woob.browser.elements import DictElement, ItemElement, TableElement, SkipItem, method
-from woob.browser.filters.standard import (
-    CleanText, Upper, Lower, Date, Regexp, Format, CleanDecimal, Filter, Env, Slugify,
-    Field, Currency, Map, Base, MapIn, Coalesce, MultiJoin, DateTime,
-)
-from woob.browser.filters.json import Dict
-from woob.browser.filters.html import Attr, Link, TableCell, AbsoluteLink
+from woob.browser.elements import DictElement, ItemElement, SkipItem, TableElement, method
 from woob.browser.exceptions import ServerError
-from woob.capabilities.bank import Account, Loan, AccountOwnership
+from woob.browser.filters.html import AbsoluteLink, Attr, Link, TableCell
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    Base, CleanDecimal, CleanText, Coalesce, Currency, Date, DateTime, Env, Field, Filter, Format, Lower, Map, MapIn,
+    MultiJoin, Regexp, Slugify, Upper,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage, pagination
+from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.bank.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
-from woob.capabilities.contact import Advisor
 from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Profile
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.exceptions import ParseError
+from woob.exceptions import BrowserUnavailable, ParseError
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.date import parse_french_date
 from woob.tools.decorators import retry
 

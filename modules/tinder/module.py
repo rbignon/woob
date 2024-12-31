@@ -23,13 +23,13 @@ from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 from dateutil.tz import tzlocal
 
-from woob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
 from woob.capabilities.dating import CapDating, Optimization
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value, ValueBackendPassword
+from woob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.log import getLogger
+from woob.tools.value import Value, ValueBackendPassword
 
-from .browser import TinderBrowser, FacebookBrowser
+from .browser import FacebookBrowser, TinderBrowser
 
 
 __all__ = ['TinderModule']

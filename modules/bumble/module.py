@@ -15,18 +15,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+import html
+import json
 from datetime import datetime
 from time import sleep, time
-import json
-import html
 
 import openai
 
 from woob.capabilities.dating import CapDating, Optimization
-from woob.capabilities.messages import Thread, Message, CapMessages, CapMessagesPost
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value, ValueTransient
+from woob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.log import getLogger
+from woob.tools.value import Value, ValueTransient
 
 from .browser import BumbleBrowser
 

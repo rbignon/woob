@@ -22,6 +22,7 @@ from woob.tools.backend import Module
 
 from .browser import Paroles2chansonsBrowser
 
+
 __all__ = ['Paroles2chansonsModule']
 
 

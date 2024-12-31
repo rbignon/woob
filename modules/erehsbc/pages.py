@@ -19,9 +19,9 @@
 
 import re
 
-from woob.browser.pages import JsonPage, RawPage
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText, Regexp
+from woob.browser.pages import JsonPage, RawPage
 
 
 class LoginPage(RawPage):

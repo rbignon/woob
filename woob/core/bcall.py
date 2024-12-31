@@ -16,13 +16,13 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from copy import copy
-from threading import Thread, Event
 import queue
+from copy import copy
+from threading import Event, Thread
 
 from woob.capabilities.base import BaseObject
-from woob.tools.misc import get_backtrace
 from woob.tools.log import getLogger
+from woob.tools.misc import get_backtrace
 
 
 __all__ = ['BackendsCall', 'CallErrors']

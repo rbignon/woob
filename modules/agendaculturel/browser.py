@@ -17,13 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import re
 from urllib.parse import urlparse
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
 from .pages import BasePage
-
-import re
 
 
 class AgendaculturelBrowser(PagesBrowser):

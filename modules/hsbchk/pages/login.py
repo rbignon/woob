@@ -17,15 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.filters.standard import (
-    CleanText
-)
-from woob.browser.selenium import (
-        SeleniumPage, VisibleXPath
-)
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
-
 from selenium.webdriver.common.by import By
+
+from woob.browser.filters.standard import CleanText
+from woob.browser.selenium import SeleniumPage, VisibleXPath
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 
 class LoginPage(SeleniumPage):

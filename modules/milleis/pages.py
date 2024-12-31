@@ -19,17 +19,16 @@
 
 import re
 
-from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
-from woob.browser.elements import TableElement, ItemElement, method, DictElement
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Regexp, Field, Date,
-    Currency, MapIn, Lower, Eval, Format, FromTimestamp,
-)
+from woob.browser.elements import DictElement, ItemElement, TableElement, method
 from woob.browser.filters.html import TableCell
 from woob.browser.filters.json import Dict
-from woob.capabilities.base import NotAvailable, empty
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Currency, Date, Eval, Field, Format, FromTimestamp, Lower, MapIn, Regexp,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.bank import Account, Loan
 from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bill import Subscription
 from woob.capabilities.profile import Person
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType

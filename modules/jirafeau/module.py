@@ -19,8 +19,8 @@
 
 from base64 import b64decode
 
-from woob.capabilities.paste import CapPaste, BasePaste
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.paste import BasePaste, CapPaste
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.capabilities.paste import bin_to_b64
 from woob.tools.value import Value
 

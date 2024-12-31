@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.test import BackendTest
 from woob.capabilities.parcel import ParcelNotFound
+from woob.tools.test import BackendTest
 
 
 class GLSTest(BackendTest):

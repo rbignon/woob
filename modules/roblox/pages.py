@@ -17,16 +17,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from decimal import Decimal
 import json
+from decimal import Decimal
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.exceptions import ClientError
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Date, DateTime, Field, Format, Map,
-)
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Date, DateTime, Field, Format, Map
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities.bank.base import Account, AccountOwnerType, Transaction
 from woob.capabilities.bank.wealth import Investment

@@ -17,19 +17,18 @@
 
 from __future__ import annotations
 
-import os
-from pathlib import Path
 import logging
+import os
 import warnings
-
-from typing import List, Callable, Dict, Iterator
+from pathlib import Path
+from typing import Callable, Dict, Iterator, List
 
 from woob import __version__
 from woob.capabilities.base import Capability
 from woob.core.backendscfg import BackendsConfig
 from woob.core.bcall import BackendsCall
 from woob.core.modules import ModulesLoader, RepositoryModulesLoader
-from woob.core.repositories import Repositories, IProgress, PrintProgress
+from woob.core.repositories import IProgress, PrintProgress, Repositories
 from woob.core.requests import RequestsManager
 from woob.core.scheduler import IScheduler, Scheduler
 from woob.exceptions import ModuleLoadError

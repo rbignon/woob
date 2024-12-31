@@ -21,6 +21,7 @@
 from datetime import datetime
 
 from woob.tools.test import BackendTest, skip_without_config
+
 from .browser import DLFP
 
 

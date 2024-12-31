@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from io import BytesIO, StringIO
-from collections import namedtuple
 import logging
 import os
 import subprocess
+from collections import namedtuple
+from io import BytesIO, StringIO
 from tempfile import mkstemp
 
 
@@ -312,8 +312,8 @@ def get_pdf_rows(data, miner_layout=True):
         from pdfminer.pdfparser import PDFDocument
         newapi = False
     from pdfminer.converter import PDFPageAggregator
-    from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-    from pdfminer.layout import LAParams, LTRect, LTTextBox, LTTextLine, LTLine, LTChar, LTCurve
+    from pdfminer.layout import LAParams, LTChar, LTCurve, LTLine, LTRect, LTTextBox, LTTextLine
+    from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 
     parser = PDFParser(BytesIO(data))
     try:
@@ -340,10 +340,11 @@ def get_pdf_rows(data, miner_layout=True):
         pages = doc.get_pages()
 
     if LOGGER.isEnabledFor(DEBUGFILES):
+        import random
         import tempfile
+
         import PIL.Image as Image
         import PIL.ImageDraw as ImageDraw
-        import random
 
         path = tempfile.mkdtemp(prefix='pdf')
 
@@ -428,7 +429,7 @@ def html_to_pdf(browser, url=None, data=None, extra_options=None):
     :rtype: bytes
     """
     try:
-        import pdfkit # https://pypi.python.org/pypi/pdfkit
+        import pdfkit  # https://pypi.python.org/pypi/pdfkit
     except ImportError:
         raise ImportError('Please install python3-pdfkit')
 
@@ -530,9 +531,9 @@ def extract_text(data):
         except ImportError:
             from pdfminer.pdfparser import PDFDocument
             newapi = False
-        from pdfminer.pdfparser import PDFParser, PDFSyntaxError
         from pdfminer.converter import TextConverter
-        from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+        from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
+        from pdfminer.pdfparser import PDFParser, PDFSyntaxError
     except ImportError:
         raise ImportError('Please install python3-pdfminer to parse PDF')
     else:

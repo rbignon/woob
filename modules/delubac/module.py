@@ -18,7 +18,7 @@
 # flake8: compatible
 
 from woob.capabilities.bank import CapBank
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
 
 from .browser import DelubacBrowser

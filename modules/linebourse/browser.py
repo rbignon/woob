@@ -21,13 +21,11 @@
 
 from datetime import datetime, timedelta
 
-from woob.browser import LoginBrowser, URL
+from woob.browser import URL, LoginBrowser
 from woob.browser.exceptions import ClientError
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
-from .pages import (
-    PortfolioPage, NewWebsiteFirstConnectionPage, AccountCodesPage, HistoryAPIPage, MarketOrderPage,
-)
+from .pages import AccountCodesPage, HistoryAPIPage, MarketOrderPage, NewWebsiteFirstConnectionPage, PortfolioPage
 
 
 class LinebourseNoSpace(AssertionError):

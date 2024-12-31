@@ -22,9 +22,9 @@ from ast import literal_eval
 
 import lxml.html
 
-from woob.browser.pages import HTMLPage, RawPage
 from woob.browser.elements import ItemElement, method
 from woob.browser.filters.standard import CleanText
+from woob.browser.pages import HTMLPage, RawPage
 from woob.capabilities.messages import Message
 
 

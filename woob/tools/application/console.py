@@ -17,33 +17,31 @@
 
 from __future__ import annotations
 
-from collections import OrderedDict
-from copy import copy
 import getpass
 import logging
+import os
 import shlex
 import subprocess
-from subprocess import check_output
 import sys
-import os
-from tempfile import NamedTemporaryFile
 import warnings
+from collections import OrderedDict
+from copy import copy
+from subprocess import check_output
+from tempfile import NamedTemporaryFile
 
-from rich.progress import Progress, TaskProgressColumn, BarColumn, TextColumn
+from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
 
 from woob.capabilities import UserError
-from woob.capabilities.account import CapAccount, Account, AccountRegisterError
+from woob.capabilities.account import Account, AccountRegisterError, CapAccount
 from woob.core.backendscfg import BackendAlreadyExists
 from woob.core.repositories import IProgress
 from woob.exceptions import (
-    BrowserUnavailable, BrowserIncorrectPassword, BrowserForbidden,
-    BrowserSSLError, BrowserQuestion, BrowserHTTPSDowngrade,
-    ModuleInstallError, ModuleLoadError, ActionNeeded, CaptchaQuestion,
-    NeedInteractiveFor2FA,
+    ActionNeeded, BrowserForbidden, BrowserHTTPSDowngrade, BrowserIncorrectPassword, BrowserQuestion, BrowserSSLError,
+    BrowserUnavailable, CaptchaQuestion, ModuleInstallError, ModuleLoadError, NeedInteractiveFor2FA,
 )
-from woob.tools.application.pretty import colored, NC, BOLD
-from woob.tools.value import Value, ValueBool, ValueFloat, ValueInt, ValueBackendPassword
-from woob.tools.misc import to_unicode, classproperty
+from woob.tools.application.pretty import BOLD, NC, colored
+from woob.tools.misc import classproperty, to_unicode
+from woob.tools.value import Value, ValueBackendPassword, ValueBool, ValueFloat, ValueInt
 
 from .base import Application, MoreResultsAvailable
 

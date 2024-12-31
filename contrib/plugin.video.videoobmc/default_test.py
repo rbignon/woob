@@ -3,10 +3,11 @@
 from __future__ import print_function
 
 import sys
-import resources.lib.test.common_test as common_xbmc
-import resources.lib.constants as constants
 
+import resources.lib.constants as constants
+import resources.lib.test.common_test as common_xbmc
 from resources.lib.actions import actions
+
 
 print(sys.argv)
 if len(sys.argv) < 2:

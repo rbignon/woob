@@ -21,11 +21,9 @@
 
 import re
 
-from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    Duration,
-)
+from woob.browser.filters.standard import Duration
 from woob.browser.pages import JsonPage
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.image import Thumbnail

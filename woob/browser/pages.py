@@ -18,19 +18,17 @@
 from __future__ import annotations
 
 import codecs
+import csv
 import importlib
 import re
 import warnings
-from typing import (
-    Dict, Callable, List, Any, Iterator, Type, ClassVar, TYPE_CHECKING
-)
+from ast import literal_eval
 from collections import OrderedDict
+from datetime import datetime
 from functools import wraps
 from io import BytesIO, StringIO
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Type
 from urllib.parse import urljoin
-from ast import literal_eval
-import csv
-from datetime import datetime
 
 import lxml
 import requests
@@ -42,6 +40,7 @@ from woob.tools.log import getLogger
 from woob.tools.pdf import decompress_pdf
 
 from .exceptions import LoggedOut
+
 
 if TYPE_CHECKING:
     from woob.browser.browsers import Browser

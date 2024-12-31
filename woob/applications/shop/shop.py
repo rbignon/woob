@@ -18,9 +18,10 @@
 from decimal import Decimal
 
 from woob.capabilities.base import empty
-from woob.capabilities.shop import CapShop, Order, Item
-from woob.tools.application.repl import ReplApplication, defaultcount
+from woob.capabilities.shop import CapShop, Item, Order
 from woob.tools.application.formatters.iformatter import IFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
+
 
 __all__ = ['AppShop']
 

@@ -17,15 +17,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.capabilities.bank import Account
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ServerError
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.capabilities.bank import Account
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
 
 from .pages import (
-    LoginPage, AccountsPage, TransactionsInvestmentsPage, AllTransactionsPage,
-    DocumentsSignaturePage, RedirectToUserAgreementPage, UserAgreementPage,
-    RedirectionPage, AuthCodePage,
+    AccountsPage, AllTransactionsPage, AuthCodePage, DocumentsSignaturePage, LoginPage, RedirectionPage,
+    RedirectToUserAgreementPage, TransactionsInvestmentsPage, UserAgreementPage,
 )
 
 

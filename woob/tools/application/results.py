@@ -96,9 +96,10 @@ class ResultsCondition(IResultsCondition):
         self.condition_str = condition_str
 
     def is_valid(self, obj):
-        import woob.tools.date as date_utils
         import re
         from datetime import date, datetime, timedelta
+
+        import woob.tools.date as date_utils
         d = obj.to_dict()
         # We evaluate all member of a list at each iteration.
         for _or in self.condition:

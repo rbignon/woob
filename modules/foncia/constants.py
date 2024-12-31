@@ -1,4 +1,5 @@
-from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
+from woob.capabilities.housing import HOUSE_TYPES, POSTS_TYPES
+
 
 QUERY_TYPES = {
     POSTS_TYPES.RENT: 'location',

@@ -19,4 +19,5 @@
 
 from .module import VirginRadioModule
 
+
 __all__ = ['VirginRadioModule']

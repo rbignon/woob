@@ -15,6 +15,7 @@ from woob.core import CallErrors, Woob
 from woob.exceptions import BrowserForbidden, BrowserIncorrectPassword, BrowserSSLError, BrowserUnavailable
 from woob.tools.application.base import MoreResultsAvailable
 
+
 PING_FREQUENCY = 3600  # seconds
 APPINDICATOR_ID = "boobank_indicator"
 PATH = os.path.realpath(__file__)

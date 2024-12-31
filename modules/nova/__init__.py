@@ -19,4 +19,5 @@
 
 from .module import NovaModule
 
+
 __all__ = ['NovaModule']

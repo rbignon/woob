@@ -21,6 +21,7 @@ import re
 
 from woob.browser.exceptions import ClientError
 
+
 EMAIL_REGEX = re.compile(r'^\w+([-_+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$')
 PHONE_NUMBER_REGEX = re.compile(r'^[\d|\W|_]+$')
 MINIMUM_PHONE_LENGTH = 4

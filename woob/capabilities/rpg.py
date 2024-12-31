@@ -18,13 +18,9 @@
 
 from woob.capabilities.base import find_object
 
-from .base import (
-    BaseObject,
-    Field, StringField,  BoolField,
-    EnumField, Enum,
-    UserError,
-)
+from .base import BaseObject, BoolField, Enum, EnumField, Field, StringField, UserError
 from .collection import CapCollection
+
 
 __all__ = ['CapRPG', 'Character', 'Skill', 'CharacterClass', 'CollectableItem']
 

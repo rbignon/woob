@@ -19,23 +19,24 @@
 
 # flake8: compatible
 
-from logging import error
 import re
 from io import BytesIO
+from logging import error
 
 from woob.browser.elements import ItemElement, SkipItem, TableElement, method
-from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Currency, Date, Field, Format, Base, Regexp
 from woob.browser.filters.html import Link, TableCell
-from woob.capabilities.bank.wealth import Investment
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
-from woob.tools.json import json
+from woob.browser.filters.standard import Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Field, Format, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bank import Account
+from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.json import json
 
 from ..captcha import Captcha, TileError
-from ..pages.login import LoginPage as LoginParPage, PasswordPage
+from ..pages.login import LoginPage as LoginParPage
+from ..pages.login import PasswordPage
 
 
 class Transaction(FrenchTransaction):

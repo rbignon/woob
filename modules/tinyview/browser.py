@@ -19,12 +19,10 @@
 
 # flake8: compatible
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.browser.url import BrowserParamURL
 
-from .pages import (
-    EntriesPage, EntryPage,
-)
+from .pages import EntriesPage, EntryPage
 
 
 class TinyViewBrowser(PagesBrowser):

@@ -19,15 +19,14 @@
 
 from datetime import timedelta
 
-from woob.capabilities.image import Thumbnail
-from woob.capabilities.base import NotAvailable
-from woob.capabilities.collection import Collection
-from woob.capabilities.base import empty
-from woob.capabilities.video import BaseVideo
-from woob.browser.pages import HTMLPage, JsonPage, pagination
 from woob.browser.elements import DictElement, ItemElement, ListElement, method
-from woob.browser.filters.standard import Date, Env, CleanText, Field, ItemNotFound, BrowserURL
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import BrowserURL, CleanText, Date, Env, Field, ItemNotFound
+from woob.browser.pages import HTMLPage, JsonPage, pagination
+from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.collection import Collection
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.video import BaseVideo
 from woob.tools.date import parse_french_date
 
 

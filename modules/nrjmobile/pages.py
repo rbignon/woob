@@ -20,13 +20,9 @@
 from dateutil.relativedelta import relativedelta
 from dateutil.tz import gettz
 
-from woob.browser.elements import (
-    ItemElement, ListElement, TableElement, method,
-)
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import Attr, TableCell
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Currency, Date, Format, Regexp,
-)
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Currency, Date, Format, Regexp
 from woob.browser.pages import HTMLPage, LoggedPage, RawPage
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.base import NotAvailable

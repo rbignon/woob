@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import date, timedelta
 from urllib.parse import quote_plus
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
-from .pages import SearchPage, AdvertPage, AdvertsJsonPage
+from .pages import AdvertPage, AdvertsJsonPage, SearchPage
 
-from datetime import date, timedelta
 
 __all__ = ['AdeccoBrowser']
 

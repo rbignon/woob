@@ -20,18 +20,14 @@
 
 import re
 
-from woob.capabilities.base import find_object, empty
 from woob.capabilities.bank import (
-    Account, TransferInvalidLabel, CapBankTransfer, AccountNotFound,
-    RecipientNotFound, RecipientInvalidLabel,
+    Account, AccountNotFound, CapBankTransfer, RecipientInvalidLabel, RecipientNotFound, TransferInvalidLabel,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import empty, find_object
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
 from woob.capabilities.profile import CapProfile
-from woob.capabilities.bill import (
-    CapDocument, Subscription, Document, DocumentNotFound,
-    DocumentTypes,
-)
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.value import ValueBackendPassword, ValueTransient
 

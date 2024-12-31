@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.pages import LoggedPage, JsonPage
-from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.capabilities.bill import Subscription, Document, DocumentTypes
-from woob.browser.filters.standard import Date, BrowserURL, Format, CleanText, Env
+from woob.browser.filters.standard import BrowserURL, CleanText, Date, Env, Format
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 
 class UserAccountsPage(LoggedPage, JsonPage):

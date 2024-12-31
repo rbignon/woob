@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
 import os
 import re
 import subprocess
+from pathlib import Path
 
 
 def get_lines(command):

@@ -19,14 +19,13 @@
 
 import re
 
-from woob.capabilities.video import CapVideo, BaseVideo
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.collection import CapCollection
+from woob.capabilities.video import BaseVideo, CapVideo
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value
 
 from .browser import CanalplusBrowser
 from .video import CanalplusVideo
-
-from woob.capabilities.collection import CapCollection
 
 
 __all__ = ['CanalplusModule']

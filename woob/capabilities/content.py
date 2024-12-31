@@ -16,7 +16,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .base import Capability, BaseObject, BoolField, StringField
+from .base import BaseObject, BoolField, Capability, StringField
 from .date import DateField
 
 

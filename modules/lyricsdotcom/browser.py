@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser import PagesBrowser
-from woob.browser.url import URL
 from woob.browser.profiles import Firefox
+from woob.browser.url import URL
 
-from .pages import SearchPage, LyricsPage, ArtistPages
+from .pages import ArtistPages, LyricsPage, SearchPage
 
 
 __all__ = ['LyricsdotcomBrowser']

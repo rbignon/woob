@@ -20,8 +20,8 @@
 import re
 from urllib.parse import unquote
 
-from woob.browser.pages import RawPage, JsonPage, HTMLPage
 from woob.browser.filters.standard import CleanText
+from woob.browser.pages import HTMLPage, JsonPage, RawPage
 from woob.exceptions import BrowserIncorrectPassword
 
 

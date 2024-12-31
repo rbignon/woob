@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from woob.browser.browsers import Browser
 from woob.capabilities.geolocip import CapGeolocIp, IpLocation
 from woob.tools.backend import Module
-from woob.browser.browsers import Browser
 from woob.tools.json import json
 
 

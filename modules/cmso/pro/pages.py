@@ -22,21 +22,20 @@
 import re
 from urllib.parse import urljoin
 
-from woob.exceptions import BrowserIncorrectPassword
-from woob.browser.pages import HTMLPage, JsonPage, pagination, LoggedPage
-from woob.browser.elements import ListElement, ItemElement, TableElement, method
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, DateGuesser, Env, Field, Filter, Regexp, Currency, Date,
-    Format, Lower, Coalesce,
-)
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.json import Dict
-from woob.browser.filters.html import Link, Attr, TableCell
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Coalesce, Currency, Date, DateGuesser, Env, Field, Filter, Format, Lower, Regexp,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from woob.capabilities.bank import Account, Loan
 from woob.capabilities.bank.wealth import Investment
-from woob.capabilities.profile import Profile
 from woob.capabilities.base import NotAvailable
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.capabilities.profile import Profile
+from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.investments import is_isin_valid
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
 class ErrorPage(HTMLPage):

@@ -17,18 +17,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import date, datetime
 from functools import wraps
-from datetime import datetime, date
 
-from woob.tools.value import Value
-from woob.capabilities.bank.transfer import TransferStep
-from woob.browser.exceptions import ClientError
-from woob.browser.browsers import LoginBrowser, OAuth2Mixin
 from woob.browser import URL
+from woob.browser.browsers import LoginBrowser, OAuth2Mixin
+from woob.browser.exceptions import ClientError
+from woob.capabilities.bank.transfer import TransferStep
+from woob.tools.value import Value
 
 from .pages import (
-    LoginPage, AccountsPage, TransactionsPage, BankDetailsPage,
-    BeneficiariesPage, RefreshTokenPage, TransferPage, ConfirmTransferPage,
+    AccountsPage, BankDetailsPage, BeneficiariesPage, ConfirmTransferPage, LoginPage, RefreshTokenPage,
+    TransactionsPage, TransferPage,
 )
 
 

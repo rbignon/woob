@@ -29,6 +29,7 @@ from textwrap import dedent
 
 from woob.tools.application.base import Application
 
+
 BASE_PATH = os.path.join(os.path.dirname(__file__), os.pardir)
 DEST_DIR = 'man'
 COMP_PATH = 'tools/woob_bash_completion'

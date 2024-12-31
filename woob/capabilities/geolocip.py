@@ -16,8 +16,8 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .base import Capability, BaseObject, StringField, Field
 from .address import GeoCoordinates, PostalAddress, compat_field
+from .base import BaseObject, Capability, Field, StringField
 
 
 __all__ = ['IpLocation', 'CapGeolocIp']

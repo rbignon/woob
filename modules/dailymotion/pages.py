@@ -17,20 +17,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import re
+from datetime import timedelta
+
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.pages import HTMLPage, pagination
-from woob.browser.filters.standard import CleanText, Regexp, Env, Duration, DateTime
 from woob.browser.filters.html import Link
-
+from woob.browser.filters.standard import CleanText, DateTime, Duration, Env, Regexp
+from woob.browser.pages import HTMLPage, pagination
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.video import BaseVideo
 from woob.capabilities.image import Thumbnail
-
+from woob.capabilities.video import BaseVideo
 from woob.exceptions import ParseError
 from woob.tools.json import json
-
-from datetime import timedelta
-import re
 
 
 def determine_ext(url, default_ext='unknown_video'):

@@ -17,17 +17,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from ast import literal_eval
-from decimal import Decimal, ROUND_DOWN
 import re
+from ast import literal_eval
+from decimal import ROUND_DOWN, Decimal
 from urllib.parse import unquote
 
+from woob.browser.exceptions import ServerError
+from woob.browser.filters.standard import CleanDecimal, CleanText
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.bank import Account
 from woob.capabilities.base import NotAvailable
-from woob.exceptions import BrowserUnavailable, ActionNeeded
-from woob.browser.exceptions import ServerError
-from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
-from woob.browser.filters.standard import CleanText, CleanDecimal
+from woob.exceptions import ActionNeeded, BrowserUnavailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.date import parse_french_date
 from woob.tools.js import Javascript

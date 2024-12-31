@@ -19,15 +19,13 @@
 
 from datetime import timedelta
 
-from woob.browser.elements import method, ItemElement, DictElement
-from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanText, DateTime, Format, Date, BrowserURL, Field
+from woob.browser.filters.standard import BrowserURL, CleanText, Date, DateTime, Field, Format
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
+from woob.capabilities.calendar import STATUS, BaseCalendarEvent
 from woob.exceptions import BrowserIncorrectPassword
-from woob.capabilities.calendar import BaseCalendarEvent, STATUS
-from woob.capabilities.bill import (
-    Subscription, Document, DocumentTypes,
-)
 from woob.tools.date import new_date, parse_date
 
 

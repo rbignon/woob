@@ -30,6 +30,7 @@ from woob.capabilities.shop import Item, Order, Payment
 from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
 
+
 __all__ = ['VicSec']
 
 

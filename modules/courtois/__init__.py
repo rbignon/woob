@@ -20,4 +20,5 @@
 
 from .module import CourtoisModule
 
+
 __all__ = ['CourtoisModule']

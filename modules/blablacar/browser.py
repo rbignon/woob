@@ -17,13 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
 from urllib.parse import urlencode
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
 from .pages import DeparturesPage
-
-from datetime import datetime
 
 
 class BlablacarBrowser(PagesBrowser):

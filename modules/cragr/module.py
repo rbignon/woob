@@ -17,23 +17,20 @@
 
 # flake8: compatible
 
-from datetime import date
 from collections import OrderedDict
+from datetime import date
 
-from woob.tools.value import Value, ValueBackendPassword
-from woob.tools.backend import BackendConfig, Module
-from woob.capabilities.base import find_object
-from woob.tools.capabilities.bank.iban import is_iban_valid
-from woob.capabilities.bill import (
-    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
-)
-from woob.capabilities.profile import CapProfile
-from woob.capabilities.bank import (
-    CapBankTransferAddRecipient, Account,
-)
+from woob.capabilities.bank import Account, CapBankTransferAddRecipient
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import find_object
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import CreditAgricoleBrowser
+
 
 __all__ = ['CreditAgricoleModule']
 

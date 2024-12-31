@@ -20,4 +20,5 @@
 
 from .module import NewsfeedModule
 
+
 __all__ = ['NewsfeedModule']

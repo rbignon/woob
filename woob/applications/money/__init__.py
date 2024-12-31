@@ -18,4 +18,5 @@
 
 from .money import AppMoney
 
+
 __all__ = ['AppMoney']

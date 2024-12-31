@@ -20,4 +20,5 @@
 
 from .module import BredModule
 
+
 __all__ = ['BredModule']

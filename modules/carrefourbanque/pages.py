@@ -19,22 +19,18 @@
 
 # flake8: compatible
 
-import re
 import base64
 import datetime
+import re
 from io import BytesIO
 
 from PIL import Image
 
-from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
-from woob.browser.elements import ListElement, TableElement, ItemElement, method, DictElement
-from woob.browser.filters.standard import (
-    Coalesce, Regexp, Field, CleanText, CleanDecimal, Eval, Currency, Date,
-)
-from woob.browser.filters.html import (
-    Attr, AttributeNotFound, Link, TableCell, XPathNotFound,
-)
+from woob.browser.elements import DictElement, ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import Attr, AttributeNotFound, Link, TableCell, XPathNotFound
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Currency, Date, Eval, Field, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty

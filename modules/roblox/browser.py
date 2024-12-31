@@ -20,16 +20,13 @@
 from woob.browser.browsers import need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.url import URL, BrowserParamURL
-from woob.exceptions import (
-    BrowserUserBanned, OfflineOTPQuestion, OTPSentType, SentOTPQuestion,
-)
+from woob.exceptions import BrowserUserBanned, OfflineOTPQuestion, OTPSentType, SentOTPQuestion
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
-    AccountPage, BirthdateAPIPage, CaptchaMetadataAPIPage, CurrencyAPIPage,
-    EmailAPIPage, ErrorAPIPage, GenderAPIPage, InventoryPage,
-    LoginAPIPage, LoginPage, PhoneAPIPage, TransactionsAPIPage,
-    TwoFAValidateChallengeAPIPage, ValidateTwoFAAPIPage,
+    AccountPage, BirthdateAPIPage, CaptchaMetadataAPIPage, CurrencyAPIPage, EmailAPIPage, ErrorAPIPage, GenderAPIPage,
+    InventoryPage, LoginAPIPage, LoginPage, PhoneAPIPage, TransactionsAPIPage, TwoFAValidateChallengeAPIPage,
+    ValidateTwoFAAPIPage,
 )
 from .utils import get_username_type
 

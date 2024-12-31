@@ -18,4 +18,5 @@
 
 from .paste import AppPaste
 
+
 __all__ = ['AppPaste']

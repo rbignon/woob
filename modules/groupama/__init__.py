@@ -18,4 +18,5 @@
 
 from .module import GroupamaModule
 
+
 __all__ = ['GroupamaModule']

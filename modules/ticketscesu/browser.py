@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword
 
 from .pages import AccountsPage, LoginPage, ProfilePage

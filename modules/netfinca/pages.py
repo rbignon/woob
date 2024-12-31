@@ -19,25 +19,21 @@
 
 # flake8: compatible
 
-import re
 import datetime
+import re
 
-from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.elements import method, ItemElement, TableElement
+from woob.browser.elements import ItemElement, TableElement, method
+from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.standard import (
-    Base, CleanDecimal, CleanText, Coalesce, Currency,
-    Date, Eval, Field, Format, Map, MapIn, Regexp,
+    Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Eval, Field, Format, Map, MapIn, Regexp,
 )
-from woob.browser.filters.html import TableCell, Attr, Link
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderType,
-    MarketOrderDirection, MarketOrderPayment,
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
 )
 from woob.capabilities.base import NotAvailable, empty
-from woob.tools.capabilities.bank.investments import (
-    is_isin_valid, create_french_liquidity, IsinCode, IsinType,
-)
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity, is_isin_valid
 
 
 ACCOUNT_TYPES = {

@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.browser.exceptions import BrowserHTTPNotFound
 
-from .pages import SeriePage, SearchPage, SeasonPage, HomePage
+from .pages import HomePage, SearchPage, SeasonPage, SeriePage
 
 
 __all__ = ['TvsubtitlesBrowser']

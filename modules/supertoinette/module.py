@@ -22,6 +22,7 @@ from woob.tools.backend import Module
 
 from .browser import SupertoinetteBrowser
 
+
 __all__ = ['SupertoinetteModule']
 
 

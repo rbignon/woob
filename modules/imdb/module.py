@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.cinema import CapCinema, Person, Movie
+from woob.capabilities.cinema import CapCinema, Movie, Person
 from woob.tools.backend import Module
 
 from .browser import ImdbBrowser

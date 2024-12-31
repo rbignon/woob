@@ -17,17 +17,14 @@
 
 # flake8: compatible
 
-from woob.browser.exceptions import ServerError
-from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, PartialHTMLPage, pagination, JsonPage
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.html import Link, Attr, HasElement
+from woob.browser.exceptions import ServerError
+from woob.browser.filters.html import Attr, HasElement, Link
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Env, Regexp, Format,
-    Field, Currency, Date, Coalesce,
-)
-from woob.capabilities.bill import Bill, Subscription
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Field, Format, Regexp
+from woob.browser.pages import FormNotFound, HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, pagination
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Bill, Subscription
 from woob.tools.date import parse_french_date
 
 

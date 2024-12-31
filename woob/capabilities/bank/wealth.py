@@ -17,13 +17,11 @@
 
 # flake8: compatible
 
-from woob.capabilities.base import (
-    BaseObject, Field, StringField, DecimalField, IntField,
-    EnumField, Enum,
-)
+from woob.capabilities.base import BaseObject, DecimalField, Enum, EnumField, Field, IntField, StringField
 from woob.capabilities.date import DateField
 
 from .base import Account, CapBank
+
 
 __all__ = [
     'PerVersion', 'PerProviderType', 'Per', 'Investment', 'Pocket',

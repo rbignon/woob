@@ -17,13 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.bank import (
-    CapCurrencyRate, CapBankTransferAddRecipient, Account, AccountNotFound,
-    RecipientNotFound,
+    Account, AccountNotFound, CapBankTransferAddRecipient, CapCurrencyRate, RecipientNotFound,
 )
 from woob.capabilities.base import find_object
-from woob.tools.value import ValueBackendPassword, ValueTransient, ValueBool
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import ValueBackendPassword, ValueBool, ValueTransient
 
 from .browser import KrakenBrowser
 

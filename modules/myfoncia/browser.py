@@ -19,11 +19,11 @@
 
 from selenium import webdriver
 
-from woob.browser import PagesBrowser, need_login, URL
+from woob.browser import URL, PagesBrowser, need_login
 from woob.browser.selenium import SeleniumBrowser, SubSeleniumMixin
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
-from .pages import LoginPage, MyPropertyPage, DocumentsPage, FeesPage
+from .pages import DocumentsPage, FeesPage, LoginPage, MyPropertyPage
 
 
 class MyFonciaSeleniumBrowser(SeleniumBrowser):

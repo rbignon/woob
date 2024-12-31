@@ -23,10 +23,7 @@
 
 import re
 
-from woob.capabilities.bank import (
-    Account, CapCurrencyRate,
-    CapBankTransferAddRecipient, CapBankWealth,
-)
+from woob.capabilities.bank import Account, CapBankTransferAddRecipient, CapBankWealth, CapCurrencyRate
 from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.base import empty, find_object
 from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
@@ -36,6 +33,7 @@ from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import BoursoramaBrowser
+
 
 __all__ = ['BoursoramaModule']
 

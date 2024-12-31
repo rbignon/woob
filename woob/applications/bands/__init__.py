@@ -17,4 +17,5 @@
 
 from .bands import Appbands
 
+
 __all__ = ['Appbands']

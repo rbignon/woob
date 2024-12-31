@@ -20,12 +20,12 @@
 import re
 from datetime import datetime, time
 
-from woob.browser.pages import JsonPage
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import Field
+from woob.browser.pages import JsonPage
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.calendar import BaseCalendarEvent, CATEGORIES, STATUS, TRANSP
+from woob.capabilities.calendar import CATEGORIES, STATUS, TRANSP, BaseCalendarEvent
 
 
 class NoEvent(Exception):

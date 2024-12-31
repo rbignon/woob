@@ -18,27 +18,25 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from urllib.parse import urlparse, parse_qsl
+from urllib.parse import parse_qsl, urlparse
 
-from requests.exceptions import Timeout, ReadTimeout
-
+from requests.exceptions import ReadTimeout, Timeout
 
 from woob.browser import URL, need_login
+from woob.browser.exceptions import HTTPNotFound, ServerError
 from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bank import Account
-from woob.browser.exceptions import HTTPNotFound, ServerError
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, ActionType,
-    AuthMethodNotImplemented, OTPSentType, SentOTPQuestion,
-)
 from woob.capabilities.base import empty
+from woob.exceptions import (
+    ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable, OTPSentType,
+    SentOTPQuestion,
+)
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 
 from .pages import (
-    RootPage, LoginPage, HomePage, AccountsPage, AccountDetailsPage, HistoryPage,
-    ProfilePage, WPSAccountsPage, RibPage, WPSPortalPage, LifeInsurancePage,
-    LifeInsurancePageInvestmentsDetails, AccountDetailsPageBis,
+    AccountDetailsPage, AccountDetailsPageBis, AccountsPage, HistoryPage, HomePage, LifeInsurancePage,
+    LifeInsurancePageInvestmentsDetails, LoginPage, ProfilePage, RibPage, RootPage, WPSAccountsPage, WPSPortalPage,
 )
 
 

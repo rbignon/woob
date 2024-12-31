@@ -21,13 +21,9 @@ import re
 
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, Link
-from woob.browser.filters.standard import (
-    BrowserURL, CleanText, Env, Field, Format, Regexp,
-)
+from woob.browser.filters.standard import BrowserURL, CleanText, Env, Field, Format, Regexp
 from woob.browser.pages import HTMLPage, pagination
-from woob.capabilities.picross import (
-    Picross, PicrossSolvedStatus, PicrossVariant,
-)
+from woob.capabilities.picross import Picross, PicrossSolvedStatus, PicrossVariant
 
 
 def get_color(expr):

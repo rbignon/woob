@@ -27,6 +27,7 @@ from woob.tools.misc import NO_DEFAULT
 
 from .base import debug
 
+
 __all__ = ['MimeType', 'FileExtension']
 
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 import ast
-from pathlib import Path
 import runpy
 import sys
 import tokenize
+from pathlib import Path
 
 from asttokens import ASTTokens
 

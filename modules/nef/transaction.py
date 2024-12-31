@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
-import re
 
 class Transaction(FrenchTransaction):
     PATTERNS = [

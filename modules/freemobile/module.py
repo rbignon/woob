@@ -19,15 +19,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription,
-    Bill, DocumentNotFound, DocumentCategory,
-)
-from woob.capabilities.profile import CapProfile
-from woob.capabilities.messages import CantSendMessage, CapMessages, CapMessagesPost
 from woob.capabilities.base import find_object
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, ValueTransient, ValueBool
+from woob.capabilities.bill import Bill, CapDocument, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription
+from woob.capabilities.messages import CantSendMessage, CapMessages, CapMessagesPost
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import ValueBackendPassword, ValueBool, ValueTransient
 
 from .browser import Freemobile
 

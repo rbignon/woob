@@ -26,16 +26,14 @@ from dateutil.relativedelta import relativedelta
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.exceptions import (
-    ActionNeeded, ActionType, BrowserIncorrectPassword,
-    BrowserPasswordExpired, BrowserUnavailable, BrowserUserBanned,
+    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable, BrowserUserBanned,
     OTPSentType, SentOTPQuestion,
 )
 from woob.tools.capabilities.bill.documents import merge_iterators
 
 from .pages import (
-    CguPage, CtPage, DocumentsDetailsPage, DocumentsFirstSummaryPage, DocumentsLastSummaryPage,
-    ErrorPage, LoginPage, NewPasswordPage, RedirectPage, SubscriptionPage,
-    AmeliConnectOpenIdPage, LoginContinuePage,
+    AmeliConnectOpenIdPage, CguPage, CtPage, DocumentsDetailsPage, DocumentsFirstSummaryPage, DocumentsLastSummaryPage,
+    ErrorPage, LoginContinuePage, LoginPage, NewPasswordPage, RedirectPage, SubscriptionPage,
 )
 
 

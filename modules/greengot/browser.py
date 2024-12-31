@@ -20,17 +20,11 @@
 import json
 from datetime import datetime
 
-from woob.capabilities.bank import (
-    Account, Transaction,
-    AccountNotFound, AccountType,
-)
-from woob.browser.browsers import APIBrowser
+from woob.browser.browsers import APIBrowser, need_login
 from woob.browser.mfa import TwoFactorBrowser
-from woob.browser.browsers import need_login
-from woob.exceptions import (
-    OTPSentType, SentOTPQuestion,
-)
+from woob.capabilities.bank import Account, AccountNotFound, AccountType, Transaction
 from woob.capabilities.base import find_object
+from woob.exceptions import OTPSentType, SentOTPQuestion
 
 
 __all__ = ['GreenGotBrowser']

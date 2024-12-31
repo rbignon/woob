@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.test import BackendTest
-from woob.capabilities.calendar import Query
-
 from datetime import datetime, timedelta
+
+from woob.capabilities.calendar import Query
+from woob.tools.test import BackendTest
 
 
 class ResidentadvisorTest(BackendTest):

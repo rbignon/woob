@@ -19,8 +19,10 @@
 
 from urllib.parse import quote
 
-from woob.browser import PagesBrowser, URL
-from .pages import ResultsPage, RecipePage
+from woob.browser import URL, PagesBrowser
+
+from .pages import RecipePage, ResultsPage
+
 
 __all__ = ['AllrecipesBrowser']
 

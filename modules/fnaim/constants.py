@@ -1,5 +1,6 @@
 from woob.capabilities.housing import HOUSE_TYPES, POSTS_TYPES
 
+
 QUERY_TYPES = {
     POSTS_TYPES.RENT: 2,
     POSTS_TYPES.SALE: 1,

@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
-from woob.browser import LoginBrowser, URL, need_login
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
-from .pages import LoginPage, ErrorPage, AccountsPage, TransactionsPage
+from .pages import AccountsPage, ErrorPage, LoginPage, TransactionsPage
 
 
 __all__ = ['BnpcartesentrepriseCorporateBrowser']

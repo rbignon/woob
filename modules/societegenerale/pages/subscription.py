@@ -21,11 +21,11 @@
 
 from datetime import datetime
 
-from woob.capabilities.bill import Document, DocumentTypes
 from woob.browser.elements import DictElement, ItemElement, method
-from woob.browser.filters.standard import CleanText, Date, Format, Field, BrowserURL, Env, Eval
 from woob.browser.filters.json import Dict
-from woob.browser.pages import LoggedPage, RawPage, JsonPage
+from woob.browser.filters.standard import BrowserURL, CleanText, Date, Env, Eval, Field, Format
+from woob.browser.pages import JsonPage, LoggedPage, RawPage
+from woob.capabilities.bill import Document, DocumentTypes
 
 
 def parse_from_timestamp(date, **kwargs):

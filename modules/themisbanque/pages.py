@@ -19,16 +19,16 @@
 
 import re
 
-from woob.exceptions import BrowserIncorrectPassword
-from woob.browser.pages import LoggedPage, HTMLPage, pagination, PDFPage
-from woob.browser.elements import method, ItemElement, TableElement
+from woob.browser.elements import ItemElement, TableElement, method
+from woob.browser.filters.html import ColumnNotFound, Link, TableCell
+from woob.browser.filters.standard import Async, CleanDecimal, CleanText, Field, Join, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage, PDFPage, pagination
 from woob.capabilities.bank import Account
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.profile import Profile
-from woob.browser.filters.standard import CleanText, CleanDecimal, Async, Regexp, Join, Field
-from woob.browser.filters.html import Link, TableCell, ColumnNotFound
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.iban import is_iban_valid
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.pdf import extract_text
 
 

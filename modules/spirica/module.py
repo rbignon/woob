@@ -19,9 +19,9 @@
 
 # flake8: compatible
 
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import ValueBackendPassword
 
 from .browser import SpiricaBrowser
 

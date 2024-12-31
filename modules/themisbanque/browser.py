@@ -19,9 +19,9 @@
 
 from urllib.parse import urljoin
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 
-from .pages import LoginPage, LoginConfirmPage, AccountsPage, RibPage, RibPDFPage, HistoryPage
+from .pages import AccountsPage, HistoryPage, LoginConfirmPage, LoginPage, RibPage, RibPDFPage
 
 
 class ThemisBrowser(LoginBrowser):

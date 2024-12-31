@@ -24,17 +24,11 @@ import time
 from datetime import date
 
 from woob.browser import URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned, BrowserPasswordExpired
+from woob.browser.selenium import AnyCondition, FakeResponse, IsHereCondition, SeleniumBrowser, VisibleXPath, webdriver
+from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUserBanned
 from woob.tools.capabilities.bank.transactions import sorted_transactions
-from woob.browser.selenium import (
-    SeleniumBrowser, webdriver, AnyCondition, VisibleXPath, IsHereCondition,
-    FakeResponse,
-)
 
-from .ent_pages import (
-    LoginPage, AccueilPage, AccountsPage, HistoryPage,
-    AccountsXlsPage, HistoryXlsPage, DeferredQuery,
-)
+from .ent_pages import AccountsPage, AccountsXlsPage, AccueilPage, DeferredQuery, HistoryPage, HistoryXlsPage, LoginPage
 
 
 class SogecarteEntrepriseBrowser(SeleniumBrowser):

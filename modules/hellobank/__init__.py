@@ -19,4 +19,5 @@
 
 from .module import HelloBankModule
 
+
 __all__ = ['HelloBankModule']

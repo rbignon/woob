@@ -20,16 +20,14 @@
 import re
 from datetime import datetime, timedelta
 
-from woob.browser.filters.json import Dict
-from woob.browser.pages import PartialHTMLPage, HTMLPage, pagination, JsonPage
 from woob.browser.elements import ItemElement, ListElement, method
-
-from woob.browser.filters.standard import CleanText, Regexp, Duration, BrowserURL, Env, Date
-
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import BrowserURL, CleanText, Date, Duration, Env, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, PartialHTMLPage, pagination
 from woob.capabilities.audio import BaseAudio
-from woob.capabilities.video import BaseVideo
-from woob.capabilities.image import Thumbnail
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.video import BaseVideo
 from woob.tools.capabilities.audio.audio import BaseAudioIdFilter
 
 

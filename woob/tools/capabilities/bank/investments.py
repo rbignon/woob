@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from decimal import Decimal
 import re
+from decimal import Decimal
 
-from woob.capabilities.base import NotAvailable
-from woob.capabilities.bank.wealth import Investment
 from woob.browser.filters.base import Filter, FilterError, debug
+from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.base import NotAvailable
 from woob.tools.log import getLogger
+
 
 def is_isin_valid(isin):
     """

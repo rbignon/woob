@@ -17,15 +17,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import re
 from collections import OrderedDict
 
-from woob.capabilities.video import CapVideo, BaseVideo
 from woob.capabilities.collection import CapCollection, CollectionNotFound
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.video import BaseVideo, CapVideo
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value
+
 from .browser import DailymotionBrowser
 
-import re
 
 __all__ = ['DailymotionModule']
 

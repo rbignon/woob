@@ -19,10 +19,11 @@
 
 import re
 
-from woob.capabilities.translate import Translation
-from woob.browser.elements import method, ListElement, ItemElement
-from woob.browser.filters.standard import Env, CleanText
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import CleanText, Env
 from woob.browser.pages import HTMLPage
+from woob.capabilities.translate import Translation
+
 
 CODES = {
     'allemand': 'de',

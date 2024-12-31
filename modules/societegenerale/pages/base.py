@@ -21,10 +21,10 @@
 
 from decimal import Decimal
 
-from woob.capabilities.base import NotAvailable
-from woob.browser.pages import HTMLPage
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.browser.filters.standard import CleanText
+from woob.browser.pages import HTMLPage
+from woob.capabilities.base import NotAvailable
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
 class BasePage(HTMLPage):

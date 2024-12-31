@@ -19,16 +19,11 @@
 
 from urllib.parse import urljoin
 
-from woob.browser.pages import HTMLPage, LoggedPage, RawPage
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.capabilities.bill import (
-    Subscription, Document, DocumentTypes,
-)
-from woob.browser.filters.standard import (
-    CleanText, Field, Format,
-    Regexp, Date, Env, FilterError,
-)
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, Link
+from woob.browser.filters.standard import CleanText, Date, Env, Field, FilterError, Format, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage, RawPage
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 
 class BankStatementsPage(LoggedPage, HTMLPage):

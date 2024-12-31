@@ -19,19 +19,18 @@
 
 from woob.browser import URL, need_login
 from woob.browser.exceptions import ClientError
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,
-    BrowserUserBanned, OfflineOTPQuestion, OTPSentType, SentOTPQuestion,
-)
 from woob.browser.mfa import TwoFactorBrowser
+from woob.exceptions import (
+    BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable, BrowserUserBanned, OfflineOTPQuestion,
+    OTPSentType, SentOTPQuestion,
+)
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 
 from .pages import (
-    AccountsPage, HistoryPage, HomePage, InvestPage, IsinPage,
-    JsRedirectPage, LoginPage, MarketOrderDetailsPage,
-    MarketOrdersPage, PasswordRenewalPage, PortfolioPage,
-    SendOTPSMSPage, TwofaStatePage, ValidateOTPSMSPage, ValidateTOTPPage,
+    AccountsPage, HistoryPage, HomePage, InvestPage, IsinPage, JsRedirectPage, LoginPage, MarketOrderDetailsPage,
+    MarketOrdersPage, PasswordRenewalPage, PortfolioPage, SendOTPSMSPage, TwofaStatePage, ValidateOTPSMSPage,
+    ValidateTOTPPage,
 )
 
 

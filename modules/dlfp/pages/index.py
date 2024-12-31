@@ -18,7 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.pages import HTMLPage, FormNotFound
+from woob.browser.pages import FormNotFound, HTMLPage
 
 
 class DLFPPage(HTMLPage):

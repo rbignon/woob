@@ -18,9 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from woob.capabilities.housing import ADVERT_TYPES, CapHousing, Housing, HousingPhoto
 from woob.tools.backend import Module
-from woob.capabilities.housing import (CapHousing, HousingPhoto,
-                                         ADVERT_TYPES, Housing)
 
 from .browser import EntreparticuliersBrowser
 

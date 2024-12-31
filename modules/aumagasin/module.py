@@ -16,8 +16,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenskes/>.
 
 
-from woob.tools.backend import Module
 from woob.capabilities.contact import CapDirectory
+from woob.tools.backend import Module
 
 from .browser import AumagasinBrowser
 

@@ -24,10 +24,7 @@ from woob.browser.url import URL
 from woob.capabilities.captcha import InvalidCaptcha
 from woob.tools.url import get_url_param
 
-from .pages import (
-    CaptchaHTMLPage, CaptchaImagePage, PrepareApplicationPage, SelectSlotPage,
-    ValidateCaptchaPage,
-)
+from .pages import CaptchaHTMLPage, CaptchaImagePage, PrepareApplicationPage, SelectSlotPage, ValidateCaptchaPage
 
 
 class RDVPrefectureBrowser(PagesBrowser, StatesMixin):

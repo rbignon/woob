@@ -21,11 +21,9 @@
 
 import re
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
-from .pages import (
-    TrackPage, FormPage,
-)
+from .pages import FormPage, TrackPage
 
 
 class MondialrelayBrowser(PagesBrowser):

@@ -17,14 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Date,
-)
-from woob.browser.pages import HTMLPage, CsvPage, LoggedPage
-from woob.capabilities.base import NotAvailable
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date
+from woob.browser.pages import CsvPage, HTMLPage, LoggedPage
 from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.base import NotAvailable
 from woob.exceptions import BrowserIncorrectPassword
 
 

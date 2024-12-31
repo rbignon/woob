@@ -24,24 +24,23 @@ from time import sleep
 
 from requests.exceptions import ConnectTimeout
 
-from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.browser import URL, LoginBrowser, StatesMixin, need_login
+from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.capabilities import NotAvailable
 from woob.capabilities.bill import Subscription
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, ActionNeeded, BrowserPasswordExpired,
-    ScrapingBlocked,
+    ActionNeeded, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable, ScrapingBlocked,
 )
-from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.tools.decorators import retry
 
 from .pages import LoginPage
-from .pages.captcha import OrangeCaptchaHandler, CaptchaPage
-from .pages.login import ManageCGI, HomePage, PasswordPage, PortalPage
 from .pages.bills import (
-    SubscriptionsPage, SubscriptionsApiPage, BillsApiProPage, BillsApiParPage,
-    BillsApiProRechargeablePage, ContractsPage, ContractsApiPage,
+    BillsApiParPage, BillsApiProPage, BillsApiProRechargeablePage, ContractsApiPage, ContractsPage,
+    SubscriptionsApiPage, SubscriptionsPage,
 )
-from .pages.profile import ProfileParPage, ProfileApiParPage, ProfileProPage, PostalAddressPage
+from .pages.captcha import CaptchaPage, OrangeCaptchaHandler
+from .pages.login import HomePage, ManageCGI, PasswordPage, PortalPage
+from .pages.profile import PostalAddressPage, ProfileApiParPage, ProfileParPage, ProfileProPage
 
 
 __all__ = ['OrangeBillBrowser']

@@ -23,7 +23,7 @@ from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, CleanHTML, Link, XPathNotFound
 from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Format
 from woob.browser.pages import HTMLPage
-from woob.capabilities.base import NotAvailable, Currency
+from woob.capabilities.base import Currency, NotAvailable
 from woob.capabilities.bill import Bill, Subscription
 
 

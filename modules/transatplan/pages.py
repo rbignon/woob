@@ -21,17 +21,14 @@
 
 import re
 
-from woob.capabilities.base import NotAvailable, empty
+from woob.browser.elements import ItemElement, TableElement, method
+from woob.browser.filters.html import Attr, Link, TableCell
+from woob.browser.filters.standard import Base, CleanDecimal, CleanText, Currency, Date, Env, Field, Regexp
+from woob.browser.pages import FormNotFound, HTMLPage, LoggedPage
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import Investment, Pocket
-from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound
-from woob.browser.elements import TableElement, ItemElement, method
-from woob.browser.filters.standard import (
-    CleanText, Regexp, CleanDecimal, Currency, Date, Field,
-    Env, Base,
-)
-from woob.browser.filters.html import TableCell, Link, Attr
-from woob.exceptions import BrowserUnavailable, ActionNeeded, ActionType
+from woob.capabilities.base import NotAvailable, empty
+from woob.exceptions import ActionNeeded, ActionType, BrowserUnavailable
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.date import date
 

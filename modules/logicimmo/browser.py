@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.browser.profiles import Firefox
-from woob.capabilities.housing import (TypeNotSupported, POSTS_TYPES,
-                                         HOUSE_TYPES)
-from .pages import CitiesPage, SearchPage, HousingPage, PhonePage
+from woob.capabilities.housing import HOUSE_TYPES, POSTS_TYPES, TypeNotSupported
+
+from .pages import CitiesPage, HousingPage, PhonePage, SearchPage
 
 
 class LogicimmoBrowser(PagesBrowser):

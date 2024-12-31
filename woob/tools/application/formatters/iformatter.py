@@ -16,16 +16,17 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
+import os
+import subprocess
+import sys
+import warnings
 from collections import OrderedDict
 from pathlib import Path
-import os
-import sys
-import subprocess
-import warnings
+
 
 try:
-    import tty
     import termios
+    import tty
 except ImportError:
     PROMPT = '--Press return to continue--'
 
@@ -49,8 +50,8 @@ else:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 from woob.capabilities.base import BaseObject
-from woob.tools.application.pretty import colored, NC, BOLD
-from woob.tools.misc import guess_encoding, classproperty
+from woob.tools.application.pretty import BOLD, NC, colored
+from woob.tools.misc import classproperty, guess_encoding
 
 
 __all__ = ['IFormatter', 'MandatoryFieldsNotFound']
@@ -114,7 +115,7 @@ class IFormatter:
 
         if sys.stdout.isatty() and sys.stdin.isatty():
             if sys.platform == 'win32':
-                from ctypes import windll, create_string_buffer
+                from ctypes import create_string_buffer, windll
 
                 h = windll.kernel32.GetStdHandle(-12)
                 csbi = create_string_buffer(22)

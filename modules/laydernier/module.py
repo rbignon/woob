@@ -23,6 +23,7 @@ from woob_modules.creditdunord.module import CreditDuNordModule
 
 from .browser import LaydernierBrowser
 
+
 __all__ = ['LaydernierModule']
 
 

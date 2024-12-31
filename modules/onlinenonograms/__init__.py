@@ -19,4 +19,5 @@
 
 from .module import OnlineNonogramsModule
 
+
 __all__ = ['OnlineNonogramsModule']

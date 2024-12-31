@@ -17,41 +17,39 @@
 
 # flake8: compatible
 
-from datetime import date
 from base64 import b64encode
+from datetime import date
 from urllib.parse import quote_plus
 
 from dateutil.relativedelta import relativedelta
 
 from woob.browser.browsers import need_login
-from woob.browser.url import URL
 from woob.browser.exceptions import ClientError
-from woob.capabilities.base import find_object
+from woob.browser.url import URL
 from woob.capabilities.bank import (
-    RecipientNotFound, AddRecipientStep, AddRecipientBankError, Recipient,
-    TransferBankError, AccountOwnerType, NoAccountsException,
+    AccountOwnerType, AddRecipientBankError, AddRecipientStep, NoAccountsException, Recipient, RecipientNotFound,
+    TransferBankError,
 )
-from woob.exceptions import (
-    BrowserPasswordExpired, BrowserUnavailable,
-)
+from woob.capabilities.base import find_object
+from woob.exceptions import BrowserPasswordExpired, BrowserUnavailable
 from woob.tools.decorators import retry
-from woob.tools.value import Value
 from woob.tools.json import json
+from woob.tools.value import Value
 
-from .pages import (
-    ChangePassPage, InscriptionPage, ErrorPage, MarketAccountsDetailsPage, MarketAccountsPage, UselessPage,
-    MainPage, MainPEPage, LoginPEPage, UnavailablePage,
-)
+from ..browser import SocieteGeneraleTwoFactorBrowser as SocieteGeneraleLogin
 from .json_pages import (
-    AccountsJsonPage, BalancesJsonPage, CorpListPage, HistoryJsonPage, BankStatementPage,
-    MarketAccountPage, MarketInvestmentPage, ProLoanDetailsPage, ProLoansPage, WealthAccountsPage, ProfilePEPage,
-    DeferredCardJsonPage, DeferredCardHistoryJsonPage, CardsInformationPage, CardsInformation2Page,
+    AccountsJsonPage, BalancesJsonPage, BankStatementPage, CardsInformation2Page, CardsInformationPage, CorpListPage,
+    DeferredCardHistoryJsonPage, DeferredCardJsonPage, HistoryJsonPage, MarketAccountPage, MarketInvestmentPage,
+    ProfilePEPage, ProLoanDetailsPage, ProLoansPage, WealthAccountsPage,
+)
+from .pages import (
+    ChangePassPage, ErrorPage, InscriptionPage, LoginPEPage, MainPage, MainPEPage, MarketAccountsDetailsPage,
+    MarketAccountsPage, UnavailablePage, UselessPage,
 )
 from .transfer_pages import (
-    EasyTransferPage, RecipientsJsonPage, TransferPage, SignTransferPage, TransferDatesPage,
-    AddRecipientPage, AddRecipientStepPage, ConfirmRecipientPage, ConfirmTransferPage,
+    AddRecipientPage, AddRecipientStepPage, ConfirmRecipientPage, ConfirmTransferPage, EasyTransferPage,
+    RecipientsJsonPage, SignTransferPage, TransferDatesPage, TransferPage,
 )
-from ..browser import SocieteGeneraleTwoFactorBrowser as SocieteGeneraleLogin
 
 
 __all__ = ['SGProfessionalBrowser', 'SGEnterpriseBrowser']

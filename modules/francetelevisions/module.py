@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.capabilities.base import empty
-from woob.capabilities.video import CapVideo, BaseVideo
-from woob.capabilities.collection import CapCollection, CollectionNotFound, Collection
+from woob.capabilities.collection import CapCollection, Collection, CollectionNotFound
+from woob.capabilities.video import BaseVideo, CapVideo
 from woob.tools.backend import Module
 from woob.tools.capabilities.video.ytdl import video_info
 

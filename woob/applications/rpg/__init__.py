@@ -18,4 +18,5 @@
 
 from .rpg import AppRPG
 
+
 __all__ = ['AppRPG']

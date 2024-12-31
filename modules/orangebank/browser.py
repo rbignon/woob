@@ -17,26 +17,25 @@
 
 # flake8: compatible
 
-from copy import copy
-from datetime import date, datetime, time, timedelta
 import json
 import random
+from copy import copy
+from datetime import date, datetime, time, timedelta
 
 from dateutil.tz import tzutc
 from urllib3.filepost import encode_multipart_formdata
 
 from woob.browser import URL, need_login
-from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ClientError
+from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.transfer import (
-    AddRecipientBankError, AddRecipientStep, TransferBankError,
-    TransferDateType, TransferNotFound,
+    AddRecipientBankError, AddRecipientStep, TransferBankError, TransferDateType, TransferNotFound,
 )
 from woob.capabilities.base import empty
 from woob.exceptions import (
-    AppValidationExpired, BrowserIncorrectPassword, DecoupledMedium,
-    DecoupledValidation, RecaptchaV2Question, WrongCaptchaResponse,
+    AppValidationExpired, BrowserIncorrectPassword, DecoupledMedium, DecoupledValidation, RecaptchaV2Question,
+    WrongCaptchaResponse,
 )
 from woob.tools.date import now_as_utc
 from woob.tools.json import WoobEncoder
@@ -44,13 +43,10 @@ from woob.tools.misc import polling_loop
 from woob.tools.value import ValueBool
 
 from .pages import (
-    AccountsPage, AuthenticateCheckPage, AuthenticateStatusPage,
-    AuthenticatePage, CreateRecipientPage, ErrorPage, HomePage, LoginPage,
-    OperationsPage, ProfilePage, PublicPropertiesPage, RecipientsPage,
-    VerifyRecipientCreatedPage, TransferDebitAccountsPage, TransferExecutePage,
-    TransferHistoryPage, TransferOngoingPage, TransferPage,
-    TransferValidateCumulativePage, TransferValidateUnitPage,
-    TransferValidatePage,
+    AccountsPage, AuthenticateCheckPage, AuthenticatePage, AuthenticateStatusPage, CreateRecipientPage, ErrorPage,
+    HomePage, LoginPage, OperationsPage, ProfilePage, PublicPropertiesPage, RecipientsPage, TransferDebitAccountsPage,
+    TransferExecutePage, TransferHistoryPage, TransferOngoingPage, TransferPage, TransferValidateCumulativePage,
+    TransferValidatePage, TransferValidateUnitPage, VerifyRecipientCreatedPage,
 )
 
 

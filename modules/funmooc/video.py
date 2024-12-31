@@ -19,6 +19,7 @@
 
 from woob.capabilities.video import BaseVideo
 
+
 class MoocVideo(BaseVideo):
     @classmethod
     def id2url(cls, _id):

@@ -15,21 +15,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import timedelta
-from email import message_from_string, message_from_file
-from email.header import decode_header
-from email.mime.text import MIMEText
-from smtplib import SMTP
 import os
 import re
 import unicodedata
+from datetime import timedelta
+from email import message_from_file, message_from_string
+from email.header import decode_header
+from email.mime.text import MIMEText
+from smtplib import SMTP
 
-from woob.capabilities.base import empty, BaseObject
-from woob.capabilities.bugtracker import CapBugTracker, Query, Update, Project, Issue, IssueError
-from woob.tools.application.repl import ReplApplication, defaultcount
+from woob.capabilities.base import BaseObject, empty
+from woob.capabilities.bugtracker import CapBugTracker, Issue, IssueError, Project, Query, Update
 from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
-from woob.tools.html import html2text
+from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.date import parse_french_date
+from woob.tools.html import html2text
 
 
 __all__ = ['AppBugTracker']

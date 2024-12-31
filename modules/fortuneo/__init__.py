@@ -20,6 +20,7 @@
 
 from .module import FortuneoModule
 
+
 __all__ = ['FortuneoModule']
 
 # vim:ts=4:sw=4

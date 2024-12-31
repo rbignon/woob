@@ -20,16 +20,16 @@
 from .accounthistory import AccountHistory, CardsJsonDetails, CardsList, TemporaryPage
 from .accountlist import AccountList, AccountRIB, Advisor
 from .login import (
-    AccountDesactivate, BadLoginPage, CheckPassword, DecoupledPage, Initident, LoginPage,
-    PersonalLoanRoutagePage, SmsPage, TwoFAPage, UnavailablePage, Validated2FAPage,
-    repositionnerCheminCourant,
+    AccountDesactivate, BadLoginPage, CheckPassword, DecoupledPage, Initident, LoginPage, PersonalLoanRoutagePage,
+    SmsPage, TwoFAPage, UnavailablePage, Validated2FAPage, repositionnerCheminCourant,
 )
 from .subscription import DownloadPage, ProSubscriptionPage, SubscriptionPage
 from .transfer import (
-    CerticodePlusSubmitDevicePage, CompleteTransfer, ConfirmPage, CreateRecipient,
-    Loi6902TransferPage, OtpErrorPage, ProTransferChooseAccounts, RcptSummary,
-    TransferChooseAccounts, TransferConfirm, TransferSummary, ValidateCountry, ValidateRecipient,
+    CerticodePlusSubmitDevicePage, CompleteTransfer, ConfirmPage, CreateRecipient, Loi6902TransferPage, OtpErrorPage,
+    ProTransferChooseAccounts, RcptSummary, TransferChooseAccounts, TransferConfirm, TransferSummary, ValidateCountry,
+    ValidateRecipient,
 )
+
 
 __all__ = [
     'LoginPage', 'Initident', 'CheckPassword', 'repositionnerCheminCourant', "AccountList", 'AccountHistory', 'BadLoginPage',

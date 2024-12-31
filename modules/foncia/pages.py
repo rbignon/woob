@@ -18,23 +18,20 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from decimal import Decimal
+
 import requests
 
-from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    Format, DateTime, CleanDecimal, Field)
+from woob.browser.filters.standard import CleanDecimal, DateTime, Field, Format
 from woob.browser.pages import JsonPage, pagination
 from woob.browser.selenium import SeleniumPage
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.base import NotAvailable, NotLoaded
-from woob.capabilities.housing import (
-    City, Housing, HousingPhoto, POSTS_TYPES,
-    ENERGY_CLASS, ADVERT_TYPES, UTILITIES
-)
+from woob.capabilities.housing import ADVERT_TYPES, ENERGY_CLASS, POSTS_TYPES, UTILITIES, City, Housing, HousingPhoto
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 
-from .constants import QUERY_TYPES, QUERY_HOUSE_TYPES, BASE_URL, AVAILABLE_TYPES
+from .constants import AVAILABLE_TYPES, BASE_URL, QUERY_HOUSE_TYPES, QUERY_TYPES
 
 
 class FonciaItemElement(ItemElement):

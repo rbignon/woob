@@ -17,4 +17,5 @@
 
 from .gallery import AppGallery
 
+
 __all__ = ['AppGallery']

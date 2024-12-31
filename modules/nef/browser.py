@@ -23,10 +23,7 @@ from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
 from woob.exceptions import BrowserIncorrectPassword, OTPSentType, SentOTPQuestion
 
-from .pages import (
-    LoginHomePage, LoginPage, FinalizeLoginPage, HomePage, AccountsPage,
-    RecipientsPage, TransactionsPage,
-)
+from .pages import AccountsPage, FinalizeLoginPage, HomePage, LoginHomePage, LoginPage, RecipientsPage, TransactionsPage
 
 
 def next_week_string():

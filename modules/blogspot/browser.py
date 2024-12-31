@@ -20,10 +20,10 @@
 from collections import OrderedDict
 from datetime import date
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.capabilities.messages import Message
 
-from .pages import DatePage, IndexPage, ArticlePage
+from .pages import ArticlePage, DatePage, IndexPage
 
 
 class BlogspotBrowser(PagesBrowser):

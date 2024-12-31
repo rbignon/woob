@@ -18,18 +18,15 @@
 
 import datetime
 from decimal import Decimal
-import pytest
 
+import pytest
 from dateutil.tz import gettz
 from lxml.html import fromstring
 
-from woob.capabilities.base import NotAvailable
 from woob.browser.filters.base import FilterError
 from woob.browser.filters.html import FormValue, Link
-from woob.browser.filters.standard import (
-    RawText, DateTime, CleanText, Currency, CleanDecimal, Date,
-    NumberFormatError,
-)
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, DateTime, NumberFormatError, RawText
+from woob.capabilities.base import NotAvailable
 from woob.tools.test import TestCase
 
 

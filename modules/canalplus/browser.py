@@ -19,12 +19,12 @@
 
 from urllib.parse import quote_plus
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
+from woob.capabilities.collection import CollectionNotFound
 
 from .pages import ChannelsPage, VideoPage
 from .video import CanalplusVideo
 
-from woob.capabilities.collection import CollectionNotFound
 
 __all__ = ['CanalplusBrowser']
 

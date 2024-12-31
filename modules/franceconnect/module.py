@@ -17,8 +17,8 @@
 
 # flake8: compatible
 
-from woob.tools.backend import Module
 from woob.capabilities.bill import CapDocument
+from woob.tools.backend import Module
 
 from .browser import FranceConnectBrowser
 

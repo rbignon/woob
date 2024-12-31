@@ -24,23 +24,19 @@ from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
 from woob.browser import URL, need_login
+from woob.browser.exceptions import BrowserTooManyRequests, ClientError, ServerError
 from woob.browser.mfa import TwoFactorBrowser
-from woob.browser.exceptions import (
-    BrowserTooManyRequests, ClientError, ServerError,
-)
+from woob.capabilities.bank import Account
+from woob.capabilities.base import Currency, empty
 from woob.exceptions import (
-    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired,
-    OfflineOTPQuestion, BrowserUnavailable,
+    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable, OfflineOTPQuestion,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
-from woob.capabilities.base import Currency, empty
-from woob.capabilities.bank import Account
 from woob.tools.decorators import retry
 
 from .pages import (
-    LoginPage, OtpPage, AccountsPage, AccountDetailsPage,
-    InvestmentPage, HistoryPage, MarketOrdersPage,
-    ExchangesPage, MaintenancePage,
+    AccountDetailsPage, AccountsPage, ExchangesPage, HistoryPage, InvestmentPage, LoginPage, MaintenancePage,
+    MarketOrdersPage, OtpPage,
 )
 
 

@@ -18,6 +18,7 @@
 from .base import BaseObject, Capability, StringField
 from .date import DateField
 
+
 __all__ = ['BaseJobAdvert', 'CapJob']
 
 

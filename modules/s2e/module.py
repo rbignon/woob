@@ -17,14 +17,12 @@
 
 # flake8: compatible
 
-from woob.tools.backend import Module
-from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank import Account
-from woob.capabilities.base import find_object, empty
-from woob.capabilities.bill import (
-    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
-)
+from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import empty, find_object
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import Module
 
 
 class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):

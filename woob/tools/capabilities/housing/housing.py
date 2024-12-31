@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.filters.standard import _Filter, Field, debug
-from woob.capabilities.base import empty
 from decimal import Decimal
+
+from woob.browser.filters.standard import Field, _Filter, debug
+from woob.capabilities.base import empty
 
 
 class PricePerMeterFilter(_Filter):

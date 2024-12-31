@@ -20,11 +20,10 @@
 from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Currency, Date, Map, Regexp,
-)
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Currency, Date, Map, Regexp
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage
 from woob.capabilities.bank.base import Account, Transaction
+
 
 TRANSACTION_TYPES = {
     'FRAIS GESTION COMPTE COURANT': Transaction.TYPE_BANK,

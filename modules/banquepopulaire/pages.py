@@ -24,18 +24,14 @@ from PIL import Image, ImageFilter
 
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanText, Coalesce, Regexp,
-)
+from woob.browser.filters.standard import CleanText, Coalesce, Regexp
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage, XMLPage
 from woob.capabilities import NotAvailable
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.captcha.virtkeyboard import SplitKeyboard
-from woob_modules.caissedepargne.pages import (
-    AuthenticationMethodPage as _AuthenticationMethodPage,
-    JsFilePage as _JsFilePage,
-    LoginTokensPage as _LoginTokensPage,
-)
+from woob_modules.caissedepargne.pages import AuthenticationMethodPage as _AuthenticationMethodPage
+from woob_modules.caissedepargne.pages import JsFilePage as _JsFilePage
+from woob_modules.caissedepargne.pages import LoginTokensPage as _LoginTokensPage
 
 
 class LoggedOut(Exception):

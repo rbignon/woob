@@ -18,15 +18,14 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.lyrics import SongLyrics
-from woob.capabilities.base import NotLoaded, NotAvailable
+import random
 
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.pages import HTMLPage
-from woob.browser.filters.standard import Regexp, CleanText, Format
 from woob.browser.filters.html import CleanHTML
-
-import random
+from woob.browser.filters.standard import CleanText, Format, Regexp
+from woob.browser.pages import HTMLPage
+from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.capabilities.lyrics import SongLyrics
 
 
 class HomePage(HTMLPage):

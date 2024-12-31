@@ -83,13 +83,14 @@
 
 from __future__ import print_function
 
+import locale
+import logging
 import os
 import sys
-import locale
 import time
-import logging
+
 from woob.capabilities.base import NotAvailable
-from woob.core import Woob, CallErrors
+from woob.core import CallErrors, Woob
 from woob.exceptions import BrowserIncorrectPassword
 
 

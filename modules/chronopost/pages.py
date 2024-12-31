@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.parcel import Parcel, Event, ParcelNotFound
-from woob.capabilities import NotAvailable
-from woob.browser.pages import JsonPage, HTMLPage
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import Env, CleanText, DateTime
+from woob.browser.filters.standard import CleanText, DateTime, Env
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.capabilities import NotAvailable
+from woob.capabilities.parcel import Event, Parcel, ParcelNotFound
 from woob.tools.date import parse_french_date
 
 

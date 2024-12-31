@@ -17,14 +17,14 @@
 
 from __future__ import annotations
 
-import logging
 import importlib
+import logging
 import os
+import warnings
 from copy import copy
 from threading import RLock
-import warnings
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Tuple, Type
 from urllib.request import getproxies
-from typing import List, Any, Dict, Tuple, Iterator, Type, ClassVar, TYPE_CHECKING
 
 from packaging.version import Version
 
@@ -34,11 +34,12 @@ from woob.tools.json import json
 from woob.tools.log import getLogger
 from woob.tools.misc import iter_fields
 from woob.tools.storage import IStorage
-from woob.tools.value import ValuesDict, ValueBool
+from woob.tools.value import ValueBool, ValuesDict
+
 
 if TYPE_CHECKING:
-    from woob.core import WoobBase
     from woob.browser import Browser
+    from woob.core import WoobBase
 
 
 __all__ = ['BackendStorage', 'BackendConfig', 'Module']

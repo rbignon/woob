@@ -23,6 +23,7 @@ from woob.browser import URL, PagesBrowser
 from .pages.index import IndexPage
 from .pages.torrents import FilesPage, TorrentPage, TorrentsPage
 
+
 __all__ = ['PiratebayBrowser']
 
 

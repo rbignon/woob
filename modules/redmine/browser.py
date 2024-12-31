@@ -18,17 +18,17 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import re
-import lxml.html
 from urllib.parse import quote
 
+import lxml.html
+
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.bugtracker import IssueError
-from woob.browser import LoginBrowser, URL, need_login
 from woob.exceptions import BrowserIncorrectPassword
 
-from .pages.index import LoginPage, IndexPage, MyPage, ProjectsPage
-from .pages.wiki import WikiPage, WikiEditPage
-from .pages.issues import IssuesPage, IssuePage, NewIssuePage, IssueLogTimePage, \
-                          IssueTimeEntriesPage
+from .pages.index import IndexPage, LoginPage, MyPage, ProjectsPage
+from .pages.issues import IssueLogTimePage, IssuePage, IssuesPage, IssueTimeEntriesPage, NewIssuePage
+from .pages.wiki import WikiEditPage, WikiPage
 
 
 __all__ = ['RedmineBrowser']

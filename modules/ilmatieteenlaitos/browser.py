@@ -19,7 +19,9 @@
 
 from woob.browser.browsers import PagesBrowser
 from woob.browser.url import URL
-from .pages import WeatherPage, SearchCitiesPage, ObservationsPage
+
+from .pages import ObservationsPage, SearchCitiesPage, WeatherPage
+
 
 __all__ = ['IlmatieteenlaitosBrowser']
 

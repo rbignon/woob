@@ -35,18 +35,17 @@ from woob.browser.pages import FormNotFound
 from woob.browser.retry import RetryLoginBrowser, login_method, retry_on_logout
 from woob.browser.url import URL
 from woob.capabilities.bank import (
-    Account, AccountNotFound, AccountOwnership, AddRecipientBankError,
-    AddRecipientStep, AddRecipientTimeout, Emitter, NoAccountsException, Rate,
-    RecipientNotFound, TransactionType, TransferBankError, TransferDateType,
-    TransferError, TransferInvalidAmount, TransferInvalidEmitter, TransferInvalidLabel,
-    TransferInvalidRecipient, TransferStep, TransferTimeout,
+    Account, AccountNotFound, AccountOwnership, AddRecipientBankError, AddRecipientStep, AddRecipientTimeout, Emitter,
+    NoAccountsException, Rate, RecipientNotFound, TransactionType, TransferBankError, TransferDateType, TransferError,
+    TransferInvalidAmount, TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidRecipient, TransferStep,
+    TransferTimeout,
 )
 from woob.capabilities.base import NotAvailable, NotLoaded, empty, find_object, strict_find_object
 from woob.capabilities.contact import Advisor
 from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidation, AppValidationCancelled, AppValidationExpired,
-    AuthMethodNotImplemented, BrowserHTTPNotFound, BrowserIncorrectPassword,
-    BrowserPasswordExpired, BrowserUnavailable, BrowserUserBanned, OTPSentType, SentOTPQuestion,
+    ActionNeeded, ActionType, AppValidation, AppValidationCancelled, AppValidationExpired, AuthMethodNotImplemented,
+    BrowserHTTPNotFound, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable, BrowserUserBanned,
+    OTPSentType, SentOTPQuestion,
 )
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -57,17 +56,16 @@ from woob.tools.value import Value
 
 from .document_pages import BankIdentityPage, BankStatementsPage, PdfDocumentPage
 from .pages import (
-    AccountsErrorPage, AccountsPage, AddRecipientOtpSendPage, AddRecipientPage, AsvPage,
-    AuthenticationPage, CalendarPage, CardCalendarPage, CardHistoryPage, CardInformationPage,
-    CardRenewalPage, CardSumDetailPage, CATPage, CurrencyConvertPage, CurrencyListPage, ErrorPage,
-    ExpertPage, HistoryPage, HomePage, IbanPage, IncidentPage, IncidentTradingPage, LoanPage,
-    MarketPage, MinorPage, NewTransferConfirm, NewTransferEstimateFees, NewTransferSent,
-    NewTransferUnexpectedStep, NewTransferWizard, NoAccountPage, OtpCheckPage, OtpPage, PasswordPage,
-    PEPPage, PerPage, ProfilePage, RecipientsPage, SavingMarketPage, StatusPage, TncPage,
-    TransferAccounts, TransferCharacteristics, TransferConfirm, TransferMainPage, TransferRecipients,
-    TransferSent, VirtKeyboardPage,
+    AccountsErrorPage, AccountsPage, AddRecipientOtpSendPage, AddRecipientPage, AsvPage, AuthenticationPage,
+    CalendarPage, CardCalendarPage, CardHistoryPage, CardInformationPage, CardRenewalPage, CardSumDetailPage, CATPage,
+    CurrencyConvertPage, CurrencyListPage, ErrorPage, ExpertPage, HistoryPage, HomePage, IbanPage, IncidentPage,
+    IncidentTradingPage, LoanPage, MarketPage, MinorPage, NewTransferConfirm, NewTransferEstimateFees, NewTransferSent,
+    NewTransferUnexpectedStep, NewTransferWizard, NoAccountPage, OtpCheckPage, OtpPage, PasswordPage, PEPPage, PerPage,
+    ProfilePage, RecipientsPage, SavingMarketPage, StatusPage, TncPage, TransferAccounts, TransferCharacteristics,
+    TransferConfirm, TransferMainPage, TransferRecipients, TransferSent, VirtKeyboardPage,
 )
 from .transfer_pages import TransferInfoPage, TransferListPage
+
 
 __all__ = ['BoursoramaBrowser']
 

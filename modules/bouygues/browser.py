@@ -31,9 +31,9 @@ from woob.browser.mfa import TwoFactorBrowser
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, ScrapingBlocked, SentOTPQuestion
 
 from .pages import (
-    AccountPage, CallbackPage, DocumentDownloadPage, DocumentFilePage, DocumentPage,
-    ForgottenPasswordPage, HomePage, LoginPage, MaintenancePage, OauthPage, ProfilePage,
-    SendSMSPage, SubscriberPage, SubscriptionDetail, SubscriptionPage,
+    AccountPage, CallbackPage, DocumentDownloadPage, DocumentFilePage, DocumentPage, ForgottenPasswordPage, HomePage,
+    LoginPage, MaintenancePage, OauthPage, ProfilePage, SendSMSPage, SubscriberPage, SubscriptionDetail,
+    SubscriptionPage,
 )
 
 

@@ -18,10 +18,10 @@
 import os
 from re import search, sub
 
-from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.capabilities.base import empty
-from woob.capabilities.gallery import CapGallery, BaseGallery, BaseImage
+from woob.capabilities.gallery import BaseGallery, BaseImage, CapGallery
 from woob.tools.application.formatters.iformatter import PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 
 
 __all__ = ['AppGallery']

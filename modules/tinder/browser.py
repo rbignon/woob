@@ -20,10 +20,10 @@
 
 import re
 
-from woob.browser.browsers import DomainBrowser, APIBrowser
+from woob.browser.browsers import APIBrowser, DomainBrowser
 from woob.browser.filters.standard import CleanText
 from woob.browser.pages import HTMLPage
-from woob.browser.profiles import IPhone, Android
+from woob.browser.profiles import Android, IPhone
 from woob.exceptions import BrowserIncorrectPassword, ParseError
 from woob.tools.json import json
 

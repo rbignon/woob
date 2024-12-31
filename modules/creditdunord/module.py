@@ -19,18 +19,18 @@
 
 # flake8: compatible
 
-from collections import OrderedDict
 import re
+from collections import OrderedDict
 
 from unidecode import unidecode
 
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.pfm import CapBankMatching
-from woob.capabilities.base import find_object
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import find_object
 from woob.capabilities.profile import CapProfile
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import CreditDuNordBrowser
 

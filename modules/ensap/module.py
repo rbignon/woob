@@ -18,13 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import (
-    CapDocument, DocumentCategory, DocumentTypes, DocumentNotFound,
-)
+from woob.capabilities.bill import CapDocument, DocumentCategory, DocumentNotFound, DocumentTypes
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
 
 from .browser import EnsapBrowser
+
 
 __all__ = ['EnsapModule']
 

@@ -17,23 +17,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from decimal import Decimal
 import re
+from decimal import Decimal
 
-from woob.browser.pages import HTMLPage, JsonPage, XMLPage, LoggedPage, RawPage
-from woob.browser.elements import ItemElement, DictElement, method
-from woob.browser.filters.standard import (
-    CleanText, Date, Regexp, CleanDecimal,
-    Env, Field, Currency, Map, Title,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Env, Field, Map, Regexp, Title
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage, XMLPage
 from woob.capabilities.bank import Account
-from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
-)
+from woob.capabilities.bank.wealth import Investment, MarketOrder, MarketOrderDirection, MarketOrderType
 from woob.capabilities.base import NotAvailable, empty
+from woob.tools.capabilities.bank.investments import IsinCode, is_isin_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode
 
 
 def float_to_decimal(f):

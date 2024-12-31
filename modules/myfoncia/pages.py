@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import Attr, Link
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Env, Format, Regexp
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.selenium import SeleniumPage, StablePageCondition
-from woob.browser.filters.standard import CleanText, CleanDecimal, Date, Env, Format, Regexp
-from woob.browser.filters.html import Attr, Link
-from woob.browser.elements import ItemElement, ListElement, method
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.bill import Subscription, Bill, Document, DocumentTypes
+from woob.capabilities.bill import Bill, Document, DocumentTypes, Subscription
 
 
 class LoginPage(SeleniumPage):

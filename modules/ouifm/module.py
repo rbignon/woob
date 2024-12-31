@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.radio import CapRadio, Radio
-from woob.capabilities.audiostream import BaseAudioStream
-from woob.tools.capabilities.streaminfo import StreamInfo
-from woob.capabilities.collection import CapCollection
-from woob.tools.backend import Module
 from woob.browser.browsers import APIBrowser
+from woob.capabilities.audiostream import BaseAudioStream
+from woob.capabilities.collection import CapCollection
+from woob.capabilities.radio import CapRadio, Radio
+from woob.tools.backend import Module
+from woob.tools.capabilities.streaminfo import StreamInfo
 from woob.tools.misc import to_unicode
 
 

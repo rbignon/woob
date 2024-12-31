@@ -17,33 +17,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import re
 import time
 from uuid import uuid4
-import re
 
 from woob.browser import URL, need_login
+from woob.browser.exceptions import BrowserHTTPNotFound, ClientError, ServerError
 from woob.browser.mfa import TwoFactorBrowser
+from woob.capabilities.bank import Account
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import (
-    AppValidation, AppValidationCancelled, AppValidationExpired, BrowserIncorrectPassword,
-    BrowserUserBanned, NotImplementedWebsite,
+    AppValidation, AppValidationCancelled, AppValidationExpired, BrowserIncorrectPassword, BrowserUserBanned,
+    NotImplementedWebsite,
 )
-from woob.browser.exceptions import (
-    ClientError, ServerError, BrowserHTTPNotFound,
-)
-from woob.capabilities.base import empty, NotAvailable
-from woob.capabilities.bank import Account
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.captcha.virtkeyboard import VirtKeyboardError
 from woob.tools.decorators import retry
 
 from .pages import (
-    AuthenticateFailsPage, ConfigPage, LoginPage, AccountsPage, AccountHistoryPage,
-    AmundiInvestmentsPage, AllianzInvestmentPage, EEInvestmentPage, InvestmentPerformancePage,
-    InvestmentDetailPage, EEProductInvestmentPage, ESAccountsPage, EresInvestmentPage, CprInvestmentPage,
-    CprPerformancePage, BNPInvestmentPage, BNPInvestmentApiPage, AxaInvestmentPage, AxaInvestmentApiPage,
-    EpsensInvestmentPage, EcofiInvestmentPage, MFAStatusPage, SGGestionInvestmentPage,
-    SGGestionPerformancePage, OlisnetInvestmentPage,
+    AccountHistoryPage, AccountsPage, AllianzInvestmentPage, AmundiInvestmentsPage, AuthenticateFailsPage,
+    AxaInvestmentApiPage, AxaInvestmentPage, BNPInvestmentApiPage, BNPInvestmentPage, ConfigPage, CprInvestmentPage,
+    CprPerformancePage, EcofiInvestmentPage, EEInvestmentPage, EEProductInvestmentPage, EpsensInvestmentPage,
+    EresInvestmentPage, ESAccountsPage, InvestmentDetailPage, InvestmentPerformancePage, LoginPage, MFAStatusPage,
+    OlisnetInvestmentPage, SGGestionInvestmentPage, SGGestionPerformancePage,
 )
 
 

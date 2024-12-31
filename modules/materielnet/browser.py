@@ -18,7 +18,7 @@
 
 # flake8: compatible
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import BrowserIncorrectPassword
 

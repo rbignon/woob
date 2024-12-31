@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.url import URL
 from woob.browser import PagesBrowser
+from woob.browser.url import URL
 
 from .pages import GenericNewsPage
 

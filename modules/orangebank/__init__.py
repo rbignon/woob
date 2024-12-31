@@ -19,4 +19,5 @@
 
 from .module import OrangeBankModule
 
+
 __all__ = ['OrangeBankModule']

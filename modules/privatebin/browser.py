@@ -19,12 +19,12 @@
 
 # flake8: compatible
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.capabilities.base import StringField
 from woob.capabilities.date import DateField
 from woob.capabilities.paste import BasePaste
 
-from .pages import ReadPage, WritePage, encrypt, IndexPage
+from .pages import IndexPage, ReadPage, WritePage, encrypt
 
 
 class PrivatePaste(BasePaste):

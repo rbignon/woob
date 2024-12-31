@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.calendar import BaseCalendarEvent, TRANSP, STATUS, CATEGORIES
+from woob.capabilities.calendar import CATEGORIES, STATUS, TRANSP, BaseCalendarEvent
 
 
 class SensCritiquenCalendarEvent(BaseCalendarEvent):

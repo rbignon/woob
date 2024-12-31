@@ -18,14 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.calendar import CATEGORIES, STATUS, TICKET
+from datetime import timedelta
+
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, CleanHTML, Link
-from woob.browser.filters.standard import CleanDecimal, CleanText, Date, CombineDate, DateTime, Regexp, Time, Type
+from woob.browser.filters.standard import CleanDecimal, CleanText, CombineDate, Date, DateTime, Regexp, Time, Type
 from woob.browser.pages import HTMLPage
-from woob.capabilities.calendar import BaseCalendarEvent
-
-from datetime import timedelta
+from woob.capabilities.calendar import CATEGORIES, STATUS, TICKET, BaseCalendarEvent
 
 
 class BasePage(HTMLPage):

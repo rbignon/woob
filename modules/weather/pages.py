@@ -16,13 +16,13 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
-from woob.browser.elements import ItemElement, method, DictElement
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.base import _NO_DEFAULT, Filter
 from woob.browser.filters.html import XPath
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import DateTime, Env, CleanText, Regexp, Format, Field
-from woob.browser.pages import JsonPage, HTMLPage
-from woob.capabilities.weather import Current, City, Temperature, Forecast
+from woob.browser.filters.standard import CleanText, DateTime, Env, Field, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.capabilities.weather import City, Current, Forecast, Temperature
 from woob.tools.json import json
 
 

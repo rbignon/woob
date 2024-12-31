@@ -6,7 +6,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
+from woob.capabilities.housing import HOUSE_TYPES, POSTS_TYPES
+
 
 TRANSACTION_TYPE = {
     POSTS_TYPES.SALE: 'buy',

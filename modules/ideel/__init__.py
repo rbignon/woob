@@ -20,4 +20,5 @@
 
 from .module import IdeelModule
 
+
 __all__ = ['IdeelModule']

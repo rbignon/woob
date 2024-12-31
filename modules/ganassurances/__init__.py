@@ -18,4 +18,5 @@
 
 from .module import GanAssurancesModule
 
+
 __all__ = ['GanAssurancesModule']

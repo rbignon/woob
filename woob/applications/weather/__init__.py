@@ -18,4 +18,5 @@
 
 from .weather import AppWeather
 
+
 __all__ = ['AppWeather']

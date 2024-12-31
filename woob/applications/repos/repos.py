@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from time import mktime, strptime
-import tarfile
 import os
 import shutil
 import subprocess
-from copy import copy
+import tarfile
 from contextlib import closing
+from copy import copy
+from datetime import datetime
+from time import mktime, strptime
 
 from woob.core.repositories import Repository
-
 from woob.tools.application.repl import ReplApplication
 from woob.tools.misc import find_exe
 

@@ -19,21 +19,19 @@
 
 # flake8: compatible
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserPasswordExpired, ActionNeeded, ActionType,
-    BrowserUnavailable,
-)
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.bank import Account
-from woob.tools.decorators import retry
-from woob.tools.json import json
+from woob.exceptions import (
+    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,
+)
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.decorators import retry
+from woob.tools.json import json
 
 from .pages import (
-    LoginPage, LoginConfirmPage, ProfilePage,
-    AccountsPage, IbanPage, HistoryPage, InvestmentsPage,
-    RgpdPage, IndexPage, ErrorPage, BypassAlertPage,
+    AccountsPage, BypassAlertPage, ErrorPage, HistoryPage, IbanPage, IndexPage, InvestmentsPage, LoginConfirmPage,
+    LoginPage, ProfilePage, RgpdPage,
 )
 
 

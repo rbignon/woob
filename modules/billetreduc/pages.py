@@ -20,12 +20,12 @@
 import re
 from datetime import datetime
 
-from woob.browser.elements import method, ListElement, ItemElement
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import AbsoluteLink
 from woob.browser.filters.standard import CleanText, Env, Field, Format
 from woob.browser.pages import HTMLPage, pagination
 from woob.capabilities.base import StringField
-from woob.capabilities.calendar import BaseCalendarEvent, CATEGORIES
+from woob.capabilities.calendar import CATEGORIES, BaseCalendarEvent
 
 
 LABEL_TO_CAT = {

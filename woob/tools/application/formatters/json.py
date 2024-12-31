@@ -16,9 +16,10 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.json import json, WoobEncoder
+from woob.tools.json import WoobEncoder, json
 
 from .iformatter import IFormatter
+
 
 __all__ = ['JsonFormatter', 'JsonLineFormatter']
 

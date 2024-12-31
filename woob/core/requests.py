@@ -16,9 +16,9 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from threading import RLock
-from collections import defaultdict
 import warnings
+from collections import defaultdict
+from threading import RLock
 
 
 __all__ = ['RequestsManager']

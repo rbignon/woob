@@ -17,12 +17,11 @@
 
 import ssl
 
-from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUserBanned
-from woob.browser.browsers import LoginBrowser, need_login, URL
+from woob.browser.browsers import URL, ClientError, LoginBrowser, need_login
 from woob.browser.switch import SiteSwitch
-from woob.browser.browsers import ClientError
+from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUserBanned
 
-from .pages import LoginPage, AccountsPage, HistoryPage, PeriodsPage
+from .pages import AccountsPage, HistoryPage, LoginPage, PeriodsPage
 
 
 __all__ = ['LCLParcCardsBrowser']

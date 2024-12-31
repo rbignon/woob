@@ -20,4 +20,5 @@
 
 from .module import LyricsdotcomModule
 
+
 __all__ = ['LyricsdotcomModule']

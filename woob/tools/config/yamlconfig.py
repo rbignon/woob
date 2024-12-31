@@ -19,18 +19,19 @@
 import os
 import tempfile
 
-import woob.tools.date
 import yaml
+
+import woob.tools.date
 
 from .iconfig import ConfigError, IConfig
 from .util import LOGGER, replace
 
+
 try:
-    from yaml import CSafeLoader as SafeLoader
     from yaml import CDumper as Dumper
+    from yaml import CSafeLoader as SafeLoader
 except ImportError:
-    from yaml import SafeLoader
-    from yaml import Dumper
+    from yaml import Dumper, SafeLoader
 
 
 __all__ = ['YamlConfig']

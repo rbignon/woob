@@ -18,10 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, AccountsList, InvestmentList, AccountHistory
+from .pages import AccountHistory, AccountsList, InvestmentList, LoginPage
+
 
 __all__ = ['Suravenir']
 

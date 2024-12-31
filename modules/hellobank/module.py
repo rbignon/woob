@@ -22,18 +22,16 @@ import re
 from decimal import Decimal
 
 from woob.capabilities.bank import (
-    CapBankTransferAddRecipient, AccountNotFound, Account, RecipientNotFound,
-    TransferInvalidLabel,
+    Account, AccountNotFound, CapBankTransferAddRecipient, RecipientNotFound, TransferInvalidLabel,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.profile import CapProfile
 from woob.capabilities.base import find_object, strict_find_object
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
+from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueBool, ValueTransient
-from woob.capabilities.bill import (
-    Subscription, CapDocument, DocumentNotFound, Document, DocumentTypes,
-)
 from woob_modules.bnp.pp.browser import HelloBank
+
 
 __all__ = ['HelloBankModule']
 

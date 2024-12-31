@@ -17,11 +17,11 @@
 
 # flake8: compatible
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
-from woob.tools.capabilities.bill.documents import sorted_documents, merge_iterators
+from woob.tools.capabilities.bill.documents import merge_iterators, sorted_documents
 
-from .pages import LoginPage, HomePage, ConsolePage, SuiviPage, DocumentsPage, ProfilePage, ContractPage
+from .pages import ConsolePage, ContractPage, DocumentsPage, HomePage, LoginPage, ProfilePage, SuiviPage
 
 
 class FreeBrowser(LoginBrowser):

@@ -17,12 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-import re, json
+import json
+import re
 
 from dateutil.parser import parse as parse_date
 
-from woob.browser.pages import JsonPage, HTMLPage
-from woob.capabilities.parcel import Parcel, Event, ParcelNotFound
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.capabilities.parcel import Event, Parcel, ParcelNotFound
 
 
 class DHLExpressSearchPage(JsonPage):

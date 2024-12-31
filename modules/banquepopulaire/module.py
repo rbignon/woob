@@ -26,6 +26,7 @@ from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import BanquePopulaire
 
+
 __all__ = ['BanquePopulaireModule']
 
 

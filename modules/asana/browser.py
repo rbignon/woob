@@ -19,12 +19,13 @@
 
 import time
 
+from dateutil.parser import parse as parse_date
+
 from woob.browser.browsers import APIBrowser
 from woob.browser.exceptions import ClientError
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.bugtracker import User, Project, Issue, Status, Update
+from woob.capabilities.bugtracker import Issue, Project, Status, Update, User
 from woob.exceptions import BrowserIncorrectPassword
-from dateutil.parser import parse as parse_date
 
 
 class AsanaBrowser(APIBrowser):

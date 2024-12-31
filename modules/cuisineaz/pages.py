@@ -17,20 +17,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import HTMLPage, pagination
-from woob.browser.elements import ItemElement, method, ListElement
+import datetime
+import re
+
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import XPath
 from woob.browser.filters.json import Dict
-from woob.capabilities.recipe import Recipe, Comment
+from woob.browser.filters.standard import CleanText, Env, Eval, Format, Join, Regexp, Time
+from woob.browser.pages import HTMLPage, pagination
 from woob.capabilities.image import BaseImage, Thumbnail
-from woob.browser.filters.standard import (
-    CleanText, Regexp, Env, Time, Join, Format, Eval,
-)
+from woob.capabilities.recipe import Comment, Recipe
 from woob.tools.json import json
-
-
-import re
-import datetime
 
 
 class CuisineazDuration(Time):

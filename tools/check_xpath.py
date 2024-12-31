@@ -23,6 +23,7 @@ import os
 import traceback
 
 import lxml.etree
+
 from woob.browser.filters import standard
 
 

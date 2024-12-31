@@ -18,8 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from datetime import date, datetime
+
 from woob.tools.test import BackendTest
-from datetime import datetime, date
 
 
 class ParisKiwiTest(BackendTest):

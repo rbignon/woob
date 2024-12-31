@@ -21,4 +21,5 @@ from __future__ import annotations
 
 from .module import RDVPrefectureModule
 
+
 __all__ = ['RDVPrefectureModule']

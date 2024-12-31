@@ -21,8 +21,8 @@ from __future__ import annotations
 from collections import OrderedDict
 from pathlib import Path
 
+from packaging.requirements import InvalidRequirement, Requirement
 from packaging.specifiers import SpecifierSet
-from packaging.requirements import Requirement, InvalidRequirement
 
 
 __all__ = ['parse_requirements']

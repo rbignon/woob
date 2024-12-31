@@ -18,4 +18,5 @@
 
 from .gauge import AppGauge
 
+
 __all__ = ['AppGauge']

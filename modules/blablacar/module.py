@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.backend import Module
 from woob.capabilities.travel import CapTravel
+from woob.tools.backend import Module
 
 from .browser import BlablacarBrowser
 

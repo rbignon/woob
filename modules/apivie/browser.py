@@ -22,19 +22,15 @@ from time import time
 import jwt
 from urllib3.exceptions import ReadTimeoutError
 
-from woob.tools.decorators import retry
 from woob.browser.browsers import need_login
-from woob.browser.url import URL
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, SentOTPQuestion,
-)
 from woob.browser.exceptions import ClientError
 from woob.browser.mfa import TwoFactorBrowser
+from woob.browser.url import URL
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, SentOTPQuestion
+from woob.tools.decorators import retry
 
-from .pages import (
-    AccountsPage, HistoryPage, HomePage,
-    InvestmentPage, InfoPage, LoginPage,
-)
+from .pages import AccountsPage, HistoryPage, HomePage, InfoPage, InvestmentPage, LoginPage
+
 
 __all__ = ['ApivieBrowser']
 

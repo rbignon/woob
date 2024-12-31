@@ -20,6 +20,7 @@
 
 import re
 
+
 RSSID_RE = re.compile('tag:.*:(\w+)/(\d+)')
 ID2URL_RE = re.compile('^(\w)(.*)\.([^ \.]+)$')
 

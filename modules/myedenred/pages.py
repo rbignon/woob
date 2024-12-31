@@ -22,15 +22,12 @@
 import ast
 import re
 
-from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, RawPage
-from woob.browser.elements import ItemElement, method, DictElement
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Currency, Field, Eval,
-    Date, Regexp,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.exceptions import BrowserUnavailable
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Eval, Field, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.json import json

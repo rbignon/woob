@@ -18,11 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value, ValueBackendPassword
 from woob.capabilities.calendar import CapCalendarEvent
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import CentQuatreBrowser
+
 
 __all__ = ['CentQuatreModule']
 

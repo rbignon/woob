@@ -17,13 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.date import parse_french_date
-from woob.capabilities.messages import Thread, Message
-from woob.browser.filters.standard import CleanText, Regexp, Env, Date
-from woob.browser.filters.html import CleanHTML
-from woob.browser.filters.html import XPath
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import CleanHTML, XPath
+from woob.browser.filters.standard import CleanText, Date, Env, Regexp
+from woob.browser.pages import HTMLPage
+from woob.capabilities.messages import Message, Thread
+from woob.tools.date import parse_french_date
 
 
 class LoginPage(HTMLPage):

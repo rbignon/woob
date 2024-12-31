@@ -19,4 +19,5 @@
 
 from .module import AllocineModule
 
+
 __all__ = ['AllocineModule']

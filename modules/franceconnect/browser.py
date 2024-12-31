@@ -19,12 +19,12 @@
 
 from urllib.parse import urlparse
 
-from woob.browser import LoginBrowser, URL
+from woob.browser import URL, LoginBrowser
 from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned
 
 from .pages import (
-    AuthorizePage, AmeliLoginPage, WrongPassAmeliLoginPage, ImpotsLoginAccessPage,
-    ImpotsLoginAELPage, ImpotsGetContextPage,
+    AmeliLoginPage, AuthorizePage, ImpotsGetContextPage, ImpotsLoginAccessPage, ImpotsLoginAELPage,
+    WrongPassAmeliLoginPage,
 )
 
 

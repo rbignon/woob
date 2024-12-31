@@ -18,41 +18,31 @@
 # flake8: compatible
 
 import re
-from io import BytesIO
-from decimal import Decimal
 from datetime import date, datetime
+from decimal import Decimal
+from io import BytesIO
 
 import chompjs
-from dateutil.tz import tz
 from dateutil.parser import parse as parse_date
+from dateutil.tz import tz
 from PIL import Image, ImageFilter
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce,
-    Currency, Date, Env, Eval, Field,
-    Format, Lower, MapIn, Regexp,
+    CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval, Field, Format, Lower, MapIn, Regexp,
 )
-from woob.browser.pages import (
-    HTMLPage, JsonPage, LoggedPage,
-    RawPage, XMLPage,
-)
-from woob.capabilities.bank import (
-    Account, Loan, AccountOwnership,
-    AccountOwnerType,
-)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage, XMLPage
+from woob.capabilities.bank import Account, AccountOwnership, AccountOwnerType, Loan
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
-from woob.exceptions import (
-    AppValidationCancelled, BrowserIncorrectPassword,
-    BrowserPasswordExpired, BrowserUserBanned,
-)
+from woob.exceptions import AppValidationCancelled, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUserBanned
 from woob.tools.capabilities.bank.iban import rib2iban
-from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType, is_isin_valid
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.captcha.virtkeyboard import SplitKeyboard
+
 
 BANK_SNIPPET_ID_REGEX = r'''(?x) # regex extended mode
 \b

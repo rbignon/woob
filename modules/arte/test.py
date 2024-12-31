@@ -19,9 +19,10 @@
 
 import itertools
 
+from woob.capabilities.video import BaseVideo
 from woob.tools.test import BackendTest
 from woob.tools.value import Value
-from woob.capabilities.video import BaseVideo
+
 from .video import SITE
 
 

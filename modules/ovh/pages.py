@@ -17,13 +17,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.bill import Bill, Subscription
-from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
-from woob.browser.filters.standard import CleanDecimal, CleanText, Env, Format, DateTime
+import time
+
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
-from woob.browser.elements import ListElement, ItemElement, method, DictElement
-import time
+from woob.browser.filters.standard import CleanDecimal, CleanText, DateTime, Env, Format
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.capabilities.bill import Bill, Subscription
+
 
 class LoginPage(HTMLPage):
     def is_logged(self):

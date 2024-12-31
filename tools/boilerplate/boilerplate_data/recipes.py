@@ -15,14 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-import inspect
 import importlib
-import sys
+import inspect
 import pkgutil
-
-import woob.capabilities
+import sys
 
 from recipe import Recipe
+
+import woob.capabilities
 
 
 __all__ = ['BaseRecipe', 'CapRecipe']

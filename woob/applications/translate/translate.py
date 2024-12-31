@@ -17,11 +17,13 @@
 
 import re
 
-from woob.capabilities.translate import CapTranslate, TranslationFail, LanguageNotSupported
-from woob.tools.application.repl import ReplApplication
-from woob.tools.application.formatters.iformatter import IFormatter
 from babel.core import Locale, UnknownLocaleError
 from babel.localedata import locale_identifiers
+
+from woob.capabilities.translate import CapTranslate, LanguageNotSupported, TranslationFail
+from woob.tools.application.formatters.iformatter import IFormatter
+from woob.tools.application.repl import ReplApplication
+
 
 __all__ = ['AppTranslate']
 

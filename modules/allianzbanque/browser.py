@@ -27,10 +27,8 @@ from woob.capabilities.bank import Account
 from woob.tools.decorators import retry
 from woob_modules.cmso.par.browser import CmsoParBrowser
 
-from .pages import (
-    AccountsPage, ProfilePage, ContractsPage, LoansPage,
-    CypherPage, MarketPage, InvestmentsPage,
-)
+from .pages import AccountsPage, ContractsPage, CypherPage, InvestmentsPage, LoansPage, MarketPage, ProfilePage
+
 
 __all__ = ['AllianzbanqueBrowser']
 

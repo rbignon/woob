@@ -20,4 +20,5 @@
 
 from .module import CitibankModule
 
+
 __all__ = ['CitibankModule']

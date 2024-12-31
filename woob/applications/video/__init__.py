@@ -18,4 +18,5 @@
 
 from .video import AppVideo
 
+
 __all__ = ['AppVideo']

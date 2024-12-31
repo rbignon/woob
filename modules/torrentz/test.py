@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from woob.tools.test import BackendTest
+from random import choice
+
 from woob.capabilities.torrent import MagnetOnly
 from woob.tools.date import date
-
-from random import choice
+from woob.tools.test import BackendTest
 
 
 class TorrentzTest(BackendTest):

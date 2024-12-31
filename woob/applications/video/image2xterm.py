@@ -17,11 +17,12 @@
 #
 # This file is distributed under the WTFPLv2 license.
 
-import sys
 import os
+import sys
 
 import PIL.Image as Image
 import PIL.ImageColor as PILColor
+
 
 """
 XTerm can decode sequences and display 256 colors:

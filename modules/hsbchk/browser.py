@@ -15,18 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import timedelta, date
+from datetime import date, timedelta
 
-from woob.capabilities.bank import Account, NoAccountsException
-from woob.browser import PagesBrowser, URL, need_login, StatesMixin
+from woob.browser import URL, PagesBrowser, StatesMixin, need_login
+from woob.browser.exceptions import ClientError, LoggedOut
 from woob.browser.selenium import SubSeleniumMixin
-from woob.browser.exceptions import LoggedOut, ClientError
+from woob.capabilities.bank import Account, NoAccountsException
 
-from .pages.account_pages import (
-    OtherPage, JsonAccSum, JsonAccDtl, JsonAccHist
-)
-
+from .pages.account_pages import JsonAccDtl, JsonAccHist, JsonAccSum, OtherPage
 from .sbrowser import LoginBrowser
+
 
 __all__ = ['HSBCHK']
 

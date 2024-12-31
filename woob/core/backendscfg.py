@@ -20,9 +20,9 @@ import os
 import stat
 import sys
 from collections.abc import MutableMapping
-from configparser import RawConfigParser, DuplicateSectionError
+from configparser import DuplicateSectionError, RawConfigParser
 from logging import warning
-from subprocess import check_output, CalledProcessError
+from subprocess import CalledProcessError, check_output
 from typing import Iterator, Tuple
 
 

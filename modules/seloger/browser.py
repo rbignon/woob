@@ -17,11 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.browser.profiles import Firefox
-from woob.capabilities.housing import TypeNotSupported, POSTS_TYPES
-from .constants import TYPES, RET, BASE_URL
-from .pages import SearchResultsPage, HousingPage, CitiesPage, ErrorPage
+from woob.capabilities.housing import POSTS_TYPES, TypeNotSupported
+
+from .constants import BASE_URL, RET, TYPES
+from .pages import CitiesPage, ErrorPage, HousingPage, SearchResultsPage
+
 
 __all__ = ['SeLogerBrowser']
 

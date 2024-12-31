@@ -17,13 +17,14 @@
 
 # flake8: compatible
 
-from woob.capabilities.profile import CapProfile
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig
 from woob.tools.value import ValueBackendPassword, ValueTransient
 from woob_modules.cmso.module import CmsoModule
 
 from .browser import AllianzbanqueBrowser
+
 
 __all__ = ['AllianzbanqueModule']
 

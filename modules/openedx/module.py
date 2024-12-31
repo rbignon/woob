@@ -15,15 +15,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from subprocess import PIPE, Popen  # nosec
+
 import dateutil.parser
 
-from subprocess import Popen, PIPE  # nosec
-
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.messages import CapMessages, Message, Thread
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
-from woob.capabilities.messages import CapMessages, Thread, Message
 
 from .browser import OpenEDXBrowser
+
 
 __all__ = ['OpenEDXModule']
 

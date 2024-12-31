@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
 import runpy
 import sys
 import tokenize
+from pathlib import Path
 
 
 mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))

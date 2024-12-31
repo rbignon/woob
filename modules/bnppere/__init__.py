@@ -20,4 +20,5 @@
 
 from .module import BnppereModule
 
+
 __all__ = ['BnppereModule']

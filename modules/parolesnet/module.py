@@ -22,6 +22,7 @@ from woob.tools.backend import Module
 
 from .browser import ParolesnetBrowser
 
+
 __all__ = ['ParolesnetModule']
 
 

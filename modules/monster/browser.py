@@ -19,9 +19,10 @@
 
 from urllib.parse import quote_plus, urlencode
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
 from .pages import AdvertPage, AdvSearchPage, ExpiredAdvert
+
 
 __all__ = ['MonsterBrowser']
 

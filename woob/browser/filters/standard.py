@@ -19,14 +19,14 @@ from __future__ import annotations
 
 import datetime
 import re
-import pycountry
-from typing import Any
 from collections.abc import Iterator
 from decimal import Decimal, InvalidOperation
 from itertools import islice
 from numbers import Number
+from typing import Any
 from urllib.parse import parse_qs, urlparse
 
+import pycountry
 from dateutil.parser import parse as parse_date
 from dateutil.tz import gettz
 from lxml.etree import ElementBase as LXMLElement
@@ -37,6 +37,7 @@ from woob.capabilities.base import empty
 from woob.tools.misc import clean_text
 
 from .base import _NO_DEFAULT, Filter, FilterError, ItemNotFound, _Filter, debug
+
 
 __all__ = [
     'Filter', 'FilterError', 'RegexpError', 'FormatError',

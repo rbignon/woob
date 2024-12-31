@@ -17,9 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.base import (
-    BaseObject, Capability, Enum, EnumField, Field, StringField, UserError,
-)
+from woob.capabilities.base import BaseObject, Capability, Enum, EnumField, Field, StringField, UserError
+
 
 __all__ = [
     'CapPicross', 'Picross', 'PicrossNotFound', 'PicrossSolution',

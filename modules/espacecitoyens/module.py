@@ -16,12 +16,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.bill import CapDocument, Subscription, Bill, Document
+from woob.capabilities.bill import Bill, CapDocument, Document, Subscription
+from woob.exceptions import BrowserIncorrectPassword
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import EspacecitoyensBrowser
-from woob.exceptions import BrowserIncorrectPassword
+
 
 __all__ = ['EspacecitoyensModule']
 

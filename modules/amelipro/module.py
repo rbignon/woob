@@ -20,14 +20,12 @@
 # flake8: compatible
 
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import (
-    Bill, CapDocument, DocumentCategory, DocumentNotFound,
-    DocumentTypes, Subscription,
-)
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.bill import Bill, CapDocument, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import AmeliProBrowser
+
 
 __all__ = ['AmeliProModule']
 

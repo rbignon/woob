@@ -26,23 +26,21 @@ from urllib.parse import urlparse
 from requests import HTTPError, TooManyRedirects
 
 from woob.browser import need_login
-from woob.browser.url import URL
 from woob.browser.exceptions import ClientError
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
+from woob.browser.url import URL
 from woob.capabilities.base import find_object
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.capabilities.bank.transactions import (
-    sorted_transactions, omit_deferred_transactions, keep_only_card_transactions,
+    keep_only_card_transactions, omit_deferred_transactions, sorted_transactions,
 )
 from woob.tools.json import json
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
-from .pages import (
-    CenetLoginPage, CenetHomePage,
-    CenetAccountsPage, CenetAccountHistoryPage, CenetCardsPage,
-    CenetCardSummaryPage, SubscriptionPage, DownloadDocumentPage,
-    CenetLoanPage, LinebourseTokenPage,
-)
 from ..browser import CaisseEpargneLogin
+from .pages import (
+    CenetAccountHistoryPage, CenetAccountsPage, CenetCardsPage, CenetCardSummaryPage, CenetHomePage, CenetLoanPage,
+    CenetLoginPage, DownloadDocumentPage, LinebourseTokenPage, SubscriptionPage,
+)
 
 
 __all__ = ['CenetBrowser']

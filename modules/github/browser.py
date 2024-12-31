@@ -17,14 +17,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import os
+import re
 
 from dateutil.parser import parse as parse_date
-from woob.capabilities.base import empty
+
 from woob.browser.browsers import APIBrowser
 from woob.browser.cache import CacheMixin
 from woob.browser.exceptions import ClientError
+from woob.capabilities.base import empty
+
 
 __all__ = ['GithubBrowser']
 

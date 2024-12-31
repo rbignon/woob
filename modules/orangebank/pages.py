@@ -17,19 +17,16 @@
 
 # flake8: compatible
 
-from woob.browser.pages import JsonPage, LoggedPage, RawPage
 from woob.browser.elements import DictElement, ItemElement, method
-from woob.capabilities.bank import Account
-from woob.capabilities.bank.transfer import (
-    Recipient, Transfer, TransferDateType, TransferStatus,
-)
-from woob.capabilities.base import NotAvailable
-from woob.capabilities.profile import Person
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Date, DateTime, Env, Field, Format,
-    Currency, Map,
+    CleanDecimal, CleanText, Coalesce, Currency, Date, DateTime, Env, Field, Format, Map,
 )
+from woob.browser.pages import JsonPage, LoggedPage, RawPage
+from woob.capabilities.bank import Account
+from woob.capabilities.bank.transfer import Recipient, Transfer, TransferDateType, TransferStatus
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.profile import Person
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 

@@ -17,14 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import LoggedPage
 from woob.browser.elements import ItemElement, ListElement, TableElement, method
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Date, Format, Currency,
-)
 from woob.browser.filters.html import Attr, TableCell
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Format
+from woob.browser.pages import LoggedPage
+from woob.browser.selenium import AllCondition, SeleniumPage, VisibleXPath
 from woob.capabilities.bank import Account, Transaction
-from woob.browser.selenium import SeleniumPage, VisibleXPath, AllCondition
 
 from .ent_pages import LoginPage as _LoginPage
 

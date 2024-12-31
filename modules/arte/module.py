@@ -21,13 +21,13 @@
 import re
 from collections import OrderedDict
 
-from woob.capabilities.video import CapVideo, BaseVideo
-from woob.capabilities.collection import CapCollection, CollectionNotFound, Collection
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.collection import CapCollection, Collection, CollectionNotFound
+from woob.capabilities.video import BaseVideo, CapVideo
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value
 
 from .browser import ArteBrowser
-from .video import VERSION_VIDEO, FORMATS, LANG, QUALITY, SITE, get_site_enum_by_id
+from .video import FORMATS, LANG, QUALITY, SITE, VERSION_VIDEO, get_site_enum_by_id
 
 
 __all__ = ['ArteModule']

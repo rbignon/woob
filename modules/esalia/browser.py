@@ -18,10 +18,8 @@
 from woob.browser import URL
 from woob.tools.url import get_url_param
 from woob_modules.erehsbc.browser import ErehsbcBrowser
-from woob_modules.erehsbc.pages import (
-    AuthenticationPage as ErehsbcAuthenticationPage,
-    FinalizeAuthenticationPage as ErehsbcFinalizeAuthenticationPage,
-)
+from woob_modules.erehsbc.pages import AuthenticationPage as ErehsbcAuthenticationPage
+from woob_modules.erehsbc.pages import FinalizeAuthenticationPage as ErehsbcFinalizeAuthenticationPage
 
 
 class EsaliaBrowser(ErehsbcBrowser):

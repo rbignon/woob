@@ -18,9 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from woob.capabilities.base import find_object
 from woob.capabilities.weather import CapWeather, CityNotFound
 from woob.tools.backend import Module
-from woob.capabilities.base import find_object
+
 from .browser import MeteofranceBrowser
 
 

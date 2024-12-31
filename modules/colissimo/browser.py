@@ -19,12 +19,13 @@
 
 import re
 
-from woob.capabilities.parcel import Event, ParcelNotFound, Parcel
-from woob.browser import PagesBrowser, URL
+from dateutil.parser import parse as parse_date
+
+from woob.browser import URL, PagesBrowser
 from woob.browser.pages import HTMLPage, JsonPage
 from woob.browser.profiles import Firefox
+from woob.capabilities.parcel import Event, Parcel, ParcelNotFound
 
-from dateutil.parser import parse as parse_date
 
 __all__ = ['ColissimoBrowser']
 

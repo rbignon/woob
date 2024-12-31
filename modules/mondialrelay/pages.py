@@ -19,13 +19,9 @@
 
 # flake8: compatible
 
-from woob.browser.elements import method, ListElement, ItemElement
-from woob.browser.filters.standard import (
-    CleanText, DateTime, Env, Format, Regexp, Map,
-)
-from woob.browser.pages import (
-    HTMLPage, Page, JsonPage, PartialHTMLPage,
-)
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import CleanText, DateTime, Env, Format, Map, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, Page, PartialHTMLPage
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.parcel import Event, Parcel, ParcelState
 

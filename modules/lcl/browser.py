@@ -17,28 +17,28 @@
 
 # flake8: compatible
 
+import random
+import re
+import string
+import time
 from base64 import b64encode
 from datetime import date
-import re
-import time
-import random
-import string
 
 from dateutil.relativedelta import relativedelta
 
 from woob.browser.browsers import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import ClientError, ServerError
+from woob.capabilities.bank import Account
 from woob.capabilities.base import empty, find_object
 from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserUserBanned
-from woob.capabilities.bank import Account
 from woob.tools.decorators import retry
 
 from .pages import (
-    AVHistoryPage, AVInvestmentsPage, BourseHomePage, BoursePage, CardDetailsPage, CardSynthesisPage, DiscPage,
-    NoPermissionPage, SEPAMandatePage, HomePage, KeypadPage, BoursePreLoadPage, ForbiddenLifeInsurancesPage,
-    MonEspaceHome, PreAccessPage, PreHomePage, RedirectMonEspaceHome, RedirectionPage, LoginPage, AggregationPage,
-    AccountsPage, CardsPage, LifeInsurancesPage, LoansPage, LoanDetailsPage, RoutagePage, GetContractPage,
-    TermAccountsPage, TransactionsPage, CardTransactionsPage, LaunchRedirectionPage, DocumentsPage, CONTRACT_TYPES,
+    CONTRACT_TYPES, AccountsPage, AggregationPage, AVHistoryPage, AVInvestmentsPage, BourseHomePage, BoursePage,
+    BoursePreLoadPage, CardDetailsPage, CardsPage, CardSynthesisPage, CardTransactionsPage, DiscPage, DocumentsPage,
+    ForbiddenLifeInsurancesPage, GetContractPage, HomePage, KeypadPage, LaunchRedirectionPage, LifeInsurancesPage,
+    LoanDetailsPage, LoansPage, LoginPage, MonEspaceHome, NoPermissionPage, PreAccessPage, PreHomePage, RedirectionPage,
+    RedirectMonEspaceHome, RoutagePage, SEPAMandatePage, TermAccountsPage, TransactionsPage,
 )
 
 

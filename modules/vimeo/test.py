@@ -18,10 +18,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.video import BaseVideo
-from woob.tools.value import Value
-from woob.tools.test import BackendTest
 import itertools
+
+from woob.capabilities.video import BaseVideo
+from woob.tools.test import BackendTest
+from woob.tools.value import Value
 
 
 class VimeoTest(BackendTest):

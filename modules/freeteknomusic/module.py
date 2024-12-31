@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.backend import Module
+from woob.capabilities.audio import Album, BaseAudio, CapAudio
 from woob.capabilities.base import find_object
-from woob.capabilities.audio import CapAudio, BaseAudio, Album
 from woob.capabilities.collection import CapCollection, Collection
+from woob.tools.backend import Module
 
 from .browser import FreeteknomusicBrowser
 

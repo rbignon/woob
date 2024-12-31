@@ -19,4 +19,5 @@
 
 from .module import TvsubtitlesModule
 
+
 __all__ = ['TvsubtitlesModule']

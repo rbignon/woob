@@ -15,15 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import time, datetime
+from datetime import datetime, time
+
 from dateutil import tz
 
-from woob.tools.date import parse_date
-from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
 from woob.capabilities.base import empty
-from woob.capabilities.calendar import CapCalendarEvent, Query, CATEGORIES, TICKET, STATUS
+from woob.capabilities.calendar import CATEGORIES, STATUS, TICKET, CapCalendarEvent, Query
+from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
 from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.config.yamlconfig import YamlConfig
+from woob.tools.date import parse_date
+
 
 __all__ = ['AppCalendar']
 

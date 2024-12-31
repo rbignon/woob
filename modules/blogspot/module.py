@@ -19,7 +19,7 @@
 
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.messages import CapMessages, Message, Thread
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value
 
 from .browser import BlogspotBrowser

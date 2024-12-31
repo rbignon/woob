@@ -20,24 +20,23 @@
 # flake8: compatible
 
 import time
-from uuid import uuid4
 from datetime import datetime, timedelta
-
+from uuid import uuid4
 
 from woob.browser.browsers import need_login
+from woob.browser.exceptions import BrowserTooManyRequests, ClientError
 from woob.browser.mfa import TwoFactorBrowser
-from woob.browser.exceptions import ClientError, BrowserTooManyRequests
 from woob.browser.url import URL
 from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.base import find_object
 from woob.exceptions import (
-    AppValidation, AppValidationCancelled, AppValidationExpired, BrowserIncorrectPassword,
-    BrowserUnavailable, BrowserUserBanned, OTPSentType, SentOTPQuestion,
+    AppValidation, AppValidationCancelled, AppValidationExpired, BrowserIncorrectPassword, BrowserUnavailable,
+    BrowserUserBanned, OTPSentType, SentOTPQuestion,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.date import now_as_utc
 
-from .pages import AccountPage, SpacesPage, TransactionsPage, TransactionsCategoryPage
+from .pages import AccountPage, SpacesPage, TransactionsCategoryPage, TransactionsPage
 
 
 class Number26Browser(TwoFactorBrowser):

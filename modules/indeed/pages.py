@@ -17,12 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import timedelta, datetime
 import re
+from datetime import datetime, timedelta
+
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import Attr, CleanHTML
+from woob.browser.filters.standard import CleanText, Env, Filter, Format, Regexp
 from woob.browser.pages import HTMLPage, pagination
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import Filter, CleanText, Regexp, Format, Env
-from woob.browser.filters.html import CleanHTML, Attr
 from woob.capabilities.job import BaseJobAdvert
 
 

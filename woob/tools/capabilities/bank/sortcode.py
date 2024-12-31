@@ -19,6 +19,7 @@ import re
 
 from woob.browser.filters.base import Filter, FilterError, debug
 
+
 __all__ = [
     'SortCodeAccountNumber', 'SortCodeAccountNumberFormatError',
     'canonicalize_sort_code_account_number',

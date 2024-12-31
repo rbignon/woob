@@ -17,9 +17,9 @@
 
 from __future__ import annotations
 
-from typing import Callable, Any
+from typing import Any, Callable
 
-from .base import _Filter, _NO_DEFAULT, Filter, debug, ItemNotFound
+from .base import _NO_DEFAULT, Filter, ItemNotFound, _Filter, debug
 
 
 __all__ = ['Dict']

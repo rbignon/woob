@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.browser.exceptions import HTTPNotFound
 from woob.capabilities.date import DateField
 from woob.capabilities.paste import BasePaste
 
-from .pages import ReadPageZero, ReadPage0, WritePageZero, WritePage0
+from .pages import ReadPage0, ReadPageZero, WritePage0, WritePageZero
 
 
 class ZeroPaste(BasePaste):

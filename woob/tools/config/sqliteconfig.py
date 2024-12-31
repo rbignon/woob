@@ -27,6 +27,7 @@ from .iconfig import ConfigError, IConfig
 from .util import replace, time_buffer
 from .yamlconfig import WoobDumper
 
+
 try:
     from yaml import CSafeLoader as SafeLoader
 except ImportError:

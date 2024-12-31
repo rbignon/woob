@@ -21,20 +21,19 @@
 
 import re
 from datetime import datetime
-from urllib.parse import urlencode, urlparse, parse_qsl
+from urllib.parse import parse_qsl, urlencode, urlparse
 
-from woob.browser.pages import HTMLPage, LoggedPage, JsonPage, pagination
-from woob.capabilities.bill import Subscription
-from woob.browser.elements import DictElement, ListElement, ItemElement, method
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Env, Field, Regexp, Date, BrowserURL,
-    Format, Eval, Lower,
-)
-from woob.browser.filters.html import Link, HasElement
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.html import HasElement, Link
 from woob.browser.filters.javascript import JSValue
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    BrowserURL, CleanDecimal, CleanText, Date, Env, Eval, Field, Format, Lower, Regexp,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.bill import Bill
+from woob.capabilities.bill import Bill, Subscription
+
 
 FRENCH_MONTHS = (
     'janv.',

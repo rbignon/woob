@@ -18,4 +18,5 @@
 
 from .smtp import AppSmtp
 
+
 __all__ = ['AppSmtp']

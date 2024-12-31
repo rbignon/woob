@@ -17,12 +17,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from tempfile import mkstemp
 from os import remove
+from tempfile import mkstemp
 
-from woob.tools.application.formatters.json import (
-    JsonFormatter, JsonLineFormatter,
-)
+from woob.tools.application.formatters.json import JsonFormatter, JsonLineFormatter
 from woob.tools.application.formatters.table import TableFormatter
 
 

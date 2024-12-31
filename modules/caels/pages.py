@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.elements import ItemElement, method, DictElement
-from woob.browser.filters.standard import CleanDecimal, Date, Field, Env
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, Date, Env, Field
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.investments import is_isin_valid

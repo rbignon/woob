@@ -20,6 +20,8 @@
 from base64 import b64decode, b64encode
 from random import choices
 from string import digits
+
+
 try:
     from Cryptodome.Cipher import PKCS1_v1_5
     from Cryptodome.PublicKey import RSA
@@ -30,15 +32,12 @@ except ImportError:
 from woob.browser import URL
 from woob.browser.exceptions import ClientError
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserPasswordExpired,
-    NeedInteractiveFor2FA, OTPSentType, SentOTPQuestion,
+    BrowserIncorrectPassword, BrowserPasswordExpired, NeedInteractiveFor2FA, OTPSentType, SentOTPQuestion,
 )
 from woob.tools.url import get_url_param
 from woob_modules.s2e.browser import S2eBrowser
 
-from .pages import (
-    AuthenticationPage, FinalizeAuthenticationPage, LoginPage,
-)
+from .pages import AuthenticationPage, FinalizeAuthenticationPage, LoginPage
 
 
 class ErehsbcBrowser(S2eBrowser):

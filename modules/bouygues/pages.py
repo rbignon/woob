@@ -22,12 +22,9 @@ from datetime import timedelta
 from urllib.parse import parse_qsl, urlparse
 
 from woob.browser.elements import DictElement, ItemElement, method
-from woob.browser.filters.html import HasElement, Attr
+from woob.browser.filters.html import Attr, HasElement
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, CountryCode,
-    Date, Env, Field, Format, Regexp,
-)
+from woob.browser.filters.standard import CleanDecimal, CleanText, CountryCode, Date, Env, Field, Format, Regexp
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities import NotAvailable
 from woob.capabilities.address import PostalAddress

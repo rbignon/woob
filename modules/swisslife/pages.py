@@ -20,19 +20,19 @@
 import datetime
 from urllib.parse import urlparse
 
-from woob.browser.elements import method, ListElement, ItemElement, DictElement
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Eval, Field, Map, Currency, Regexp,
-    Env, Date, BrowserURL, Coalesce, MultiJoin, MapIn, Lower, RawText
+    BrowserURL, CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval, Field, Lower, Map, MapIn, MultiJoin,
+    RawText, Regexp,
 )
-from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import Investment
-from woob.capabilities.profile import Person
 from woob.capabilities.base import NotAvailable, empty
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.capabilities.profile import Person
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.date import parse_french_date
 
 

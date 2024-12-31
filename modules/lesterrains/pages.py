@@ -17,19 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText,
-    Date, Lower, Regexp, QueryValue,
-)
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr
 from woob.browser.filters.json import Dict
-from woob.browser.filters.html import Attr, AbsoluteLink
-from woob.browser.elements import ItemElement, ListElement, DictElement, method
-from woob.browser.pages import JsonPage, HTMLPage, pagination
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Lower, QueryValue, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, pagination
 from woob.capabilities.base import Currency, NotAvailable
-from woob.capabilities.housing import (
-    Housing, HousingPhoto, City,
-    POSTS_TYPES, HOUSE_TYPES, ADVERT_TYPES, UTILITIES
-)
+from woob.capabilities.housing import ADVERT_TYPES, HOUSE_TYPES, POSTS_TYPES, UTILITIES, City, Housing, HousingPhoto
 
 
 class CitiesPage(JsonPage):

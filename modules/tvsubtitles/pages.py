@@ -19,8 +19,8 @@
 
 import re
 
-from woob.capabilities.subtitle import Subtitle
 from woob.browser.pages import HTMLPage
+from woob.capabilities.subtitle import Subtitle
 from woob.tools.misc import to_unicode
 
 

@@ -22,26 +22,25 @@ import datetime
 from dateutil import tz
 from dateutil.relativedelta import relativedelta
 
-from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidationError, BrowserIncorrectPassword,
-    BrowserQuestion, BrowserUnavailable, BrowserUserBanned,
-)
 from woob.browser import URL, need_login
-from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.exceptions import ServerError
+from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bank import Account, AccountNotFound
 from woob.capabilities.base import empty
+from woob.exceptions import (
+    ActionNeeded, ActionType, AppValidationError, BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable,
+    BrowserUserBanned,
+)
+from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
-from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.value import Value
 from woob_modules.spirica.browser import SpiricaBrowser
 
 from .pages import (
-    LoginPage, ErrorPage, AccountsPage, HistoryPage, LoanHistoryPage, RibPage,
-    LifeInsuranceList, LifeInsuranceIframe, LifeInsuranceRedir,
-    BoursePage, CardHistoryPage, CardPage, UserValidationPage, BourseActionNeeded,
-    BourseDisconnectPage, ProfilePage, BfBKeyboard, SendTwoFAPage, MaintenancePage,
+    AccountsPage, BfBKeyboard, BourseActionNeeded, BourseDisconnectPage, BoursePage, CardHistoryPage, CardPage,
+    ErrorPage, HistoryPage, LifeInsuranceIframe, LifeInsuranceList, LifeInsuranceRedir, LoanHistoryPage, LoginPage,
+    MaintenancePage, ProfilePage, RibPage, SendTwoFAPage, UserValidationPage,
 )
 
 

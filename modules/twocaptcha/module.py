@@ -23,6 +23,7 @@ from woob.tools.value import ValueBackendPassword
 
 from .browser import TwoCaptchaBrowser
 
+
 __all__ = ['TwoCaptchaModule']
 
 

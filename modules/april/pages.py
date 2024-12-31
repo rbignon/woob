@@ -18,27 +18,14 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.pages import (
-    JsonPage,
-    LoggedPage,
-    HTMLPage,
-)
-from woob.exceptions import (
-    BrowserIncorrectPassword,
-    BrowserUnavailable,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanText,
-    Format,
-    Coalesce,
-    Date,
-    CleanDecimal,
-)
-from woob.capabilities.profile import Person
-from woob.capabilities.bill import DocumentTypes, Document
-from woob.browser.elements import ItemElement, DictElement, method
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Date, Format
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Document, DocumentTypes
+from woob.capabilities.profile import Person
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 
 class HomePage(HTMLPage):

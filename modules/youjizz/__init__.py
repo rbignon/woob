@@ -19,4 +19,5 @@
 
 from .module import YoujizzModule
 
+
 __all__ = ['YoujizzModule']

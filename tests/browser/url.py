@@ -19,7 +19,7 @@
 import pytest
 import responses
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.browser.pages import Page, RawPage
 from woob.browser.url import BrowserParamURL, UrlNotResolvable, normalize_url
 

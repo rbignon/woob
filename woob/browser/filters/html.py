@@ -24,11 +24,9 @@ import lxml.html as html
 
 from woob.tools.html import html2text
 
-from .base import (
-    _NO_DEFAULT, Filter, FilterError, _Selector, debug, ItemNotFound,
-    _Filter,
-)
+from .base import _NO_DEFAULT, Filter, FilterError, ItemNotFound, _Filter, _Selector, debug
 from .standard import CleanText
+
 
 __all__ = ['CSS', 'XPath', 'XPathNotFound', 'AttributeNotFound',
            'Attr', 'Link', 'AbsoluteLink',

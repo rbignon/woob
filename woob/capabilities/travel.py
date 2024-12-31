@@ -18,8 +18,9 @@
 
 import datetime
 
-from .base import Capability, BaseObject, StringField, DecimalField, UserError
-from .date import TimeField, DeltaField, DateField
+from .base import BaseObject, Capability, DecimalField, StringField, UserError
+from .date import DateField, DeltaField, TimeField
+
 
 __all__ = ['Station', 'Departure', 'RoadStep', 'RoadmapError', 'RoadmapFilters', 'CapTravel']
 

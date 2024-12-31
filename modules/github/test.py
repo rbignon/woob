@@ -19,8 +19,8 @@
 
 from time import time
 
+from woob.capabilities.bugtracker import Query, Status, Update, User, Version
 from woob.tools.test import BackendTest, skip_without_config
-from woob.capabilities.bugtracker import Query, Version, User, Status, Update
 
 
 class GithubTest(BackendTest):

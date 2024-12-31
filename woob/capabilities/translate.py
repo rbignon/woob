@@ -16,7 +16,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .base import Capability, BaseObject, StringField, UserError
+from .base import BaseObject, Capability, StringField, UserError
 
 
 __all__ = ['TranslationFail', 'LanguageNotSupported', 'CapTranslate']

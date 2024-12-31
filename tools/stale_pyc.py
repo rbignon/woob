@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import shutil
+import sys
+
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 verbose = '-v' in sys.argv

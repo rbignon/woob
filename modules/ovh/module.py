@@ -17,13 +17,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.bill import (
-    DocumentCategory, DocumentTypes, CapDocument, Subscription,
-    Bill, DocumentNotFound,
-)
 from woob.capabilities.base import find_object
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, ValueTransient, Value
+from woob.capabilities.bill import Bill, CapDocument, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import OvhBrowser
 

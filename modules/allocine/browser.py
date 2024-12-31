@@ -32,6 +32,7 @@ from woob.capabilities.collection import Collection
 from woob.capabilities.image import Thumbnail
 from woob.capabilities.video import BaseVideo
 
+
 __all__ = ['AllocineBrowser']
 
 

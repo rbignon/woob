@@ -17,4 +17,5 @@
 
 from .job import AppJob
 
+
 __all__ = ['AppJob']

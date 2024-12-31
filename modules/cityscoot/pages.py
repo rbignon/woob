@@ -18,13 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Env, Format, Regexp
 from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.elements import ItemElement, method, ListElement
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Env,
-    Regexp, Format, Date, Currency,
-)
-from woob.browser.filters.html import Attr, AbsoluteLink
 from woob.capabilities.bill import Bill, Subscription
 
 

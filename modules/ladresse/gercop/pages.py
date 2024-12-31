@@ -19,9 +19,7 @@
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanText, Coalesce, Date, Upper, Map, Regexp,
-)
+from woob.browser.filters.standard import CleanText, Coalesce, Date, Map, Regexp, Upper
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.bill import Document

@@ -22,18 +22,16 @@
 from time import time
 from urllib.parse import unquote
 
-from woob.browser import LoginBrowser, URL, need_login, StatesMixin
-from woob.exceptions import (
-    BrowserIncorrectPassword, SentOTPQuestion, OTPSentType, NeedInteractiveFor2FA,
-)
+from woob.browser import URL, LoginBrowser, StatesMixin, need_login
+from woob.exceptions import BrowserIncorrectPassword, NeedInteractiveFor2FA, OTPSentType, SentOTPQuestion
 from woob.tools.decorators import retry
 from woob.tools.json import json
 
-from .pages import (
-    HomePage, AuthenticatePage, AuthorizePage, WrongPasswordPage, CheckAuthenticatePage, ProfilPage,
-    DocumentsPage, WelcomePage, UnLoggedPage, ProfilePage, BillDownload, XUIPage, OTPTemplatePage,
-)
 from .akamai import AkamaiMixin
+from .pages import (
+    AuthenticatePage, AuthorizePage, BillDownload, CheckAuthenticatePage, DocumentsPage, HomePage, OTPTemplatePage,
+    ProfilePage, ProfilPage, UnLoggedPage, WelcomePage, WrongPasswordPage, XUIPage,
+)
 
 
 class BrokenPageError(Exception):

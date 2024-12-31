@@ -18,14 +18,14 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.content import CapContent, Content
-from woob.capabilities.bugtracker import CapBugTracker, Issue, Project, User, \
-                                           Version, Status, Update, Attachment, \
-                                           Query, Change
+from woob.capabilities.bugtracker import (
+    Attachment, CapBugTracker, Change, Issue, Project, Query, Status, Update, User, Version,
+)
 from woob.capabilities.collection import CapCollection, Collection, CollectionNotFound
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.content import CapContent, Content
 from woob.exceptions import BrowserHTTPNotFound
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import RedmineBrowser
 

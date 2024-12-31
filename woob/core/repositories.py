@@ -16,23 +16,23 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-import importlib
-import posixpath
-import shutil
-import re
-import sys
-import os
-import subprocess
 import hashlib
+import importlib
+import os
+import posixpath
+import re
+import shutil
+import subprocess
+import sys
+import tarfile
 from compileall import compile_dir
+from configparser import DEFAULTSECT, RawConfigParser
 from contextlib import closing, contextmanager
 from datetime import datetime
 from io import BytesIO, StringIO
 from pathlib import Path
 from tempfile import NamedTemporaryFile, mkdtemp
 from urllib.request import getproxies
-from configparser import RawConfigParser, DEFAULTSECT
-import tarfile
 
 import packaging.version
 from packaging.specifiers import SpecifierSet
@@ -41,7 +41,7 @@ from woob.browser.browsers import Browser
 from woob.browser.profiles import Woob as WoobProfile
 from woob.exceptions import BrowserHTTPError, BrowserHTTPNotFound, ModuleInstallError
 from woob.tools.log import getLogger
-from woob.tools.misc import get_backtrace, to_unicode, find_exe
+from woob.tools.misc import find_exe, get_backtrace, to_unicode
 from woob.tools.packaging import parse_requirements
 
 from .modules import LoadedModule, _add_in_modules_path

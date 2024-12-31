@@ -21,7 +21,7 @@
 
 from woob.capabilities.base import empty
 from woob.capabilities.image import Thumbnail
-from woob.capabilities.video import CapVideo, BaseVideo
+from woob.capabilities.video import BaseVideo, CapVideo
 from woob.tools.backend import Module
 from woob.tools.capabilities.video.ytdl import video_info
 

@@ -18,4 +18,5 @@
 
 from .cinema import AppCinema
 
+
 __all__ = ['AppCinema']

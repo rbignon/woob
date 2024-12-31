@@ -17,9 +17,10 @@
 
 
 from woob.tools.capabilities.streaminfo import StreamInfo
+
+from .audio import BaseAudio, CapAudio
 from .base import Field
 from .file import CapFile
-from .audio import CapAudio, BaseAudio
 
 
 __all__ = ['BaseAudioStream', 'CapAudioStream']

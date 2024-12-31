@@ -23,35 +23,20 @@ import itertools
 import json
 
 from woob.browser import URL, need_login
-from woob.browser.mfa import TwoFactorBrowser
+from woob.browser.exceptions import ClientError
 from woob.browser.filters.standard import QueryValue
+from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.messages import CantSendMessage
 from woob.exceptions import (
-    ActionNeeded,
-    BrowserIncorrectPassword,
-    BrowserUnavailable,
-    BrowserUserBanned,
-    SentOTPQuestion,
-    OTPSentType,
+    ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned, OTPSentType, SentOTPQuestion,
 )
-from woob.browser.exceptions import ClientError
 from woob.tools.decorators import retry
 
 from .pages import (
-    ErrorPage,
-    LoginPage,
-    MainPage,
-    OfferPage,
-    OptionsPage,
-    PdfPage,
-    ProfilePage,
-    CsrfPage,
-    ProvidersPage,
-    CredentialsPage,
-    SessionPage,
-    LoginRSCPage,
-    OtpPage,
+    CredentialsPage, CsrfPage, ErrorPage, LoginPage, LoginRSCPage, MainPage, OfferPage, OptionsPage, OtpPage, PdfPage,
+    ProfilePage, ProvidersPage, SessionPage,
 )
+
 
 __all__ = ['Freemobile']
 

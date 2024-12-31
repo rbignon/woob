@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from html import unescape
 import re
+from html import unescape
 
-from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.elements import method, ListElement, ItemElement, SkipItem
-from woob.capabilities.collection import Collection
+from woob.browser.elements import ItemElement, ListElement, SkipItem, method
 from woob.browser.filters.standard import CleanText
+from woob.browser.pages import HTMLPage, LoggedPage
+from woob.capabilities.collection import Collection
 
 
 class PageLogin(HTMLPage):

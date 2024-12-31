@@ -21,10 +21,9 @@ from typing import Dict
 
 from woob.tools.value import Value
 
-from .base import Capability, BaseObject, Field, StringField, UserError
-from .date import DateField
+from .base import BaseObject, Capability, Field, StringField, UserError
 from .contact import Contact
-
+from .date import DateField
 
 
 __all__ = ['OptimizationNotFound', 'Optimization', 'Event', 'CapDating']

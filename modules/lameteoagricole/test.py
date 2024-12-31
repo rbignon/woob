@@ -19,9 +19,9 @@
 
 from datetime import date
 
-from woob.tools.test import BackendTest
 from woob.capabilities.base import empty
 from woob.tools.date import new_datetime
+from woob.tools.test import BackendTest
 
 
 class LameteoagricoleTest(BackendTest):

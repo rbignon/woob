@@ -18,15 +18,15 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 import requests
 
-from .job import APEC_CONTRATS, APEC_EXPERIENCE
-
-from woob.browser.elements import ItemElement, method, DictElement
-from woob.browser.pages import JsonPage, pagination
-from woob.browser.filters.standard import DateTime, Format, Regexp
-from woob.browser.filters.json import Dict
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import CleanHTML
-from woob.capabilities.job import BaseJobAdvert
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import DateTime, Format, Regexp
+from woob.browser.pages import JsonPage, pagination
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.job import BaseJobAdvert
+
+from .job import APEC_CONTRATS, APEC_EXPERIENCE
 
 
 class IdsPage(JsonPage):

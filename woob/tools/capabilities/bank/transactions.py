@@ -15,16 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict
-from decimal import Decimal, InvalidOperation
 import datetime
 import re
+from collections import OrderedDict
+from decimal import Decimal, InvalidOperation
 
-from woob.browser.elements import TableElement, ItemElement
+from woob.browser.elements import ItemElement, TableElement
 from woob.browser.filters.html import TableCell
-from woob.browser.filters.standard import Filter, CleanText, CleanDecimal
+from woob.browser.filters.standard import CleanDecimal, CleanText, Filter
 from woob.capabilities import NotAvailable, NotLoaded
-from woob.capabilities.bank import Transaction, Account
+from woob.capabilities.bank import Account, Transaction
 from woob.exceptions import ParseError
 from woob.tools.date import new_datetime
 from woob.tools.log import getLogger

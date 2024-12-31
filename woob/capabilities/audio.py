@@ -17,10 +17,10 @@
 
 import re
 
-from .image import Thumbnail
-from .base import Field, StringField, IntField, BaseObject
+from .base import BaseObject, Field, IntField, StringField
 from .date import DeltaField
-from .file import CapFile, BaseFile
+from .file import BaseFile, CapFile
+from .image import Thumbnail
 
 
 __all__ = ['BaseAudio', 'CapAudio']

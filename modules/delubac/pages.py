@@ -19,15 +19,14 @@
 
 import re
 
-
-from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.elements import ItemElement, method, ListElement, TableElement
-from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Regexp, QueryValue, Field
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import Attr, Link, TableCell
-from woob.capabilities.base import NotAvailable
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Field, QueryValue, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bank import Account
-from woob.tools.captcha.virtkeyboard import SplitKeyboard
+from woob.capabilities.base import NotAvailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.captcha.virtkeyboard import SplitKeyboard
 
 
 class DelubacVirtKeyboard(SplitKeyboard):

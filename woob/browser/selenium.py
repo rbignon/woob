@@ -16,35 +16,32 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 import codecs
+import hashlib
+import logging
+import os
+import time
 from collections import OrderedDict
 from contextlib import contextmanager
 from copy import deepcopy
 from glob import glob
-import os
-import hashlib
 from tempfile import NamedTemporaryFile
-import time
-import logging
-from urllib.parse import (
-    urljoin, urlparse, urlencode, parse_qsl,
-    urlunparse,
-)
+from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
+
 
 try:
     from selenium import webdriver
 except ImportError:
     raise ImportError('Please install python3-selenium')
 
+from selenium.common.exceptions import NoSuchElementException, NoSuchFrameException, TimeoutException
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.proxy import Proxy, ProxyType
-from selenium.common.exceptions import (
-    NoSuchElementException, TimeoutException, NoSuchFrameException,
-)
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from selenium.webdriver.remote.command import Command
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 from woob.tools.log import getLogger
 
 from .pages import HTMLPage as BaseHTMLPage

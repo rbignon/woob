@@ -23,39 +23,33 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
-from woob.browser.browsers import LoginBrowser, URL, need_login, StatesMixin
-from woob.capabilities.bank import (
-    Account, AddRecipientStep,
-    TransferInvalidRecipient, Loan, AddRecipientBankError,
-)
-from woob.capabilities.bill import Subscription, Document, DocumentTypes
-from woob.capabilities.profile import ProfileMissing
-from woob.tools.decorators import retry
-from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
-from woob.tools.capabilities.bank.transactions import sorted_transactions
-from woob.browser.exceptions import ServerError, ClientError, HTTPNotFound
+from woob.browser.browsers import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.elements import DataError
-from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidation, AppValidationExpired,
-    BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,
-    BrowserUserBanned, NeedInteractiveFor2FA,
-)
-from woob.tools.value import Value
-from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.browser.filters.standard import QueryValue
-
-from .pages import (
-    LoginPage, AccountsPage, AccountsIBANPage, HistoryPage, TransferInitPage,
-    ConnectionThresholdPage, LifeInsurancesPage, LifeInsurancesHistoryPage,
-    LifeInsurancesDetailPage, NatioVieProPage, CapitalisationPage, MarketOrdersPage,
-    MarketListPage, MarketPage, MarketHistoryPage, MarketSynPage, BNPKeyboard,
-    RecipientsPage, ValidateTransferPage, RegisterTransferPage, AdvisorPage,
-    AddRecipPage, ActivateRecipPage, ProfilePage, ListDetailCardPage, ListErrorPage,
-    UselessPage, TransferAssertionError, LoanDetailsPage, TransfersPage, OTPPage,
-    UnavailablePage, InitLoginPage, FinalizeLoginPage, InfoClientPage,
-    StatusPage,
+from woob.capabilities.bank import Account, AddRecipientBankError, AddRecipientStep, Loan, TransferInvalidRecipient
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
+from woob.capabilities.profile import ProfileMissing
+from woob.exceptions import (
+    ActionNeeded, ActionType, AppValidation, AppValidationExpired, BrowserIncorrectPassword, BrowserPasswordExpired,
+    BrowserUnavailable, BrowserUserBanned, NeedInteractiveFor2FA,
 )
-from .document_pages import DocumentsPage, TitulairePage, RIBPage
+from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
+from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.tools.decorators import retry
+from woob.tools.value import Value
+
+from .document_pages import DocumentsPage, RIBPage, TitulairePage
+from .pages import (
+    AccountsIBANPage, AccountsPage, ActivateRecipPage, AddRecipPage, AdvisorPage, BNPKeyboard, CapitalisationPage,
+    ConnectionThresholdPage, FinalizeLoginPage, HistoryPage, InfoClientPage, InitLoginPage, LifeInsurancesDetailPage,
+    LifeInsurancesHistoryPage, LifeInsurancesPage, ListDetailCardPage, ListErrorPage, LoanDetailsPage, LoginPage,
+    MarketHistoryPage, MarketListPage, MarketOrdersPage, MarketPage, MarketSynPage, NatioVieProPage, OTPPage,
+    ProfilePage, RecipientsPage, RegisterTransferPage, StatusPage, TransferAssertionError, TransferInitPage,
+    TransfersPage, UnavailablePage, UselessPage, ValidateTransferPage,
+)
+
 
 __all__ = ['BNPPartPro', 'HelloBank']
 

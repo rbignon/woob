@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from .base import Capability, BaseObject, NotLoaded, StringField, BoolField, UserError
+from .base import BaseObject, BoolField, Capability, NotLoaded, StringField, UserError
 
 
 __all__ = ['PasteNotFound', 'BasePaste', 'CapPaste']

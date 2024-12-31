@@ -17,7 +17,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 from .date import DeltaField
-from .image import CapImage, BaseImage
+from .image import BaseImage, CapImage
 
 
 __all__ = ['BaseVideo', 'CapVideo']

@@ -20,4 +20,5 @@
 
 from .module import IlmatieteenlaitosModule
 
+
 __all__ = ['IlmatieteenlaitosModule']

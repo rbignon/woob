@@ -19,9 +19,7 @@
 
 from woob.browser.elements import ItemElement, TableElement, method
 from woob.browser.filters.html import Link, TableCell, XPath
-from woob.browser.filters.standard import (
-    BrowserURL, CleanText, Env, Field, Format, Regexp,
-)
+from woob.browser.filters.standard import BrowserURL, CleanText, Env, Field, Format, Regexp
 from woob.browser.pages import HTMLPage
 from woob.capabilities.picross import Picross, PicrossSolvedStatus
 from woob.tools.json import json

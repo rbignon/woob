@@ -19,20 +19,12 @@
 
 from datetime import date
 
-from woob.browser.pages import (
-    LoggedPage, JsonPage, RawPage, HTMLPage,
-    PartialHTMLPage,
-)
-from woob.browser.elements import method, ItemElement, DictElement
-from woob.capabilities.base import empty, NotAvailable
-from woob.capabilities.bank import (
-    Account, Recipient, Transfer, TransferBankError, Emitter, EmitterNumberType,
-)
-from woob.browser.filters.standard import (
-    CleanDecimal, Date, CleanText, Coalesce, Format,
-    Upper,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Date, Format, Upper
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage
+from woob.capabilities.bank import Account, Emitter, EmitterNumberType, Recipient, Transfer, TransferBankError
+from woob.capabilities.base import NotAvailable, empty
 
 
 class NewRecipientPage(LoggedPage, PartialHTMLPage):

@@ -17,13 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from woob.browser import URL, PagesBrowser
+from woob.capabilities.base import empty
 from woob.tools.json import json
 
-from woob.browser import PagesBrowser, URL
-from woob.capabilities.base import empty
-
-from .pages import CitiesPage, HousingPage, SearchPage
 from .housing import RET, TYPES
+from .pages import CitiesPage, HousingPage, SearchPage
 
 
 class EntreparticuliersBrowser(PagesBrowser):

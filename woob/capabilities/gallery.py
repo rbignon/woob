@@ -16,9 +16,10 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.image import BaseImage as CIBaseImage, Thumbnail
-from .base import Capability, BaseObject, NotLoaded, Field, StringField, \
-                  IntField, FloatField, Enum
+from woob.capabilities.image import BaseImage as CIBaseImage
+from woob.capabilities.image import Thumbnail
+
+from .base import BaseObject, Capability, Enum, Field, FloatField, IntField, NotLoaded, StringField
 from .date import DateField
 
 

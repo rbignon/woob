@@ -18,8 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.test import BackendTest
 import itertools
+
+from woob.tools.test import BackendTest
 
 
 class ManpowerTest(BackendTest):

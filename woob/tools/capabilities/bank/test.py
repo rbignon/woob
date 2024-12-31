@@ -17,9 +17,9 @@
 
 from datetime import date
 
-from woob.capabilities.base import empty, NotLoaded
 from woob.capabilities.bank import CapTransfer
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import NotLoaded, empty
 from woob.exceptions import NoAccountsException
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.investments import is_isin_valid

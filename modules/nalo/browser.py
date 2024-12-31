@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, need_login, URL
-from woob.capabilities.captcha import RecaptchaV2Question
-from woob.capabilities.bank.wealth import Investment
-from woob.exceptions import BrowserIncorrectPassword
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ClientError
+from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.captcha import RecaptchaV2Question
+from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, HtmlLoginFragment, AccountsPage, AccountPage, InvestPage
+from .pages import AccountPage, AccountsPage, HtmlLoginFragment, InvestPage, LoginPage
 
 
 class NaloBrowser(LoginBrowser):

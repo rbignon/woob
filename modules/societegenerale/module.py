@@ -21,26 +21,21 @@
 # flake8: compatible
 
 import re
-from decimal import Decimal
 from datetime import timedelta
+from decimal import Decimal
 
 from unidecode import unidecode
 
-from woob.capabilities.bank import (
-    CapBankTransferAddRecipient, AccountNotFound,
-    Account, RecipientNotFound,
-)
+from woob.capabilities.bank import Account, AccountNotFound, CapBankTransferAddRecipient, RecipientNotFound
 from woob.capabilities.bank.pfm import CapBankMatching
-from woob.capabilities.bill import (
-    CapDocument, Subscription, Document, DocumentNotFound, DocumentTypes,
-)
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import NotAvailable, empty, find_object, strict_find_object
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
 from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.capabilities.bank.transactions import sorted_transactions
-from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
-from woob.capabilities.base import empty, find_object, NotAvailable, strict_find_object
 
 from .browser import SocieteGenerale
 from .sgpe.browser import SGEnterpriseBrowser, SGProfessionalBrowser

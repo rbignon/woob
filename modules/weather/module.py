@@ -23,6 +23,7 @@ from woob.tools.backend import Module
 
 from .browser import WeatherBrowser
 
+
 __all__ = ['WeatherModule']
 
 

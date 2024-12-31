@@ -22,13 +22,13 @@
 from datetime import datetime
 from decimal import Decimal
 
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr
-from woob.browser.pages import LoggedPage, JsonPage, HTMLPage, RawPage
-from woob.browser.filters.standard import Env, Format, Date, Eval, CleanText
-from woob.browser.elements import ItemElement, DictElement, method
 from woob.browser.filters.json import Dict
-from woob.capabilities.bill import Bill, Subscription
+from woob.browser.filters.standard import CleanText, Date, Env, Eval, Format
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Bill, Subscription
 from woob.capabilities.profile import Profile
 
 from .akamai import AkamaiHTMLPage

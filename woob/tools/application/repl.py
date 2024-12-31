@@ -37,8 +37,8 @@ from woob.tools.path import WorkingPath
 
 from .console import BackendNotGiven, ConsoleApplication
 from .formatters.load import FormatterLoadError, FormattersLoader
-from .results import ResultsCondition, ResultsConditionError
 from .pretty import colored
+from .results import ResultsCondition, ResultsConditionError
 
 
 __all__ = [

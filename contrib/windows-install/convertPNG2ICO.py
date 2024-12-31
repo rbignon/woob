@@ -23,9 +23,11 @@
 #  [7] http://www.osphp.com.cn/read.php/290.htm
 
 
-from PIL import Image
-import sys
 import os
+import sys
+
+from PIL import Image
+
 
 # data: a size*size of (r,g,b,t) tuples, t for tansparency(if True)
 #       (r,g,b,a) if bpp is 32

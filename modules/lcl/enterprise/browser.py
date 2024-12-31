@@ -21,14 +21,13 @@
 
 import re
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
+from woob.capabilities.bank import AccountOwnerType
 from woob.capabilities.bank.base import Account
 from woob.exceptions import BrowserIncorrectPassword
-from woob.capabilities.bank import AccountOwnerType
 
 from .pages import (
-    LoginPage, TooManySessionsPage, CardsPage, CardsMovementsPage,
-    MovementsPage, ProfilePage, PassExpiredPage,
+    CardsMovementsPage, CardsPage, LoginPage, MovementsPage, PassExpiredPage, ProfilePage, TooManySessionsPage,
 )
 
 

@@ -21,10 +21,8 @@ import re
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Date, Env, Eval, Field, Format, Map
-)
-from woob.browser.pages import HTMLPage, LoggedPage, pagination, JsonPage
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Env, Eval, Field, Format, Map
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from woob.capabilities.bank import Account
 from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import FrenchTransaction

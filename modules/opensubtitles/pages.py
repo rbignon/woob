@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 import re
 
-from woob.capabilities.subtitle import Subtitle
+from woob.browser.elements import ItemElement, TableElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr, Link
+from woob.browser.filters.standard import CleanDecimal, CleanText, Regexp
 from woob.browser.pages import HTMLPage, pagination
-from woob.browser.elements import TableElement, ItemElement, method
-from woob.browser.filters.html import Attr, Link, AbsoluteLink
-from woob.browser.filters.standard import Regexp, CleanText, CleanDecimal
+from woob.capabilities.subtitle import Subtitle
 
 
 class SearchPage(HTMLPage):

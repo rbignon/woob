@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.calendar import BaseCalendarEvent, TRANSP, STATUS
+from woob.capabilities.calendar import STATUS, TRANSP, BaseCalendarEvent
 
 
 class CentQuatreEvent(BaseCalendarEvent):

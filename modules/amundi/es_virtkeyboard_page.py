@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from io import BytesIO
 import base64
+from io import BytesIO
 
 from woob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
 

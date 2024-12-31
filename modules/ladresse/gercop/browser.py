@@ -23,9 +23,9 @@ from woob.browser.url import URL
 from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
 
 from .pages import (
-    AuthenticatePage, DocumentCategoriesPage, DocumentsPage,
-    HomePage, LoginPage, PasswordExpiredPage, ProfilePage,
+    AuthenticatePage, DocumentCategoriesPage, DocumentsPage, HomePage, LoginPage, PasswordExpiredPage, ProfilePage,
 )
+
 
 __all__ = ['GercopBrowser']
 

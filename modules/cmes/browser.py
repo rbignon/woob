@@ -22,14 +22,13 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ClientError, ServerError
-from woob.browser import LoginBrowser, URL, need_login
 from woob.capabilities.captcha import RecaptchaV3Question
-from woob.exceptions import AuthMethodNotImplemented, BrowserIncorrectPassword, ActionNeeded
+from woob.exceptions import ActionNeeded, AuthMethodNotImplemented, BrowserIncorrectPassword
 
 from .pages import (
-    LoginPage, AccountsPage, OperationsListPage, OperationPage, ActionNeededPage,
-    InvestmentPage, InvestmentDetailsPage,
+    AccountsPage, ActionNeededPage, InvestmentDetailsPage, InvestmentPage, LoginPage, OperationPage, OperationsListPage,
 )
 
 

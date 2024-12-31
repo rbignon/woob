@@ -22,20 +22,18 @@
 import json
 from datetime import date
 
-from woob.browser.pages import HTMLPage, JsonPage
-from woob.browser.elements import method, DictElement, ItemElement, ListElement
-from woob.browser.filters.standard import CleanText, CleanDecimal
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import Date, Eval, Field
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Eval, Field
+from woob.browser.pages import HTMLPage, JsonPage
 from woob.capabilities.bank import (
-    Emitter, EmitterNumberType, Recipient, Transfer, TransferBankError,
-    TransferError, TransferInvalidAmount,
+    Emitter, EmitterNumberType, Recipient, Transfer, TransferBankError, TransferError, TransferInvalidAmount,
 )
 from woob.exceptions import BrowserUnavailable
 
-from .pages import MainPEPage
 from ..pages.accounts_list import eval_decimal_amount
+from .pages import MainPEPage
 
 
 class ErrorCheckedJsonPage(JsonPage):

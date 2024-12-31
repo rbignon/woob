@@ -20,4 +20,5 @@
 
 from .module import EsaliaModule
 
+
 __all__ = ['EsaliaModule']

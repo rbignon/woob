@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from .base import Capability, BaseObject, NotAvailable, Field, StringField, IntField, Enum
+from .base import BaseObject, Capability, Enum, Field, IntField, NotAvailable, StringField
 from .date import DateField
 
 

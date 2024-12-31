@@ -19,8 +19,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 from datetime import datetime
 
-from woob.browser import PagesBrowser, URL
-from .pages import StationsPage, DeparturesPage, DeparturesPage2, HorairesPage, RoadMapPage
+from woob.browser import URL, PagesBrowser
+
+from .pages import DeparturesPage, DeparturesPage2, HorairesPage, RoadMapPage, StationsPage
 
 
 class Transilien(PagesBrowser):

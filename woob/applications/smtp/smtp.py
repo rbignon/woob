@@ -15,19 +15,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from email.mime.text import MIMEText
-from smtplib import SMTP
-from email.header import Header, decode_header
-from email.utils import parseaddr, formataddr, formatdate
-from email import message_from_file
-import time
-import re
 import logging
-import subprocess
+import re
 import shlex
+import subprocess
+import time
+from email import message_from_file
+from email.header import Header, decode_header
+from email.mime.text import MIMEText
+from email.utils import formataddr, formatdate, parseaddr
+from smtplib import SMTP
 
+from woob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread
 from woob.core import CallErrors
-from woob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
 from woob.tools.application.repl import ReplApplication
 from woob.tools.date import utc2local
 from woob.tools.html import html2text

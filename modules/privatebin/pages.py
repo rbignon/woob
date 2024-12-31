@@ -24,6 +24,7 @@ from base64 import b64decode, b64encode
 from os import urandom
 from zlib import DEFLATED, MAX_WBITS, compressobj, decompress
 
+
 try:
     from Cryptodome.Cipher import AES
     from Cryptodome.Hash import HMAC, SHA256
@@ -33,7 +34,7 @@ except ImportError:
     from Crypto.Hash import HMAC, SHA256
     from Crypto.Protocol.KDF import PBKDF2
 
-from woob.browser.pages import JsonPage, HTMLPage
+from woob.browser.pages import HTMLPage, JsonPage
 from woob.tools.json import json
 
 # privatebin uses base64 AND base58... why on earth are they so inconsistent?

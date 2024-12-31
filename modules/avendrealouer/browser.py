@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.capabilities.housing import HOUSE_TYPES, POSTS_TYPES
 
-from .pages import CitiesPage, SearchPage, HousingPage
-from .constants import QUERY_TYPES, QUERY_HOUSE_TYPES, FURNISHED_VALUES
+from .constants import FURNISHED_VALUES, QUERY_HOUSE_TYPES, QUERY_TYPES
+from .pages import CitiesPage, HousingPage, SearchPage
 
 
 class AvendrealouerBrowser(PagesBrowser):

@@ -17,15 +17,15 @@
 
 from datetime import datetime
 
-from woob.applications.torrent.torrent import TorrentInfoFormatter, TorrentListFormatter
 from woob.applications.subtitles.subtitles import SubtitleInfoFormatter, SubtitleListFormatter
-from woob.capabilities.torrent import CapTorrent, MagnetOnly
+from woob.applications.torrent.torrent import TorrentInfoFormatter, TorrentListFormatter
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.cinema import CapCinema
 from woob.capabilities.subtitle import CapSubtitle
-from woob.capabilities.base import empty, NotAvailable
-from woob.tools.application.repl import ReplApplication, defaultcount
-from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
+from woob.capabilities.torrent import CapTorrent, MagnetOnly
 from woob.core import CallErrors
+from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 
 
 __all__ = ['AppCinema']

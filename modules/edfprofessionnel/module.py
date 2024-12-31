@@ -18,14 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription, Document, DocumentNotFound,
-    DocumentCategory,
-)
 from woob.capabilities.base import find_object
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value
+from woob.capabilities.bill import (
+    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
+)
 from woob.capabilities.profile import CapProfile
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import EdfproBrowser
 

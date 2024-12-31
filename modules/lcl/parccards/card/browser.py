@@ -18,12 +18,12 @@
 from random import randint
 from time import sleep
 
-from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned
-from woob.browser.browsers import LoginBrowser, need_login, URL
+from woob.browser.browsers import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ClientError
+from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned
 
-from .pages import LoginPage, PeriodsPage
 from ..pages import HistoryPage
+from .pages import LoginPage, PeriodsPage
 
 
 __all__ = ['LCLCardsBrowser']

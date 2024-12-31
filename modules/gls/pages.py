@@ -20,7 +20,8 @@
 from dateutil.parser import parse as parse_date
 
 from woob.browser.pages import JsonPage
-from woob.capabilities.parcel import Parcel, Event
+from woob.capabilities.parcel import Event, Parcel
+
 
 STATUSES = {
     "DELIVEREDPS": Parcel.STATUS_ARRIVED,

@@ -22,6 +22,7 @@ from woob.browser import URL, PagesBrowser
 
 from .pages import CommentsPage, RecipePage, ResultsPage
 
+
 __all__ = ['MarmitonBrowser']
 
 

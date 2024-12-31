@@ -20,9 +20,9 @@
 
 import re
 
-from woob.tools.capabilities.paste import BasePasteModule
-from woob.tools.backend import Module
 from woob.capabilities.base import NotLoaded
+from woob.tools.backend import Module
+from woob.tools.capabilities.paste import BasePasteModule
 
 from .browser import PastealaconBrowser, PastealaconPaste
 

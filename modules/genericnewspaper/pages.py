@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import HTMLPage
+from lxml.etree import Comment
+
 from woob.browser.filters.html import XPath, XPathNotFound
 from woob.browser.filters.standard import CleanText
-from lxml.etree import Comment
+from woob.browser.pages import HTMLPage
 
 
 class Article(object):

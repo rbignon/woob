@@ -17,8 +17,8 @@
 
 import datetime
 
-from woob.tools.date import new_date, new_datetime
 from woob.capabilities.base import Field
+from woob.tools.date import new_date, new_datetime
 
 
 __all__ = ['DateField', 'TimeField', 'DeltaField']

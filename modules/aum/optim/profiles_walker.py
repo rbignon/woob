@@ -19,8 +19,8 @@
 
 from random import randint
 
-from woob.exceptions import BrowserUnavailable
 from woob.capabilities.dating import Optimization
+from woob.exceptions import BrowserUnavailable
 from woob.tools.log import getLogger
 
 

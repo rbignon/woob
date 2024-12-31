@@ -17,48 +17,44 @@
 
 from __future__ import annotations
 
-from collections import OrderedDict
-from functools import wraps
-import importlib
-import re
 import base64
-from hashlib import sha256
-import zlib
-from logging import Logger
-from typing import Callable, Tuple, Type, Dict, Any, List, ClassVar
-
-import os
-from copy import copy, deepcopy
-import inspect
-from datetime import datetime, timedelta
-from threading import Lock
-from urllib.parse import urlparse, urljoin, urlencode, parse_qsl
 import http
-from uuid import uuid4
-import warnings
-import tempfile
+import importlib
+import inspect
 import mimetypes
+import os
+import re
+import tempfile
+import warnings
+import zlib
+from collections import OrderedDict
+from copy import copy, deepcopy
+from datetime import datetime, timedelta
+from functools import wraps
+from hashlib import sha256
+from logging import Logger
+from threading import Lock
+from typing import Any, Callable, ClassVar, Dict, List, Tuple, Type
+from urllib.parse import parse_qsl, urlencode, urljoin, urlparse
+from uuid import uuid4
 
+import requests
 import urllib3
 from dateutil import parser, tz
-import requests
 
-from woob.exceptions import (
-    BrowserHTTPSDowngrade, BrowserRedirect, BrowserIncorrectPassword,
-    BrowserUnavailable,
-)
+from woob.exceptions import BrowserHTTPSDowngrade, BrowserIncorrectPassword, BrowserRedirect, BrowserUnavailable
 from woob.tools.date import now_as_utc
-from woob.tools.log import getLogger
 from woob.tools.json import json
+from woob.tools.log import getLogger
 from woob.tools.request import to_curl
 
 from .adapters import HTTPAdapter
 from .cookies import WoobCookieJar
-from .exceptions import HTTPNotFound, ClientError, ServerError
+from .exceptions import ClientError, HTTPNotFound, ServerError
 from .har import HARManager
-from .sessions import FuturesSession
-from .profiles import Firefox, Profile
 from .pages import NextPage
+from .profiles import Firefox, Profile
+from .sessions import FuturesSession
 from .url import URL, normalize_url
 
 

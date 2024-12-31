@@ -19,4 +19,5 @@
 
 from .module import BarclaysModule
 
+
 __all__ = ['BarclaysModule']

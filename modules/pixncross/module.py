@@ -17,13 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.picross import (
-    CapPicross, PicrossSolutionKind, PicrossSolvedStatus,
-)
+from woob.capabilities.picross import CapPicross, PicrossSolutionKind, PicrossSolvedStatus
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
 
 from .browser import PixNCrossBrowser
+
 
 __all__ = ['PixNCrossModule']
 

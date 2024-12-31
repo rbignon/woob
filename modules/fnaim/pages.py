@@ -17,16 +17,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.elements import ItemElement, ListElement, method, DictElement
-from woob.browser.filters.html import Attr, AbsoluteLink, Link, XPath
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr, Link, XPath
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanDecimal, CleanText, Regexp, MultiJoin, Env
+from woob.browser.filters.standard import CleanDecimal, CleanText, Env, MultiJoin, Regexp
 from woob.browser.pages import HTMLPage, JsonPage, pagination
 from woob.capabilities.address import PostalAddress
-from woob.capabilities.base import NotAvailable, Currency
-from woob.capabilities.housing import City, Housing, UTILITIES, HousingPhoto, ADVERT_TYPES, \
-    ENERGY_CLASS, HOUSE_TYPES, POSTS_TYPES
+from woob.capabilities.base import Currency, NotAvailable
+from woob.capabilities.housing import (
+    ADVERT_TYPES, ENERGY_CLASS, HOUSE_TYPES, POSTS_TYPES, UTILITIES, City, Housing, HousingPhoto,
+)
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
+
 from .constants import HOUSE_TYPES_LABELS
 
 

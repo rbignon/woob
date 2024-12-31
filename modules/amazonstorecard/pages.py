@@ -17,18 +17,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.bank import Account, Transaction
+import json
+import re
+from datetime import datetime, timedelta
+
 from woob.browser.exceptions import ServerError
 from woob.browser.pages import HTMLPage, RawPage
-from woob.tools.capabilities.bank.transactions import \
-    AmericanTransaction as AmTr
+from woob.capabilities.bank import Account, Transaction
+from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
 from woob.tools.date import closest_date
 from woob.tools.pdf import decompress_pdf
 from woob.tools.tokenizer import ReTokenizer
-
-from datetime import datetime, timedelta
-import re
-import json
 
 
 class SomePage(HTMLPage):

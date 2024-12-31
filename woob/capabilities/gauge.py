@@ -16,9 +16,10 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .base import Capability, BaseObject, StringField, DecimalField, Field, UserError, empty
+from .address import GeoCoordinates, PostalAddress, compat_field
+from .base import BaseObject, Capability, DecimalField, Field, StringField, UserError, empty
 from .date import DateField
-from .address import compat_field, GeoCoordinates, PostalAddress
+
 
 __all__ = ['Gauge', 'GaugeSensor', 'GaugeMeasure', 'CapGauge', 'SensorNotFound']
 

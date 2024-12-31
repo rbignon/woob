@@ -19,11 +19,12 @@
 
 from urllib.parse import quote_plus
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.capabilities.housing import HOUSE_TYPES, POSTS_TYPES
 from woob.tools.json import json
-from .constants import QUERY_TYPES, QUERY_HOUSE_TYPES
-from .pages import SearchCityPage, SearchPage, HousingPage
+
+from .constants import QUERY_HOUSE_TYPES, QUERY_TYPES
+from .pages import HousingPage, SearchCityPage, SearchPage
 
 
 class FnaimBrowser(PagesBrowser):

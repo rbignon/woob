@@ -18,4 +18,5 @@
 
 from .lyrics import AppLyrics
 
+
 __all__ = ['AppLyrics']

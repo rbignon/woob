@@ -23,6 +23,7 @@ from woob_modules.creditdunord.module import CreditDuNordModule
 
 from .browser import SmcBrowser
 
+
 __all__ = ['SmcModule']
 
 

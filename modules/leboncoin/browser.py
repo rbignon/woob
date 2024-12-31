@@ -17,12 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from woob.browser import URL, PagesBrowser
+from woob.capabilities.housing import ADVERT_TYPES, HOUSE_TYPES, POSTS_TYPES, TypeNotSupported
 from woob.tools.json import json
 
-from woob.browser import PagesBrowser, URL
-from woob.capabilities.housing import (TypeNotSupported, POSTS_TYPES,
-                                         HOUSE_TYPES, ADVERT_TYPES)
-from .pages import CityListPage, HousingListPage, HousingPage, PhonePage, HomePage
+from .pages import CityListPage, HomePage, HousingListPage, HousingPage, PhonePage
 
 
 class LeboncoinBrowser(PagesBrowser):

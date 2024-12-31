@@ -19,39 +19,29 @@
 
 import re
 from collections import OrderedDict
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
 from urllib.parse import urljoin
 
 from requests.cookies import remove_cookie_by_name
 
-from woob.browser.pages import (
-    LoggedPage, HTMLPage, JsonPage, pagination,
-    FormNotFound,
-)
-from woob.browser.elements import ItemElement, method, ListElement, TableElement, SkipItem, DictElement
-from woob.browser.filters.standard import (
-    Date, CleanDecimal, Regexp, CleanText, Env,
-    Field, Eval, Format, Currency, Coalesce, MapIn,
-    Lower,
-)
-from woob.browser.filters.html import Link, Attr, TableCell
-from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import (
-    Account, Loan, AccountOwnership,
-    Transfer, AccountOwnerType,
-)
-from woob.capabilities.bank.wealth import Investment
-from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.capabilities.bank.iban import is_rib_valid, rib2iban
-from woob.exceptions import (
-    NoAccountsException, BrowserUnavailable, ActionNeeded,
-)
-from woob.browser.filters.json import Dict
+from woob.browser.elements import DictElement, ItemElement, ListElement, SkipItem, TableElement, method
 from woob.browser.exceptions import ClientError, ServerError
+from woob.browser.filters.html import Attr, Link, TableCell
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval, Field, Format, Lower, MapIn, Regexp,
+)
+from woob.browser.pages import FormNotFound, HTMLPage, JsonPage, LoggedPage, pagination
+from woob.capabilities.bank import Account, AccountOwnership, AccountOwnerType, Loan, Transfer
+from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.base import NotAvailable, empty
+from woob.exceptions import ActionNeeded, BrowserUnavailable, NoAccountsException
+from woob.tools.capabilities.bank.iban import is_rib_valid, rib2iban
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType, is_isin_valid
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
-from ..base_pages import fix_form, BasePage
+from ..base_pages import BasePage, fix_form
 
 
 def MyDecimal(*args, **kwargs):

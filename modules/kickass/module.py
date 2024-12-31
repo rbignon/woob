@@ -24,6 +24,7 @@ from woob.tools.backend import Module
 
 from .browser import KickassBrowser
 
+
 #from contextlib import closing
 #from gzip import GzipFile
 

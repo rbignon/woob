@@ -19,10 +19,10 @@
 
 from urllib.parse import urlencode
 
-from woob.browser import PagesBrowser, URL
-from woob.capabilities.housing import POSTS_TYPES, HOUSE_TYPES
+from woob.browser import URL, PagesBrowser
+from woob.capabilities.housing import HOUSE_TYPES, POSTS_TYPES
 
-from .pages import CitiesPage, SearchPage, HousingPage
+from .pages import CitiesPage, HousingPage, SearchPage
 
 
 class LesterrainsBrowser(PagesBrowser):

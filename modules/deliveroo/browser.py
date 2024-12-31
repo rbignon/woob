@@ -19,9 +19,9 @@
 
 # flake8: compatible
 
-from woob.browser import LoginBrowser, StatesMixin, URL, need_login
-from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
+from woob.browser import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import ClientError
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
 
 from .pages import DocumentsPage, LoginPage, ProfilePage
 

@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import json
+import re
 
-from woob.capabilities import NotAvailable
 from woob.browser.pages import RawPage
+from woob.capabilities import NotAvailable
 
 
 class TranslatePage(RawPage):

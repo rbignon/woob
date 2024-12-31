@@ -18,10 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import PagesBrowser, URL
+from datetime import date, timedelta
+
+from woob.browser import URL, PagesBrowser
 
 from .pages import EventListPage, EventPage
-from datetime import timedelta, date
 
 
 class AgendadulibreBrowser(PagesBrowser):

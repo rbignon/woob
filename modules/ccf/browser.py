@@ -21,13 +21,13 @@ from hashlib import sha256
 
 from woob.browser import URL, need_login
 from woob.browser.browsers import ClientError, ServerError
-from woob_modules.cmso.par.browser import CmsoParBrowser
-from woob.capabilities.bill import Subscription
 from woob.capabilities.bank import Account
+from woob.capabilities.bill import Subscription
 from woob.tools.decorators import retry
+from woob_modules.cmso.par.browser import CmsoParBrowser
 
+from .pages import DocumentsPage, RibPage, SubscriptionsPage, TransactionsPage
 
-from .pages import SubscriptionsPage, DocumentsPage, RibPage, TransactionsPage
 
 __all__ = ["CCFParBrowser", "CCFProBrowser"]
 

@@ -24,6 +24,7 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import RobloxBrowser
 
+
 __all__ = ['RobloxModule']
 
 

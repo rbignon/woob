@@ -47,18 +47,20 @@
 # You'll need to prepare the flatboob saved queries (city1, city2 and so on
 # in the config sample above) by your own means, then run imm-o-matic
 
-import csv
-import sqlite3
-import os
-import json
-import re
-import subprocess
-import hashlib
-import glob
-import tempfile
-import shutil
 import argparse
+import csv
+import glob
+import hashlib
+import json
+import os
+import re
+import shutil
+import sqlite3
+import subprocess
+import tempfile
+
 import yaml
+
 
 fields = [ u'id', u'title', u'area', u'cost', u'currency', u'date', u'location', u'station', u'text', u'phone', u'photos', u'details', u'url' ]
 

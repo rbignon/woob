@@ -18,13 +18,14 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.collection import CapCollection
 from woob.capabilities.messages import CapMessages, Message, Thread
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import FeedlyBrowser
 from .google import GoogleBrowser
+
 
 __all__ = ['FeedlyModule']
 

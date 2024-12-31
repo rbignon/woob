@@ -20,5 +20,6 @@
 
 from .module import CapeasiModule
 
+
 __all__ = ['CapeasiModule']
 

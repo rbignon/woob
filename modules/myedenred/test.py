@@ -22,6 +22,7 @@ from woob.tools.test import BackendTest
 
 from .pages import parseInput
 
+
 class MyedenredTest(BackendTest):
     MODULE = 'myedenred'
 

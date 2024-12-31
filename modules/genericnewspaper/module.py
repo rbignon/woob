@@ -17,8 +17,8 @@
 
 import time
 
-from woob.capabilities.messages import Message, Thread
 from woob.capabilities.base import find_object
+from woob.capabilities.messages import Message, Thread
 from woob.tools.backend import Module
 from woob.tools.newsfeed import Newsfeed
 

@@ -17,34 +17,29 @@
 
 # flake8: compatible
 
-from collections import OrderedDict, Counter
-from functools import wraps
 import re
+from collections import Counter, OrderedDict
+from functools import wraps
 
-from woob.browser import LoginBrowser, URL, StatesMixin, need_login
-from woob.exceptions import (
-    BrowserIncorrectPassword, ActionNeeded, ActionType, AuthMethodNotImplemented,
-)
-from woob.browser.exceptions import ClientError, ServerError, HTTPNotFound
+from woob.browser import URL, LoginBrowser, StatesMixin, need_login
+from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.capabilities.bank import (
-    Account, TransferBankError, TransferInvalidAmount,
-    AddRecipientStep, RecipientInvalidOTP,
-    AddRecipientTimeout, AddRecipientBankError, RecipientInvalidIban,
+    Account, AddRecipientBankError, AddRecipientStep, AddRecipientTimeout, RecipientInvalidIban, RecipientInvalidOTP,
+    TransferBankError, TransferInvalidAmount,
 )
 from woob.capabilities.bill import Subscription
+from woob.exceptions import ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.value import Value
 
 from .api import (
-    LoginPage, AccountsPage, HistoryPage, ComingPage, AccountInfoPage,
-    DebitAccountsPage, CreditAccountsPage, TransferPage,
-    ProfilePage, LifeInsurancePage, InvestTokenPage,
-    AddRecipientPage, OtpChannelsPage, ConfirmOtpPage,
+    AccountInfoPage, AccountsPage, AddRecipientPage, ComingPage, ConfirmOtpPage, CreditAccountsPage, DebitAccountsPage,
+    HistoryPage, InvestTokenPage, LifeInsurancePage, LoginPage, OtpChannelsPage, ProfilePage, TransferPage,
 )
-from .api.accounts_page import RedirectOldPage, BourseLandingPage, RedirectBourseToApi
-from .api.profile_page import UselessProfilePage
-from .api.login import StopPage, ActionNeededPage
+from .api.accounts_page import BourseLandingPage, RedirectBourseToApi, RedirectOldPage
 from .api.documents import StatementsPage
+from .api.login import ActionNeededPage, StopPage
+from .api.profile_page import UselessProfilePage
 from .boursedirect_browser import IngBourseDirectBrowser
 
 

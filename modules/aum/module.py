@@ -18,35 +18,37 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-import time
 import datetime
+import time
 from base64 import b64decode
+
 from dateutil import tz
 from dateutil.parser import parse as _parse_dt
+
 
 try:
     from HTMLParser import HTMLParser
 except ImportError:
     from html.parser import HTMLParser
 
+from woob.capabilities.account import CapAccount, StatusField
 from woob.capabilities.base import NotLoaded
 from woob.capabilities.chat import CapChat
-from woob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread
-from woob.capabilities.dating import CapDating, OptimizationNotFound, Event
 from woob.capabilities.contact import CapContact, ContactPhoto, Query, QueryError
-from woob.capabilities.account import CapAccount, StatusField
-from woob.tools.backend import Module, BackendConfig
-from woob.exceptions import BrowserUnavailable, BrowserHTTPNotFound
-from woob.tools.value import Value, ValueBool, ValueBackendPassword
+from woob.capabilities.dating import CapDating, Event, OptimizationNotFound
+from woob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread
+from woob.exceptions import BrowserHTTPNotFound, BrowserUnavailable
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.date import local2utc
 from woob.tools.misc import to_unicode
+from woob.tools.value import Value, ValueBackendPassword, ValueBool
 
-from .contact import Contact
 from .antispam import AntiSpam
 from .browser import AuMBrowser
+from .contact import Contact
 from .optim.profiles_walker import ProfilesWalker
-from .optim.visibility import Visibility
 from .optim.queries_queue import QueriesQueue
+from .optim.visibility import Visibility
 
 
 __all__ = ['AuMModule']

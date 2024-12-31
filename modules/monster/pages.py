@@ -21,12 +21,12 @@
 import re
 from datetime import datetime, time, timedelta
 
-from woob.browser.pages import HTMLPage, pagination
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import CleanText, Regexp, Filter, Env, BrowserURL, Format, DateTime
 from woob.browser.filters.html import CleanHTML
-from woob.capabilities.job import BaseJobAdvert
+from woob.browser.filters.standard import BrowserURL, CleanText, DateTime, Env, Filter, Format, Regexp
+from woob.browser.pages import HTMLPage, pagination
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.job import BaseJobAdvert
 
 
 class MonsterDate(Filter):

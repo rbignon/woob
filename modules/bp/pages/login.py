@@ -20,12 +20,9 @@
 import re
 
 from woob.browser.filters.standard import CleanText, Lower, Regexp
-from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
-from woob.exceptions import (
-    ActionNeeded, ActionType, BrowserIncorrectPassword,
-    BrowserUnavailable, ParseError,
-)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.bank import NoAccountsException
+from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserUnavailable, ParseError
 
 from .base import MyHTMLPage
 

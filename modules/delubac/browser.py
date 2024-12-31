@@ -19,11 +19,11 @@
 
 import re
 
-from woob.browser import URL, need_login, LoginBrowser
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, ActionType
+from woob.browser import URL, LoginBrowser, need_login
+from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
-from .pages import LoginPage, LoginResultPage, AccountsPage, HistoryPage
+from .pages import AccountsPage, HistoryPage, LoginPage, LoginResultPage
 
 
 __all__ = ['DelubacBrowser']

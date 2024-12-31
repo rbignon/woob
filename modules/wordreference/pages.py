@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.standard import CleanText, Env, Regexp
+from woob.browser.pages import HTMLPage
 from woob.capabilities.translate import Translation
-from woob.browser.filters.standard import CleanText, Regexp, Env
 
 
 class TranslatePage(HTMLPage):

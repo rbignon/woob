@@ -21,11 +21,12 @@ import io
 import os
 from datetime import datetime
 from threading import Lock
-from urllib.parse import urlparse, parse_qsl
+from urllib.parse import parse_qsl, urlparse
 
+from woob import __version__ as woob_version
 from woob.tools.json import json
 from woob.tools.log import getLogger
-from woob import __version__ as woob_version
+
 
 __all__ = ['HARManager']
 

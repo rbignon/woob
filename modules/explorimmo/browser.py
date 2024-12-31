@@ -19,10 +19,10 @@
 
 from urllib.parse import urlencode
 
-from woob.browser import PagesBrowser, URL
-from woob.capabilities.housing import (TypeNotSupported, POSTS_TYPES,
-                                         HOUSE_TYPES)
-from .pages import CitiesPage, SearchPage, HousingPage, HousingPage2, PhonePage
+from woob.browser import URL, PagesBrowser
+from woob.capabilities.housing import HOUSE_TYPES, POSTS_TYPES, TypeNotSupported
+
+from .pages import CitiesPage, HousingPage, HousingPage2, PhonePage, SearchPage
 
 
 class ExplorimmoBrowser(PagesBrowser):

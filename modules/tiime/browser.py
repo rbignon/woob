@@ -17,18 +17,16 @@
 
 # flake8: compatible
 
-import re
 import random
+import re
 import string
 from datetime import datetime
 
-from woob.browser import LoginBrowser, StatesMixin, URL, need_login
+from woob.browser import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import ClientError
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.profile import Profile
-from woob.exceptions import (
-    BrowserUnavailable, BrowserIncorrectPassword, BrowserPasswordExpired,
-)
+from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable
 
 
 class TiimeBrowser(LoginBrowser, StatesMixin):

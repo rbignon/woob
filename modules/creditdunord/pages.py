@@ -26,21 +26,20 @@ from io import BytesIO
 
 from dateutil.relativedelta import FR, relativedelta
 
-from woob.browser.pages import HTMLPage, LoggedPage, JsonPage
-from woob.browser.elements import method, ItemElement, DictElement
-from woob.browser.filters.standard import (
-    CleanText, Date, CleanDecimal, Regexp, Format, Field,
-    Env, Map, MapIn, Currency,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.capabilities.base import empty
-from woob.exceptions import ActionNeeded, BrowserUnavailable
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Currency, Date, Env, Field, Format, Map, MapIn, Regexp,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.bank.wealth import Investment
-from woob.capabilities.profile import Person, Company
-from woob.capabilities import NotAvailable
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.capabilities.base import empty
+from woob.capabilities.profile import Company, Person
+from woob.exceptions import ActionNeeded, BrowserUnavailable
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.captcha.virtkeyboard import GridVirtKeyboard
 
 

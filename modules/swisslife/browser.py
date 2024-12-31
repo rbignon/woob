@@ -18,26 +18,23 @@
 from requests.exceptions import ReadTimeout
 
 from woob.browser import URL, need_login
+from woob.browser.exceptions import ClientError, ServerError
 from woob.browser.mfa import TwoFactorBrowser
-from woob.browser.exceptions import ClientError
-from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidationExpired, BrowserIncorrectPassword,
-    BrowserHTTPError, SentOTPQuestion, OTPSentType, BrowserUnavailable,
-    BrowserHTTPNotFound, BrowserUserBanned,
-)
-from woob.browser.exceptions import ServerError
 from woob.capabilities.bank import Account
-from woob.capabilities.bank.wealth import Per, PerVersion, Investment, Pocket
+from woob.capabilities.bank.wealth import Investment, Per, PerVersion, Pocket
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.captcha import RecaptchaV2Question
+from woob.exceptions import (
+    ActionNeeded, ActionType, AppValidationExpired, BrowserHTTPError, BrowserHTTPNotFound, BrowserIncorrectPassword,
+    BrowserUnavailable, BrowserUserBanned, OTPSentType, SentOTPQuestion,
+)
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 
 from .pages import (
-    ProfilePage, AccountsPage, AccountDetailPage, AccountVieEuroPage, InvestmentPage,
-    AccountVieUCCOPage, AccountVieUCCODetailPage, AccountVieUCPage, BankAccountDetailPage,
-    BankAccountTransactionsPage, MaintenancePage, AuthenticationPage, PhoneNumber,
-    HandleSMSPage
+    AccountDetailPage, AccountsPage, AccountVieEuroPage, AccountVieUCCODetailPage, AccountVieUCCOPage, AccountVieUCPage,
+    AuthenticationPage, BankAccountDetailPage, BankAccountTransactionsPage, HandleSMSPage, InvestmentPage,
+    MaintenancePage, PhoneNumber, ProfilePage,
 )
 
 

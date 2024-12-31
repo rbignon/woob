@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date as real_date, datetime as real_datetime, timedelta
-import time
 import re
+import time
+from datetime import date as real_date
+from datetime import datetime as real_datetime
+from datetime import timedelta
+
 
 try:
     import dateutil.parser

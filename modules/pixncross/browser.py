@@ -17,21 +17,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from functools import wraps
 import re
+from functools import wraps
 
-from woob.browser.browsers import (
-    LoginBrowser, StatesMixin, need_login as optional_login,
-)
+from woob.browser.browsers import LoginBrowser, StatesMixin
+from woob.browser.browsers import need_login as optional_login
 from woob.browser.url import URL
 from woob.capabilities.picross import PicrossNotFound, PicrossSolvedStatus
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 from .pages import (
-    DailyPicrossListPage, HiddenFormPage, HomePage, LoginCallbackPage,
-    LoginPage, PuzzleListPage, PuzzlePage, PuzzleSubmitPage, TodoPage,
+    DailyPicrossListPage, HiddenFormPage, HomePage, LoginCallbackPage, LoginPage, PuzzleListPage, PuzzlePage,
+    PuzzleSubmitPage, TodoPage,
 )
 from .utils import obfuscate
+
 
 __all__ = ['PixNCrossBrowser']
 

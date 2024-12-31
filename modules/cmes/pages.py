@@ -18,16 +18,15 @@
 import re
 from decimal import Decimal
 
-from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.elements import ListElement, ItemElement, method, TableElement
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Date, Regexp, Field, Currency,
-    MapIn, Eval, Title, Env,
+    CleanDecimal, CleanText, Currency, Date, Env, Eval, Field, MapIn, Regexp, Title,
 )
-from woob.browser.filters.html import Link, TableCell, Attr
-from woob.capabilities.base import NotAvailable, empty
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment, Pocket
+from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 

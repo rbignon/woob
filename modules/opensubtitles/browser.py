@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import PagesBrowser, URL
 from woob.applications.subtitles.subtitles import LANGUAGE_CONV
+from woob.browser import URL, PagesBrowser
 
-from .pages import SubtitlesPage, SearchPage, SubtitlePage, SeriesSubtitlePage
+from .pages import SearchPage, SeriesSubtitlePage, SubtitlePage, SubtitlesPage
 
 
 __all__ = ['OpensubtitlesBrowser']

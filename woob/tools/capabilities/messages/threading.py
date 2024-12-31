@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.base import empty, NotLoaded
+from woob.capabilities.base import NotLoaded, empty
 from woob.capabilities.messages import Thread
 
 

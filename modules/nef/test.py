@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.test import BackendTest
 from woob.tools.capabilities.bank.test import BankStandardTest
+from woob.tools.test import BackendTest
 
 
 class NefTest(BankStandardTest, BackendTest):

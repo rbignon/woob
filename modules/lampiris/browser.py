@@ -18,11 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ClientError
 from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, BillsPage
+from .pages import BillsPage, LoginPage
 
 
 class LampirisBrowser(LoginBrowser):

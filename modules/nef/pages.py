@@ -19,11 +19,11 @@
 
 import re
 
-from woob.browser.elements import ListElement, DictElement, ItemElement, method, TableElement
-from woob.browser.filters.standard import CleanText, CleanDecimal, Regexp, Field, Date
-from woob.browser.pages import HTMLPage, JsonPage, PartialHTMLPage, CsvPage, LoggedPage
-from woob.browser.filters.json import Dict
+from woob.browser.elements import DictElement, ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import Attr, TableCell
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Field, Regexp
+from woob.browser.pages import CsvPage, HTMLPage, JsonPage, LoggedPage, PartialHTMLPage
 from woob.capabilities.bank import Account, Recipient
 from woob.tools.date import parse_french_date
 

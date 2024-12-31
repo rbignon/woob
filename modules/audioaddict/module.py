@@ -17,14 +17,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.radio import CapRadio, Radio
-from woob.capabilities.audiostream import BaseAudioStream
-from woob.tools.capabilities.streaminfo import StreamInfo
-from woob.capabilities.collection import CapCollection, Collection
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value
-from woob.browser.browsers import APIBrowser
 import time
+
+from woob.browser.browsers import APIBrowser
+from woob.capabilities.audiostream import BaseAudioStream
+from woob.capabilities.collection import CapCollection, Collection
+from woob.capabilities.radio import CapRadio, Radio
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.capabilities.streaminfo import StreamInfo
+from woob.tools.value import Value
+
 
 __all__ = ['AudioAddictModule']
 

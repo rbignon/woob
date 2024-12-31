@@ -19,8 +19,8 @@
 
 
 from woob.browser import PagesBrowser
-from woob.browser.url import URL
 from woob.browser.profiles import Firefox
+from woob.browser.url import URL
 
 from .pages import LocationPage
 

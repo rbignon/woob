@@ -30,6 +30,7 @@ from woob.tools.js import Javascript
 
 from .parser import StatementParser, clean_label
 
+
 __all__ = ['Citibank']
 
 

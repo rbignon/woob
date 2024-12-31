@@ -17,12 +17,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.exceptions import (
-    BrowserUserBanned, ActionNeeded, BrowserUnavailable, BrowserPasswordExpired,
-)
-from woob.browser.pages import HTMLPage, RawPage, JsonPage, PartialHTMLPage
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText, Coalesce
+from woob.browser.pages import HTMLPage, JsonPage, PartialHTMLPage, RawPage
+from woob.exceptions import ActionNeeded, BrowserPasswordExpired, BrowserUnavailable, BrowserUserBanned
 
 
 class LoginPage(JsonPage):

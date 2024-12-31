@@ -24,6 +24,7 @@ from woob.tools.value import ValueBackendPassword
 
 from .browser import VicSec
 
+
 __all__ = ['VicSecModule']
 
 

@@ -19,10 +19,10 @@
 
 
 
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.standard import CleanText, Duration, Regexp, Type
+from woob.browser.pages import HTMLPage
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.image import Thumbnail
 

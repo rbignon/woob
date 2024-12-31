@@ -19,15 +19,14 @@
 
 from datetime import datetime, timedelta
 
-from woob.capabilities.image import Thumbnail
-from woob.capabilities.video import BaseVideo
-from woob.capabilities.collection import Collection
-
-from woob.browser.pages import HTMLPage, JsonPage
-from woob.browser.elements import ItemElement, ListElement, method, DictElement
-from woob.browser.filters.standard import CleanText, Regexp, Format, Field, Env
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.html import CleanHTML
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Env, Field, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage
+from woob.capabilities.collection import Collection
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.video import BaseVideo
 
 
 def parse_duration(text):

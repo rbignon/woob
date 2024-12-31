@@ -19,10 +19,11 @@
 
 from collections import OrderedDict
 
-from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.job import CapJob, BaseJobAdvert
-from .browser import RegionsjobBrowser
+from woob.capabilities.job import BaseJobAdvert, CapJob
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value
+
+from .browser import RegionsjobBrowser
 
 
 __all__ = ['RegionsjobModule']

@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.misc import get_bytes_size
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.capabilities.torrent import Torrent
+from woob.browser.filters.standard import CleanText, Date, RawText, Regexp, Type
+from woob.browser.pages import HTMLPage
 from woob.capabilities.base import NotAvailable
-from woob.browser.filters.standard import RawText, CleanText, Regexp, Date, Type
+from woob.capabilities.torrent import Torrent
+from woob.tools.misc import get_bytes_size
 
 
 class TorrentsPage(HTMLPage):

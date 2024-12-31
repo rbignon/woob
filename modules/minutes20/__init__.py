@@ -19,4 +19,6 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from .module import Newspaper20minutesModule
+
+
 __all__ = ['Newspaper20minutesModule']

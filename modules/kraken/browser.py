@@ -17,27 +17,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+import base64
 import hashlib
 import hmac
-import base64
 import time
 from datetime import datetime
 from urllib.parse import urlencode
 
-from woob.browser import PagesBrowser, URL, StatesMixin, need_login
+from woob.browser import URL, PagesBrowser, StatesMixin, need_login
+from woob.capabilities.bank import Recipient, TransferBankError, TransferInsufficientFunds, TransferInvalidAmount
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserQuestion, NeedInteractiveFor2FA
 from woob.tools.value import Value
-from woob.exceptions import (
-    BrowserQuestion, NeedInteractiveFor2FA, BrowserIncorrectPassword,
-    ActionNeeded,
-)
-from woob.capabilities.bank import (
-    Recipient, TransferBankError, TransferInvalidAmount,
-    TransferInsufficientFunds,
-)
-from .pages import (
-    BalancePage, HistoryPage, AssetsPage, AssetPairsPage,
-    TickerPage, TradePage,
-)
+
+from .pages import AssetPairsPage, AssetsPage, BalancePage, HistoryPage, TickerPage, TradePage
 
 
 class KrakenBrowser(PagesBrowser, StatesMixin):

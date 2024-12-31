@@ -18,7 +18,8 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser import URL, LoginBrowser, need_login
-from .pages import BandPage, SearchBandsPage, LoginPage, FavoritesPage, SuggestionsPage, AlbumPage
+
+from .pages import AlbumPage, BandPage, FavoritesPage, LoginPage, SearchBandsPage, SuggestionsPage
 
 
 __all__ = ['MetalArchivesBrowser']

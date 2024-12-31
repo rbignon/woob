@@ -20,11 +20,11 @@
 import re
 from urllib.parse import quote
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.capabilities.base import NotAvailable, empty
 from woob.tools.json import json
 
-from .pages import TranslatePage, SupportedLanguagesPage
+from .pages import SupportedLanguagesPage, TranslatePage
 
 
 __all__ = ['GoogleTranslateBrowser']

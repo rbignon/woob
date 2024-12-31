@@ -19,20 +19,20 @@
 
 # flake8: compatible
 
-from io import BytesIO
-from base64 import b64decode
-from logging import error
 import re
+from base64 import b64decode
+from io import BytesIO
+from logging import error
 
-from woob.tools.json import json
-from woob.exceptions import BrowserUnavailable, BrowserPasswordExpired, ActionNeeded
-from woob.browser.pages import HTMLPage, JsonPage, RawPage
-from woob.browser.filters.standard import CleanText
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText
+from woob.browser.pages import HTMLPage, JsonPage, RawPage
 from woob.capabilities.bank import AddRecipientBankError
+from woob.exceptions import ActionNeeded, BrowserPasswordExpired, BrowserUnavailable
+from woob.tools.json import json
 
-from .base import BasePage
 from ..captcha import Captcha, TileError
+from .base import BasePage
 
 
 class PasswordPage(object):

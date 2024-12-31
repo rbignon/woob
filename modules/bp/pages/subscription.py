@@ -25,6 +25,7 @@ from woob.browser.filters.standard import CleanText, Date, Env, Field, Format, M
 from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
+
 TYPE_BY_LABEL = {
     'Relevé': DocumentTypes.STATEMENT,
 }

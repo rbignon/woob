@@ -17,7 +17,7 @@
 
 from collections import OrderedDict
 
-from .base import Capability, BaseObject, UserError, StringField, Field
+from .base import BaseObject, Capability, Field, StringField, UserError
 
 
 __all__ = ['CapCollection', 'BaseCollection', 'Collection', 'CollectionNotFound']

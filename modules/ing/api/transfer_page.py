@@ -23,12 +23,12 @@ from io import BytesIO
 
 from PIL import Image, ImageFilter
 
-from woob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
-from woob.browser.pages import LoggedPage, JsonPage
-from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import Env, Field, Date, CleanText
-from woob.capabilities.bank import Recipient, Emitter
+from woob.browser.filters.standard import CleanText, Date, Env, Field
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.capabilities.bank import Emitter, Recipient
+from woob.tools.captcha.virtkeyboard import SimpleVirtualKeyboard
 
 
 class TransferINGVirtKeyboard(SimpleVirtualKeyboard):

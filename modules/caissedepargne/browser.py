@@ -33,13 +33,10 @@ from woob.browser.exceptions import ClientError, LoggedOut, ServerError
 from woob.browser.mfa import TwoFactorBrowser
 from woob.browser.switch import SiteSwitch
 from woob.browser.url import URL
-from woob.capabilities.bank import (
-    Account, AccountOwnerType,
-)
+from woob.capabilities.bank import Account, AccountOwnerType
 from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidation, AppValidationExpired,
-    AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserQuestion,
-    BrowserUnavailable, OTPSentType, SentOTPQuestion,
+    ActionNeeded, ActionType, AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword,
+    BrowserQuestion, BrowserUnavailable, OTPSentType, SentOTPQuestion,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.date import now_as_utc
@@ -49,16 +46,14 @@ from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from .document_pages import DocumentsPage, SubscriptionPage
 from .pages import (
-    AccountsPage, AppValidationPage, AuthenticationMethodPage,
-    AuthenticationStepPage, AuthorizePage, CaissedepargneNewKeyboard,
-    CardsPage, ComingTransactionsPage, ConfigPage, ConsumerCreditDetailsPage,
-    CreditCooperatifMarketPage, ExtranetReroutingPage, HomePage, JsFilePage,
-    LeaveLineBoursePage, LifeInsuranceHistory, LifeInsuranceInvestments,
-    LinebourseReroutingPage, LoanDetailsPage, LoginApi, LoginPage, LoginTokensPage,
-    MarketPage, PrepareReroutingPage, RememberTerminalPage, RevolvingDetailsPage,
-    RevolvingHistoryPage, SAMLRequestFailure, SmsPage, TokenPage, TransactionsPage,
-    ValidationPageOption, VkImagePage,
+    AccountsPage, AppValidationPage, AuthenticationMethodPage, AuthenticationStepPage, AuthorizePage,
+    CaissedepargneNewKeyboard, CardsPage, ComingTransactionsPage, ConfigPage, ConsumerCreditDetailsPage,
+    CreditCooperatifMarketPage, ExtranetReroutingPage, HomePage, JsFilePage, LeaveLineBoursePage, LifeInsuranceHistory,
+    LifeInsuranceInvestments, LinebourseReroutingPage, LoanDetailsPage, LoginApi, LoginPage, LoginTokensPage,
+    MarketPage, PrepareReroutingPage, RememberTerminalPage, RevolvingDetailsPage, RevolvingHistoryPage,
+    SAMLRequestFailure, SmsPage, TokenPage, TransactionsPage, ValidationPageOption, VkImagePage,
 )
+
 
 __all__ = ['CaisseEpargne']
 

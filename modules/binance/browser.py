@@ -15,13 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from decimal import Decimal
-import time
 import hmac
+import time
 import urllib
-from hashlib import sha256
-
 from datetime import datetime, timedelta
+from decimal import Decimal
+from hashlib import sha256
 
 from woob.browser import APIBrowser
 from woob.capabilities.bank import Account

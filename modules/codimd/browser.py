@@ -17,13 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import PagesBrowser, URL
-from woob.exceptions import BrowserIncorrectPassword, BrowserHTTPNotFound
+from woob.browser import URL, PagesBrowser
 from woob.capabilities.content import Content, Revision
+from woob.exceptions import BrowserHTTPNotFound, BrowserIncorrectPassword
 
-from .pages import (
-    NotePage, MePage, RootPage, RevisionListPage, RevisionPage, NewNotePage,
-)
+from .pages import MePage, NewNotePage, NotePage, RevisionListPage, RevisionPage, RootPage
 
 
 class CodimdBrowser(PagesBrowser):

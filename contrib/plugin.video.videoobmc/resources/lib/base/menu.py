@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 
+
 if hasattr(sys.modules["__main__"], "common_xbmc"):
     common_xbmc = sys.modules["__main__"].common_xbmc
 else:

@@ -20,7 +20,7 @@
 from woob.capabilities.subtitle import CapSubtitle, LanguageNotSupported
 from woob.tools.backend import Module
 
-from .browser import TvsubtitlesBrowser, LANGUAGE_LIST
+from .browser import LANGUAGE_LIST, TvsubtitlesBrowser
 
 
 __all__ = ['TvsubtitlesModule']

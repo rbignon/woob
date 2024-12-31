@@ -18,8 +18,9 @@
 
 from collections import OrderedDict
 
-from .base import empty, Field, BoolField, BytesField
-from .file import CapFile, BaseFile
+from .base import BoolField, BytesField, Field, empty
+from .file import BaseFile, CapFile
+
 
 __all__ = ['BaseImage', 'Thumbnail', 'CapImage']
 

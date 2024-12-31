@@ -17,8 +17,8 @@
 
 from woob.capabilities.base import empty
 from woob.capabilities.gauge import CapGauge, SensorNotFound
-from woob.tools.application.repl import ReplApplication
 from woob.tools.application.formatters.iformatter import IFormatter
+from woob.tools.application.repl import ReplApplication
 
 
 __all__ = ['AppGauge']

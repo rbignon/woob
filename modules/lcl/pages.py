@@ -17,26 +17,26 @@
 
 # flake8: compatible
 
-from datetime import date, datetime, timedelta
-from base64 import b64decode
-import re
 import codecs
+import re
+from base64 import b64decode
+from datetime import date, datetime, timedelta
 
 import requests
 
-from woob.browser.pages import FormNotFound, LoggedPage, JsonPage, HTMLPage, RawPage, pagination
-from woob.browser.elements import TableElement, method, ItemElement, DictElement
+from woob.browser.elements import DictElement, ItemElement, TableElement, method
 from woob.browser.filters.html import Attr, Link, TableCell
-from woob.browser.filters.standard import (
-    BrowserURL, CleanText, CleanDecimal, Coalesce, Currency, Date, Env, Eval,
-    Field, Format, Lower, Map, MapIn, Regexp, Async, AsyncLoad, Base,
-)
 from woob.browser.filters.json import Dict
-from woob.capabilities.bank import Loan, Account, AccountOwnership
+from woob.browser.filters.standard import (
+    Async, AsyncLoad, Base, BrowserURL, CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval, Field, Format,
+    Lower, Map, MapIn, Regexp,
+)
+from woob.browser.pages import FormNotFound, HTMLPage, JsonPage, LoggedPage, RawPage, pagination
+from woob.capabilities.bank import Account, AccountOwnership, Loan
 from woob.capabilities.bank.base import Transaction
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bill import Subscription, Document, DocumentTypes
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 

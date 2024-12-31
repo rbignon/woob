@@ -20,15 +20,13 @@
 from functools import wraps
 
 from woob.browser import URL, OAuth2PKCEMixin, PagesBrowser
+from woob.browser.exceptions import BrowserUnavailable, ClientError, ServerError
 from woob.capabilities.captcha import RecaptchaV2Question
-from woob.exceptions import BrowserIncorrectPassword, WrongCaptchaResponse, ActionNeeded
-from woob.browser.exceptions import ServerError, ClientError, BrowserUnavailable
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, WrongCaptchaResponse
 from woob.tools.decorators import retry
 
 from .pages import (
-    LoginPage, AccountsPage, TransactionsPage,
-    JsParamsPage, JsUserPage, JsAppPage, HomePage,
-    AuthorizePage,
+    AccountsPage, AuthorizePage, HomePage, JsAppPage, JsParamsPage, JsUserPage, LoginPage, TransactionsPage,
 )
 
 

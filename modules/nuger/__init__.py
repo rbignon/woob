@@ -19,4 +19,5 @@
 
 from .module import NugerModule
 
+
 __all__ = ['NugerModule']

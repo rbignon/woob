@@ -20,7 +20,7 @@
 import re
 from urllib.parse import quote_plus
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
 from .pages import IndexPage, VideoPage
 

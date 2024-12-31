@@ -20,4 +20,5 @@
 
 from .module import NewspaperInrocksModule
 
+
 __all__ = ['NewspaperInrocksModule']

@@ -18,16 +18,17 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import time
-from requests.exceptions import HTTPError, TooManyRedirects, ConnectionError
 from datetime import datetime, timedelta
 
-from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from requests.exceptions import ConnectionError, HTTPError, TooManyRedirects
+
+from woob.browser import URL, LoginBrowser, StatesMixin, need_login
 from woob.exceptions import BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable
 from woob.tools.capabilities.bill.documents import merge_iterators
-from woob.tools.value import Value
 from woob.tools.decorators import retry
+from woob.tools.value import Value
 
-from .pages import LoginPage, ProfilePage, BillsPage, RefundsPage
+from .pages import BillsPage, LoginPage, ProfilePage, RefundsPage
 
 
 class OvhBrowser(LoginBrowser, StatesMixin):

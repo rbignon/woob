@@ -20,4 +20,5 @@
 
 from .module import SogecartenetModule
 
+
 __all__ = ['SogecartenetModule']

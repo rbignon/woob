@@ -20,6 +20,7 @@
 
 from woob.tools.test import BackendTest
 
+
 class HSBCHKTest(BackendTest):
     MODULE = 'hsbchk'
 

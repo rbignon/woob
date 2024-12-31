@@ -19,4 +19,5 @@
 
 from .module import CanalplusModule
 
+
 __all__ = ['CanalplusModule']

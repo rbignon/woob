@@ -18,14 +18,15 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+import socket
 from collections import OrderedDict
 from datetime import datetime
 from html.parser import HTMLParser
-import socket
 
 from dateutil.parser import parse as parse_dt
 
-from woob.capabilities.contact import Contact as _Contact, ProfileNode
+from woob.capabilities.contact import Contact as _Contact
+from woob.capabilities.contact import ProfileNode
 from woob.tools.html import html2text
 
 

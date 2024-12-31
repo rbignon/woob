@@ -17,8 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import PagesBrowser, URL
-from .pages import RadioPage, JsonPage, PodcastPage
+from woob.browser import URL, PagesBrowser
+
+from .pages import JsonPage, PodcastPage, RadioPage
+
 
 __all__ = ['RadioFranceBrowser']
 

@@ -17,12 +17,10 @@
 
 # flake8: compatible
 
-from woob.browser.elements import method, ListElement, ItemElement
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import AbsoluteLink
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Date,
-)
-from woob.browser.pages import LoggedPage, HTMLPage
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date
+from woob.browser.pages import HTMLPage, LoggedPage
 
 
 class LoginPage(HTMLPage):

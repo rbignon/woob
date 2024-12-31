@@ -19,10 +19,10 @@
 
 import re
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.capabilities.contact import OpeningHours
 
-from .pages import ResultsPage, PlacePage
+from .pages import PlacePage, ResultsPage
 
 
 class PagesjaunesBrowser(PagesBrowser):

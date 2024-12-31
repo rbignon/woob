@@ -37,26 +37,28 @@ can access to a website the same way than a real browser.
 # import certificate:
 #   find -L /etc/ssl/certs -name "*.pem" | while read f; do certutil -A -d pki -i $f -n $f -t TCu,Cu,Tu; done
 
-from functools import wraps
-from io import RawIOBase, BufferedRWPair
 import hashlib
 import os
 import re
 import socket
 import ssl as basessl
 import subprocess
+import warnings
+from functools import wraps
+from io import BufferedRWPair, RawIOBase
 from tempfile import NamedTemporaryFile
 from threading import Lock
-import warnings
+
 
 try:
-    import nss.ssl
     import nss.error
     import nss.nss
+    import nss.ssl
 except ImportError:
     raise ImportError('Please install python3-nss')
-from requests.packages.urllib3.util.ssl_ import ssl_wrap_socket as old_ssl_wrap_socket
 import requests  # for AIA
+from requests.packages.urllib3.util.ssl_ import ssl_wrap_socket as old_ssl_wrap_socket
+
 from woob.tools.log import getLogger
 
 
@@ -405,11 +407,12 @@ def ssl_wrap_socket(sock, *args, **kwargs):
 
 
 def inject_in_urllib3():
-    import urllib3.util.ssl_
-    import urllib3.connection
+    import requests.packages.urllib3.connection
+
     # on some distros, requests comes with its own urllib3 version
     import requests.packages.urllib3.util.ssl_
-    import requests.packages.urllib3.connection
+    import urllib3.connection
+    import urllib3.util.ssl_
 
     for pkg in (urllib3, requests.packages.urllib3):
         pkg.util.ssl_.ssl_wrap_socket = ssl_wrap_socket

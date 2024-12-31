@@ -18,9 +18,9 @@
 from contextlib import contextmanager
 from functools import wraps
 
+from ..exceptions import BrowserUnavailable
 from .browsers import LoginBrowser
 from .exceptions import LoggedOut
-from ..exceptions import BrowserUnavailable
 
 
 __all__ = ['login_method', 'retry_on_logout', 'RetryLoginBrowser']

@@ -20,8 +20,7 @@ from __future__ import annotations
 from typing import List
 
 from .base import (
-    Capability, BaseObject, StringField, IntField, Field, UserError,
-    NotLoadedType, NotAvailableType, NotLoaded
+    BaseObject, Capability, Field, IntField, NotAvailableType, NotLoaded, NotLoadedType, StringField, UserError,
 )
 
 

@@ -17,15 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.browser.exceptions import HTTPNotFound
-from woob.exceptions import BrowserIncorrectPassword
-from woob.capabilities.image import Thumbnail
-
-from .pages import PageLogin, PageDashboard, PageChapter, PageSection
-from .video import MoocVideo
-
 import re
+
+from woob.browser import URL, LoginBrowser, need_login
+from woob.browser.exceptions import HTTPNotFound
+from woob.capabilities.image import Thumbnail
+from woob.exceptions import BrowserIncorrectPassword
+
+from .pages import PageChapter, PageDashboard, PageLogin, PageSection
+from .video import MoocVideo
 
 
 class FunmoocBrowser(LoginBrowser):

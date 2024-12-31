@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date, time, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from urllib.parse import quote
 
-from woob.browser.elements import method, ListElement, ItemElement
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.standard import CleanText, Field
 from woob.browser.pages import HTMLPage, XMLPage
-from woob.capabilities.weather import City, Forecast, Temperature, Current, Direction
+from woob.capabilities.weather import City, Current, Direction, Forecast, Temperature
 
 
 class CitiesPage(XMLPage):

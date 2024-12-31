@@ -17,36 +17,32 @@
 
 # flake8: compatible
 
-from functools import wraps
+import datetime
+import re
 from base64 import b64decode
 from collections import OrderedDict
-import datetime
+from functools import wraps
 from io import BytesIO
-import re
-from urllib.parse import urlencode, urlparse, urlunparse, parse_qsl, urljoin
+from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 
-from PIL import Image
 import requests
+from PIL import Image
 
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.exceptions import BrowserUnavailable, ServerError
+from woob.browser.filters.html import Attr, Link, TableCell
+from woob.browser.filters.standard import (
+    Async, AsyncLoad, Base, CleanDecimal, CleanText, Currency, Date, Env, Eval, Field, Format, Map, MapIn, Regexp,
+)
+from woob.browser.pages import FormNotFound, HTMLPage, JsonPage, LoggedPage, NextPage, Page, pagination
+from woob.capabilities.bank import Account, AccountOwnership
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable, empty
-from woob.exceptions import ActionNeeded
-from woob.browser.pages import (
-    FormNotFound, LoggedPage, HTMLPage, pagination, JsonPage,
-    NextPage, Page,
-)
-from woob.browser.elements import method, ListElement, ItemElement, TableElement
-from woob.browser.exceptions import BrowserUnavailable, ServerError
-from woob.tools.capabilities.bank.investments import IsinCode, IsinType
-from woob.tools.decorators import retry
-from woob.capabilities.bank import Account, AccountOwnership
 from woob.capabilities.profile import Person
-from woob.browser.filters.html import Link, Attr, TableCell
-from woob.browser.filters.standard import (
-    Async, AsyncLoad, CleanText, Env, Eval, MapIn, Regexp, Field, Map, CleanDecimal,
-    Date, Format, Base, Currency,
-)
+from woob.exceptions import ActionNeeded
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.decorators import retry
 from woob_modules.lcl.pages import AccountOwnershipItemElement
 
 

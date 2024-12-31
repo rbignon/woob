@@ -20,19 +20,19 @@
 from collections import OrderedDict
 from urllib.parse import urljoin
 
+from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription, Document, DocumentNotFound,
-    DocumentCategory,
+    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
 )
-from woob.capabilities.base import find_object, NotAvailable
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.pdf import html_to_pdf
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import AmazonBrowser
-from .en.browser import AmazonEnBrowser
 from .de.browser import AmazonDeBrowser
+from .en.browser import AmazonEnBrowser
 from .uk.browser import AmazonUkBrowser
+
 
 __all__ = ['AmazonModule']
 

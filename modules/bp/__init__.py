@@ -19,4 +19,5 @@
 
 from .module import BPModule
 
+
 __all__ = ['BPModule']

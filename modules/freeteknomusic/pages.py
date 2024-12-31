@@ -19,12 +19,12 @@
 
 from urllib.parse import urlparse
 
-from woob.browser.pages import HTMLPage
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import CleanText, Regexp, Field, Decode
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import AbsoluteLink
-from woob.capabilities.collection import Collection
+from woob.browser.filters.standard import CleanText, Decode, Field, Regexp
+from woob.browser.pages import HTMLPage
 from woob.capabilities.audio import BaseAudio
+from woob.capabilities.collection import Collection
 
 
 class FolderPage(HTMLPage):

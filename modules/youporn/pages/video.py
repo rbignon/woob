@@ -20,9 +20,9 @@
 import re
 from json import loads
 
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, method
 from woob.browser.filters.standard import CleanText, Env, Regexp, Type
+from woob.browser.pages import HTMLPage
 from woob.capabilities.base import NotAvailable
 
 from ..video import YoupornVideo

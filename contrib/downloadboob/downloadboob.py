@@ -15,21 +15,22 @@
 
 from __future__ import print_function
 
-import shutil
-import subprocess
-import requests
+import codecs
+import locale
 import os
 import re
-
-import ConfigParser
-
-from woob.core import Woob
-from woob.capabilities.video import CapVideo
+import shutil
+import subprocess
 
 # hack to workaround bash redirection and encoding problem
 import sys
-import codecs
-import locale
+
+import ConfigParser
+import requests
+
+from woob.capabilities.video import CapVideo
+from woob.core import Woob
+
 
 if sys.stdout.encoding is None:
     (lang, enc) = locale.getdefaultlocale()

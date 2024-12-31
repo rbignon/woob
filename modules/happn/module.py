@@ -17,26 +17,26 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict
 import datetime
+from collections import OrderedDict
 from random import randint, random
 
+import geopy
+import geopy.distance
 from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 from dateutil.tz import tzlocal
-import geopy
-import geopy.distance
 
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.messages import CapMessages, CapMessagesPost, Thread, Message
-from woob.capabilities.dating import CapDating, Optimization
 from woob.capabilities.contact import CapContact, Contact, ProfileNode
+from woob.capabilities.dating import CapDating, Optimization
+from woob.capabilities.messages import CapMessages, CapMessagesPost, Message, Thread
 from woob.exceptions import BrowserHTTPError
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value, ValueBackendPassword
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.log import getLogger
+from woob.tools.value import Value, ValueBackendPassword
 
-from .browser import HappnBrowser, FacebookBrowser
+from .browser import FacebookBrowser, HappnBrowser
 
 
 __all__ = ['HappnModule']

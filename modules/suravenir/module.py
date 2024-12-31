@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from woob.capabilities.bank import AccountNotFound, CapBankWealth
 from woob.capabilities.base import find_object
-from woob.capabilities.bank import CapBankWealth, AccountNotFound
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
 
 from .browser import Suravenir

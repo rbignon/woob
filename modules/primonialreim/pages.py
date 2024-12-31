@@ -20,18 +20,16 @@
 # flake8: compatible
 
 import datetime
-from decimal import Decimal
-import re
 import json
+import re
+from decimal import Decimal
 
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import AbsoluteLink
+from woob.browser.filters.standard import CleanText, Format, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bank.base import Account
 from woob.capabilities.bill import Document, DocumentTypes
-from woob.browser.pages import HTMLPage, LoggedPage
-from woob.browser.filters.standard import (
-    CleanText, Format, Regexp,
-)
-from woob.browser.filters.html import AbsoluteLink
-from woob.browser.elements import ListElement, ItemElement, method
 
 
 class LoginPage(HTMLPage):

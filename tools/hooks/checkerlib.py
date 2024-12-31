@@ -1,11 +1,11 @@
 # python3-only
 
-import ast
 import argparse
-from pathlib import Path
+import ast
 import subprocess
 import sys
 import tokenize
+from pathlib import Path
 
 
 def get_lines(cmd):

@@ -18,12 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.job import BaseJobAdvert
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import Regexp, CleanText, Date, Env, BrowserURL
-from woob.browser.filters.html import Link, CleanHTML
+from woob.browser.filters.html import CleanHTML, Link
+from woob.browser.filters.standard import BrowserURL, CleanText, Date, Env, Regexp
+from woob.browser.pages import HTMLPage
+from woob.capabilities.job import BaseJobAdvert
 from woob.tools.date import parse_french_date
+
 
 class AdvertPage(HTMLPage):
     @method

@@ -17,8 +17,8 @@
 
 # flake8: compatible
 
-from woob.capabilities.bill import CapDocument, Bill
 from woob.capabilities.base import empty
+from woob.capabilities.bill import Bill, CapDocument
 from woob.tools.value import Value
 from woob_modules.materielnet.module import MaterielnetModule
 

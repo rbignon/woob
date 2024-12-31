@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from time import sleep
-from urllib.parse import urlsplit, parse_qs
+from urllib.parse import parse_qs, urlsplit
 
 from woob.browser.filters.standard import CleanText
 
-from .index import PhpBBPage
 from ..tools import parse_date
+from .index import PhpBBPage
 
 
 class Link(object):

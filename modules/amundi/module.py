@@ -19,10 +19,11 @@
 
 
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
-from .browser import EEAmundi, TCAmundi, CAAmundi, ESAmundi
+from .browser import CAAmundi, EEAmundi, ESAmundi, TCAmundi
+
 
 __all__ = ['AmundiModule']
 

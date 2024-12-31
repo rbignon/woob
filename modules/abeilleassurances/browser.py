@@ -18,18 +18,17 @@
 # flake8: compatible
 
 from woob.browser import LoginBrowser, need_login
-from woob.browser.url import BrowserParamURL, URL
-from woob.capabilities.base import empty
+from woob.browser.url import URL, BrowserParamURL
 from woob.capabilities.bank import Account
+from woob.capabilities.base import empty
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserPasswordExpired,
-    ActionNeeded, ActionType, BrowserHTTPError, BrowserUnavailable,
+    ActionNeeded, ActionType, BrowserHTTPError, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .pages import (
-    LoginPage, MigrationPage, AccountsPage, InvestmentPage, HistoryPage, ActionNeededPage,
-    InvestDetailPage, PrevoyancePage, ValidationPage, InvestPerformancePage, MaintenancePage,
+    AccountsPage, ActionNeededPage, HistoryPage, InvestDetailPage, InvestmentPage, InvestPerformancePage, LoginPage,
+    MaintenancePage, MigrationPage, PrevoyancePage, ValidationPage,
 )
 
 

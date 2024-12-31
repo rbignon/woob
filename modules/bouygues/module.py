@@ -28,6 +28,7 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import BouyguesBrowser
 
+
 __all__ = ['BouyguesModule']
 
 

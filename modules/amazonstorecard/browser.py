@@ -30,6 +30,7 @@ from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import ActivityPage, SomePage, StatementPage, StatementsPage, SummaryPage
 
+
 __all__ = ['AmazonStoreCard']
 
 

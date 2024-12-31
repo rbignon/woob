@@ -18,30 +18,13 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bill import DocumentTypes, Subscription, Document
-from woob.browser.pages import (
-    HTMLPage,
-    PartialHTMLPage,
-    RawPage,
-    FormNotFound,
-    pagination,
-    NextPage,
-)
-from woob.exceptions import ParseError, BrowserUnavailable
-from woob.browser.elements import method, ItemElement, TableElement
-from woob.browser.filters.standard import (
-    Filter,
-    CleanText,
-    Regexp,
-    Env,
-    Date,
-    Format,
-    Field,
-    Eval,
-    ItemNotFound,
-)
-from woob.browser.filters.html import Attr, Link, TableCell, FormValue
+from woob.browser.elements import ItemElement, TableElement, method
+from woob.browser.filters.html import Attr, FormValue, Link, TableCell
 from woob.browser.filters.javascript import JSVar
+from woob.browser.filters.standard import CleanText, Date, Env, Eval, Field, Filter, Format, ItemNotFound, Regexp
+from woob.browser.pages import FormNotFound, HTMLPage, NextPage, PartialHTMLPage, RawPage, pagination
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
+from woob.exceptions import BrowserUnavailable, ParseError
 from woob.tools.date import parse_french_date
 
 

@@ -18,4 +18,5 @@
 
 from .bank import Appbank
 
+
 __all__ = ['Appbank']

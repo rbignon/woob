@@ -17,9 +17,9 @@
 
 from copy import copy
 
-from woob.core import CallErrors
 from woob.applications.msg import AppMsg
 from woob.capabilities.dating import CapDating, OptimizationNotFound
+from woob.core import CallErrors
 from woob.tools.application.formatters.iformatter import PrettyFormatter
 
 

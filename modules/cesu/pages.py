@@ -18,24 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bill import DocumentTypes, Subscription, Document
-from woob.browser.pages import JsonPage, HTMLPage, LoggedPage, RawPage
-from woob.browser.elements import (
-    method,
-    DictElement,
-    ItemElement,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanText,
-    Regexp,
-    Env,
-    Date,
-    Format,
-    Field,
-    BrowserURL,
-    Lower,
-)
+from woob.browser.filters.standard import BrowserURL, CleanText, Date, Env, Field, Format, Lower, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
+from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 
 class CesuPage(HTMLPage):

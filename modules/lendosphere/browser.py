@@ -19,13 +19,11 @@
 
 import datetime
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.tools.capabilities.bank.investments import create_french_liquidity
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.bank.wealth import Investment
+from woob.tools.capabilities.bank.investments import create_french_liquidity
 
-from .pages import (
-    LoginPage, SummaryPage, GSummaryPage, ProfilePage, ComingPage,
-)
+from .pages import ComingPage, GSummaryPage, LoginPage, ProfilePage, SummaryPage
 
 
 class AttrURL(URL):

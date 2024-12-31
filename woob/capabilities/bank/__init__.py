@@ -15,71 +15,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from .transfer import (
-    EmitterNumberType,
-    Emitter,
-    TransferFrequency,
-    TransferDateType,
-    TransferStatus,
-    TransferError,
-    TransferBankError,
-    TransferTimeout,
-    TransferInvalidEmitter,
-    TransferInvalidRecipient,
-    TransferInvalidLabel,
-    TransferInvalidAmount,
-    TransferInvalidCurrency,
-    TransferInsufficientFunds,
-    TransferInvalidDate,
-    TransferInvalidOTP,
-    TransferCancelledByUser,
-    TransferNotFound,
-    BeneficiaryType,
-    RecipientNotFound,
-    RecipientInvalidLabel,
-    Recipient,
-    Transfer,
-    TransferStep,
-    AddRecipientError,
-    AddRecipientBankError,
-    AddRecipientTimeout,
-    AddRecipientStep,
-    RecipientInvalidOTP,
-    RecipientInvalidIban,
-    CapTransfer,
-    CapBankTransfer,
-    CapBankTransferAddRecipient,
-)
 from .base import (
-    AccountNotFound,
-    AccountType,
-    Currency,
+    Account, AccountIdentification, AccountNotFound, AccountOwnership, AccountOwnerType, AccountParty,
+    AccountSchemeName, AccountType, Balance, BalanceType, BankTransactionCode, CapAccountCheck, CapBank, Currency,
+    IBANField, Loan, NoAccountsException, PartyIdentity, PartyRole, Transaction, TransactionCounterparty,
     TransactionType,
-    AccountOwnerType,
-    Account,
-    Loan,
-    Transaction,
-    AccountOwnership,
-    NoAccountsException,
-    CapBank,
-    AccountSchemeName,
-    TransactionCounterparty,
-    PartyIdentity,
-    AccountParty,
-    AccountIdentification,
-    PartyRole,
-    CapAccountCheck,
-    Balance,
-    BalanceType,
-    BankTransactionCode,
-    IBANField,
 )
-from .rate import Rate, CapCurrencyRate
-from .wealth import (
-    Investment,
-    Per,
-    CapBankWealth,
+from .rate import CapCurrencyRate, Rate
+from .transfer import (
+    AddRecipientBankError, AddRecipientError, AddRecipientStep, AddRecipientTimeout, BeneficiaryType, CapBankTransfer,
+    CapBankTransferAddRecipient, CapTransfer, Emitter, EmitterNumberType, Recipient, RecipientInvalidIban,
+    RecipientInvalidLabel, RecipientInvalidOTP, RecipientNotFound, Transfer, TransferBankError, TransferCancelledByUser,
+    TransferDateType, TransferError, TransferFrequency, TransferInsufficientFunds, TransferInvalidAmount,
+    TransferInvalidCurrency, TransferInvalidDate, TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidOTP,
+    TransferInvalidRecipient, TransferNotFound, TransferStatus, TransferStep, TransferTimeout,
 )
+from .wealth import CapBankWealth, Investment, Per
 
 
 __all__ = [

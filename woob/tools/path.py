@@ -16,7 +16,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 from copy import copy
-from posixpath import sep, join
+from posixpath import join, sep
 
 
 class WorkingPath:

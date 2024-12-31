@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 from datetime import date
 
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import CleanText, Regexp, Env, BrowserURL, Date, Format
 from woob.browser.filters.html import CleanHTML
-from woob.capabilities.job import BaseJobAdvert
+from woob.browser.filters.standard import BrowserURL, CleanText, Date, Env, Format, Regexp
+from woob.browser.pages import HTMLPage
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.job import BaseJobAdvert
 
 
 class SearchPage(HTMLPage):

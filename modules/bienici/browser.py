@@ -18,12 +18,12 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.capabilities.housing import POSTS_TYPES
 from woob.tools.json import json
 
 from .constants import HOUSE_TYPES_LABELS, TRANSACTION_TYPE
-from .pages import Cities, ResultsPage, HousingPage, NeighborhoodPage
+from .pages import Cities, HousingPage, NeighborhoodPage, ResultsPage
 
 
 class BieniciBrowser(PagesBrowser):

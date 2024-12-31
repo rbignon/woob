@@ -17,21 +17,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from functools import wraps
 import json
 import re
 from decimal import Decimal
-
+from functools import wraps
 from uuid import uuid4
 
 from woob.browser.browsers import APIBrowser
 from woob.browser.exceptions import ClientError
-from woob.browser.filters.standard import CleanDecimal, Date, Coalesce, MapIn
 from woob.browser.filters.html import ReplaceEntities
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded
+from woob.browser.filters.standard import CleanDecimal, Coalesce, Date, MapIn
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
 from woob.tools.capabilities.bank.investments import is_isin_valid
 
 

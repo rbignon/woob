@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.video import CapVideo, BaseVideo
-from woob.tools.backend import Module
 from woob.capabilities.collection import CapCollection, CollectionNotFound
+from woob.capabilities.video import BaseVideo, CapVideo
+from woob.tools.backend import Module
 
 from .browser import YoupornBrowser
 from .video import YoupornVideo

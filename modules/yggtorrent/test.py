@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.test import BackendTest
 from woob.capabilities.base import NotLoaded
+from woob.tools.test import BackendTest
 
 
 class YggtorrentTest(BackendTest):

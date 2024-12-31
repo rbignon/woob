@@ -25,12 +25,11 @@ from base64 import b64encode
 from urllib3.exceptions import ReadTimeoutError
 
 from woob.browser.browsers import APIBrowser
-from woob.exceptions import BrowserIncorrectPassword, ScrapingBlocked
 from woob.capabilities.captcha import (
-    ImageCaptchaJob, RecaptchaJob, RecaptchaV3Job, RecaptchaV2Job,
-    FuncaptchaJob, HcaptchaJob, CaptchaError, InsufficientFunds,
-    UnsolvableCaptcha, InvalidCaptcha, GeetestV4Job, TurnstileJob,
+    CaptchaError, FuncaptchaJob, GeetestV4Job, HcaptchaJob, ImageCaptchaJob, InsufficientFunds, InvalidCaptcha,
+    RecaptchaJob, RecaptchaV2Job, RecaptchaV3Job, TurnstileJob, UnsolvableCaptcha,
 )
+from woob.exceptions import BrowserIncorrectPassword, ScrapingBlocked
 from woob.tools.json import json
 
 

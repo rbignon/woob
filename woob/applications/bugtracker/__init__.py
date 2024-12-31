@@ -18,4 +18,5 @@
 
 from .bugtracker import AppBugTracker
 
+
 __all__ = ['AppBugTracker']

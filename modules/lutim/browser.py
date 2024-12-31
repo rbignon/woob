@@ -19,12 +19,12 @@
 
 # flake8: compatible
 
-from base64 import b64decode, b64encode
 import math
+from base64 import b64decode, b64encode
 from io import BytesIO
 from urllib.parse import urljoin
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
 from .pages import ImagePage, UploadPage
 

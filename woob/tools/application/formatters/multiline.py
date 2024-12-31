@@ -16,7 +16,8 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.base import NotLoaded, NotAvailable
+from woob.capabilities.base import NotAvailable, NotLoaded
+
 from .iformatter import IFormatter
 
 

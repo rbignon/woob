@@ -16,13 +16,13 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import tempfile
 import shlex
 import subprocess
+import tempfile
 from shutil import which
 
+from woob.capabilities.content import CapContent, Content, Revision
 from woob.core.bcall import CallErrors
-from woob.capabilities.content import CapContent, Revision, Content
 from woob.tools.application.repl import ReplApplication, defaultcount
 
 

@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.subtitle import CapSubtitle
 from woob.capabilities.base import empty
-from woob.tools.application.repl import ReplApplication, defaultcount
+from woob.capabilities.subtitle import CapSubtitle
 from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 
 
 __all__ = ['AppSubtitles']

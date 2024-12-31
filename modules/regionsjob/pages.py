@@ -18,16 +18,16 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+from datetime import date, timedelta
 
-from woob.browser.pages import HTMLPage, pagination, JsonPage
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import CleanText, Regexp, Env, Date, BrowserURL, Join
 from woob.browser.filters.html import CleanHTML
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import BrowserURL, CleanText, Date, Env, Join, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, pagination
+from woob.capabilities import NotAvailable
 from woob.capabilities.job import BaseJobAdvert
 from woob.exceptions import ParseError
-from datetime import date, timedelta
-from woob.capabilities import NotAvailable
 
 
 class LocationPage(JsonPage):

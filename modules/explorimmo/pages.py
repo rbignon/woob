@@ -19,21 +19,20 @@
 import json
 import math
 import re
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
 from urllib.parse import unquote
 
-from woob.browser.filters.json import Dict
-from woob.browser.elements import ItemElement, ListElement, DictElement, method
-from woob.browser.pages import JsonPage, HTMLPage, pagination
-from woob.browser.filters.standard import (CleanText, CleanDecimal, Currency,
-                                             Regexp, Env, BrowserURL, Filter,
-                                             Format)
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, CleanHTML, XPath
-from woob.capabilities.base import NotAvailable, NotLoaded, Currency as BaseCurrency
-from woob.capabilities.housing import (Housing, HousingPhoto, City,
-                                         UTILITIES, ENERGY_CLASS, POSTS_TYPES,
-                                         ADVERT_TYPES, HOUSE_TYPES)
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import BrowserURL, CleanDecimal, CleanText, Currency, Env, Filter, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, pagination
+from woob.capabilities.base import Currency as BaseCurrency
+from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.capabilities.housing import (
+    ADVERT_TYPES, ENERGY_CLASS, HOUSE_TYPES, POSTS_TYPES, UTILITIES, City, Housing, HousingPhoto,
+)
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 
 

@@ -19,9 +19,9 @@
 
 from woob.capabilities.pricecomparison import CapPriceComparison, Price
 from woob.tools.backend import Module
-from .product import LaCentraleProduct
 
 from .browser import LaCentraleBrowser
+from .product import LaCentraleProduct
 
 
 __all__ = ['LaCentraleModule']

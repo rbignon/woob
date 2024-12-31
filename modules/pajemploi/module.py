@@ -17,17 +17,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.backend import BackendConfig, Module
+from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import (
-    DocumentCategory,
-    DocumentTypes,
-    CapDocument,
-    Subscription,
-    DocumentNotFound,
-    Document,
+    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
 )
-from woob.capabilities.base import find_object, NotAvailable
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import PajemploiBrowser
 

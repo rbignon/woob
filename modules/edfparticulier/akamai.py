@@ -18,7 +18,7 @@
 # flake8: compatible
 
 try:
-    from woob.tools.antibot.akamai import AkamaiMixin, AkamaiHTMLPage
+    from woob.tools.antibot.akamai import AkamaiHTMLPage, AkamaiMixin
 
 except ModuleNotFoundError:
     from woob.browser.pages import HTMLPage

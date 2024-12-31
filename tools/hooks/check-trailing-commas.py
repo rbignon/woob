@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import ast
-from collections import namedtuple
-from pathlib import Path
 import runpy
 import sys
 import tokenize
+from collections import namedtuple
+from pathlib import Path
 
 from asttokens import ASTTokens
 

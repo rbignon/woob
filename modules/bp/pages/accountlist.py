@@ -25,8 +25,7 @@ from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import AbsoluteLink, Link, TableCell
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    Async, CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Field, Format,
-    Lower, MapIn, Regexp, Upper,
+    Async, CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Field, Format, Lower, MapIn, Regexp, Upper,
 )
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage
 from woob.capabilities.bank import Account, AccountOwnerType, Loan

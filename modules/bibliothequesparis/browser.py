@@ -19,10 +19,10 @@
 
 from time import time
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.base import find_object
 
-from .pages import LoginPage, LoansPage, RenewPage, SearchPage
+from .pages import LoansPage, LoginPage, RenewPage, SearchPage
 
 
 class BibliothequesparisBrowser(LoginBrowser):

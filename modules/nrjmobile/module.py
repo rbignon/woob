@@ -18,14 +18,13 @@
 # flake8: compatible
 
 from woob.capabilities.base import find_object
-from woob.capabilities.bill import (
-    CapDocument, Document, DocumentNotFound, DocumentTypes, DocumentCategory,
-)
+from woob.capabilities.bill import CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import NRJMobileBrowser
+
 
 __all__ = ['NRJMobileModule']
 

@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict
-from configparser import RawConfigParser, DEFAULTSECT
-from decimal import Decimal
-import os
 import io
+import os
+from collections import OrderedDict
+from configparser import DEFAULTSECT, RawConfigParser
+from decimal import Decimal
 
 from .iconfig import IConfig
 from .util import LOGGER

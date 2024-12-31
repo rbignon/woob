@@ -31,16 +31,13 @@ from woob.browser.adapters import LowSecHTTPAdapter
 from woob.browser.browsers import StatesMixin
 from woob.browser.exceptions import ServerError
 from woob.capabilities.bank import (
-    Account, AccountOwnership, AccountOwnerType, AddRecipientBankError,
-    AddRecipientStep, Loan, Recipient, RecipientInvalidOTP, TransferBankError,
-    TransferInvalidOTP, TransferInvalidRecipient, TransferStep,
-    NoAccountsException,
+    Account, AccountOwnership, AccountOwnerType, AddRecipientBankError, AddRecipientStep, Loan, NoAccountsException,
+    Recipient, RecipientInvalidOTP, TransferBankError, TransferInvalidOTP, TransferInvalidRecipient, TransferStep,
 )
 from woob.capabilities.base import NotAvailable
 from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidation, AppValidationCancelled, AppValidationExpired,
-    BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable, BrowserUserBanned,
-    NeedInteractiveFor2FA,
+    ActionNeeded, ActionType, AppValidation, AppValidationCancelled, AppValidationExpired, BrowserIncorrectPassword,
+    BrowserQuestion, BrowserUnavailable, BrowserUserBanned, NeedInteractiveFor2FA,
 )
 from woob.tools.decorators import retry
 from woob.tools.url import get_url_param
@@ -48,30 +45,28 @@ from woob.tools.value import Value
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from .pages import (
-    AccountDesactivate, AccountHistory, AccountList, AccountRIB, Advisor, BadLoginPage,
-    CardsJsonDetails, CardsList, CerticodePlusSubmitDevicePage, CheckPassword, CompleteTransfer,
-    ConfirmPage, CreateRecipient, DecoupledPage, DownloadPage, Initident, LoginPage,
-    Loi6902TransferPage, OtpErrorPage, PersonalLoanRoutagePage, ProSubscriptionPage,
-    ProTransferChooseAccounts, RcptSummary, SmsPage, SubscriptionPage, TemporaryPage,
-    TransferChooseAccounts, TransferConfirm, TransferSummary, TwoFAPage, UnavailablePage,
-    ValidateCountry, Validated2FAPage, ValidateRecipient, repositionnerCheminCourant,
+    AccountDesactivate, AccountHistory, AccountList, AccountRIB, Advisor, BadLoginPage, CardsJsonDetails, CardsList,
+    CerticodePlusSubmitDevicePage, CheckPassword, CompleteTransfer, ConfirmPage, CreateRecipient, DecoupledPage,
+    DownloadPage, Initident, LoginPage, Loi6902TransferPage, OtpErrorPage, PersonalLoanRoutagePage, ProSubscriptionPage,
+    ProTransferChooseAccounts, RcptSummary, SmsPage, SubscriptionPage, TemporaryPage, TransferChooseAccounts,
+    TransferConfirm, TransferSummary, TwoFAPage, UnavailablePage, ValidateCountry, Validated2FAPage, ValidateRecipient,
+    repositionnerCheminCourant,
 )
 from .pages.accounthistory import (
-    LifeInsuranceAccessHistory, LifeInsuranceHistory, LifeInsuranceHistoryInv,
-    LifeInsuranceInitPage, LifeInsuranceInvest, LifeInsuranceSummary, RetirementHistory,
-    SavingAccountSummary,
+    LifeInsuranceAccessHistory, LifeInsuranceHistory, LifeInsuranceHistoryInv, LifeInsuranceInitPage,
+    LifeInsuranceInvest, LifeInsuranceSummary, RetirementHistory, SavingAccountSummary,
 )
 from .pages.accountlist import (
-    MarketCheckPage, MarketHomePage, MarketLoginPage, ProfilePage, RevolvingPage,
-    UserTransactionIDPage,
+    MarketCheckPage, MarketHomePage, MarketLoginPage, ProfilePage, RevolvingPage, UserTransactionIDPage,
 )
 from .pages.base import IncludedUnavailablePage, UselessPage
-from .pages.login import NoTerminalPage, PostLoginPage, LienJavascript, Polling2FA
+from .pages.login import LienJavascript, NoTerminalPage, Polling2FA, PostLoginPage
 from .pages.mandate import MandateAccountsList, MandateLife, MandateMarket, PreMandate, PreMandateBis
 from .pages.pro import (
-    Detect2FAPage, DownloadRib, ProAccountHistory, ProAccountsList, RedirectAfterVKPage,
-    RedirectPage, RibPage, SwitchQ5CPage,
+    Detect2FAPage, DownloadRib, ProAccountHistory, ProAccountsList, RedirectAfterVKPage, RedirectPage, RibPage,
+    SwitchQ5CPage,
 )
+
 
 __all__ = ['BPBrowser', 'BProBrowser']
 

@@ -23,9 +23,7 @@ from dateutil.relativedelta import relativedelta
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    BrowserURL, CleanDecimal, CleanText, Date, Env, Field, Format, Regexp,
-)
+from woob.browser.filters.standard import BrowserURL, CleanDecimal, CleanText, Date, Env, Field, Format, Regexp
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities.bill import Bill, Subscription
 

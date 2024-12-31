@@ -20,6 +20,7 @@
 
 from woob.tools.test import BackendTest
 
+
 class CreditDuNordTest(BackendTest):
     MODULE = 'tarneaud'
 

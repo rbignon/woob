@@ -19,4 +19,5 @@
 
 from .module import TwoCaptchaModule
 
+
 __all__ = ['TwoCaptchaModule']

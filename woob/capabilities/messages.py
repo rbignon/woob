@@ -19,9 +19,9 @@
 import datetime
 import time
 
-from .base import Capability, BaseObject, NotLoaded, Field, StringField, \
-                  IntField, UserError
+from .base import BaseObject, Capability, Field, IntField, NotLoaded, StringField, UserError
 from .date import DateField
+
 
 __all__ = ['Thread', 'Message', 'CapMessages', 'CantSendMessage', 'CapMessagesPost']
 

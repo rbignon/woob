@@ -16,43 +16,33 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import time
 import operator
 import random
+import time
 from datetime import date
 from decimal import Decimal
 
-from woob.exceptions import (
-    AuthMethodNotImplemented, AppValidation,
-    AppValidationExpired, AppValidationCancelled,
-    BrowserQuestion, BrowserIncorrectPassword,
-    BrowserUnavailable, ActionNeeded,
-)
-from woob.capabilities.bank import (
-    Account, AddRecipientStep, AddRecipientBankError,
-    TransferBankError, AccountOwnerType,
-)
-from woob.browser import need_login, URL
-from woob.browser.mfa import TwoFactorBrowser
+from woob.browser import URL, need_login
 from woob.browser.exceptions import ClientError
+from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities import NotAvailable
+from woob.capabilities.bank import Account, AccountOwnerType, AddRecipientBankError, AddRecipientStep, TransferBankError
 from woob.capabilities.base import find_object
+from woob.exceptions import (
+    ActionNeeded, AppValidation, AppValidationCancelled, AppValidationExpired, AuthMethodNotImplemented,
+    BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable,
+)
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.value import Value
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from .pages import (
-    HomePage, LoginPage, AccountsTwoFAPage, InitAuthentPage, AuthentResultPage,
-    SendSmsPage, CheckOtpPage, TrustedDevicesPage, UniversePage,
-    TokenPage, MoveUniversePage, SwitchPage,
-    LoansPage, AccountsPage, IbanPage, LifeInsurancesPage,
-    SearchPage, ProfilePage, ErrorPage, ErrorCodePage, LinebourseLoginPage,
-    UnavailablePage, ErrorMsgPage,
+    AccountsPage, AccountsTwoFAPage, AuthentResultPage, CheckOtpPage, ErrorCodePage, ErrorMsgPage, ErrorPage, HomePage,
+    IbanPage, InitAuthentPage, LifeInsurancesPage, LinebourseLoginPage, LoansPage, LoginPage, MoveUniversePage,
+    ProfilePage, SearchPage, SendSmsPage, SwitchPage, TokenPage, TrustedDevicesPage, UnavailablePage, UniversePage,
 )
-from .transfer_pages import (
-    RecipientListPage, EmittersListPage, ListAuthentPage,
-    AddRecipientPage, TransferPage,
-)
+from .transfer_pages import AddRecipientPage, EmittersListPage, ListAuthentPage, RecipientListPage, TransferPage
+
 
 __all__ = ['BredBrowser']
 

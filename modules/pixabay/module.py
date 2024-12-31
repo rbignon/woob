@@ -19,8 +19,8 @@
 
 
 from woob.capabilities.file import LICENSES
-from woob.capabilities.image import CapImage, BaseImage, Thumbnail
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.image import BaseImage, CapImage, Thumbnail
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import PixabayBrowser

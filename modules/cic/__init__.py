@@ -20,4 +20,5 @@
 
 from .module import CICModule
 
+
 __all__ = ['CICModule']

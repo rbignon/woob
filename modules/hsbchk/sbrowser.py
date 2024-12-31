@@ -17,19 +17,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from selenium.common.exceptions import (
-    TimeoutException
-)
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserHTTPError
-from woob.browser.selenium import (SeleniumBrowser, VisibleXPath)
 from woob.browser import URL
+from woob.browser.selenium import SeleniumBrowser, VisibleXPath
+from woob.exceptions import BrowserHTTPError, BrowserIncorrectPassword, BrowserUnavailable
 
-from .pages.login import (
-    LoginPage
-)
+from .pages.login import LoginPage
+
 
 class LoginBrowser(SeleniumBrowser):
     BASEURL = 'https://www.hsbc.com.hk/'

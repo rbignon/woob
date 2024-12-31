@@ -15,33 +15,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from contextlib import contextmanager
 import datetime
 import logging
 import uuid
-from dateutil.relativedelta import relativedelta
-from dateutil.parser import parse as parse_date
+from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation
 
-from woob.exceptions import (
-    CaptchaQuestion, DecoupledValidation,
-    AppValidationCancelled, AppValidationExpired,
-)
-from woob.core.bcall import CallErrors
-from woob.capabilities.base import empty, find_object
+from dateutil.parser import parse as parse_date
+from dateutil.relativedelta import relativedelta
+
 from woob.capabilities.bank import (
-    Account, Transaction,
-    Transfer, TransferStep, Recipient, AddRecipientStep,
-    CapBank, CapTransfer,
-    TransferInvalidLabel, TransferInvalidAmount, TransferInvalidDate,
-    TransferInvalidEmitter, TransferInvalidRecipient,
+    Account, AddRecipientStep, CapBank, CapTransfer, Recipient, Transaction, Transfer, TransferInvalidAmount,
+    TransferInvalidDate, TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidRecipient, TransferStep,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import empty, find_object
 from woob.capabilities.captcha import exception_to_job
 from woob.capabilities.profile import CapProfile
-from woob.tools.application.repl import ReplApplication, defaultcount
+from woob.core.bcall import CallErrors
+from woob.exceptions import AppValidationCancelled, AppValidationExpired, CaptchaQuestion, DecoupledValidation
 from woob.tools.application.captcha import CaptchaMixin
 from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.misc import to_unicode
 
 

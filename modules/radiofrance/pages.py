@@ -17,18 +17,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.elements import ItemElement, DictElement, ListElement, method
-from woob.browser.pages import HTMLPage, JsonPage, XMLPage
-from woob.browser.filters.json import Dict
-from woob.browser.filters.html import XPath
-from woob.browser.filters.standard import Format, CleanText, Join, Env, Regexp, Duration, Time
-from woob.capabilities.audio import BaseAudio
-from woob.tools.capabilities.audio.audio import BaseAudioIdFilter
-from woob.capabilities.image import Thumbnail
-from woob.capabilities.collection import Collection
-
 import time
-from datetime import timedelta, datetime, date
+from datetime import date, datetime, timedelta
+
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.html import XPath
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Duration, Env, Format, Join, Regexp, Time
+from woob.browser.pages import HTMLPage, JsonPage, XMLPage
+from woob.capabilities.audio import BaseAudio
+from woob.capabilities.collection import Collection
+from woob.capabilities.image import Thumbnail
+from woob.tools.capabilities.audio.audio import BaseAudioIdFilter
 
 
 class PodcastPage(XMLPage):

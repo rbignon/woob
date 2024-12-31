@@ -19,7 +19,7 @@
 
 from woob.browser.switch import SwitchingBrowser
 
-from .browser import AXABanqueBrowser, AXABourseBrowser, AXAAssuranceBrowser
+from .browser import AXAAssuranceBrowser, AXABanqueBrowser, AXABourseBrowser
 
 
 class ProxyBrowser(SwitchingBrowser):

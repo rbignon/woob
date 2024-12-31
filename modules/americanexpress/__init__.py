@@ -20,4 +20,5 @@
 
 from .module import AmericanExpressModule
 
+
 __all__ = ['AmericanExpressModule']

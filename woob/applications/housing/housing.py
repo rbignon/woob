@@ -15,11 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.housing import (CapHousing, Query, POSTS_TYPES,
-                                         ADVERT_TYPES, HOUSE_TYPES)
 from woob.capabilities.base import empty
-from woob.tools.application.repl import ReplApplication, defaultcount
+from woob.capabilities.housing import ADVERT_TYPES, HOUSE_TYPES, POSTS_TYPES, CapHousing, Query
 from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.config.yamlconfig import YamlConfig
 
 

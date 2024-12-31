@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.pages import HTMLPage, pagination
-from woob.browser.elements import ListElement, ItemElement, method
+from woob.browser.elements import ItemElement, ListElement, method
+from woob.browser.filters.html import CSS, Link
 from woob.browser.filters.standard import CleanText, Duration, Regexp
-from woob.browser.filters.html import Link, CSS
+from woob.browser.pages import HTMLPage, pagination
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.image import Thumbnail
 from woob.capabilities.video import BaseVideo

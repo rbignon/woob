@@ -6,6 +6,7 @@ import sys
 
 from woob.core import Woob
 
+
 # Hint: use this script with file:///path/to/local/modules/ in sources.list
 # if you want to correctly check all modules.
 

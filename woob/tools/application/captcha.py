@@ -1,7 +1,8 @@
-from threading import Lock, Event
+from threading import Event, Lock
 
 from woob.capabilities.captcha import CapCaptchaSolver
 from woob.core import Woob
+
 
 __all__ = ['CaptchaMixin']
 

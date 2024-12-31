@@ -31,6 +31,7 @@ from woob.capabilities.image import Thumbnail
 
 from .video import RmllVideo
 
+
 BASE_URL = 'http://video.rmll.info'
 
 

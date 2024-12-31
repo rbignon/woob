@@ -19,8 +19,8 @@
 
 # flake8: compatible
 
-from woob.capabilities.bank import CapBank, Account
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.bank import Account, CapBank
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import MyedenredBrowser

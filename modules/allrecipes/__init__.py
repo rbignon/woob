@@ -19,4 +19,5 @@
 
 from .module import AllrecipesModule
 
+
 __all__ = ['AllrecipesModule']

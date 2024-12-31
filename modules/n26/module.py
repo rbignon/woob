@@ -20,10 +20,11 @@
 # flake8: compatible
 
 from woob.capabilities.bank import CapBank
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import Number26Browser
+
 
 __all__ = ['Number26Module']
 

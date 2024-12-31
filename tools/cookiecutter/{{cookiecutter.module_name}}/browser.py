@@ -17,12 +17,10 @@
 
 # flake8: compatible
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import (
-    LoginPage, SomethingPage,
-)
+from .pages import LoginPage, SomethingPage
 
 
 class {{cookiecutter.class_prefix}}Browser(LoginBrowser):

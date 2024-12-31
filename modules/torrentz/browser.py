@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
 from .pages.index import IndexPage
-from .pages.torrents import TorrentsPage, TorrentPage
+from .pages.torrents import TorrentPage, TorrentsPage
 
 
 __all__ = ['TorrentzBrowser']

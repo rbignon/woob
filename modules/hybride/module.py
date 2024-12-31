@@ -18,11 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
+from woob.capabilities.calendar import CATEGORIES, CapCalendarEvent
 from woob.tools.backend import Module
-from woob.capabilities.calendar import CapCalendarEvent, CATEGORIES
 
 from .browser import HybrideBrowser
 from .calendar import HybrideCalendarEvent
+
 
 __all__ = ['HybrideModule']
 

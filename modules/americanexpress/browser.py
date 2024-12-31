@@ -19,32 +19,27 @@
 
 import datetime
 import uuid
-from dateutil.parser import parse as parse_date
 from collections import OrderedDict
-from urllib.parse import urljoin, urlencode, quote
+from urllib.parse import quote, urlencode, urljoin
 
-from woob.browser.selenium import (
-    SeleniumBrowser, SubSeleniumMixin, IsHereCondition, webdriver,
-)
-from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,
-    AuthMethodNotImplemented, BrowserQuestion, ScrapingBlocked,
-)
+from dateutil.parser import parse as parse_date
+
 from woob.browser.browsers import need_login
+from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.browser.mfa import TwoFactorBrowser
-from woob.browser.exceptions import HTTPNotFound, ServerError, ClientError
+from woob.browser.selenium import IsHereCondition, SeleniumBrowser, SubSeleniumMixin, webdriver
 from woob.browser.url import URL
+from woob.exceptions import (
+    AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserQuestion, BrowserUnavailable,
+    ScrapingBlocked,
+)
 from woob.tools.value import Value
 
-from .pages import (
-    AccountsPage, JsonBalances, JsonPeriods, JsonHistory,
-    JsonBalances2, CurrencyPage, LoginPage, NoCardPage,
-    NotFoundPage, HomeLoginPage,
-    ReadAuthChallengePage, UpdateAuthTokenPage,
-    SHomePage, SLoginPage,
-)
-
 from .fingerprint import FingerprintPage
+from .pages import (
+    AccountsPage, CurrencyPage, HomeLoginPage, JsonBalances, JsonBalances2, JsonHistory, JsonPeriods, LoginPage,
+    NoCardPage, NotFoundPage, ReadAuthChallengePage, SHomePage, SLoginPage, UpdateAuthTokenPage,
+)
 
 
 class AmericanExpressBrowser(TwoFactorBrowser):

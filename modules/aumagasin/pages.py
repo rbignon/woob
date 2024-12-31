@@ -16,7 +16,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 import re
 
-from woob.browser.elements import method, ListElement, ItemElement
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.standard import CleanText, Field
 from woob.browser.pages import HTMLPage, pagination
 from woob.capabilities import BaseObject

@@ -19,7 +19,7 @@
 
 # flake8: compatible
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
 from .pages import ResultsPage
 

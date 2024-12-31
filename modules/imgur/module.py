@@ -30,6 +30,7 @@ from woob.tools.date import datetime
 
 from .browser import ImgurBrowser
 
+
 __all__ = ['ImgurModule']
 
 

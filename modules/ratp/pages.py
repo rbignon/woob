@@ -19,11 +19,12 @@
 
 import datetime
 
-from woob.browser.elements import method, ItemElement, ListElement
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.standard import CleanText, Eval
 from woob.browser.pages import HTMLPage
 from woob.capabilities.gauge import Gauge, GaugeMeasure
+
 
 NORMAL = 0.0
 NORMAL_AND_WORK = -1.0

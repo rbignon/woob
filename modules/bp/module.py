@@ -33,6 +33,7 @@ from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import BPBrowser, BProBrowser
 
+
 __all__ = ['BPModule']
 
 

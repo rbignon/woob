@@ -23,6 +23,7 @@ from woob.tools.backend import Module
 
 from .browser import NetfincaBrowser
 
+
 __all__ = ['NetfincaModule']
 
 

@@ -23,7 +23,9 @@ import re
 from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.elements import ItemElement, method
 from woob.browser.filters.html import Attr
-from woob.browser.filters.standard import Base, BrowserURL, CleanText, DateTime, Env, Field, Filter, FilterError, RawText
+from woob.browser.filters.standard import (
+    Base, BrowserURL, CleanText, DateTime, Env, Field, Filter, FilterError, RawText,
+)
 from woob.browser.pages import HTMLPage, RawPage
 from woob.capabilities.paste import BasePaste, PasteNotFound
 from woob.exceptions import BrowserHTTPNotFound, BrowserIncorrectPassword, BrowserUnavailable

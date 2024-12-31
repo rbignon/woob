@@ -19,31 +19,30 @@
 
 # flake8: compatible
 
-import time
-import os
 import base64
+import os
+import time
 from datetime import date
 from decimal import Decimal
 from functools import wraps
 from hashlib import sha256
-from urllib.parse import urlparse, parse_qsl
+from urllib.parse import parse_qsl, urlparse
 
 from woob.browser.browsers import URL, need_login
+from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.browser.mfa import TwoFactorBrowser
-from woob.browser.exceptions import ClientError, ServerError, HTTPNotFound
-from woob.exceptions import AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable, BrowserQuestion
-from woob.capabilities.bank import Account, Transaction, AccountNotFound
-from woob.capabilities.base import find_object, empty
+from woob.capabilities.bank import Account, AccountNotFound, Transaction
+from woob.capabilities.base import empty, find_object
+from woob.exceptions import AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable
 from woob.tools.capabilities.bank.transactions import sorted_transactions
-from woob.tools.value import Value
 from woob.tools.json import json
+from woob.tools.value import Value
 
 from .pages import (
-    LogoutPage, AccountsPage, HistoryPage, LifeinsurancePage, MarketPage,
-    AdvisorPage, LoginPage, ProfilePage, RedirectInsurancePage, SpacesPage,
-    ChangeSpacePage, AccessTokenPage, ConsentPage, TriggerSMSPage,
+    AccessTokenPage, AccountsPage, AdvisorPage, ChangeSpacePage, ConsentPage, HistoryPage, LifeinsurancePage, LoginPage,
+    LogoutPage, MarketPage, ProfilePage, RedirectInsurancePage, SpacesPage, TriggerSMSPage,
 )
-from .transfer_pages import TransferInfoPage, RecipientsListPage, TransferPage, AllowedRecipientsPage
+from .transfer_pages import AllowedRecipientsPage, RecipientsListPage, TransferInfoPage, TransferPage
 
 
 def retry(exc_check, tries=4):

@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, TableElement, method
-from woob.browser.filters.standard import Filter, CleanText, Format, Env, DateTime, Join
-from woob.browser.filters.html import Link, CleanHTML, TableCell
+from woob.browser.filters.html import CleanHTML, Link, TableCell
+from woob.browser.filters.standard import CleanText, DateTime, Env, Filter, Format, Join
+from woob.browser.pages import HTMLPage
 from woob.capabilities.job import BaseJobAdvert
 
 

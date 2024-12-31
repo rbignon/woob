@@ -19,4 +19,5 @@
 
 from .module import NRJMobileModule
 
+
 __all__ = ['NRJMobileModule']

@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import date, datetime, time, timedelta
+
 # because we don't want to import this file by "import json"
 from decimal import Decimal
-from datetime import datetime, date, time, timedelta
+
 
 __all__ = ['json', 'mini_jsonpath']
 

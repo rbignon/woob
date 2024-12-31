@@ -19,12 +19,11 @@
 
 # flake8: compatible
 
+from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import (
-    CapDocument, Subscription, Document, DocumentNotFound,
-    DocumentTypes, DocumentCategory,
+    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
 )
-from woob.capabilities.base import find_object, NotAvailable
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import DeliverooBrowser

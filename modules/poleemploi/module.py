@@ -19,10 +19,8 @@
 
 from collections import OrderedDict
 
-from woob.capabilities.job import BaseJobAdvert
-
-from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.job import CapJob
+from woob.capabilities.job import BaseJobAdvert, CapJob
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueInt
 
 from .browser import PoleEmploiBrowser

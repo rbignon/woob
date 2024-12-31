@@ -22,6 +22,7 @@ from woob.tools.json import json
 
 from .pages import ConcertListPage, ConcertPage, NoEvent
 
+
 __all__ = ['SueurDeMetalBrowser']
 
 

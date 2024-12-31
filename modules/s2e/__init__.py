@@ -17,7 +17,8 @@
 
 # flake8: compatible
 
+from .browser import BnppereBrowser, CapeasiBrowser, CreditdunordpeeBrowser
 from .module import S2eModule
-from .browser import CapeasiBrowser, BnppereBrowser, CreditdunordpeeBrowser
+
 
 __all__ = ['S2eModule', 'CapeasiBrowser', 'BnppereBrowser', 'CreditdunordpeeBrowser']

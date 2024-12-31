@@ -20,22 +20,20 @@
 import re
 from decimal import Decimal
 
-from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
-from woob.browser.elements import ItemElement, TableElement, DictElement, method
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Currency, Date,
-    Eval, Field, Lower, MapIn, QueryValue, Regexp,
-    Env, Base, Coalesce, Format,
-)
-from woob.browser.filters.json import Dict
+from woob.browser.elements import DictElement, ItemElement, TableElement, method
 from woob.browser.filters.html import Attr, Link, TableCell
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval, Field, Format, Lower, MapIn, QueryValue, Regexp,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage, pagination
 from woob.capabilities.bank import Account, AccountOwnership
 from woob.capabilities.bank.wealth import Investment
-from woob.capabilities.profile import Person
 from woob.capabilities.base import NotAvailable, NotLoaded, empty
+from woob.capabilities.profile import Person
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
-from woob.tools.capabilities.bank.transactions import Transaction as BankTransaction, FrenchTransaction
-from woob.browser.pages import PartialHTMLPage, RawPage
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.capabilities.bank.transactions import Transaction as BankTransaction
 
 
 def float_to_decimal(f):

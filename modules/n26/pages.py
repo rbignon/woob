@@ -22,12 +22,9 @@
 from dateutil.tz import gettz
 
 from woob.browser.elements import DictElement, ItemElement, method
-from woob.browser.pages import JsonPage
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Currency, Env,
-    FromTimestamp, Map,
-)
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Currency, Env, FromTimestamp, Map
+from woob.browser.pages import JsonPage
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.base import NotAvailable
 

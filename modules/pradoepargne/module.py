@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.tools.value import ValueBackendPassword
 from woob_modules.humanis.module import HumanisModule
 
 

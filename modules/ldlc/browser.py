@@ -19,10 +19,7 @@ from woob.browser import URL, need_login
 from woob_modules.materielnet.browser import MaterielnetBrowser
 from woob_modules.materielnet.pages import PeriodPage
 
-from .pages import (
-    ParDocumentDetailsPage, ParDocumentsPage, ParLoginPage,
-    ProDocumentsPage, ProfilePage, ProProfilePage,
-)
+from .pages import ParDocumentDetailsPage, ParDocumentsPage, ParLoginPage, ProDocumentsPage, ProfilePage, ProProfilePage
 
 
 class MyURL(URL):

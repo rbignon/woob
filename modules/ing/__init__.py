@@ -19,4 +19,5 @@
 
 from .module import INGModule
 
+
 __all__ = ['INGModule']

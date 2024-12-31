@@ -17,9 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.browser.exceptions import HTTPNotFound
-from .pages import RmllCollectionPage, RmllVideoPage, RmllChannelsPage, RmllSearchPage, RmllLatestPage, RmllDurationPage
+
+from .pages import RmllChannelsPage, RmllCollectionPage, RmllDurationPage, RmllLatestPage, RmllSearchPage, RmllVideoPage
+
 
 __all__ = ['RmllBrowser']
 

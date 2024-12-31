@@ -18,8 +18,8 @@
 from woob.capabilities.base import empty
 from woob.capabilities.parcel import CapParcel, Parcel, ParcelNotFound
 from woob.core import CallErrors
-from woob.tools.application.repl import ReplApplication
 from woob.tools.application.formatters.iformatter import IFormatter
+from woob.tools.application.repl import ReplApplication
 
 
 __all__ = ['AppParcel']

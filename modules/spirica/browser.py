@@ -22,15 +22,15 @@
 from requests import ConnectionError
 from requests.exceptions import ProxyError
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
-from woob.browser.exceptions import ServerError, LoggedOut
+from woob.browser import URL, LoginBrowser, need_login
+from woob.browser.exceptions import LoggedOut, ServerError
 from woob.browser.retry import retry_on_logout
-from woob.capabilities.base import NotAvailable
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Per, PerVersion
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
-from .pages import LoginPage, AccountsPage, DetailsPage, MaintenancePage
+from .pages import AccountsPage, DetailsPage, LoginPage, MaintenancePage
 
 
 class SpiricaBrowser(LoginBrowser):

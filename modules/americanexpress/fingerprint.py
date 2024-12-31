@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import json
-from itertools import cycle
-from base64 import b64encode, b64decode
+import re
 import time
+from base64 import b64decode, b64encode
+from itertools import cycle
 
 from woob.browser.pages import RawPage
 

@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.filters.standard import CleanText, Duration, Regexp, Env, Field, RawText, Eval, Base
 from woob.browser.filters.html import AbsoluteLink, Attr
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import Base, CleanText, Duration, Env, Eval, Field, RawText, Regexp
 from woob.browser.pages import HTMLPage, pagination
-from woob.capabilities.video import BaseVideo
 from woob.capabilities.image import Thumbnail
+from woob.capabilities.video import BaseVideo
 from woob.tools.json import json
 
 

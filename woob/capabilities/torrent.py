@@ -16,9 +16,9 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .base import Capability, BaseObject, Field, StringField, FloatField, \
-                  IntField, UserError
+from .base import BaseObject, Capability, Field, FloatField, IntField, StringField, UserError
 from .date import DateField
+
 
 __all__ = ['MagnetOnly', 'Torrent', 'CapTorrent']
 

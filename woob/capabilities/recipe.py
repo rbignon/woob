@@ -16,7 +16,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .base import Capability, BaseObject, StringField, IntField, Field
+from .base import BaseObject, Capability, Field, IntField, StringField
 from .image import BaseImage
 
 

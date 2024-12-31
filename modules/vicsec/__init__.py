@@ -20,4 +20,5 @@
 
 from .module import VicSecModule
 
+
 __all__ = ['VicSecModule']

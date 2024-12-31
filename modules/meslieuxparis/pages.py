@@ -17,15 +17,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import time, date
+from datetime import date, time
 
 from dateutil import rrule
-from woob.browser.elements import method, ItemElement, DictElement
-from woob.browser.filters.standard import CleanText, Regexp
+
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanText, Regexp
 from woob.browser.pages import JsonPage
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.contact import Place, OpeningRule, OpeningHours
+from woob.capabilities.contact import OpeningHours, OpeningRule, Place
 
 
 def parsetime(s):

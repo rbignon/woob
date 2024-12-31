@@ -27,6 +27,7 @@ from hashlib import sha256
 from os import urandom
 from typing import NamedTuple
 
+
 __all__ = [
     'PKCEChallengeType',
     'PKCEData',

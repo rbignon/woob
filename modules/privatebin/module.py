@@ -19,9 +19,9 @@
 
 # flake8: compatible
 
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value, ValueBool
 from woob.capabilities.paste import CapPaste
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBool
 
 from .browser import PrivatebinBrowser, PrivatePaste
 

@@ -19,10 +19,10 @@
 
 # flake8: compatible
 
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword
 from woob.capabilities.base import find_object
 from woob.capabilities.messages import CapMessages, Thread
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import ValueBackendPassword
 
 from .browser import DonnonsBrowser
 

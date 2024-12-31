@@ -22,11 +22,12 @@ from urllib.parse import urlencode
 
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import Format, Date, Env, Field
+from woob.browser.filters.standard import Date, Env, Field, Format
 from woob.browser.pages import JsonPage, LoggedPage, RawPage
-from woob.capabilities.bill import Document, Bill, DocumentTypes
+from woob.capabilities.bill import Bill, Document, DocumentTypes
 
 from .pages import ErrorPage
+
 
 patterns = {
     r'Relevé': DocumentTypes.STATEMENT,

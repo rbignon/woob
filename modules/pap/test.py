@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.capabilities.housing import Query, POSTS_TYPES, ADVERT_TYPES
-from woob.tools.test import BackendTest
+from woob.capabilities.housing import ADVERT_TYPES, POSTS_TYPES, Query
 from woob.tools.capabilities.housing.housing_test import HousingTest
+from woob.tools.test import BackendTest
 
 
 class PapTest(BackendTest, HousingTest):

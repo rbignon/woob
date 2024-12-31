@@ -18,24 +18,14 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.bill import Subscription
+from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
-    LoginPage,
-    HomePage,
-    EmployeesPage,
-    PayslipDownloadPage,
-    TaxCertificatesPage,
-    DeclarationSetupPage,
-    DeclarationListPage,
-    DeclarationDetailPage,
-    MonthlyReportDownloadPage,
-    RegistrationRecordDownloadPage,
-    CotisationsDownloadPage,
-    AjaxDetailSocialInfoPage,
-    ErrorMaintenancePage,
+    AjaxDetailSocialInfoPage, CotisationsDownloadPage, DeclarationDetailPage, DeclarationListPage, DeclarationSetupPage,
+    EmployeesPage, ErrorMaintenancePage, HomePage, LoginPage, MonthlyReportDownloadPage, PayslipDownloadPage,
+    RegistrationRecordDownloadPage, TaxCertificatesPage,
 )
 
 

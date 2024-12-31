@@ -21,15 +21,15 @@
 
 from decimal import Decimal
 
-from woob.browser.pages import LoggedPage, JsonPage, RawPage
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import CleanText, Date, Format, Regexp, Eval, Coalesce
-from woob.browser.elements import method, ItemElement, DictElement
-from woob.capabilities.base import NotAvailable
-from woob.capabilities.bank import Account
-from woob.capabilities.profile import Person
+from woob.browser.filters.standard import CleanText, Coalesce, Date, Eval, Format, Regexp
+from woob.browser.pages import JsonPage, LoggedPage, RawPage
 from woob.capabilities.address import PostalAddress
+from woob.capabilities.bank import Account
 from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.base import NotAvailable
+from woob.capabilities.profile import Person
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 

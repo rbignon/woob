@@ -22,6 +22,7 @@ from woob.tools.backend import Module
 
 from .browser import OnlineNonogramsBrowser
 
+
 __all__ = ['OnlineNonogramsModule']
 
 

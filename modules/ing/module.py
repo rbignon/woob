@@ -17,22 +17,20 @@
 
 # flake8: compatible
 
-from decimal import Decimal
-from datetime import timedelta
 import re
+from datetime import timedelta
+from decimal import Decimal
 
-from woob.capabilities.bank import CapBankTransferAddRecipient, Account, AccountNotFound, RecipientNotFound
+from woob.capabilities.bank import Account, AccountNotFound, CapBankTransferAddRecipient, RecipientNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.bill import (
-    CapDocument, Document, Subscription,
-    DocumentNotFound, DocumentTypes,
-)
+from woob.capabilities.base import empty, find_object, strict_find_object
+from woob.capabilities.bill import CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription
 from woob.capabilities.profile import CapProfile
-from woob.capabilities.base import find_object, strict_find_object, empty
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueDate
 
 from .api_browser import IngAPIBrowser
+
 
 __all__ = ['INGModule']
 

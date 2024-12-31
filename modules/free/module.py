@@ -17,14 +17,13 @@
 
 # flake8: compatible
 
+from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import (
-    DocumentTypes, CapDocument, Subscription, Document, DocumentNotFound,
-    DocumentCategory,
+    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
 )
 from woob.capabilities.profile import CapProfile
-from woob.capabilities.base import find_object, NotAvailable
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import ValueBackendPassword, Value, ValueTransient
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .browser import FreeBrowser
 

@@ -24,6 +24,7 @@ from woob_modules.creditmutuel.module import CreditMutuelModule
 
 from .browser import BECMBrowser
 
+
 __all__ = ['BECMModule']
 
 

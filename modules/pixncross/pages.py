@@ -23,9 +23,7 @@ from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.standard import CleanText, Env, Format, Map, Regexp
 from woob.browser.pages import FormNotFound, HTMLPage, pagination
-from woob.capabilities.picross import (
-    Picross, PicrossNotFound, PicrossSolvedStatus,
-)
+from woob.capabilities.picross import Picross, PicrossNotFound, PicrossSolvedStatus
 from woob.tools.misc import clean_text
 
 from .utils import naive_deobfuscate

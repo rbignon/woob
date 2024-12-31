@@ -18,20 +18,19 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from base64 import b64encode
-from hashlib import sha256
-from datetime import datetime
 import math
 import re
+from base64 import b64encode
+from datetime import datetime
+from hashlib import sha256
 
-from woob.exceptions import BrowserIncorrectPassword, BrowserHTTPNotFound, BrowserUnavailable
+from woob.browser.browsers import DomainBrowser, LoginBrowser
 from woob.browser.exceptions import ClientError
-from woob.browser.browsers import LoginBrowser, DomainBrowser
-from woob.browser.pages import HTMLPage
 from woob.browser.filters.standard import CleanText
-from woob.tools.date import local2utc
-
+from woob.browser.pages import HTMLPage
 from woob.capabilities.messages import CantSendMessage
+from woob.exceptions import BrowserHTTPNotFound, BrowserIncorrectPassword, BrowserUnavailable
+from woob.tools.date import local2utc
 
 
 __all__ = ['AuMBrowser']

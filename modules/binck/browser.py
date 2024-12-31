@@ -18,20 +18,20 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-from lxml import etree
 from io import StringIO
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.exceptions import BrowserIncorrectPassword, ActionNeeded, BrowserPasswordExpired
+from lxml import etree
+
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import HTTPNotFound, ServerError
 from woob.capabilities.bank import Account
+from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserPasswordExpired
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages import (
-    LoginPage, HomePage, AccountsPage, OldAccountsPage, HistoryPage,
-    InvestmentPage, InvestDetailPage, InvestmentListPage, MarketOrdersPage,
-    QuestionPage, ChangePassPage, LogonFlowPage, ViewPage, SwitchPage,
-    HandlePasswordsPage, PostponePasswords, PersonalInfoPage,
+    AccountsPage, ChangePassPage, HandlePasswordsPage, HistoryPage, HomePage, InvestDetailPage, InvestmentListPage,
+    InvestmentPage, LoginPage, LogonFlowPage, MarketOrdersPage, OldAccountsPage, PersonalInfoPage, PostponePasswords,
+    QuestionPage, SwitchPage, ViewPage,
 )
 
 

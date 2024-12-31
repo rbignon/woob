@@ -18,14 +18,15 @@
 
 # flake8: compatible
 
-from woob.capabilities.bank import CapBankTransferAddRecipient, Account
-from woob.capabilities.bill import CapDocument
-from woob.capabilities.profile import CapProfile
+from woob.capabilities.bank import Account, CapBankTransferAddRecipient
 from woob.capabilities.bank.pfm import CapBankMatching
+from woob.capabilities.bill import CapDocument
 from woob.capabilities.contact import CapContact
+from woob.capabilities.profile import CapProfile
 from woob_modules.creditmutuel.module import CreditMutuelModule
 
 from .browser import CICBrowser
+
 
 __all__ = ['CICModule']
 

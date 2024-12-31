@@ -18,4 +18,5 @@
 
 from .books import AppBooks
 
+
 __all__ = ['AppBooks']

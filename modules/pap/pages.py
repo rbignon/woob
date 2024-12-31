@@ -19,18 +19,17 @@
 
 from decimal import Decimal
 
-from woob.tools.date import parse_french_date
-from woob.browser.pages import HTMLPage, JsonPage, pagination
-from woob.browser.elements import ItemElement, ListElement, DictElement, method
-from woob.browser.filters.standard import (CleanText, CleanDecimal, Regexp,
-                                           Env, BrowserURL, Format, Currency)
-from woob.browser.filters.html import Attr, Link, XPath, CleanHTML
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.html import Attr, CleanHTML, Link, XPath
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import BrowserURL, CleanDecimal, CleanText, Currency, Env, Format, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, pagination
 from woob.capabilities.base import NotAvailable, NotLoaded
-from woob.capabilities.housing import (Housing, City, HousingPhoto,
-                                       UTILITIES, ENERGY_CLASS, POSTS_TYPES,
-                                       ADVERT_TYPES, HOUSE_TYPES)
+from woob.capabilities.housing import (
+    ADVERT_TYPES, ENERGY_CLASS, HOUSE_TYPES, POSTS_TYPES, UTILITIES, City, Housing, HousingPhoto,
+)
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
+from woob.tools.date import parse_french_date
 
 
 class CitiesPage(JsonPage):

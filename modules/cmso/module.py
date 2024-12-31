@@ -19,13 +19,13 @@
 
 # flake8: compatible
 
-from woob.capabilities.bank import CapBankTransfer, Account, AccountNotFound, RecipientNotFound
+from woob.capabilities.bank import Account, AccountNotFound, CapBankTransfer, RecipientNotFound
 from woob.capabilities.bank.wealth import CapBankWealth
-from woob.capabilities.contact import CapContact
 from woob.capabilities.base import strict_find_object
+from woob.capabilities.contact import CapContact
 from woob.capabilities.profile import CapProfile
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value, ValueTransient, ValueBackendPassword
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 
 from .par.browser import CmsoParBrowser
 from .pro.browser import CmsoProBrowser

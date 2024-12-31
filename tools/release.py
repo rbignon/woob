@@ -2,13 +2,14 @@
 
 import argparse
 import configparser
+import datetime
 import os
 import re
 import sys
-import datetime
 from subprocess import check_call, check_output
 
 from woob.tools.misc import to_unicode
+
 
 WORKTREE = 'release_tmp'
 

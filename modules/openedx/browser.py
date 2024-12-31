@@ -17,10 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, URL, need_login
-from woob.browser.pages import RawPage, JsonPage, HTMLPage
+from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.exceptions import ClientError
+from woob.browser.pages import HTMLPage, JsonPage, RawPage
 from woob.exceptions import BrowserIncorrectPassword
+
 
 class LoginPage(HTMLPage):
     def login(self, username, password):

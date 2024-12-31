@@ -17,16 +17,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date
 import re
+from datetime import date
 
-from woob.capabilities.bank import Recipient
-from woob.browser.pages import LoggedPage, JsonPage
-from woob.browser.elements import ItemElement, DictElement, method
-from woob.browser.filters.standard import (
-    CleanText, Currency, Format, CleanDecimal, Regexp,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Format, Regexp
+from woob.browser.pages import JsonPage, LoggedPage
+from woob.capabilities.bank import Recipient
 
 
 class ListAuthentPage(LoggedPage, JsonPage):

@@ -21,12 +21,12 @@
 
 import re
 
-from woob.browser.elements import method, DictElement, ItemElement
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import FromTimestamp, Env
+from woob.browser.filters.standard import Env, FromTimestamp
 from woob.browser.pages import JsonPage
-from woob.capabilities.image import BaseImage, Thumbnail
 from woob.capabilities.file import LICENSES
+from woob.capabilities.image import BaseImage, Thumbnail
 
 
 class shared_image_element(ItemElement):

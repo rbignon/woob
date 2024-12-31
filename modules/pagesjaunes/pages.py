@@ -17,16 +17,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import time
 import re
+from datetime import time
 
 from dateutil import rrule
-from woob.browser.elements import method, ListElement, ItemElement
-from woob.browser.filters.standard import CleanText, Regexp, Field, Env, BrowserURL
+
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import AbsoluteLink, HasElement, XPath
+from woob.browser.filters.standard import BrowserURL, CleanText, Env, Field, Regexp
 from woob.browser.pages import HTMLPage, pagination
-from woob.capabilities.base import NotLoaded, NotAvailable
-from woob.capabilities.contact import Place, OpeningRule
+from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.capabilities.contact import OpeningRule, Place
 
 
 class ResultsPage(HTMLPage):

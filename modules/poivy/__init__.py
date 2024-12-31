@@ -20,4 +20,5 @@
 
 from .module import PoivyModule
 
+
 __all__ = ['PoivyModule']

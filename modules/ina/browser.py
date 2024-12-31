@@ -18,8 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import PagesBrowser, URL
-from .pages import SearchPage, MediaPage, PlayerPage
+from woob.browser import URL, PagesBrowser
+
+from .pages import MediaPage, PlayerPage, SearchPage
+
 
 __all__ = ['InaBrowser']
 

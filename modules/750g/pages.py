@@ -18,15 +18,17 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.recipe import Recipe, Comment
+from datetime import date, datetime, time
+
+from dateutil.parser import parse as parse_date
+
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
+from woob.browser.filters.json import Dict, NotFound
+from woob.browser.filters.standard import BrowserURL, CleanDecimal, CleanText, Env, Eval, Regexp
+from woob.browser.pages import HTMLPage, JsonPage, pagination
 from woob.capabilities.base import NotAvailable
 from woob.capabilities.image import BaseImage, Thumbnail
-from woob.browser.pages import HTMLPage, JsonPage, pagination
-from woob.browser.elements import DictElement, ItemElement, ListElement, method
-from woob.browser.filters.standard import CleanText, Regexp, Env, CleanDecimal, Eval, BrowserURL
-from woob.browser.filters.json import Dict, NotFound
-from datetime import datetime, date, time
-from dateutil.parser import parse as parse_date
+from woob.capabilities.recipe import Comment, Recipe
 from woob.tools.json import json
 
 

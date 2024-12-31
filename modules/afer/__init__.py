@@ -19,4 +19,5 @@
 
 from .module import AferModule
 
+
 __all__ = ['AferModule']

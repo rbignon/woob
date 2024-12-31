@@ -24,13 +24,13 @@ from datetime import datetime
 
 from dateutil import tz
 
-from woob.browser.pages import JsonPage, LoggedPage
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanDecimal, Date, Eval
+from woob.browser.pages import JsonPage, LoggedPage
 from woob.capabilities.bank import Account, AccountType
 from woob.capabilities.bank.transfer import Recipient
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.browser.elements import method, DictElement, ItemElement
 
 
 class CustomJsonPage(JsonPage):

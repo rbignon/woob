@@ -19,4 +19,5 @@
 
 from .module import PuzzleMadnessModule
 
+
 __all__ = ['PuzzleMadnessModule']

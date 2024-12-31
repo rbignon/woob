@@ -22,8 +22,8 @@
 import re
 from urllib.parse import urljoin
 
-from woob.tools.backend import Module, BackendConfig
-from woob.capabilities.paste import CapPaste, BasePaste
+from woob.capabilities.paste import BasePaste, CapPaste
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.capabilities.paste import image_mime
 from woob.tools.value import Value
 

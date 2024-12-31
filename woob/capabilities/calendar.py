@@ -15,16 +15,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from .base import (
-    BaseObject, StringField, IntField, FloatField, Field, EnumField,
-    Enum,
-)
-from .collection import CapCollection, CollectionNotFound, Collection
-from .date import DateField
-from .address import compat_field, PostalAddress
+from datetime import datetime, time
 
-from datetime import time, datetime
 from woob.tools.date import parse_date
+
+from .address import PostalAddress, compat_field
+from .base import BaseObject, Enum, EnumField, Field, FloatField, IntField, StringField
+from .collection import CapCollection, Collection, CollectionNotFound
+from .date import DateField
+
 
 __all__ = ['BaseCalendarEvent', 'CapCalendarEvent']
 

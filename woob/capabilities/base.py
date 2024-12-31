@@ -17,13 +17,12 @@
 
 from __future__ import annotations
 
-from typing import Dict, Iterable, Type, Any, Tuple, TypeVar, overload
-
-from collections import OrderedDict, deque
-import warnings
 import re
+import warnings
+from collections import OrderedDict, deque
+from copy import copy, deepcopy
 from decimal import Decimal
-from copy import deepcopy, copy
+from typing import Any, Dict, Iterable, Tuple, Type, TypeVar, overload
 
 from woob.tools.misc import to_unicode
 

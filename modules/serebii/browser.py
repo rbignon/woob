@@ -18,14 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.capabilities.base import find_object
-from woob.capabilities.rpg import SkillType, SkillNotFound, CharacterNotFound, CharacterClassNotFound
+from woob.capabilities.rpg import CharacterClassNotFound, CharacterNotFound, SkillNotFound, SkillType
 
-from .pages import (
-    PkmnListPage, PkmnDetailsPage, Gen8AttackDexPage,
-    AbilitiesPage, XYTypePage, ItemsPage,
-)
+from .pages import AbilitiesPage, Gen8AttackDexPage, ItemsPage, PkmnDetailsPage, PkmnListPage, XYTypePage
 
 
 class SerebiiBrowser(PagesBrowser):

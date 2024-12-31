@@ -1,7 +1,7 @@
-import sys
 import ssl
-import pytest
+import sys
 
+import pytest
 import requests
 
 from woob.browser import Browser

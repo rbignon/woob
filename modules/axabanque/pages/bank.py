@@ -19,13 +19,11 @@
 
 import re
 
-from woob.browser.pages import HTMLPage, LoggedPage
 from woob.browser.elements import ItemElement, TableElement, method
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Currency, MapIn, Lower, Coalesce,
-)
-from woob.browser.filters.json import Dict
 from woob.browser.filters.html import Attr, TableCell
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce, Currency, Lower, MapIn
+from woob.browser.pages import HTMLPage, LoggedPage
 from woob.capabilities.bank import Account, AccountOwnership
 from woob.capabilities.bank.wealth import Investment
 from woob.capabilities.base import NotAvailable

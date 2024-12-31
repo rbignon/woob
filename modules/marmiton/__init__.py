@@ -19,4 +19,5 @@
 
 from .module import MarmitonModule
 
+
 __all__ = ['MarmitonModule']

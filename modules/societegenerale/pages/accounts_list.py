@@ -20,33 +20,29 @@ from __future__ import annotations
 import datetime
 import re
 from itertools import zip_longest
-from urllib.parse import urlsplit, urlunsplit, urlencode
+from urllib.parse import urlencode, urlsplit, urlunsplit
 
 import requests
 from schwifty import BIC, IBAN
 
-from woob.capabilities.base import NotAvailable, empty
+from woob.browser.elements import DictElement, ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import Attr, Link, TableCell
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Eval, Field, Format, Lower, Map, MapIn, Regexp,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, XMLPage, pagination
 from woob.capabilities.bank import Account, AccountOwnership, Loan, NoAccountsException, Recipient
 from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderDirection,
-    MarketOrderType, MarketOrderPayment,
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
 )
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.bill import Subscription
 from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Person, ProfileMissing
+from woob.exceptions import BrowserUnavailable, BrowserUserBanned
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.capabilities.bank.investments import create_french_liquidity, IsinCode, IsinType
-from woob.browser.elements import DictElement, ItemElement, TableElement, method, ListElement
-from woob.browser.filters.json import Dict
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Lower, Regexp, Currency, Eval, Field,
-    Format, Date, Env, Map, MapIn, Coalesce, Base,
-)
-from woob.browser.filters.html import Link, TableCell, Attr
-from woob.browser.pages import HTMLPage, XMLPage, JsonPage, LoggedPage, pagination
-from woob.exceptions import (
-    BrowserUnavailable, BrowserUserBanned,
-)
 
 
 class TemporaryBrowserUnavailable(BrowserUnavailable):

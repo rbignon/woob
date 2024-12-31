@@ -17,11 +17,12 @@
 
 import codecs
 
-from woob.capabilities.recipe import CapRecipe
 from woob.capabilities.base import empty
-from woob.tools.application.repl import ReplApplication, defaultcount
+from woob.capabilities.recipe import CapRecipe
 from woob.tools.application.formatters.iformatter import IFormatter, PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.capabilities.recipe import recipe_to_krecipes_xml
+
 
 __all__ = ['AppRecipes']
 

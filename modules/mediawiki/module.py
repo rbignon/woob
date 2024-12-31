@@ -19,12 +19,12 @@
 
 import os
 
-from woob.tools.backend import Module, BackendConfig
 from woob.capabilities.content import CapContent, Content
 from woob.capabilities.file import CapFile
-from woob.capabilities.gallery import CapGallery, BaseImage, BaseGallery
+from woob.capabilities.gallery import BaseGallery, BaseImage, CapGallery
 from woob.capabilities.image import CapImage, Thumbnail
-from woob.tools.value import ValueBackendPassword, Value
+from woob.tools.backend import BackendConfig, Module
+from woob.tools.value import Value, ValueBackendPassword
 
 from .browser import MediawikiBrowser
 

@@ -17,4 +17,5 @@
 
 from .debug import AppDebug
 
+
 __all__ = ['AppDebug']

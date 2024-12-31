@@ -17,4 +17,5 @@
 
 from .module import BNPModule
 
+
 __all__ = ['BNPModule']

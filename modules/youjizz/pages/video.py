@@ -20,9 +20,9 @@
 
 import re
 
-from woob.browser.pages import HTMLPage
 from woob.browser.elements import ItemElement, method
 from woob.browser.filters.standard import CleanText, Env
+from woob.browser.pages import HTMLPage
 from woob.capabilities.video import BaseVideo
 from woob.tools.misc import to_unicode
 

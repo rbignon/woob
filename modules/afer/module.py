@@ -22,6 +22,7 @@ from woob_modules.abeilleassurances.module import AbeilleAssurancesModule
 
 from .browser import AferBrowser
 
+
 __all__ = ['AferModule']
 
 

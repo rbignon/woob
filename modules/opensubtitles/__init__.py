@@ -19,4 +19,5 @@
 
 from .module import OpensubtitlesModule
 
+
 __all__ = ['OpensubtitlesModule']

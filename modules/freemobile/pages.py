@@ -24,18 +24,17 @@ import re
 
 from dateutil.relativedelta import relativedelta
 
+from woob.browser.elements import ItemElement, ListElement, SkipItem, method
 from woob.browser.filters.html import AbsoluteLink, Link
 from woob.browser.filters.json import Dict
-from woob.browser.pages import HTMLPage, LoggedPage, RawPage, JsonPage
+from woob.browser.filters.standard import (
+    CleanDecimal, CleanText, Currency, Date, Env, Field, Filter, Format, QueryValue,
+)
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, RawPage
 from woob.capabilities.address import PostalAddress
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.bill import Bill, Subscription
 from woob.capabilities.profile import Profile
-from woob.capabilities.bill import Subscription, Bill
-from woob.browser.elements import ListElement, ItemElement, method, SkipItem
-from woob.browser.filters.standard import (
-    CleanText, Field, Format, Date, CleanDecimal, Currency, Env, Filter,
-    QueryValue,
-)
 from woob.tools.date import parse_french_date
 
 

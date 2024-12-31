@@ -10,6 +10,7 @@ to a [Woob-CI](https://github.com/Phyks/weboob-ci) instance.
 
 import json
 import sys
+
 import xunitparser
 
 

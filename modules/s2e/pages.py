@@ -25,37 +25,24 @@ from urllib.parse import urljoin
 
 import requests
 
-from woob.browser.pages import (
-    HTMLPage, RawPage, LoggedPage, pagination,
-    FormNotFound, PartialHTMLPage, JsonPage,
-)
-from woob.browser.elements import ItemElement, TableElement, SkipItem, method
-from woob.browser.filters.standard import (
-    CleanText, Date, Regexp, Eval, CleanDecimal,
-    Env, Field, MapIn, Upper, Format, Title, QueryValue,
-    BrowserURL, Coalesce, Base,
-)
-from woob.browser.filters.html import (
-    Attr, TableCell, AbsoluteLink, XPath,
-    Link, HasElement,
-)
-from woob.browser.filters.json import Dict
-from woob.browser.filters.javascript import JSVar
+from woob.browser.elements import ItemElement, SkipItem, TableElement, method
 from woob.browser.exceptions import HTTPNotFound, LoggedOut
-from woob.capabilities.bank import (
-    Account, Transaction, AccountOwnerType,
+from woob.browser.filters.html import AbsoluteLink, Attr, HasElement, Link, TableCell, XPath
+from woob.browser.filters.javascript import JSVar
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import (
+    Base, BrowserURL, CleanDecimal, CleanText, Coalesce, Date, Env, Eval, Field, Format, MapIn, QueryValue, Regexp,
+    Title, Upper,
 )
+from woob.browser.pages import FormNotFound, HTMLPage, JsonPage, LoggedPage, PartialHTMLPage, RawPage, pagination
+from woob.capabilities.bank import Account, AccountOwnerType, Transaction
 from woob.capabilities.bank.wealth import Investment, Pocket
-from woob.capabilities.profile import Person
-from woob.capabilities.bill import Document, DocumentTypes
 from woob.capabilities.base import NotAvailable, empty
+from woob.capabilities.bill import Document, DocumentTypes
+from woob.capabilities.profile import Person
+from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserUnavailable
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType, is_isin_valid
 from woob.tools.captcha.virtkeyboard import MappedVirtKeyboard
-from woob.exceptions import (
-    BrowserUnavailable, ActionNeeded, ActionType, BrowserIncorrectPassword,
-)
-from woob.tools.capabilities.bank.investments import (
-    is_isin_valid, IsinCode, IsinType,
-)
 from woob.tools.json import json
 
 

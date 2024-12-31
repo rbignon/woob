@@ -17,17 +17,18 @@
 
 import os
 import re
-from shutil import which
 import subprocess
+from shutil import which
 
 import requests
 
-from woob.capabilities.radio import CapRadio, Radio
-from woob.capabilities.audio import CapAudio, BaseAudio, Playlist, Album
+from woob.capabilities.audio import Album, BaseAudio, CapAudio, Playlist
 from woob.capabilities.base import empty
-from woob.tools.application.repl import ReplApplication, defaultcount
-from woob.tools.application.media_player import InvalidMediaPlayer, MediaPlayer, MediaPlayerNotFound
+from woob.capabilities.radio import CapRadio, Radio
 from woob.tools.application.formatters.iformatter import PrettyFormatter
+from woob.tools.application.media_player import InvalidMediaPlayer, MediaPlayer, MediaPlayerNotFound
+from woob.tools.application.repl import ReplApplication, defaultcount
+
 
 __all__ = ['AppRadio']
 

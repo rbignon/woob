@@ -16,11 +16,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import LoginPage, SubscriptionsPage, DocumentsPage, OtpPage
+from .pages import DocumentsPage, LoginPage, OtpPage, SubscriptionsPage
 
 
 class CityscootBrowser(LoginBrowser):

@@ -18,8 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
+
 from woob.browser.pages import HTMLPage
-from woob.capabilities.parcel import Parcel, Event, ParcelNotFound
+from woob.capabilities.parcel import Event, Parcel, ParcelNotFound
 
 
 def update_status(p, status):

@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.tools.newsfeed import Newsfeed
-from woob.tools.backend import BackendConfig
-from woob.tools.value import Value
 from woob.capabilities.messages import CapMessages, Thread
+from woob.tools.backend import BackendConfig
+from woob.tools.newsfeed import Newsfeed
+from woob.tools.value import Value
 from woob_modules.genericnewspaper.module import GenericNewspaperModule
 
 from .browser import NewspaperFigaroBrowser

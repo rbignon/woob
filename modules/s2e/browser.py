@@ -22,26 +22,23 @@ import re
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import ReadTimeoutError
 
-from woob.browser import LoginBrowser, URL, need_login, StatesMixin
-from woob.browser.exceptions import ServerError, HTTPNotFound
-from woob.exceptions import (
-    BrowserIncorrectPassword, ActionNeeded, BrowserUnavailable,
-    NeedInteractiveFor2FA, SentOTPQuestion,
-)
+from woob.browser import URL, LoginBrowser, StatesMixin, need_login
+from woob.browser.exceptions import HTTPNotFound, ServerError
 from woob.capabilities.bank import Investment, NoAccountsException
-from woob.tools.value import Value
+from woob.exceptions import (
+    ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, NeedInteractiveFor2FA, SentOTPQuestion,
+)
 from woob.tools.capabilities.bank.investments import is_isin_valid
 from woob.tools.decorators import retry
+from woob.tools.value import Value
 
 from .pages import (
-    LoginPage, AccountsPage, AMFHSBCPage, AmundiPage, AMFSGPage, HistoryPage, ErrorPage,
-    LyxorfcpePage, EcofiPage, EcofiDummyPage, LandingPage, SwissLifePage, LoginErrorPage,
-    EtoileGestionPage, EtoileGestionCharacteristicsPage, EtoileGestionDetailsPage,
-    BNPInvestmentsPage, BNPInvestmentDetailsPage, LyxorFundsPage, EsaliaDetailsPage,
-    EsaliaPerformancePage, AmundiDetailsPage, AmundiPerformancePage, ProfilePage,
-    HsbcVideoPage, CprInvestmentPage, CprPerformancePage, CmCicInvestmentPage,
-    HsbcInvestmentPage, EServicePage, HsbcTokenPage, AccountsInfoPage, StockOptionsPage,
-    TemporarilyUnavailablePage, SetCookiePage, CreditdunordPeePage,
+    AccountsInfoPage, AccountsPage, AMFHSBCPage, AMFSGPage, AmundiDetailsPage, AmundiPage, AmundiPerformancePage,
+    BNPInvestmentDetailsPage, BNPInvestmentsPage, CmCicInvestmentPage, CprInvestmentPage, CprPerformancePage,
+    CreditdunordPeePage, EcofiDummyPage, EcofiPage, ErrorPage, EsaliaDetailsPage, EsaliaPerformancePage, EServicePage,
+    EtoileGestionCharacteristicsPage, EtoileGestionDetailsPage, EtoileGestionPage, HistoryPage, HsbcInvestmentPage,
+    HsbcTokenPage, HsbcVideoPage, LandingPage, LoginErrorPage, LoginPage, LyxorfcpePage, LyxorFundsPage, ProfilePage,
+    SetCookiePage, StockOptionsPage, SwissLifePage, TemporarilyUnavailablePage,
 )
 
 

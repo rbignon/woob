@@ -19,33 +19,32 @@
 # set PYTHONPATH=D:\Dropbox\Projets\boomoney
 # D:\Dropbox\Projets\boomoney\scripts\bin\woob.exe money -N
 
-import signal
-import sys
-
-from threading import Thread, Lock
-from io import StringIO
+import asyncio
+import datetime
 import os
 import re
-import subprocess
-import datetime
-from optparse import OptionGroup
-
-import asyncio
-from asyncio.subprocess import PIPE
-from asyncio import create_subprocess_exec
-
 import shutil
+import signal
+import subprocess
+import sys
+from asyncio import create_subprocess_exec
+from asyncio.subprocess import PIPE
+from io import StringIO
+from optparse import OptionGroup
+from threading import Lock, Thread
+
 
 try:
-    from colorama import init as init_colorama, Fore, Style
+    from colorama import Fore, Style
+    from colorama import init as init_colorama
 except ModuleNotFoundError:
     HAVE_COLORAMA = False
 else:
     HAVE_COLORAMA = True
 
-from woob.capabilities.bank import AccountType
 from woob.applications.bank import Appbank
 from woob.applications.bank.bank import OfxFormatter
+from woob.capabilities.bank import AccountType
 from woob.tools.application.formatters.simple import SimpleFormatter
 
 

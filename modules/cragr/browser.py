@@ -28,14 +28,13 @@ from requests.exceptions import ReadTimeout
 from woob.browser import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import BrowserHTTPNotFound, ClientError, HTTPNotFound, ServerError
 from woob.capabilities.bank import (
-    Account, AccountNotFound, AddRecipientBankError, AddRecipientStep, Loan,
-    RecipientInvalidIban, RecipientInvalidOTP, RecipientNotFound, Transaction,
+    Account, AccountNotFound, AddRecipientBankError, AddRecipientStep, Loan, RecipientInvalidIban, RecipientInvalidOTP,
+    RecipientNotFound, Transaction,
 )
 from woob.capabilities.bank.wealth import Per, PerProviderType
 from woob.capabilities.base import NotAvailable, empty, strict_find_object
 from woob.exceptions import (
-    ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserIncorrectPassword,
-    BrowserUnavailable,
+    ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable,
 )
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.investments import create_french_liquidity
@@ -47,20 +46,19 @@ from woob_modules.netfinca.browser import NetfincaBrowser as _NetfincaBrowser
 
 from .document_pages import SubscriptionsDocumentsPage, SubscriptionsTransitionPage
 from .pages import (
-    AccountDetailsPage, AccountsPage, BgpiAccountsPage, BgpiInvestmentsPage, BgpiRedirectionPage,
-    CardHistoryPage, CardsPage, ChangePasswordPage, ConsumerCreditPage, ContractsPage, DetailsLoanPage,
-    EntRedirectionPage, FirstConnectionPage, HistoryPage, IbanPage, JsonRedirectionPage, KeypadPage,
-    LifeInsuranceInvestmentsPage, LoanPage, LoanRedirectionPage, LoggedOutPage, LoginPage,
-    NetfincaHomePage, NetfincaLogoutToCragrPage, NetfincaRedirectionPage, PredicaInvestmentsPage,
-    PredicaRedirectionPage, ProfileDetailsPage, ProfilePage, ProProfileDetailsPage, RevolingErrorPage,
-    RevolvingPage, SecurityPage, SofincoRedirectionPage, SofincoRevolvingCreditPage, SofincoTokenPage,
-    SofincoUidPage, TaxResidencyFillingPage, TokenPage, UpdateProfilePage,
+    AccountDetailsPage, AccountsPage, BgpiAccountsPage, BgpiInvestmentsPage, BgpiRedirectionPage, CardHistoryPage,
+    CardsPage, ChangePasswordPage, ConsumerCreditPage, ContractsPage, DetailsLoanPage, EntRedirectionPage,
+    FirstConnectionPage, HistoryPage, IbanPage, JsonRedirectionPage, KeypadPage, LifeInsuranceInvestmentsPage, LoanPage,
+    LoanRedirectionPage, LoggedOutPage, LoginPage, NetfincaHomePage, NetfincaLogoutToCragrPage, NetfincaRedirectionPage,
+    PredicaInvestmentsPage, PredicaRedirectionPage, ProfileDetailsPage, ProfilePage, ProProfileDetailsPage,
+    RevolingErrorPage, RevolvingPage, SecurityPage, SofincoRedirectionPage, SofincoRevolvingCreditPage,
+    SofincoTokenPage, SofincoUidPage, TaxResidencyFillingPage, TokenPage, UpdateProfilePage,
 )
 from .transfer_pages import (
-    CheckSmsPage, EndNewRecipientPage, NewRecipientPage, NewRecipientSmsPage, RecipientsPage,
-    RecipientTokenPage, SendSmsPage, TransferPage, TransferTokenPage, ValidateNewRecipientPage,
-    ValidateSmsPage, VerifyNewRecipientPage,
+    CheckSmsPage, EndNewRecipientPage, NewRecipientPage, NewRecipientSmsPage, RecipientsPage, RecipientTokenPage,
+    SendSmsPage, TransferPage, TransferTokenPage, ValidateNewRecipientPage, ValidateSmsPage, VerifyNewRecipientPage,
 )
+
 
 __all__ = ['CreditAgricoleBrowser', 'NetfincaBrowser']
 

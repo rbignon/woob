@@ -20,8 +20,7 @@
 import pytest
 
 from woob.tools.url import (
-    get_url_fragment_param, get_url_fragment_params, get_url_param,
-    get_url_params, get_url_with_params,
+    get_url_fragment_param, get_url_fragment_params, get_url_param, get_url_params, get_url_with_params,
 )
 
 

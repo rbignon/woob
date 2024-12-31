@@ -19,11 +19,11 @@
 
 from base64 import b64decode, b64encode
 from datetime import datetime
-from zlib import decompress, MAX_WBITS, compressobj, DEFLATED
 from urllib.parse import urljoin
+from zlib import DEFLATED, MAX_WBITS, compressobj, decompress
 
-from woob.browser.pages import HTMLPage
 from woob.browser.filters.standard import CleanText
+from woob.browser.pages import HTMLPage
 from woob.tools.json import json
 
 from .crypto import decrypt, encrypt

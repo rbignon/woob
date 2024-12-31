@@ -19,4 +19,5 @@
 
 from .module import PodnapisiModule
 
+
 __all__ = ['PodnapisiModule']

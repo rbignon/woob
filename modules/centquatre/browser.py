@@ -20,10 +20,10 @@
 
 import itertools
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.exceptions import BrowserIncorrectPassword
 
-from .pages import CentQuatrePage, LoginPage, TicketsPage, TicketsDetailsPage
+from .pages import CentQuatrePage, LoginPage, TicketsDetailsPage, TicketsPage
 
 
 __all__ = ['CentQuatreBrowser']

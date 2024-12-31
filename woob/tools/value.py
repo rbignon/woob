@@ -17,8 +17,8 @@
 
 from __future__ import annotations
 
-import re
 import datetime
+import re
 from collections import OrderedDict
 from typing import TypeVar
 

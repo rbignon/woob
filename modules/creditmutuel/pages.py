@@ -17,52 +17,45 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-import re
-from hashlib import md5
-
 import calendar
-import requests
-from decimal import Decimal, InvalidOperation
-from dateutil.relativedelta import relativedelta
-from datetime import date, datetime
-from random import randint
-from collections import OrderedDict
+import re
 import time
+from collections import OrderedDict
+from datetime import date, datetime
+from decimal import Decimal, InvalidOperation
+from hashlib import md5
+from random import randint
 from urllib.parse import parse_qs, unquote, urljoin, urlparse
 
-from woob.browser.pages import (
-    HTMLPage, FormNotFound, LoggedPage, pagination,
-    XMLPage, PartialHTMLPage, Page, RawPage,
-)
-from woob.browser.elements import ListElement, ItemElement, SkipItem, method, TableElement
+import requests
+from dateutil.relativedelta import relativedelta
+
+from woob.browser.elements import ItemElement, ListElement, SkipItem, TableElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr, ColumnNotFound, HasElement, Link, TableCell
 from woob.browser.filters.standard import (
-    Filter, Env, CleanText, CleanDecimal, Field, MultiJoin, Regexp, Async,
-    AsyncLoad, Date, Format, Type, Currency, Base, Coalesce,
-    Map, MapIn, Lower, Slugify,
+    Async, AsyncLoad, Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Env, Field, Filter, Format, Lower, Map,
+    MapIn, MultiJoin, Regexp, Slugify, Type,
 )
-from woob.browser.filters.html import Link, Attr, TableCell, ColumnNotFound, AbsoluteLink, HasElement
-from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidation, BrowserIncorrectPassword,
-    BrowserUnavailable, ParseError,
-)
+from woob.browser.pages import FormNotFound, HTMLPage, LoggedPage, Page, PartialHTMLPage, RawPage, XMLPage, pagination
 from woob.capabilities import NotAvailable
-from woob.capabilities.base import empty, find_object
 from woob.capabilities.bank import (
-    Account, Recipient, TransferBankError, Transfer,
-    AddRecipientBankError, AddRecipientStep, Loan, Emitter,
-    AccountOwnerType,
+    Account, AccountOwnerType, AddRecipientBankError, AddRecipientStep, Emitter, Loan, Recipient, Transfer,
+    TransferBankError,
 )
 from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
-    MarketOrderPayment,
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
 )
+from woob.capabilities.base import empty, find_object
+from woob.capabilities.bill import Document, DocumentTypes
 from woob.capabilities.contact import Advisor
 from woob.capabilities.profile import Profile
+from woob.exceptions import (
+    ActionNeeded, ActionType, AppValidation, BrowserIncorrectPassword, BrowserUnavailable, ParseError,
+)
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.capabilities.bill import DocumentTypes, Document
-from woob.tools.date import parse_french_date, LinearDateGuesser
+from woob.tools.date import LinearDateGuesser, parse_french_date
 from woob.tools.value import Value
 
 

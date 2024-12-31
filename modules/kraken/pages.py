@@ -21,9 +21,9 @@ from datetime import datetime
 from decimal import Decimal
 
 from woob.browser.pages import JsonPage, LoggedPage
-from woob.capabilities.bank import Account, Transaction, Rate
-from woob.tools.capabilities.bank.transactions import sorted_transactions
+from woob.capabilities.bank import Account, Rate, Transaction
 from woob.capabilities.base import Currency
+from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 
 class ResponsePage(JsonPage):

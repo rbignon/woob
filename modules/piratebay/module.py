@@ -24,6 +24,7 @@ from woob.tools.value import Value
 
 from .browser import PiratebayBrowser
 
+
 __all__ = ['PiratebayModule']
 
 

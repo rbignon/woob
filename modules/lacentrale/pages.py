@@ -19,11 +19,12 @@
 
 
 from woob.browser.elements import ItemElement, ListElement, method
-from woob.browser.pages import HTMLPage, pagination
-from woob.browser.filters.standard import CleanText, Regexp, CleanDecimal, Format, Env, BrowserURL
-from woob.browser.filters.javascript import JSVar
 from woob.browser.filters.html import Link
+from woob.browser.filters.javascript import JSVar
+from woob.browser.filters.standard import BrowserURL, CleanDecimal, CleanText, Env, Format, Regexp
+from woob.browser.pages import HTMLPage, pagination
 from woob.capabilities.pricecomparison import Price, Shop
+
 from .product import LaCentraleProduct
 
 

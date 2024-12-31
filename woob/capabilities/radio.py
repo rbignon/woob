@@ -17,8 +17,9 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-from .base import Capability, BaseObject, Field, StringField
 from woob.tools.capabilities.streaminfo import StreamInfo
+
+from .base import BaseObject, Capability, Field, StringField
 
 
 __all__ = ['Radio', 'CapRadio']

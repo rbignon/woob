@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-from base64 import b64decode, b64encode
 import binascii
+from base64 import b64decode, b64encode
 
 from woob.capabilities.paste import CapPaste
 

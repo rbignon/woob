@@ -18,7 +18,9 @@
 
 import os
 from datetime import datetime
+
 from woob.tools.log import getLogger
+
 
 __all__ = ['LOGGER', 'replace', 'time_buffer']
 

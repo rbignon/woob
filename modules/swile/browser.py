@@ -20,17 +20,14 @@
 from datetime import date, timedelta
 from functools import wraps
 
-from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, DateTime, Currency,
-    Format,
-)
+from woob.browser.browsers import APIBrowser, OAuth2Mixin
+from woob.browser.exceptions import BrowserTooManyRequests, ClientError
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, DateTime, Format
+from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.base import empty
 from woob.capabilities.captcha import RecaptchaV3Question
-from woob.browser.filters.json import Dict
-from woob.browser.exceptions import ClientError, BrowserTooManyRequests
-from woob.exceptions import BrowserIncorrectPassword, WrongCaptchaResponse, BrowserUserBanned
-from woob.browser.browsers import APIBrowser, OAuth2Mixin
-from woob.capabilities.bank import Account, Transaction
+from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned, WrongCaptchaResponse
 
 
 def need_login(func):

@@ -19,8 +19,8 @@ import datetime
 
 from woob.capabilities.base import Currency, empty
 from woob.capabilities.travel import CapTravel, RoadmapFilters
-from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.application.formatters.iformatter import PrettyFormatter
+from woob.tools.application.repl import ReplApplication, defaultcount
 
 
 __all__ = ['AppTravel']

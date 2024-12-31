@@ -19,8 +19,8 @@
 
 from urllib.parse import quote_plus
 
-from woob.capabilities.subtitle import CapSubtitle, LanguageNotSupported
 from woob.applications.subtitles.subtitles import LANGUAGE_CONV
+from woob.capabilities.subtitle import CapSubtitle, LanguageNotSupported
 from woob.tools.backend import Module
 
 from .browser import PodnapisiBrowser

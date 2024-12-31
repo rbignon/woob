@@ -25,8 +25,7 @@ from woob.browser.url import URL
 from woob.exceptions import AuthMethodNotImplemented, BrowserIncorrectPassword
 
 from .pages import (
-    CheckingAccountsPage, HistoryDetailPage, HistoryPage, HistorySearchPage,
-    HomePage, LoginAjaxPage, LoginPage,
+    CheckingAccountsPage, HistoryDetailPage, HistoryPage, HistorySearchPage, HomePage, LoginAjaxPage, LoginPage,
 )
 
 

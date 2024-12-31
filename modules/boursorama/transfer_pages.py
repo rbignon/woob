@@ -21,17 +21,14 @@
 
 from urllib.parse import urljoin
 
-from woob.browser.pages import HTMLPage, LoggedPage, pagination
-from woob.browser.elements import ListElement, ItemElement, method
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Regexp, Date, Currency as CleanCurrency,
-    MapIn, Map, Field,
-)
+from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import AbsoluteLink
+from woob.browser.filters.standard import CleanDecimal, CleanText
+from woob.browser.filters.standard import Currency as CleanCurrency
+from woob.browser.filters.standard import Date, Field, Map, MapIn, Regexp
+from woob.browser.pages import HTMLPage, LoggedPage, pagination
+from woob.capabilities.bank import Transfer, TransferFrequency, TransferStatus
 from woob.capabilities.base import NotAvailable
-from woob.capabilities.bank import (
-    Transfer, TransferStatus, TransferFrequency,
-)
 from woob.tools.date import parse_french_date
 
 

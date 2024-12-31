@@ -18,10 +18,10 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 from urllib.parse import urljoin
 
-from woob.browser.elements import TableElement, ItemElement, method
+from woob.browser.elements import ItemElement, TableElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr, TableCell
+from woob.browser.filters.standard import CleanText, Field, Regexp, Type
 from woob.browser.pages import HTMLPage, pagination
-from woob.browser.filters.html import TableCell, AbsoluteLink, Attr
-from woob.browser.filters.standard import CleanText, Field, Type, Regexp
 from woob.capabilities.subtitle import Subtitle
 
 

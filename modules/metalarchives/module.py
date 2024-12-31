@@ -19,12 +19,12 @@
 
 
 
-from woob.capabilities.bands import CapBands, BandNotFound
-from woob.tools.backend import Module, BackendConfig
+from woob.capabilities.bands import BandNotFound, CapBands
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
 
-
 from .browser import MetalArchivesBrowser
+
 
 __all__ = ['MetalarchivesModule']
 

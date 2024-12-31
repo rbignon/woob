@@ -18,8 +18,8 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.test import BackendTest
 from woob.tools.html import html2text
+from woob.tools.test import BackendTest
 from woob.tools.value import Value
 
 

@@ -20,4 +20,5 @@
 
 from .module import CreditMutuelModule
 
+
 __all__ = ['CreditMutuelModule']

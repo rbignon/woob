@@ -23,6 +23,7 @@ from woob.tools.backend import Module
 
 from .browser import SueurDeMetalBrowser
 
+
 __all__ = ['SueurDeMetalModule']
 
 

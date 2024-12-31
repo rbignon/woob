@@ -20,9 +20,10 @@ from collections import OrderedDict
 
 from woob.capabilities.account import CapAccount
 from woob.exceptions import ModuleLoadError
-from woob.tools.application.repl import ReplApplication
 from woob.tools.application.console import ConsoleProgress
 from woob.tools.application.formatters.iformatter import IFormatter
+from woob.tools.application.repl import ReplApplication
+
 
 __all__ = ['AppConfig']
 

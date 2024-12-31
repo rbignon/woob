@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import sys
+import urllib
+from traceback import print_exc
+
 import xbmc
+import xbmcaddon
 import xbmcgui
 import xbmcplugin
-import xbmcaddon
-
-import urllib
-import sys
-
-from traceback import print_exc
 
 
 def get_addon():

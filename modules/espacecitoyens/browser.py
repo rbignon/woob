@@ -16,10 +16,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.bill import Subscription, Document
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
+from woob.capabilities.bill import Document, Subscription
 from woob.exceptions import BrowserIncorrectPassword
-from .pages import LoginPage, LoginErrorPage, HomePage, MyAccountPage, SubscriptionPage, BillingDetailPage
+
+from .pages import BillingDetailPage, HomePage, LoginErrorPage, LoginPage, MyAccountPage, SubscriptionPage
 
 
 class EspacecitoyensBrowser(LoginBrowser):

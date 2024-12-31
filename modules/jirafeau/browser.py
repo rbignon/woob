@@ -21,9 +21,10 @@
 import math
 import re
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
-from .pages import PageUpload, PageFile
+from .pages import PageFile, PageUpload
+
 
 class JirafeauBrowser(PagesBrowser):
     BASEURL = 'https://jirafeau.net/'

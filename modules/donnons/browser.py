@@ -19,12 +19,10 @@
 
 # flake8: compatible
 
-from woob.browser import LoginBrowser, URL, need_login
+from woob.browser import URL, LoginBrowser, need_login
 from woob.tools.capabilities.messages.threading import build_linear_thread
 
-from .pages import (
-    LoginPage, AdsThreadsPage, ThreadsPage, ThreadPage, ThreadNextPage,
-)
+from .pages import AdsThreadsPage, LoginPage, ThreadNextPage, ThreadPage, ThreadsPage
 
 
 class DonnonsBrowser(LoginBrowser):

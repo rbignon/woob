@@ -21,21 +21,19 @@ import re
 import time
 from datetime import date
 
-from woob.browser import LoginBrowser, URL, need_login, StatesMixin
+from woob.browser import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import HTTPNotFound
 from woob.capabilities.captcha import ImageCaptchaQuestion
 from woob.exceptions import (
-    BrowserIncorrectPassword, BrowserUnavailable,
-    WrongCaptchaResponse, NeedInteractiveFor2FA, BrowserPasswordExpired,
-    AppValidation, AppValidationExpired, AuthMethodNotImplemented, SentOTPQuestion,
+    AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserPasswordExpired,
+    BrowserUnavailable, NeedInteractiveFor2FA, SentOTPQuestion, WrongCaptchaResponse,
 )
 from woob.tools.value import Value
 
 from .pages import (
-    LoginPage, SubscriptionsPage, DocumentsPage, InvoiceFilesListPage, HomePage,
-    SecurityPage, LanguagePage, HistoryPage, PasswordExpired, ApprovalPage, PollingPage,
-    AccountSwitcherLoadingPage, AccountSwitcherPage, SwitchedAccountPage,
-    CountriesPage,
+    AccountSwitcherLoadingPage, AccountSwitcherPage, ApprovalPage, CountriesPage, DocumentsPage, HistoryPage, HomePage,
+    InvoiceFilesListPage, LanguagePage, LoginPage, PasswordExpired, PollingPage, SecurityPage, SubscriptionsPage,
+    SwitchedAccountPage,
 )
 
 

@@ -17,32 +17,31 @@
 
 # flake8: compatible
 
-from decimal import Decimal
-import re
 import json
+import re
+from decimal import Decimal
 from urllib.parse import urljoin
 
 import dateutil
 
-from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
-from woob.exceptions import ActionNeeded, ParseError
-from woob.capabilities import NotAvailable
-from woob.capabilities.base import empty
-from woob.capabilities.bank import Account, AccountOwnership, AccountOwnerType
-from woob.capabilities.bank.wealth import Investment
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.capabilities.profile import Person, Company
-from woob.capabilities.contact import Advisor
-from woob.browser.elements import DictElement, ListElement, ItemElement, method
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Currency as CleanCurrency, Format, Field, Map, Eval, Env,
-    Regexp, Date, Coalesce, MapIn, Lower, Upper,
-)
+from woob.browser.elements import DictElement, ItemElement, ListElement, method
 from woob.browser.filters.html import Attr, Link
 from woob.browser.filters.javascript import JSVar
 from woob.browser.filters.json import Dict
-from woob.tools.capabilities.bank.investments import is_isin_valid, IsinCode, IsinType
-from woob.exceptions import BrowserPasswordExpired
+from woob.browser.filters.standard import CleanDecimal, CleanText, Coalesce
+from woob.browser.filters.standard import Currency as CleanCurrency
+from woob.browser.filters.standard import Date, Env, Eval, Field, Format, Lower, Map, MapIn, Regexp, Upper
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
+from woob.capabilities import NotAvailable
+from woob.capabilities.bank import Account, AccountOwnership, AccountOwnerType
+from woob.capabilities.bank.wealth import Investment
+from woob.capabilities.base import empty
+from woob.capabilities.contact import Advisor
+from woob.capabilities.profile import Company, Person
+from woob.exceptions import ActionNeeded, BrowserPasswordExpired, ParseError
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType, is_isin_valid
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+
 
 ACCOUNT_OWNERSHIPS = {
     'TITULAIRE': AccountOwnership.OWNER,

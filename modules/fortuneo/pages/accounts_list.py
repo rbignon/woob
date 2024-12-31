@@ -22,30 +22,26 @@
 import re
 from datetime import date
 
-from unidecode import unidecode
 from dateutil.relativedelta import relativedelta
+from unidecode import unidecode
 
-from woob.browser.elements import method, ItemElement, TableElement, ListElement, DictElement
-from woob.browser.filters.html import Link, Attr, AbsoluteLink, TableCell
-from woob.browser.filters.standard import (
-    Coalesce, CleanText, CleanDecimal, Regexp,
-    Date, Currency, Base, Field, MapIn, Eval,
-)
+from woob.browser.elements import DictElement, ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr, Link, TableCell
 from woob.browser.filters.json import Dict
-from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import (
-    Account, AccountOwnership, AccountOwnerType,
+from woob.browser.filters.standard import (
+    Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Eval, Field, MapIn, Regexp,
 )
+from woob.browser.pages import CsvPage, FormNotFound, HTMLPage, JsonPage, LoggedPage
+from woob.capabilities.bank import Account, AccountOwnership, AccountOwnerType
 from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderDirection, MarketOrderType,
-    MarketOrderPayment,
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
 )
+from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.profile import Person
-from woob.browser.pages import HTMLPage, LoggedPage, FormNotFound, CsvPage, JsonPage
-from woob.tools.capabilities.bank.transactions import FrenchTransaction
-from woob.tools.capabilities.bank.investments import IsinCode, IsinType
-from woob.tools.date import parse_french_date
 from woob.exceptions import ActionNeeded
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType
+from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.date import parse_french_date
 
 
 class Transaction(FrenchTransaction):

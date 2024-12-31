@@ -17,17 +17,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this woob module. If not, see <https://www.gnu.org/licenses/>.
 
-from html import unescape
 import re
+from datetime import datetime
+from html import unescape
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.browser.profiles import Wget
 from woob.capabilities.base import NotAvailable, NotLoaded
 from woob.capabilities.cinema import Movie, Person
 
-from .pages import PersonPage, MovieCrewPage, BiographyPage,  ReleasePage
+from .pages import BiographyPage, MovieCrewPage, PersonPage, ReleasePage
 
-from datetime import datetime
 
 __all__ = ['ImdbBrowser']
 

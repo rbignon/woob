@@ -21,7 +21,7 @@
 
 import json
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 from woob.browser.cache import CacheMixin
 
 from .pages import HomePage, OtherPage

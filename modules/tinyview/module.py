@@ -20,9 +20,9 @@
 # flake8: compatible
 
 from woob.capabilities.messages import CapMessages, Message, Thread
-from woob.tools.backend import Module, BackendConfig
-from woob.tools.value import Value
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.capabilities.messages.threading import build_linear_thread
+from woob.tools.value import Value
 
 from .browser import TinyViewBrowser
 

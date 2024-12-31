@@ -18,6 +18,7 @@
 
 from .base import BaseObject, Capability, StringField
 
+
 __all__ = ['SongLyrics', 'CapLyrics']
 
 

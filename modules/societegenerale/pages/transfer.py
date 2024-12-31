@@ -19,29 +19,26 @@
 
 # flake8: compatible
 
+import re
 from datetime import datetime
 from html import unescape
-import re
 
-from woob.browser.pages import LoggedPage, JsonPage, FormNotFound
-from woob.browser.elements import method, ItemElement, DictElement
-from woob.capabilities.bank import (
-    Recipient, Transfer, TransferBankError, AddRecipientBankError, AddRecipientTimeout,
-    Emitter, EmitterNumberType,
-)
-from woob.tools.capabilities.bank.iban import is_iban_valid
-from woob.capabilities.base import NotAvailable
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Env, Date, Field, Format,
-)
+from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Link
 from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date, Env, Field, Format
+from woob.browser.pages import FormNotFound, JsonPage, LoggedPage
+from woob.capabilities.bank import (
+    AddRecipientBankError, AddRecipientTimeout, Emitter, EmitterNumberType, Recipient, Transfer, TransferBankError,
+)
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import ActionNeeded, BrowserUnavailable
+from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.json import json
-from woob.exceptions import BrowserUnavailable, ActionNeeded
 
+from .accounts_list import eval_decimal_amount
 from .base import BasePage
 from .login import MainPage
-from .accounts_list import eval_decimal_amount
 
 
 class TransferJson(LoggedPage, JsonPage):

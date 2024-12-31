@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.exceptions import BrowserUnavailable
-from woob.capabilities.dating import Optimization
 from woob.capabilities.contact import QueryError
+from woob.capabilities.dating import Optimization
+from woob.exceptions import BrowserUnavailable
 from woob.tools.log import getLogger
 
 

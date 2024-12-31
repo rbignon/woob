@@ -17,12 +17,12 @@
 
 # flake8: compatible
 
-from woob.browser.pages import LoggedPage, JsonPage, HTMLPage
+from woob.browser.elements import ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText, Format
-from woob.browser.elements import ItemElement, method
-from woob.capabilities.profile import Profile
+from woob.browser.pages import HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.base import NotAvailable
+from woob.capabilities.profile import Profile
 
 
 class ProfilePage(LoggedPage, JsonPage):

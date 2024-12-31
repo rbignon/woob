@@ -20,9 +20,8 @@ from datetime import datetime
 
 from dateutil import rrule
 
-from .base import Capability, BaseObject, Field, StringField, BytesField, IntField, \
-                  BoolField, UserError
 from .address import PostalAddress, compat_field
+from .base import BaseObject, BoolField, BytesField, Capability, Field, IntField, StringField, UserError
 
 
 __all__ = [

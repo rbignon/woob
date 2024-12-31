@@ -21,9 +21,9 @@
 import re
 
 from woob.browser.browsers import DomainBrowser
-from woob.browser.profiles import IPhone
-from woob.browser.pages import HTMLPage
 from woob.browser.filters.standard import CleanText
+from woob.browser.pages import HTMLPage
+from woob.browser.profiles import IPhone
 from woob.exceptions import BrowserIncorrectPassword, ParseError
 from woob.tools.json import json
 

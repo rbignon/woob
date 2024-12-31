@@ -19,9 +19,9 @@
 
 from urllib.parse import urlencode
 
-from woob.browser import PagesBrowser, URL
+from woob.browser import URL, PagesBrowser
 
-from .pages import SearchPage, AdvertPage
+from .pages import AdvertPage, SearchPage
 
 
 __all__ = ['PoleEmploiBrowser']

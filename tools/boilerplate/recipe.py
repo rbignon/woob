@@ -23,6 +23,7 @@ from mako.lookup import TemplateLookup
 
 from woob import __version__
 
+
 WOOB_MODULES = os.getenv(
     'WOOB_MODULES',
     os.path.realpath(os.path.join(os.path.dirname(__file__), '../../modules')))

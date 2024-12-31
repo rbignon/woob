@@ -19,7 +19,7 @@
 import re
 from ast import literal_eval
 
-from woob.browser.filters.standard import Filter, Regexp, RegexpError, FormatError, ItemNotFound
+from woob.browser.filters.standard import Filter, FormatError, ItemNotFound, Regexp, RegexpError
 
 
 __all__ = ['JSPayload', 'JSValue', 'JSVar']

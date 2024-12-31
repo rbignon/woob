@@ -18,10 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.tools.test import BackendTest, skip_without_config
 from woob.capabilities.base import NotLoaded
-
 from woob.capabilities.paste import PasteNotFound
+from woob.tools.test import BackendTest, skip_without_config
 
 
 class PastealaconTest(BackendTest):

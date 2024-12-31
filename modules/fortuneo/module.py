@@ -19,14 +19,13 @@
 
 # flake8: compatible
 
-from woob.capabilities.base import find_object, find_object_any_match
 from woob.capabilities.bank import (
-    CapBankTransferAddRecipient, AccountNotFound,
-    TransferInvalidLabel, Account, RecipientNotFound,
+    Account, AccountNotFound, CapBankTransferAddRecipient, RecipientNotFound, TransferInvalidLabel,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
+from woob.capabilities.base import find_object, find_object_any_match
 from woob.capabilities.profile import CapProfile
-from woob.tools.backend import Module, BackendConfig
+from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
 
 from .browser import FortuneoBrowser

@@ -18,9 +18,9 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.browser.browsers import APIBrowser
-from woob.capabilities.video import BaseVideo
-from woob.capabilities.image import Thumbnail
 from woob.capabilities.file import LICENSES
+from woob.capabilities.image import Thumbnail
+from woob.capabilities.video import BaseVideo
 
 
 class PeertubeBrowser(APIBrowser):

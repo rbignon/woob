@@ -18,16 +18,15 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import re
-
 from itertools import chain
 
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import AbsoluteLink, Attr, TableCell
+from woob.browser.filters.standard import CleanDecimal, CleanText, Field, Map, Regexp
 from woob.browser.pages import HTMLPage
-from woob.browser.elements import TableElement, ListElement, ItemElement, method
-from woob.browser.filters.html import TableCell, AbsoluteLink, Attr
-from woob.browser.filters.standard import CleanText, Regexp, Field, Map, CleanDecimal
 from woob.capabilities.base import NotLoaded, empty
 from woob.capabilities.rpg import (
-    Character, Skill, SkillType, SkillTarget, SkillCategory, CharacterClass, CollectableItem,
+    Character, CharacterClass, CollectableItem, Skill, SkillCategory, SkillTarget, SkillType,
 )
 
 

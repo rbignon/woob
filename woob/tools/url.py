@@ -24,6 +24,7 @@ from urllib.parse import parse_qsl, urlencode, urlparse
 
 from woob.tools.misc import NO_DEFAULT, NoDefaultType
 
+
 __all__ = [
     'get_url_fragment_param', 'get_url_fragment_params',
     'get_url_param', 'get_url_params', 'get_url_with_params',

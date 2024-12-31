@@ -20,4 +20,5 @@
 
 from .module import LyricsmodeModule
 
+
 __all__ = ['LyricsmodeModule']

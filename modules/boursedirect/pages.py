@@ -19,25 +19,20 @@
 
 import re
 
-from woob.capabilities.base import NotAvailable
-from woob.capabilities.bank import Account, Transaction
-from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderDirection,
-    MarketOrderType, MarketOrderPayment,
-)
-from woob.exceptions import BrowserHTTPNotFound
-from woob.browser.pages import HTMLPage, JsonPage, RawPage
-from woob.browser.filters.html import Attr, TableCell, ReplaceEntities
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import Attr, Link, ReplaceEntities, TableCell
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    Base, CleanDecimal, CleanText, Coalesce, Currency, Date,
-    Eval, Field, Format, Lower, MapIn, QueryValue, Regexp,
+    Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Eval, Field, Format, Lower, MapIn, QueryValue, Regexp,
 )
-from woob.browser.filters.html import Link
-from woob.browser.elements import method, ListElement, ItemElement, TableElement
-from woob.tools.capabilities.bank.investments import (
-    is_isin_valid, create_french_liquidity, IsinCode, IsinType,
+from woob.browser.pages import HTMLPage, JsonPage, RawPage
+from woob.capabilities.bank import Account, Transaction
+from woob.capabilities.bank.wealth import (
+    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
 )
+from woob.capabilities.base import NotAvailable
+from woob.exceptions import BrowserHTTPNotFound
+from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity, is_isin_valid
 
 
 class LoginPage(JsonPage):

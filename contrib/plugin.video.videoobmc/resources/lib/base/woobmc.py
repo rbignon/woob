@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
 import os
 import re
 import subprocess
+import sys
+
 import simplejson as json
+
 
 if hasattr(sys.modules["__main__"], "common_xbmc"):
     common_xbmc = sys.modules["__main__"].common_xbmc

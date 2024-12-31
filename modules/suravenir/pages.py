@@ -17,12 +17,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.browser.elements import ListElement, TableElement, ItemElement, method
-from woob.browser.filters.html import AbsoluteLink, TableCell, Link
-from woob.browser.filters.standard import CleanText, CleanDecimal, Date
+from woob.browser.elements import ItemElement, ListElement, TableElement, method
+from woob.browser.filters.html import AbsoluteLink, Link, TableCell
+from woob.browser.filters.standard import CleanDecimal, CleanText, Date
+from woob.browser.pages import HTMLPage, LoggedPage, pagination
 from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account, Investment, Transaction
-from woob.browser.pages import HTMLPage, LoggedPage, pagination
 
 
 class LoginPage(HTMLPage):

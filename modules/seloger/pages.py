@@ -30,7 +30,8 @@ from woob.capabilities.housing import ADVERT_TYPES, ENERGY_CLASS, POSTS_TYPES, U
 from woob.exceptions import ActionNeeded
 from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 from woob.tools.json import json
-from .constants import RET, TYPES, BASE_URL
+
+from .constants import BASE_URL, RET, TYPES
 
 
 class ErrorPage(HTMLPage):

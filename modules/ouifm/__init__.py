@@ -19,4 +19,5 @@
 
 from .module import OuiFMModule
 
+
 __all__ = ['OuiFMModule']

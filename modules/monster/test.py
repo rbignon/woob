@@ -18,6 +18,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 import itertools
+
 from woob.tools.test import BackendTest
 
 

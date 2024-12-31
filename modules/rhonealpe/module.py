@@ -23,6 +23,7 @@ from woob_modules.creditdunord.module import CreditDuNordModule
 
 from .browser import RhonealpeBrowser
 
+
 __all__ = ['RhonealpeModule']
 
 

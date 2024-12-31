@@ -18,12 +18,12 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-from woob.capabilities.video import CapVideo, BaseVideo
-from woob.capabilities.audio import CapAudio, BaseAudio, decode_id
-
+from woob.capabilities.audio import BaseAudio, CapAudio, decode_id
+from woob.capabilities.video import BaseVideo, CapVideo
 from woob.tools.backend import Module
 
 from .browser import InaBrowser
+
 
 __all__ = ['InaModule']
 

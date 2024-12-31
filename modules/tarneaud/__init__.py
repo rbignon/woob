@@ -19,4 +19,5 @@
 
 from .module import TarneaudModule
 
+
 __all__ = ['TarneaudModule']

@@ -20,4 +20,5 @@
 
 from .module import PaypalModule
 
+
 __all__ = ['PaypalModule']

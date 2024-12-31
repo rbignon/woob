@@ -27,6 +27,7 @@ from woob.tools.value import Value, ValueBackendPassword, ValueInt
 from .browser import PhpBB
 from .tools import id2topic, id2url, rssid, url2id
 
+
 __all__ = ['PhpBBModule']
 
 

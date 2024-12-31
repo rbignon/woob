@@ -17,28 +17,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-import xlrd
 import datetime
 
+import xlrd
 from dateutil.relativedelta import relativedelta
 from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.common.keys import Keys
 
-
+from woob.browser.elements import DictElement, ItemElement, method
+from woob.browser.filters.json import Dict
+from woob.browser.filters.standard import CleanDecimal, CleanText, Currency, Date, Field, Format
+from woob.browser.pages import LoggedPage, Page
+from woob.browser.selenium import AllCondition, AnyCondition, SeleniumPage, StablePageCondition, VisibleXPath
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.base import NotAvailable
-from woob.browser.pages import LoggedPage, Page
-from woob.browser.filters.standard import (
-    CleanText, CleanDecimal, Date, Format,
-    Field, Currency,
-)
-from woob.browser.filters.json import Dict
-from woob.browser.elements import ItemElement, DictElement, method
 from woob.tools.decorators import retry
-from woob.browser.selenium import (
-    SeleniumPage, VisibleXPath, AnyCondition, AllCondition,
-    StablePageCondition,
-)
 
 
 class LoginPage(SeleniumPage):
