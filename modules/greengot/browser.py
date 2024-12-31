@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2024      Pierre BOULC'H
 #
 # This file is part of a woob module.
@@ -35,6 +33,9 @@ from woob.exceptions import (
 from woob.capabilities.base import find_object
 
 
+__all__ = ['GreenGotBrowser']
+
+
 class GreenGotBrowser(TwoFactorBrowser, APIBrowser):
     BASEURL = 'https://api.retail.green-got.com'
 
@@ -53,9 +54,6 @@ class GreenGotBrowser(TwoFactorBrowser, APIBrowser):
             'emailcode': self.handle_otp,
         }
         self.access_token = None
-
-    def deinit(self):
-        return super().deinit()
 
     def do_request(self, payload, endpoint='/graphql', headers=None):
         if headers is None:
@@ -159,7 +157,7 @@ class GreenGotBrowser(TwoFactorBrowser, APIBrowser):
                     list_of_accounts = self.list_accounts_from_json(data)
                     result.extend(list_of_accounts)
                 except json.JSONDecodeError as e:
-                    self.logger.error("Cannot parse json in list account", e)
+                    self.logger.error("Cannot parse json in list account: %s", e)
         return result
 
     # Extract JSON from a string

@@ -1,6 +1,3 @@
-
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2024      Pierre BOULC'H
 #
 # This file is part of a woob module.
@@ -19,6 +16,7 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 # flake8: compatible
+
 from woob.capabilities.bank import (
     CapBank,
 )
@@ -27,12 +25,13 @@ from woob.tools.value import Value, ValueTransient
 
 from .browser import GreenGotBrowser
 
+
 __all__ = ['GreenGotModule']
 
 
 class GreenGotModule(Module, CapBank):
     NAME = 'greengot'
-    DESCRIPTION = 'Module bancaire pour Greengot'
+    DESCRIPTION = 'GreenGot'
     MAINTAINER = 'Pierre BOULC\'H'
     EMAIL = 'dev@boulch.fr'
     CONFIG = BackendConfig(

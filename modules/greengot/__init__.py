@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2024      Pierre BOULC'H
 #
 # This file is part of a woob module.
