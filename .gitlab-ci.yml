@@ -26,22 +26,31 @@ stages:
     - python -m pip install --upgrade -r requirements-dev.txt
     - python -m pip install -e .
 
-pre-commit strict:
+.pre-commit:
   <<: *except-default
   image: python:3.9
+  before_script:
+    - python -m pip install pre-commit
+
+pre-commit mypy:
   stage: lint
+  extends: .pre-commit
+  script:
+    - python -m pre_commit run --all-files --verbose --hook-stage manual mypy || true
+
+pre-commit strict:
+  stage: lint
+  extends: .pre-commit
   variables:
     # black: waiting for project to apply consistently
     # commitizen: waiting confirmation from project this is the expected standard
     # end-of-file-fixer: waiting for project to apply consistently
     # flake8: handled by custom scripts for now
     # isort: waiting for project to apply consistently
-    # mypy: far too early to enforce, lot of preparation work needed
+    # mypy: run in another stage
     # pyupgrade: waiting for a commit applying the changes
     # trailing-whitespace: waiting for project to apply consistently
     SKIP: black,commitizen,end-of-file-fixer,flake8,isort,mypy,pyupgrade,trailing-whitespace
-  before_script:
-    - python -m pip install pre-commit
   script:
     - python -m pre_commit run --all-files --verbose --hook-stage manual
 
