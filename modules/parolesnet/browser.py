@@ -69,4 +69,3 @@ class ParolesnetBrowser(PagesBrowser):
             return songlyrics
         except BrowserHTTPNotFound:
             return
-

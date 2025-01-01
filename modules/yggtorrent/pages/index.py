@@ -33,4 +33,3 @@ class HomePage(HTMLPage):
     @property
     def logged(self):
         return bool(self.doc.xpath('//a[@href="%suser/logout"]' % self.browser.BASEURL))
-

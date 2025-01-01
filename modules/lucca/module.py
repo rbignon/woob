@@ -97,4 +97,3 @@ class LuccaModule(Module, CapDocument, CapCalendarEvent):
         if Subscription in objs:
             return CapDocument.iter_resources(self, objs, split_path)
         return CapCalendarEvent.iter_resources(self, objs, split_path)
-

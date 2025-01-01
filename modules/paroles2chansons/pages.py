@@ -92,4 +92,3 @@ class LyricsPage(HTMLPage):
         obj_content = Regexp(CleanText(CleanHTML('//div[has-class("top-listing")]//div[has-class("text-center")]', default=NotAvailable), newlines=False), r'^(.*?)\s+Paroles2Chansons dispose d', flags=re.DOTALL)
         obj_title = Regexp(CleanText('//title', default=NotAvailable), r'Paroles (.*) - .*')
         obj_artist = Regexp(CleanText('//title', default=NotAvailable), r'Paroles .* - (.*) \(tra.*')
-

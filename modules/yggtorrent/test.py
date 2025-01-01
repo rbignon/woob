@@ -33,4 +33,3 @@ class YggtorrentTest(BackendTest):
             assert torrent.description is NotLoaded
             full_torrent = self.backend.get_torrent(torrent.id)
             assert full_torrent.description is not NotLoaded
-

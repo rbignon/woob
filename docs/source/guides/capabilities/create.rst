@@ -32,5 +32,3 @@ A field which isn't loaded can be set to :class:`woob.capabilities.base.NotLoade
 By default, in the object constructor, every fields should be set to
 :class:`NotLoaded <woob.capabilities.base.NotLoaded>`, and when the backend loads them, it replaces them with
 the new values.
-
-

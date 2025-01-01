@@ -52,11 +52,10 @@ pre-commit strict:
   variables:
     # black: waiting for project to apply consistently
     # commitizen: waiting confirmation from project this is the expected standard
-    # end-of-file-fixer: waiting for project to apply consistently
     # flake8: handled by custom scripts for now
     # mypy: run in another stage
     # pyupgrade: waiting for a commit applying the changes
-    SKIP: black,commitizen,end-of-file-fixer,flake8,mypy,pyupgrade
+    SKIP: black,commitizen,flake8,mypy,pyupgrade
   script:
     - python -m pre_commit run --all-files --verbose --hook-stage manual
 

@@ -79,4 +79,3 @@ class LyricsPage(HTMLPage):
                                 newlines=False)
         obj_artist = Regexp(CleanText('//title', default=NotAvailable), '(.*) - .* - .*')
         obj_title = Regexp(CleanText('//title', default=NotAvailable), '.* - (.*) - .*')
-

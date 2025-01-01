@@ -188,4 +188,3 @@ del convertPNG2ICO.py
 del settings.cmd
 
 pause
-

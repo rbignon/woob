@@ -65,4 +65,3 @@ class ParolesmaniaBrowser(PagesBrowser):
             return songlyrics
         except BrowserHTTPNotFound:
             return
-

@@ -38,4 +38,3 @@ class IpinfodbBrowser(PagesBrowser):
     def get_location(self, ipaddr):
         self.home.go(data={'ip': ipaddr})
         return self.page.get_location()
-

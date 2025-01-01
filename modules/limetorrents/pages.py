@@ -76,4 +76,3 @@ class TorrentPage(HTMLPage):
         obj_seeders = CleanDecimal('//div[@id="content"]/span[has-class("greenish")]', default=0)
         obj_leechers = CleanDecimal('//div[@id="content"]/span[has-class("reddish")]', default=0)
         obj_magnet = AbsoluteLink('//div[has-class("torrentinfo")]//div[has-class("dltorrent")]//a[text()="Magnet Link"]')
-

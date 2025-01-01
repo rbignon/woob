@@ -51,4 +51,3 @@ class LyricsmodeBrowser(PagesBrowser):
             return songlyrics
         except BrowserHTTPNotFound:
             return
-

@@ -63,4 +63,3 @@ class SuravenirModule(Module, CapBankWealth):
 
     def iter_investment(self, account):
         return self.browser.iter_investments(account)
-

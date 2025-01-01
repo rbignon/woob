@@ -91,4 +91,3 @@ class TorrentPage(HTMLPage):
 
         obj_filename = CleanText(Regexp(CleanText('//a[@id="telecharger"]/@href'),
                         '.*telechargement/(.*)'), default=NotAvailable)
-

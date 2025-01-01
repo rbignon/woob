@@ -72,4 +72,3 @@ class ParolesmusiqueBrowser(PagesBrowser):
             return songlyrics
         except BrowserHTTPNotFound:
             return
-

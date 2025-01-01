@@ -93,4 +93,3 @@ class SongLyricsPage(HTMLPage):
         obj_content = CleanText(CleanHTML('//div[has-class("song-text")]', default=NotAvailable), newlines=False)
         obj_title = CleanText('//span[@property="v:name"]', default=NotAvailable)
         obj_artist = CleanText('//span[@property="v:artist"]', default=NotAvailable)
-

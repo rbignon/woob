@@ -47,4 +47,3 @@ class MeslieuxparisBrowser(PagesBrowser):
         self.search.go(cid=ids, params={'keyword': pattern})
         for res in self.page.iter_contacts():
             yield res
-

@@ -97,6 +97,3 @@ what are expected returned objects, and what exceptions it may raise.
 
 When you are done writing your module, you should remove all the not implemented methods from your module, as the base
 capability code will anyway ``raise NotImplementedError()``.
-
-
-

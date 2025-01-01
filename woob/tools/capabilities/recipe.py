@@ -119,4 +119,3 @@ def recipe_to_krecipes_xml(recipe, author=None):
                 critstars.text = c.rate.split('/')[0]
 
     return header + ET.tostring(doc, encoding='UTF-8', pretty_print=True).decode('utf-8')
-

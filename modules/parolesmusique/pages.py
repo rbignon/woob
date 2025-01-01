@@ -91,4 +91,3 @@ class SonglyricsPage(HTMLPage):
         obj_artist = CleanText('//div[@id="main_ct"]//ul[has-class("semiopaquemenu")]//li[position()=2]', default=NotAvailable)
         obj_id = Regexp(CleanText('//div[@id="main_ct"]//ul[has-class("semiopaquemenu")]//li[position()=3]//a/@href', default=NotAvailable),
                  'paroles-(.*)')
-

@@ -8,4 +8,3 @@
             <setting label="30550" type="action" action="RunScript(plugin.video.videoobmc, plugin.video.videoobmc, action=update)"/>
 	</category>
 </settings>
-

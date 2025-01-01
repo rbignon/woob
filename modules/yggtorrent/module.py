@@ -64,4 +64,3 @@ class YggtorrentModule(Module, CapTorrent):
     OBJECTS = {
         Torrent: fill_torrent
     }
-

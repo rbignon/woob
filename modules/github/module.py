@@ -236,4 +236,3 @@ class GithubModule(Module, CapBugTracker):
     OBJECTS = {
         Issue: fill_issue,
     }
-

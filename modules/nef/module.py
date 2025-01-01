@@ -102,4 +102,3 @@ class NefModule(Module, CapBankWealth, CapBankTransfer):
         :raises: :class:`AccountNotFound`
         """
         return self.browser.iter_recipients_list()
-

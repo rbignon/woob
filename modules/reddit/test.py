@@ -106,4 +106,3 @@ class RedditTest(BackendTest):
                     expanded = True
 
         self.assertEqual(i, 9)
-

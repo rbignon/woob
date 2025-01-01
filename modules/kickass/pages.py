@@ -95,4 +95,3 @@ class TorrentPage(HTMLPage):
 
         obj_filename = CleanText(Regexp(CleanText('//div[has-class("downloadButtonGroup")]//a[starts-with(@href,"//")]/@href'),
                         '.*title=(.*)'), default=NotAvailable)
-
