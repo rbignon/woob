@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from typing import Iterable, List
 
 from woob.capabilities.bank import Account
