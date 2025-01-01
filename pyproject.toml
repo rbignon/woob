@@ -88,6 +88,7 @@ extend-ignore = [
     # But it's a nice visual separator sometimes.
     'E266',
     # flake8-future-import: postponed annotations
+    'FI18',
     'FI58',
     # do not perform function calls in argument defaults: breaks fastapi qs definitions
     'B008',
