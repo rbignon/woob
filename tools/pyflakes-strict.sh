@@ -19,6 +19,7 @@ echomsg() {
 }
 
 $PYTHON -c 'import flake8' || die "Please install flake8 (e.g. apt install flake8)"
+$PYTHON -c 'import flake8p' || die "Please install flake8-pyproject (e.g. pip3 install flake8-pyproject)"
 $PYTHON -c 'import bugbear' || die "Please install flake8-bugbear (e.g. pip3 install flake8-bugbear)"
 $PYTHON -c 'import asttokens' || die "Please install asttokens (e.g. apt install python3-asttokens)"
 

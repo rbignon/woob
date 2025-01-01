@@ -2,6 +2,7 @@ asttokens
 flake8-bugbear
 flake8-future-import==0.4.7
 flake8-gl-codeclimate
+flake8-pyproject==1.2.2
 flake8==5.0.4
 isort
 mock==4.0.3
