@@ -35,8 +35,16 @@ stages:
 pre-commit mypy:
   stage: lint
   extends: .pre-commit
+  cache:
+    paths:
+      - .mypy_cache/
   script:
+    - python -m pip install mypy-gitlab-code-quality
     - python -m pre_commit run --all-files --verbose --hook-stage manual mypy || true
+    - mypy-gitlab-code-quality < .mypy.out > gl-qa-report-mypy.json
+  artifacts:
+    reports:
+      codequality: gl-qa-report-mypy.json
 
 pre-commit strict:
   stage: lint

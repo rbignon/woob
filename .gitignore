@@ -1,4 +1,5 @@
 *.pyc
+.mypy.out
 build
 dist
 *.egg-info
