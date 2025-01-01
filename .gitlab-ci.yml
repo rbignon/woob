@@ -1,10 +1,12 @@
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PRE_COMMIT_HOME: ${CI_PROJECT_DIR}/.cache/pre-commit
   GIT_STRATEGY: clone
 
 cache:
   paths:
     - .cache/pip
+    - ${PRE_COMMIT_HOME}
 
 stages:
   - lint
@@ -23,6 +25,25 @@ stages:
     - python -m pip install --upgrade pip
     - python -m pip install --upgrade -r requirements-dev.txt
     - python -m pip install -e .
+
+pre-commit strict:
+  <<: *except-default
+  image: python:3.9
+  stage: lint
+  variables:
+    # black: waiting for project to apply consistently
+    # commitizen: waiting confirmation from project this is the expected standard
+    # end-of-file-fixer: waiting for project to apply consistently
+    # flake8: handled by custom scripts for now
+    # isort: waiting for project to apply consistently
+    # mypy: far too early to enforce, lot of preparation work needed
+    # pyupgrade: waiting for a commit applying the changes
+    # trailing-whitespace: waiting for project to apply consistently
+    SKIP: black,commitizen,end-of-file-fixer,flake8,isort,mypy,pyupgrade,trailing-whitespace
+  before_script:
+    - python -m pip install pre-commit
+  script:
+    - python -m pre_commit run --all-files --verbose --hook-stage manual
 
 lint:
   stage: lint
