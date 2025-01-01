@@ -29,12 +29,18 @@ lint:
   extends: .python_version
   script:
     - ./tools/pyflakes.sh
+  artifacts:
+    reports:
+      codequality: gl-qa-report-flake8.json
 
 lint strict:
   stage: lint
   extends: .python_version
   script:
     - ./tools/pyflakes-strict.sh
+  artifacts:
+    reports:
+      codequality: gl-qa-report-flake8-strict.json
 
 bandit:
   extends: .python_version

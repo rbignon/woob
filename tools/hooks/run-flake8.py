@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 from pathlib import Path
 import runpy
 import sys
@@ -34,6 +35,12 @@ ep.dist = d
 d._ep_map = {'flake8_import_order.styles': {'fake_module_all_separate': ep}}
 pkg_resources.working_set.add(d, 'fake_module_all_separate')
 
+opts = []
+if os.getenv("GITLAB_CI"):
+    opts = [
+        "--format=gl-codeclimate",
+        "--output-file=gl-qa-report-flake8-strict.json",
+    ]
 
 # E501: Line too long
 #   Disabled because it doesn't allow exceptions, for example URLs or log
@@ -46,6 +53,7 @@ result = main([
     '--ignore=E501,W503,E266',
     '--application-import-names=woob,weboob,woob_modules',
     '--import-order-style=fake_module_all_separate',
+    *opts,
     *map(str, mod['files_to_check'](args)),
 ])
 

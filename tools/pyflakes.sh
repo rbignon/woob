@@ -42,6 +42,9 @@ grep -nE "^from woob.capabilities.wealth.*" ${MODULE_FILES} && echo "Error: obso
 if ${PYTHON} -c "import flake8" 2>/dev/null; then
     FLAKER=flake8
     OPT="--select=E9,F"
+    if [ -n "${GITLAB_CI:=}" ]; then
+        OPT="${OPT} --format=gl-codeclimate --output-file=gl-qa-report-flake8.json"
+    fi
 elif ${PYTHON} -c "import pyflakes" 2>/dev/null; then
     FLAKER=pyflakes
     OPT=
