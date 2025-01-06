@@ -320,7 +320,7 @@ class HistoryJsonPage(SGPEJsonPage):
 
             obj_rdate = Env('rdate')
             obj_date = Env('date')
-            obj__coming = False
+            obj_coming = False
 
             # Label is split into l1, l2, l3, l4, l5.
             # l5 is needed for transfer label, for example:
