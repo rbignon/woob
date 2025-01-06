@@ -132,7 +132,7 @@ class OfxFormatter(IFormatter):
     def format_obj(self, obj, alias):
         # special case of coming operations with card ID
         result = '<STMTTRN>\n'
-        if hasattr(obj, '_coming') and obj._coming and hasattr(obj, 'obj._cardid') and not empty(obj._cardid):
+        if obj.coming and hasattr(obj, 'obj._cardid') and not empty(obj._cardid):
             result += '<TRNTYPE>%s\n' % obj._cardid
         elif obj.type in self.TYPES_TRANS:
             result += '<TRNTYPE>%s\n' % self.TYPES_TRANS[obj.type]
