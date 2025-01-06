@@ -149,8 +149,8 @@ class TransactionCSV(LoggedPage, CsvPage):
                     return original_amount
                 return NotAvailable
 
-            def obj_coming(self):
-                return Field('date')(self) >= date.today()
+            def obj_coming(self) -> bool:
+                return bool(Field('date')(self) >= date.today())
 
 
 class PasswordExpiredPage(LoggedPage, HTMLPage):
