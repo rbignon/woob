@@ -149,7 +149,7 @@ class TransactionCSV(LoggedPage, CsvPage):
                     return original_amount
                 return NotAvailable
 
-            def obj__coming(self):
+            def obj_coming(self):
                 return Field('date')(self) >= date.today()
 
 

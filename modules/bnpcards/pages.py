@@ -184,7 +184,7 @@ class TransactionsPage(LoggedPage, HTMLPage):
             obj_original_currency = FrenchTransaction.Currency(CleanText('./td[4]'))
             obj_commission = FrenchTransaction.Amount(CleanText('./td[6]'), replace_dots=False)
 
-            def obj__coming(self):
+            def obj_coming(self):
                 if Field('date')(self) >= date.today():
                     return True
 

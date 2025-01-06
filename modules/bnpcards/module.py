@@ -76,7 +76,7 @@ class BnpcartesentrepriseModule(Module, CapBank):
             get_transactions = self.browser.get_transactions
 
         for tr in get_transactions(account):
-            if not tr._coming:
+            if not tr.coming:
                 yield tr
 
     def iter_coming(self, account):
@@ -86,6 +86,6 @@ class BnpcartesentrepriseModule(Module, CapBank):
             get_transactions = self.browser.get_transactions
 
         for tr in get_transactions(account):
-            if not tr._coming:
+            if not tr.coming:
                 break
             yield tr
