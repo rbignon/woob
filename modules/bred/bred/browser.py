@@ -518,12 +518,12 @@ class BredBrowser(TwoFactorBrowser):
             today=today, start_date=start_date, end_date=end_date,
             max_length=max_length, max_transactions=max_transactions,
         ):
-            if coming == transaction._coming:
+            if coming == transaction.coming:
                 successive_hist_transaction_counter = 0
 
                 yield transaction
 
-            elif coming and not transaction._coming:
+            elif coming and not transaction.coming:
                 # coming transactions are at the top of history, but we make sure that there
                 # are no transactions in coming after few transactions that are not in coming.
                 # If we encounter more than 10 successive history transactions, we stop the iteration.

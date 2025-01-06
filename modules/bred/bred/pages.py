@@ -416,7 +416,7 @@ class SearchPage(LoggedPage, JsonPage):
                     return timestamp
                 return date.fromtimestamp(timestamp / 1000)
 
-            def obj__coming(self):
+            def obj_coming(self):
                 _coming = Dict('intraday')(self)
                 _coming |= (Field('date')(self) > self.env['today'])
                 return _coming
