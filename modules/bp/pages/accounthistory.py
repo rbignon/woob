@@ -168,7 +168,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
                 if op.amount > 0:
                     op.amount = - op.amount
 
-            op._coming = coming
+            op.coming = coming
 
             operations.append(op)
         return operations
@@ -186,7 +186,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
         )(self.doc)
         tr.type = tr.TYPE_CARD_SUMMARY
         tr.label = 'DEBIT CARTE BANCAIRE DIFFERE'
-        tr._coming = False
+        tr.coming = False
         return tr
 
     def has_transactions(self):
@@ -211,7 +211,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_amount = CleanDecimal(TableCell('amount'), replace_dots=True)
-            obj__coming = Env('coming', False)
+            obj_coming = Env('coming', False)
 
             def parse(self, el):
                 raw_label = CleanText(TableCell('label'))(self)
@@ -388,7 +388,7 @@ class LifeInsuranceHistory(LoggedPage, JsonPage):
             obj_label = CleanText(Dict('libelleOperation'))
             obj_amount = CleanDecimal.SI(Dict('montantOperation'))
             obj_date = Date(CleanText(Dict('dateOperation')))
-            obj__coming = False
+            obj_coming = False
 
 
 class LifeInsuranceHistoryInv(LoggedPage, MyHTMLPage):
@@ -421,7 +421,7 @@ class RetirementHistory(LoggedPage, MyHTMLPage):
             obj_label = CleanText(TableCell('label'))
             obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
             obj_amount = CleanDecimal(TableCell('amount'), replace_dots=True)
-            obj__coming = False
+            obj_coming = False
 
 
 class TemporaryPage(LoggedPage, MyHTMLPage):
@@ -479,6 +479,6 @@ class CardsJsonDetails(LoggedPage, JsonPage):
             tr.date = tr.rdate = Date(Dict('encoursCarte/listeOuverte/0/dateEncours'))(item)
             tr.type = tr.TYPE_CARD_SUMMARY
             tr.label = 'DEBIT CARTE BANCAIRE DIFFERE'
-            tr._coming = False
+            tr.coming = False
             return [tr]
         return []

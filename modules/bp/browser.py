@@ -822,7 +822,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             return []
 
         if account.type == Account.TYPE_CARD:
-            return (tr for tr in self.iter_card_transactions(account) if not tr._coming)
+            return (tr for tr in self.iter_card_transactions(account) if not tr.coming)
         else:
             self.location(account.url)
 
@@ -911,12 +911,12 @@ class BPBrowser(LoginBrowser, StatesMixin):
         # and the following navigation is broken
         if account.type == Account.TYPE_CHECKING and account.balance != 0:
             return self._get_coming_transactions(account)
-        elif account.type == Account.TYPE_CARD:
-            transactions = []
-            for tr in self.iter_card_transactions(account):
-                if tr._coming:
-                    transactions.append(tr)
-            return transactions
+        if account.type == Account.TYPE_CARD:
+            return [
+                tr
+                for tr in self.iter_card_transactions(account)
+                if tr.coming
+            ]
 
         return []
 
