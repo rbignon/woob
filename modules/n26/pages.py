@@ -90,10 +90,10 @@ class TransactionsPage(JsonPage):
             obj_original_amount = CleanDecimal.SI(Dict('originalAmount', default=None), default=NotAvailable)
 
             obj__category_id = Dict('category')
-            obj__is_coming = Dict('pending')
+            obj_coming = Dict('pending')
 
             def validate(self, obj):
-                return Env('coming')(self) == obj._is_coming and obj.amount != 0
+                return Env('coming')(self) == obj.coming and obj.amount != 0
 
 
 class TransactionsCategoryPage(JsonPage):
