@@ -457,7 +457,7 @@ class HistoryPage(JsonLoggedBasePage):
 
                 return self.obj.type
 
-            def obj__is_coming(self):
+            def obj_coming(self):
                 return Field('date')(self) > date.today()
 
     @method
@@ -472,7 +472,7 @@ class HistoryPage(JsonLoggedBasePage):
             obj_date = Date(CleanText(Dict('dateOp')), dayfirst=True)
             obj_type = FrenchTransaction.TYPE_BANK
 
-            def obj__is_coming(self):
+            def obj_coming(self):
                 return Field('date')(self) > date.today()
 
 

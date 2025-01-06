@@ -132,12 +132,12 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile, CapBankMatching):
 
     def iter_history(self, account):
         for tr in self.browser.iter_history(account):
-            if not tr._is_coming:
+            if not tr.coming:
                 yield tr
 
     def iter_coming(self, account):
         for tr in self.browser.iter_history(account, coming=True):
-            if tr._is_coming:
+            if tr.coming:
                 yield tr
 
     def iter_investment(self, account):
