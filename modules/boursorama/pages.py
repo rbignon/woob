@@ -100,7 +100,7 @@ class IbanPage(LoggedPage, HTMLPage):
         ):
             return NotAvailable
         return CleanText(
-            '//div[strong[contains(text(),"IBAN")]]/div[contains(@class, "definition")]', replace=[(' ', '')]
+            '//div[strong[contains(text(),"IBAN")]]/div[contains(@class, "definition")]/p[1]', replace=[(' ', '')]
         )(self.doc)
 
 
@@ -580,7 +580,7 @@ class LoanPage(LoggedPage, HTMLPage):
 
         obj_nb_payments_total = Eval(int, CleanDecimal.French('//p[contains(text(), "ances totales") or contains(text(), "Nombre total")]/span'))
         obj_subscription_date = Date(
-            CleanText('//p[contains(text(), "Date de départ du prêt")]/span'),
+            CleanText('//p[contains(text(), "Date de souscription")]/span'),
             parse_func=parse_french_date
         )
 
