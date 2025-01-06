@@ -1123,7 +1123,7 @@ class Transaction(FrenchTransaction):
         (re.compile(r'^(?P<text>(ECH|ÉCHÉANCE|Echéance|Échéance)).*'), FrenchTransaction.TYPE_LOAN_PAYMENT),
     ]
 
-    _is_coming = False
+    coming = False
 
 
 class CardsActivityPage(LoggedPage, HTMLPage):
@@ -1261,7 +1261,7 @@ class CardsActivityPage(LoggedPage, HTMLPage):
                 default=NotAvailable,
             )(self)
 
-            self.env['_is_coming'] = date.today() < self.env['date']
+            self.env['coming'] = date.today() < self.env['date']
             return super().parse(obj)
 
         def next_page(self):
@@ -1373,7 +1373,7 @@ class CardsActivityPage(LoggedPage, HTMLPage):
                     return CleanDecimal.French(Regexp(amount, r'(?:DONT FRAIS )([+-]?[\d\s,]+)'))(self)
                 return NotAvailable
 
-            obj__is_coming = Env('_is_coming')
+            obj_coming = Env('coming')
 
 
 class OperationsPage(LoggedPage, HTMLPage):
@@ -1593,7 +1593,7 @@ class CardsOpePage(OperationsPage):
             obj_type = Transaction.TYPE_DEFERRED_CARD
             obj_rdate = obj_bdate = Transaction.Date(TableCell('date'))
             obj_date = obj_vdate = Env('date')
-            obj__is_coming = Env('_is_coming')
+            obj_coming = Env('coming')
 
             obj__gross_amount = CleanDecimal(Env('amount'), replace_dots=True)
             obj_commission = CleanDecimal(Format('-%s', Env('commission')), replace_dots=True, default=NotAvailable)
@@ -1624,7 +1624,7 @@ class CardsOpePage(OperationsPage):
                     except AttributeError:
                         d = Regexp(CleanText('//p[has-class("restriction")]'), r'pour le mois de ((?:\w+\s+){2})', flags=re.UNICODE)(self)
                     self.env['date'] = (parse_french_date('%s %s' % ('1', d)) + relativedelta(day=31)).date()
-                self.env['_is_coming'] = date.today() < self.env['date']
+                self.env['coming'] = date.today() < self.env['date']
                 amount = CleanText(TableCell('amount'))(self).split('dont frais')
                 self.env['amount'] = amount[0]
                 self.env['commission'] = amount[1] if len(amount) > 1 else NotAvailable
@@ -1639,7 +1639,7 @@ class ComingPage(OperationsPage, LoggedPage):
         col_date = "Date de l'annonce"
 
         class item(Transaction.TransactionElement):
-            obj__is_coming = True
+            obj_coming = True
 
 
 class CardPage(OperationsPage, LoggedPage):
@@ -1817,7 +1817,7 @@ class CardPage2(CardPage, HTMLPage, XMLPage):
                     if Field('original_amount')(self) and m:
                         return m.group(2)
 
-                def obj__is_coming(self):
+                def obj_coming(self):
                     if Field('date')(self) > datetime.date(datetime.today()):
                         return True
                     return False
@@ -1907,7 +1907,7 @@ class CardPage2(CardPage, HTMLPage, XMLPage):
                     if "Regroupement" in CleanText('./td')(self):
                         return Link('./td/span/a')(self)
 
-                def obj__is_coming(self):
+                def obj_coming(self):
                     if Field('date')(self) > datetime.date(datetime.today()):
                         return True
                     return False
@@ -2068,7 +2068,7 @@ class LIAccountsPage(LoggedPage, HTMLPage):
             obj_amount  = CleanDecimal('./td[4]', replace_dots=True, default=Decimal('0'))
             obj_original_currency = FrenchTransaction.Currency('./td[4]')
             obj_type = Transaction.TYPE_BANK
-            obj__is_coming = False
+            obj_coming = False
 
             def obj_commission(self):
                 if 'arbitrage' in Lower(Field('raw'))(self):

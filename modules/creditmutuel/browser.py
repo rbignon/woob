@@ -1006,7 +1006,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             tr.amount = -sum(t.amount for t in group)
             tr.date = tr.rdate = tr.vdate = group[0].date
             tr.type = FrenchTransaction.TYPE_CARD_SUMMARY
-            tr._is_coming = False
+            tr.coming = False
             tr._is_manualsum = True
             trs.append(tr)
         return trs
@@ -1080,7 +1080,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 today = datetime.today()
                 for tr in self.page.iter_history():
                     if tr.date > today:
-                        tr._is_coming = True
+                        tr.coming = True
                     yield tr
                 return
             else:
@@ -1144,7 +1144,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                         if tr._regroup:
                             self.location(tr._regroup)
                             for tr2 in self.page.get_tr_merged():
-                                tr2._is_coming = tr._is_coming
+                                tr2.coming = tr.coming
                                 tr2.date = self.tr_date
                                 transactions.append(tr2)
                         else:
@@ -1156,7 +1156,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                         tr.amount = amount_summary
                         tr.date = tr.rdate = tr.vdate = self.tr_date
                         tr.type = FrenchTransaction.TYPE_CARD_SUMMARY
-                        tr._is_coming = False
+                        tr.coming = False
                         tr._is_manualsum = True
                         transactions.append(tr)
 
@@ -1194,7 +1194,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                     if hasattr(tr, '_deferred_date') and (not deferred_date or tr._deferred_date < deferred_date):
                         deferred_date = tr._deferred_date
                     if tr.date >= datetime.now():
-                        tr._is_coming = True
+                        tr.coming = True
                     elif hasattr(account, '_card_pages'):
                         card_trs.append(tr)
                     transactions.append(tr)

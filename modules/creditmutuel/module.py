@@ -91,14 +91,14 @@ class CreditMutuelModule(
 
     def iter_coming(self, account):
         for tr in self.browser.get_history(account):
-            if tr._is_coming:
+            if tr.coming:
                 yield tr
             else:
                 break
 
     def iter_history(self, account):
         for tr in self.browser.get_history(account):
-            if not tr._is_coming:
+            if not tr.coming:
                 yield tr
 
     def iter_investment(self, account):
