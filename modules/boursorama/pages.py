@@ -798,7 +798,7 @@ class HistoryPage(LoggedPage, HTMLPage):
             )
 
             def obj_id(self):
-                if Field('_is_coming')(self):
+                if Field('coming')(self):
                     # discard transaction.id because some "authorization" transactions are strictly
                     # identical (same label, ID, date and amount, nothing to discriminate).
                     # The website, once these transactions get a booked status, gives them a proper distinct ID.
@@ -852,7 +852,7 @@ class HistoryPage(LoggedPage, HTMLPage):
                 # Sometimes the user enters an invalid date 16/17/19 for example
                 return Date(dayfirst=True, default=NotAvailable).filter('%s-%s-%s' % (s[:2], s[2:4], s[4:]))
 
-            def obj__is_coming(self):
+            def obj_coming(self):
                 return (
                     Env('coming', default=False)(self)
                     or len(self.xpath('.//span[@title="Mouvement à débit différé"]'))
@@ -941,7 +941,7 @@ class CardSumDetailPage(LoggedPage, HTMLPage):
             obj_amount = CleanDecimal.French('.//div[has-class("list-operation-item__amount")]')
             obj_raw = Transaction.Raw(CleanText('.//div[has-class("list-operation-item__label-name")]'))
             obj_id = Attr('.', 'data-id')
-            obj__is_coming = False
+            obj_coming = False
             obj_category = CleanText('.//span[has-class("list-operation-item__category")]')
 
             def obj_type(self):
@@ -966,7 +966,7 @@ class CardHistoryPage(LoggedPage, CsvPage):
                 return self.page.browser.get_debit_date(Field('bdate')(self))
 
             obj__account_label = Dict('accountLabel')
-            obj__is_coming = False
+            obj_coming = False
 
             def obj_amount(self):
                 if Field('type')(self) == Transaction.TYPE_CARD_SUMMARY:
@@ -1170,7 +1170,7 @@ class MarketPage(LoggedPage, HTMLPage):
 
             obj_raw = Transaction.Raw(CleanText(TableCell('label')))
             obj_amount = CleanDecimal(TableCell('amount'), replace_dots=True, default=NotAvailable)
-            obj__is_coming = False
+            obj_coming = False
 
             def parse(self, el):
                 if el.xpath('./td[2]/a'):
@@ -1257,7 +1257,7 @@ class MarketPage(LoggedPage, HTMLPage):
                 t.label = label
                 t.amount = CleanDecimal(replace_dots=True).filter(amounts[0])
                 amounts.pop(0)
-                t._is_coming = False
+                t.coming = False
                 t.investments = []
                 sum_amount = 0
                 for tr in table.xpath('./tbody/tr'):
@@ -1362,7 +1362,7 @@ class SavingMarketPage(MarketPage):
                 ),
                 CleanDecimal.French(TableCell('amount'), default=NotAvailable),
             )
-            obj__is_coming = False
+            obj_coming = False
 
             def obj_date(self):
                 return parse_french_date(CleanText(TableCell('date'))(self))
@@ -1412,7 +1412,7 @@ class PerPage(MarketPage):
             obj_raw = Regexp(CleanText(TableCell('label')), r'(^.*?)Fermer Détail')
             obj_amount = CleanDecimal.French(TableCell('amount'))
             obj_date = Date(CleanText(TableCell('date'), default=NotAvailable), dayfirst=True)
-            obj__is_coming = False
+            obj_coming = False
 
     @method
     class iter_investment(Myiter_investment):

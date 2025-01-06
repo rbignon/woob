@@ -810,15 +810,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         for transaction in self.page.iter_history():
             # Useful for authorization transactions that can be found up to a few weeks
-            if coming and transaction._is_coming and transaction.date > (date.today() - relativedelta(days=30)):
+            if coming and transaction.coming and transaction.date > (date.today() - relativedelta(days=30)):
                 yield transaction
-            if coming and not transaction._is_coming:
+            if coming and not transaction.coming:
                 # coming transaction come first.
                 # to avoid iterating on all transactions when
                 # we look for comings only, we should stop
                 # at the first history transaction.
                 break
-            elif not coming and not transaction._is_coming:
+            elif not coming and not transaction.coming:
                 yield transaction
 
     def get_html_past_card_transactions(self, account):
@@ -845,7 +845,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     def get_card_transaction(self, coming, tr):
         if coming and tr.date > date.today():
-            tr._is_coming = True
+            tr.coming = True
             return True
         elif not coming and tr.date <= date.today():
             return True
