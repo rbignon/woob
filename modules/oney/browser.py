@@ -19,6 +19,7 @@
 
 import re
 import time
+from collections.abc import Iterable
 from datetime import datetime
 from urllib.parse import quote, urlparse
 
@@ -26,7 +27,7 @@ from requests.exceptions import ConnectionError, HTTPError, ReadTimeout, TooMany
 
 from woob.browser import URL, need_login
 from woob.browser.mfa import TwoFactorBrowser
-from woob.capabilities.bank import Account
+from woob.capabilities.bank import Account, Transaction
 from woob.exceptions import (
     ActionNeeded,
     AppValidation,
@@ -624,7 +625,9 @@ class OneyBrowser(TwoFactorBrowser):
 
         return accounts
 
-    def iter_transactions(self, account, is_coming=False):
+    def iter_transactions(
+        self, account: Account, *, with_history: bool = True, with_coming: bool = True
+    ) -> Iterable[Transaction]:
         self.try_go_site(account._site)
         if account._site == "oney":
             if account._num:
@@ -632,21 +635,21 @@ class OneyBrowser(TwoFactorBrowser):
             post = {"task": "Synthese", "process": "SyntheseCompte", "taskid": "Releve"}
             self.operations.go(data=post)
 
-            return self.page.iter_transactions(seen=set())
+            return self.page.iter_transactions(seen=set(), with_history=with_history, with_coming=with_coming)
 
         elif account._site == "other" and account.type == Account.TYPE_CARD:
             try:
                 retry(ReadTimeout, delay=5)(self.other_operations.go)(params=self.other_space_params_headers())
             except (ConnectionError, ReadTimeout):
                 raise BrowserUnavailable()
-            return self.page.iter_history(guid=account._guid, is_coming=is_coming)
+            return self.page.iter_transactions(guid=account._guid, with_history=with_history, with_coming=with_coming)
         else:
             return []
 
     @need_login
     def iter_history(self, account):
-        return self.iter_transactions(account=account)
+        return self.iter_transactions(account=account, with_coming=False)
 
     @need_login
     def iter_coming(self, account):
-        return self.iter_transactions(account=account, is_coming=True)
+        return self.iter_transactions(account=account, with_history=False)

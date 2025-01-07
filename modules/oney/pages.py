@@ -45,6 +45,17 @@ from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.capabilities.bank.transactions import FrenchTransaction, sorted_transactions
 
 
+def _condition_coming(obj: "Transaction") -> bool:
+    """Filter transactions according to their coming status.
+
+    Use in :meth:`AbstractElement.condition` to filter by coming status according to
+    :meth:`Transaction.iter_transactions` arguments.
+    """
+    return (Env("with_history")(obj) and Field("coming")(obj) is False) or (
+        Env("with_coming")(obj) and Field("coming")(obj)
+    )
+
+
 class Transaction(FrenchTransaction):
     PATTERNS = [
         (re.compile(r"^(?P<text>Retrait .*?) - traité le \d+/\d+$"), FrenchTransaction.TYPE_WITHDRAWAL),
@@ -251,7 +262,7 @@ class OperationsPage(OneySpacePage, HTMLPage):
 
             def condition(self):
                 self.env["amount"] = Transaction.Amount("./td[3]")(self.el)
-                return self.env["amount"] > 0
+                return self.env["amount"] > 0 and _condition_coming(self)
 
         class debit(ItemElement):
             klass = Transaction
@@ -265,7 +276,7 @@ class OperationsPage(OneySpacePage, HTMLPage):
 
             def condition(self):
                 self.env["amount"] = Transaction.Amount("", "./td[4]")(self.el)
-                return self.env["amount"] < 0
+                return self.env["amount"] < 0 and _condition_coming(self)
 
         def next_page(self):
             options = self.page.doc.xpath(
@@ -404,7 +415,7 @@ class AccountsPage(OtherSpaceJsonPage):
 
 class OtherOperationsPage(OtherSpaceJsonPage):
     @method
-    class iter_history(DictElement):
+    class iter_transactions(DictElement):
         item_xpath = "content/body/transactions"
 
         class item(ItemElement):
@@ -416,16 +427,7 @@ class OtherOperationsPage(OtherSpaceJsonPage):
                 # The date is to separate between coming and transaction.
                 trans_guid = Dict("contractGuid")(self)
                 acc_guid = Env("guid")(self)
-                guid_ok = trans_guid == acc_guid
-
-                today = date.today()
-                trans_date = Field("date")(self)
-                if Env("is_coming")(self):
-                    date_ok = trans_date >= today
-                else:
-                    date_ok = trans_date < today
-
-                return date_ok and guid_ok
+                return trans_guid == acc_guid and _condition_coming(self)
 
             obj_date = Date(Dict("transaction/date"))
             obj_raw = Transaction.Raw(Dict("transaction/displayableLabel"))
