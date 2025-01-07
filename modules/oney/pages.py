@@ -246,6 +246,9 @@ class OperationsPage(OneySpacePage, HTMLPage):
             obj_raw = Transaction.Raw("./td[2]")
             obj_amount = Env("amount")
 
+            def obj_coming(self):
+                return Field("date")(self) >= date.today()
+
             def condition(self):
                 self.env["amount"] = Transaction.Amount("./td[3]")(self.el)
                 return self.env["amount"] > 0
@@ -256,6 +259,9 @@ class OperationsPage(OneySpacePage, HTMLPage):
             obj_date = Transaction.Date("./td[1]")
             obj_raw = Transaction.Raw("./td[2]")
             obj_amount = Env("amount")
+
+            def obj_coming(self):
+                return Field("date")(self) >= date.today()
 
             def condition(self):
                 self.env["amount"] = Transaction.Amount("", "./td[4]")(self.el)
@@ -436,3 +442,6 @@ class OtherOperationsPage(OtherSpaceJsonPage):
                 if empty(amount):
                     return NotAvailable
                 return -amount
+
+            def obj_coming(self):
+                return Field("date")(self) >= date.today()
