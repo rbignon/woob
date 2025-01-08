@@ -234,7 +234,7 @@ class AccountItem(AccountOwnershipItemElement):
     obj_label = CleanText(Dict('label'))
     obj_balance = CleanDecimal.SI(Dict('amount/value'))
     obj_currency = Currency(Dict('amount/currency'))
-    obj_iban = CleanText(Dict('iban', default=''), default=NotAvailable)
+    obj_iban = Dict('iban', default=NotAvailable)
     obj_type = Map(Field('label'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
     obj__user_role = Map(Lower(Dict('user_role', default='')), ACCOUNT_OWNERSHIP, NotAvailable)
     obj__internal_id = CleanText(Dict('internal_id'))
@@ -473,7 +473,7 @@ class LoanDetailsPage(LoggedPage, JsonPage):
         obj_rate = CleanDecimal.SI(Dict('eir'))
         obj_next_payment_amount = CleanDecimal.SI(Dict('next_due_date_amount'))
         obj_next_payment_date = Date(CleanText(Dict('next_due_date', default='')), default=NotAvailable)
-        obj__iban = CleanText(Dict('iban', default=''), default=NotAvailable)
+        obj__iban = Dict('iban', default=NotAvailable)
 
         def obj_maturity_date(self):
             maturity_date = Date(CleanText(Dict('final_due_date', default='')), default=NotAvailable)(self)
