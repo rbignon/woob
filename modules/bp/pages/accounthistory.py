@@ -134,7 +134,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 
         if deferred:
             # look for the card number, debit date, and if it is already debited
-            txt = CleanText('//div[@class="infosynthese"]')(self.doc)
+            txt = CleanText('//p[@class="infosynthese"]')(self.doc)
             m = re.search(r"sur votre carte n°\*\*\*\*\*\*(\d+)\*", txt)
             card_no = "inconnu"
             if m:
@@ -188,7 +188,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
 
     def generate_card_summary(self):
         tr = Transaction()
-        text = CleanText('//div[@class="infosynthese"]')
+        text = CleanText('//p[@class="infosynthese"]')
         # card account: positive summary amount
         tr.amount = abs(
             CleanDecimal.French(Regexp(text, r"[Montant imputé le|cours prélevé au] \d+/\d+/\d+ : (.*) €"))(self.doc)
@@ -235,7 +235,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
             obj_raw = Transaction.Raw(Env("raw_label"))
 
     def get_single_card(self, parent_id):
-        (div,) = self.doc.xpath('//div[@class="infosynthese"]')
+        (div,) = self.doc.xpath('//p[@class="infosynthese"]')
 
         ret = Account()
         ret.type = Account.TYPE_CARD
