@@ -412,6 +412,17 @@ class TransactionItemElement(ItemElement):
 
     def parse(self, el: ItemElement) -> None:
         """Prepare multiple Transaction fields at once."""
+        # Break down libMotifVirementOuPrelevement in useful metadata
+        # Example value: <TEXT> REF: <REF> MANDAT <SEPA_MANDATE_ID>
+        motif_raw = Dict('libMotifVirementOuPrelevement')(self)
+        if motif_raw:
+            self.env.update(
+                re.search(
+                    r"(?P<motive>.+)(REF: (?P<refnum>((?! MANDAT).)+))(?: MANDAT (?P<sepa_mandate>.+))?",
+                    motif_raw
+                ).groupdict()
+            )
+
         # When a loan payment transaction is found, extract data into a Loan object
         # for browser and a separate loan_payment Env entry for the benefit of
         # OFX export.
@@ -472,6 +483,8 @@ class TransactionItemElement(ItemElement):
 
     obj__loan = Env("loan", NotAvailable)  # Loan account. Used in browser.
     obj__loan_payment = Env("loan_payment", NotAvailable)  # Loan payment information.
+    obj__memo = Env("motive", NotAvailable)
+    obj__refnum = Env("refnum", NotAvailable)
 
 
 class HistoryPage(JsonBasePage):
