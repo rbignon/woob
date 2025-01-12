@@ -150,6 +150,8 @@ class TwoFAPage(MyHTMLPage):
     def get_auth_method(self):
 
         status_message = CleanText('//div[contains(@id, "DSP2_A2G_connexion_haut")]')(self.doc)
+        if not status_message:
+            status_message = CleanText('//div[contains(@id, "DSP2_Certicode_connexion_haut")]')(self.doc)
 
         if re.search(
                 'avez pas de solution d’authentification forte'
