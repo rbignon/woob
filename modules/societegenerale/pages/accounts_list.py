@@ -22,7 +22,7 @@ from urllib.parse import urlsplit, urlunsplit, urlencode
 import requests
 
 from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import Account, AccountOwnership, NoAccountsException
+from woob.capabilities.bank import Account, AccountOwnership, Loan, NoAccountsException
 from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
     MarketOrderType, MarketOrderPayment,
@@ -410,6 +410,48 @@ class Transaction(FrenchTransaction):
 class TransactionItemElement(ItemElement):
     klass = Transaction
 
+    def parse(self, el: ItemElement) -> None:
+        """Prepare multiple Transaction fields at once."""
+        # When a loan payment transaction is found, extract data into a Loan object
+        # for browser and a separate loan_payment Env entry for the benefit of
+        # OFX export.
+        m = re.search(
+            r"^ECHEANCE PRET N°(?P<loan_id>\d+)"
+            r"(?: CAPITAL AMORTI : (?P<principal_amount>(?:\d+ )*\d+(?:,\d+)?))?"
+            r"(?: INTERETS : (?P<interest_amount>(?:\d+ )*\d+(?:,\d+)?))?"
+            r"(?: ASSURANCE : (?P<insurance_amount>(?:\d+ )*\d+(?:,\d+)?))?"
+            r"(?: CAPITAL RESTANT : (?P<principal_balance>(?:\d+ )*\d+(?:,\d+)?))?"
+            r"(?: DATE PREVISIONNELLE DE FIN : (?P<maturity_date>.*))?",
+            Dict("libOpe")(el),
+        )
+        if m:
+            loan_data = m.groupdict()
+            loan_data.update(
+                {
+                    (
+                        key,
+                        CleanDecimal.French().filter(m[key])
+                        if m[key]
+                        else NotAvailable,
+                    )
+                    for key in (
+                        "principal_amount",
+                        "interest_amount",
+                        "insurance_amount",
+                        "principal_balance",
+                    )
+                }
+            )
+            loan = Loan(m["loan_id"])
+            loan.last_payment_amount = Field("amount")(self)
+            loan.last_payment_date = Field("date")(self)
+            loan.insurance_amount = loan_data["insurance_amount"]
+            loan.maturity_date = m["maturity_date"]
+
+            self.env["loan"] = loan
+            self.env["loan_payment"] = loan_data
+        return
+
     def obj_id(self):
         # real transaction id is like:
         # <transaction_id>/DDMMYYYY/<internal_id>
@@ -428,29 +470,8 @@ class TransactionItemElement(ItemElement):
     obj_amount = CleanDecimal(Dict('mnt'))
     obj_raw = Transaction.Raw(Dict('libOpe'))
 
-    def obj__insurance_amount(self):
-        insurance_amount = Regexp(
-            pattern=r'^ECHEANCE PRET N°\d+(?: CAPITAL AMORTI : .*)?(?: INTERETS : .*)? ASSURANCE : ((\d|\,)+)' +
-                    r'(?: CAPITAL RESTANT : .*)?(?: DATE PREVISIONNELLE DE FIN : .*)?',
-            default=NotAvailable
-        ).filter(Field('raw')(self))
-
-        if insurance_amount:
-            return CleanDecimal.French().filter(insurance_amount)
-
-        return NotAvailable
-
-    def obj__insurance_loan_id(self):
-        insurance_loan_id = Regexp(
-            pattern=r'^ECHEANCE PRET N°(\d+)( ?:CAPITAL AMORTI : .*)?(?: INTERETS : .*)?( ?:ASSURANCE : .*)?' +
-                    r'(?: CAPITAL RESTANT : .*)?(?: DATE PREVISIONNELLE DE FIN : .*)?',
-            default=NotAvailable
-        ).filter(Field('raw')(self))
-
-        if insurance_loan_id:
-            return CleanText().filter(insurance_loan_id)
-
-        return NotAvailable
+    obj__loan = Env("loan", NotAvailable)  # Loan account. Used in browser.
+    obj__loan_payment = Env("loan_payment", NotAvailable)  # Loan payment information.
 
 
 class HistoryPage(JsonBasePage):

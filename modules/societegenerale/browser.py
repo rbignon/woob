@@ -543,15 +543,18 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             return
 
         for transaction in self.iter_history(loan.parent):
-            insurance_amount = transaction._insurance_amount
-            insurance_loan_id = transaction._insurance_loan_id
-            if insurance_loan_id and insurance_loan_id in loan.id:
-                if insurance_amount:
-                    loan.insurance_amount = insurance_amount
+            if tr_loan := transaction._loan:
+                if tr_loan.id in loan.id:  # Why not equal though?
+                    for field, value in loan.iter_fields():
+                        if not value:
+                            new_value = getattr(tr_loan, field, None)
+                            if new_value:
+                                setattr(loan, field, new_value)
                     break
-                else:
+
+                if not loan.insurance_amount:
                     self.logger.info(
-                        'A transaction related to the loan %s was found, but has no amount. transaction raw: %s',
+                        'A transaction related to the loan %s was found, but has no insurance amount. transaction raw: %s',
                         loan,
                         transaction.raw,
                     )
