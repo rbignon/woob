@@ -593,6 +593,9 @@ class TransactionItemElement(ItemElement):
         if Dict('dateChargement')(self):
             return Eval(lambda t: datetime.date.fromtimestamp(int(t)/1000),Dict('dateChargement'))(self)
 
+    def obj_coming(self) -> bool:
+        return not Dict("enabled")(self)
+
     def obj__memo(self):
         memo = Env("motive", NotAvailable)(self)
         sepa_mandate = Env("sepa_mandate", NotAvailable)(self)
@@ -721,6 +724,7 @@ class HistoryPage(JsonBasePage):
             obj_date = Date(Dict('dateEcheance'))
             obj_amount = CleanDecimal(Dict('montant/value'))
             obj_raw = obj_label = Dict('libelleAAfficher')
+            obj_coming = True
 
             class obj__card_coming(DictElement):
                 item_xpath = 'operationsFilles'
@@ -731,6 +735,7 @@ class HistoryPage(JsonBasePage):
                     obj_amount = CleanDecimal(Dict('montant/value'))
                     obj_date = obj_vdate = obj_bdate = Date(Dict('dateEcheance'))
                     obj_raw = Transaction.Raw(Dict('libelleOrigine'))
+                    obj_coming = True
 
 
 class CardHistoryPage(LoggedPage, HTMLPage):
@@ -743,6 +748,7 @@ class CardHistoryPage(LoggedPage, HTMLPage):
 
             obj_label = CleanText('.//td[@headers="Libelle"]/span')
             obj_type = Transaction.TYPE_DEFERRED_CARD
+            obj_coming = True
 
             def obj_date(self):
                 if not 'TOTAL DES FACTURES' in Field('label')(self):
