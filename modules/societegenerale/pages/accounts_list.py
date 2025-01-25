@@ -412,13 +412,16 @@ class TransactionItemElement(ItemElement):
 
     def parse(self, el: ItemElement) -> None:
         """Prepare multiple Transaction fields at once."""
-        # Break down libMotifVirementOuPrelevement in useful metadata
-        # Example value: <TEXT> REF: <REF> MANDAT <SEPA_MANDATE_ID>
+        # Break down libMotifVirementOuPrelevement in useful metadata.
+        # Some instances of incoming transfers do not hold REF even through it is present in libOpeComplet.
+        # Example value:
+        #   - SEPA payment: <TEXT> REF: <REF> MANDAT <SEPA_MANDATE_ID>
+        #   - Incoming transfer: <TEXT>
         motif_raw = Dict('libMotifVirementOuPrelevement')(self)
         if motif_raw:
             self.env.update(
                 re.search(
-                    r"(?P<motive>.+)(REF: (?P<refnum>((?! MANDAT).)+))(?: MANDAT (?P<sepa_mandate>.+))?",
+                    r"(?P<motive>.+)(?:(REF: (?P<refnum>((?! MANDAT).)+))(?: MANDAT (?P<sepa_mandate>.+))?)?",
                     motif_raw
                 ).groupdict()
             )
