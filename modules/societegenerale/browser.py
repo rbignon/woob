@@ -586,6 +586,8 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         if not account._internal_id:
             raise BrowserUnavailable()
 
+        transfer_recipients = list(self.iter_recipients(account))
+
         # get history for account on old website
         # request to get json is not available yet, old request to get html response
         if any((
@@ -610,7 +612,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             elif history_url:
                 self.location(self.absurl(history_url))
 
-            for tr in self.page.iter_history():
+            for tr in self.page.iter_history(transfer_recipients=transfer_recipients):
                 yield tr
             return
 
@@ -637,7 +639,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
 
         next_page = True
         while next_page:
-            for transaction in self.page.iter_history():
+            for transaction in self.page.iter_history(transfer_recipients=transfer_recipients):
                 yield transaction
             next_page = self.next_page_retry('history')
 

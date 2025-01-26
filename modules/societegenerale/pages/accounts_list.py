@@ -15,14 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import datetime
 import re
 from urllib.parse import urlsplit, urlunsplit, urlencode
 
 import requests
+from schwifty import BIC, IBAN
 
 from woob.capabilities.base import NotAvailable, empty
-from woob.capabilities.bank import Account, AccountOwnership, Loan, NoAccountsException
+from woob.capabilities.bank import Account, AccountOwnership, Loan, NoAccountsException, Recipient
 from woob.capabilities.bank.wealth import (
     Investment, MarketOrder, MarketOrderDirection,
     MarketOrderType, MarketOrderPayment,
@@ -407,6 +410,93 @@ class Transaction(FrenchTransaction):
                ]
 
 
+_OUTGOING_TRANSFER_TOKENS = ('POUR', 'REF', 'MOTIF', 'CHEZ')
+_OUTGOING_TRANSFER_SPLIT_RE = f"({'|'.join(_OUTGOING_TRANSFER_TOKENS)}): (?!(?:{'|'.join(_OUTGOING_TRANSFER_TOKENS)}):)"
+
+
+def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBAN]:
+    """Extract transfer transaction data.
+
+    Examples:
+        # Transfer to another account of the same bank
+        >>> parse_outgoing_transfer_transaction(
+        ...     "000001 VIR EUROPEEN EMIS LOGITEL "
+        ...     "POUR: M JOHN DOE 24 12 SG 01234 CPT 00012345679 "
+        ...     "REF: 1234567890123 "
+        ...     "MOTIF: Epargne "
+        ...     "CHEZ: SOGEFRPP"
+        ... )  # doctest: +NORMALIZE_WHITESPACE
+        {'POUR': 'M JOHN DOE',
+         'REF': '1234567890123',
+         'MOTIF': 'Epargne',
+         'CHEZ': 'SOGEFRPP',
+         'IBAN': <IBAN=FR7630003012340001234567951>}
+
+        # Euro zone transfer
+        >>> parse_outgoing_transfer_transaction(
+        ...   "000001 VIR EUROPEEN EMIS LOGITEL "
+        ...   "POUR: John Doe "
+        ...   "REF: 1234567890123 "
+        ...   "CHEZ: NTSBDEB1"  # N26
+        ... )  # doctest: +NORMALIZE_WHITESPACE
+        {'POUR': 'John Doe',
+         'REF': '1234567890123',
+         'MOTIF': NotAvailable,
+         'CHEZ': 'NTSBDEB1',
+         'IBAN': NotAvailable}
+
+        # French bank transfer
+        >>> parse_outgoing_transfer_transaction(
+        ...     "000001 VIR EUROPEEN EMIS LOGITEL "
+        ...     "POUR: RENT AGENCY "
+        ...     "30 12 BQ 3000401234 CPT 00012345678 "
+        ...     "REF: 1234567890123 "
+        ...     "MOTIF: Loyer "
+        ...     "CHEZ: BNPAFRPP"
+        ... )  # doctest: +NORMALIZE_WHITESPACE
+        {'POUR': 'RENT AGENCY',
+         'REF': '1234567890123',
+         'MOTIF': 'Loyer',
+         'CHEZ': 'BNPAFRPP',
+         'IBAN': <IBAN=FR7630004012340001234567862>}
+    """
+    # intraday tr have libOpeComplet set to None
+    # future tr do not have libOpeComplet field
+    if line is None:
+        return {}
+
+    res = re.split(_OUTGOING_TRANSFER_SPLIT_RE, line)
+    if res.count("POUR") == 0:
+        return {}
+
+    tr_data = {token: NotAvailable for token in _OUTGOING_TRANSFER_TOKENS}
+    tr_data.update(
+        {
+            token: data.strip()
+            for token, data in zip(res[1::2], res[2::2])
+        }
+    )
+
+    if m := re.search(
+        r"(?P<recipient>.+) (?P<day>\d{2}) (?P<month>\d{2}) "
+        r"(?:SG (?P<branchid>\d+)|BQ (?P<bankid>\d+)) CPT (?P<acctid>\d+)",
+        tr_data["POUR"],
+    ):
+        tr_data['POUR'] = m['recipient']
+
+        bic = BIC(tr_data["CHEZ"])
+        tr_data["IBAN"] = IBAN.generate(
+            bic.country_code,
+            bic.country_bank_code if m["branchid"] else m["bankid"],
+            m["acctid"],
+            m["branchid"] or "",
+        )
+    else:
+        tr_data["IBAN"] = NotAvailable
+
+    return tr_data
+
+
 class TransactionItemElement(ItemElement):
     klass = Transaction
 
@@ -464,6 +554,30 @@ class TransactionItemElement(ItemElement):
 
             self.env["loan"] = loan
             self.env["loan_payment"] = loan_data
+
+        # Extract transfer account data. To be used in OFX export.
+        # TODO: parse according to Field("type")
+        m = parse_outgoing_transfer_transaction(Dict("libOpeComplet")(self))
+        if m:
+            # Accounts managed by the owner automatically appear in transfer allow list.
+            for recipient in self.env.get("transfer_recipients", []):
+                if recipient.label.casefold() == m["POUR"].casefold() or recipient.iban == m["IBAN"]:
+                    self.logger.info("Transaction is sending funds to %s", m["POUR"])
+                    self.env["transfer_account"] = recipient
+                    break
+            else:
+                # Fallback for multi-owner accounts
+                self.logger.debug("Recipient %s not found in beneficiary list. (%s)", m["POUR"], el)
+                recipient = Recipient()
+                recipient.iban = m["IBAN"]
+                recipient.id = str(m["IBAN"])
+                recipient.label = m["POUR"]
+                # On societe generale recipients are immediatly available.
+                recipient.enabled_at = datetime.datetime.now().replace(microsecond=0)
+                recipient.currency = u'EUR'
+                recipient.bank_name = recipient.iban.bank_name
+                self.env["transfer_account"] = recipient
+
         return
 
     def obj_id(self):
@@ -488,6 +602,7 @@ class TransactionItemElement(ItemElement):
     obj__loan_payment = Env("loan_payment", NotAvailable)  # Loan payment information.
     obj__memo = Env("motive", NotAvailable)
     obj__refnum = Env("refnum", NotAvailable)
+    obj__transfer_account = Env("transfer_account", default=NotAvailable)
 
 
 class HistoryPage(JsonBasePage):
