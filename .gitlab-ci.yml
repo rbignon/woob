@@ -84,7 +84,7 @@ bandit:
   extends: .python_version
   stage: lint
   script:
-    - pip install bandit
+    - pip install bandit>=1.8.1
     - bandit -r woob
     - bandit -r modules
     - bandit -r contrib
