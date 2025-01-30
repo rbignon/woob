@@ -511,7 +511,7 @@ class TransactionItemElement(ItemElement):
         if motif_raw:
             self.env.update(
                 re.search(
-                    r"(?P<motive>.+)(?:(REF: (?P<refnum>((?! MANDAT).)+))(?: MANDAT (?P<sepa_mandate>.+))?)?",
+                    r"(?P<motive>.+)(?:(REF: (?P<ref>((?! MANDAT).)+))(?: MANDAT (?P<sepa_mandate>.+))?)?",
                     motif_raw
                 ).groupdict()
             )
@@ -601,7 +601,7 @@ class TransactionItemElement(ItemElement):
     obj__loan = Env("loan", NotAvailable)  # Loan account. Used in browser.
     obj__loan_payment = Env("loan_payment", NotAvailable)  # Loan payment information.
     obj__memo = Env("motive", NotAvailable)
-    obj__refnum = Env("refnum", NotAvailable)
+    obj__ref = Env("ref", NotAvailable)
     obj__transfer_account = Env("transfer_account", default=NotAvailable)
 
 
