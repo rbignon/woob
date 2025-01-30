@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import datetime
 import re
+from itertools import zip_longest
 from urllib.parse import urlsplit, urlunsplit, urlencode
 
 import requests
@@ -510,10 +511,12 @@ class TransactionItemElement(ItemElement):
         motif_raw = Dict('libMotifVirementOuPrelevement')(self)
         if motif_raw:
             self.env.update(
-                re.search(
-                    r"(?P<motive>.+)(?:(REF: (?P<ref>((?! MANDAT).)+))(?: MANDAT (?P<sepa_mandate>.+))?)?",
-                    motif_raw
-                ).groupdict()
+                dict(
+                    zip_longest(
+                        ("motive", "ref", "sepa_mandate"),
+                        re.split('(?: (?:REF:|MANDAT) )', motif_raw)
+                    )
+                )
             )
 
         # When a loan payment transaction is found, extract data into a Loan object
@@ -594,13 +597,19 @@ class TransactionItemElement(ItemElement):
         if Dict('dateChargement')(self):
             return Eval(lambda t: datetime.date.fromtimestamp(int(t)/1000),Dict('dateChargement'))(self)
 
+    def obj__memo(self):
+        memo = Env("motive", NotAvailable)(self)
+        sepa_mandate = Env("sepa_mandate", NotAvailable)(self)
+        if memo and sepa_mandate:
+            memo += " MANDAT " + sepa_mandate
+        return memo
+
     obj_date = Eval(lambda t: datetime.date.fromtimestamp(int(t)/1000), Dict('dateOpe'))
     obj_amount = CleanDecimal(Dict('mnt'))
     obj_raw = Transaction.Raw(Dict('libOpe'))
 
     obj__loan = Env("loan", NotAvailable)  # Loan account. Used in browser.
     obj__loan_payment = Env("loan_payment", NotAvailable)  # Loan payment information.
-    obj__memo = Env("motive", NotAvailable)
     obj__ref = Env("ref", NotAvailable)
     obj__transfer_account = Env("transfer_account", default=NotAvailable)
 
