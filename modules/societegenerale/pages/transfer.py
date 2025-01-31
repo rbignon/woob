@@ -100,6 +100,7 @@ class TransferJson(LoggedPage, JsonPage):
             obj_iban = Dict("iban")
             obj_label = Dict("libelleToDisplay")
             obj_enabled_at = datetime.now().replace(microsecond=0)
+            obj__beneficiary_name = Dict("nomBeneficiaire", NotAvailable)
 
             # needed for transfer
             obj__json_id = Dict("id")
