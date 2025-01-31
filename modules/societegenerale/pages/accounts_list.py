@@ -552,7 +552,7 @@ class TransactionItemElement(ItemElement):
             r"(?: ASSURANCE : (?P<insurance_amount>(?:\d+ )*\d+(?:,\d+)?))?"
             r"(?: CAPITAL RESTANT : (?P<principal_balance>(?:\d+ )*\d+(?:,\d+)?))?"
             r"(?: DATE PREVISIONNELLE DE FIN : (?P<maturity_date>.*))?",
-            Dict("libOpe")(el),
+            CleanText(Dict("libOpe"))(el),
         )
         if m:
             loan_data = m.groupdict()
