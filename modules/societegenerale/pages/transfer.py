@@ -35,12 +35,12 @@ from woob.capabilities.bank import (
     Transfer,
     TransferBankError,
 )
-from woob.capabilities.base import NotAvailable
+from woob.capabilities.base import NotAvailable, NotLoaded
 from woob.exceptions import ActionNeeded, BrowserUnavailable
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.json import json
 
-from .accounts_list import eval_decimal_amount
+from .accounts_list import Transaction, eval_decimal_amount
 from .base import BasePage
 from .login import MainPage
 
@@ -331,3 +331,47 @@ class AddRecipientPage(LoggedPage, BasePage):
         r.currency = "EUR"
         r.bank_name = recipient.bank_name
         return r
+
+
+class TransferHistoryPage(LoggedPage, JsonPage):
+    @property
+    def logged(self) -> bool:
+        return Dict("commun/raison", default=None)(self.doc) != "niv_auth_insuff"
+
+    def on_load(self) -> None:
+        if Dict("commun/statut")(self.doc).upper() != "OK":
+            raise AssertionError(f"Failed to load {self!r}")
+
+    @method
+    class iter_history(DictElement):
+        """Extract transfer history from vupri-liste-orders.json.
+
+        Used to enrich data in :class:`TransactionItemElement`.
+        """
+
+        item_xpath = "donnees/listeDesOrdres"
+
+        class Item(ItemElement):
+            klass = Transaction
+
+            def condition(self):
+                return Dict("statut") != "REFUSE"
+
+            obj_id = Dict("refSI")
+            obj_date = Transaction.Date(Dict("dateToDisplay"))
+
+            obj_type = Transaction.TYPE_TRANSFER
+            obj_raw = Field("label")
+            obj_label = Dict("libelleBeneficiaireToDisplay")
+            obj_amount = eval_decimal_amount("montantVirement/valeurMontant", "montantVirement/codeDecimalisation")
+
+            def obj_coming(self) -> bool:
+                return Dict("statut")(self) != "TRAITE"
+
+            obj__memo = Dict("motifDuVirement")
+
+            def obj__recipient(self) -> Recipient:
+                for recipient in Env("recipients", [])(self):
+                    if recipient.iban == Dict("ibanBeneficiaire"):
+                        return recipient
+                return NotLoaded

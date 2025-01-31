@@ -86,7 +86,7 @@ from .pages.login import (
     VkImage,
 )
 from .pages.subscription import DocumentsPage, RibPdfPage
-from .pages.transfer import AddRecipientPage, SignRecipientPage, SignTransferPage, TransferJson
+from .pages.transfer import AddRecipientPage, SignRecipientPage, SignTransferPage, TransferHistoryPage, TransferJson
 
 
 __all__ = ["SocieteGenerale"]
@@ -379,6 +379,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     )
     sign_transfer = URL(r"/icd/vupri/data/vupri-generate-token.json", SignTransferPage)
     confirm_transfer = URL(r"/icd/vupri/data/vupri-save.json", TransferJson)
+    transfer_history = URL(r"/icd/vupri/data/vupri-liste-ordres\.json", TransferHistoryPage)
 
     # Wealth
     market = URL(r"/brs/cct/comti20.html", MarketPage)
