@@ -335,7 +335,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
                 self.otp_validation["validation_unit_id"]: [
                     {
                         "id": self.otp_validation["id"],
-                    }
+                    },
                 ],
             },
         }
@@ -425,7 +425,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
                                 {
                                     "id": self.otp_validation["id"],
                                     "type": "CLOUDCARD",
-                                }
+                                },
                             ],
                         },
                     },
@@ -471,7 +471,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
                             "id": vk_id,
                             "password": code,
                             "type": "PASSWORD",
-                        }
+                        },
                     ],
                 },
             },

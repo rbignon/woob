@@ -334,7 +334,7 @@ class BanquePopulaire(TwoFactorBrowser):
                 self.mfa_validation_data["validation_unit_id"]: [
                     {
                         "id": self.mfa_validation_data["id"],
-                    }
+                    },
                 ],
             },
         }
@@ -398,7 +398,7 @@ class BanquePopulaire(TwoFactorBrowser):
                                 {
                                     "id": self.mfa_validation_data["id"],
                                     "type": "CLOUDCARD",
-                                }
+                                },
                             ],
                         },
                     },
@@ -579,7 +579,7 @@ class BanquePopulaire(TwoFactorBrowser):
                             "id": vk_id,
                             "password": code,
                             "type": "PASSWORD",
-                        }
+                        },
                     ],
                 },
             },

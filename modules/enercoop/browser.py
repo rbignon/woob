@@ -106,7 +106,7 @@ class EnercoopBrowser(LoginBrowser):
                     "name": "Consommation",
                     "object": "Consommation",
                 }
-            )
+            ),
         ]
 
     consumption_periods = {
