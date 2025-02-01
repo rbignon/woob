@@ -1,5 +1,5 @@
 <%inherit file="layout.pyt"/>
-from woob.browser import URL, ${'LoginBrowser, 'PagesBrowser'}, else, if, need_login', r.login
+from woob.browser import URL, ${'LoginBrowser, need_login' if r.login else 'PagesBrowser'}
 
 from .pages import Page1, Page2
 

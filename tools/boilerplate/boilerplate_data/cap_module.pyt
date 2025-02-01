@@ -1,5 +1,5 @@
 <%inherit file="layout.pyt"/>
-from woob.tools.backend import BackendConfig', Module${', ''}, else, if, r.login
+from woob.tools.backend import Module${', BackendConfig' if r.login else ''}
 
 
 % if login:

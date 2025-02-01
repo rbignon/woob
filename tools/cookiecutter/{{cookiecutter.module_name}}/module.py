@@ -17,11 +17,14 @@
 
 # flake8: compatible
 
-from woob.capabilities.{{cookiecutter.capability|replace import (
-    BackendConfig, Module, ValueBackendPassword, '', 'Cap', .browser, =, ["{{cookiecutter.class_prefix}}Module"],
-    __all__, from, import, woob.tools.backend, woob.tools.value, {{cookiecutter.capability}},
-    {{cookiecutter.class_prefix}}Browser, |lower}},
-)
+from woob.capabilities.{{cookiecutter.capability | replace('Cap', '') | lower}} import {{cookiecutter.capability}}
+from woob.tools.backend import Module, BackendConfig
+from woob.tools.value import ValueBackendPassword
+
+from .browser import {{cookiecutter.class_prefix}}Browser
+
+
+__all__ = ["{{cookiecutter.class_prefix}}Module"]
 
 
 class {{cookiecutter.class_prefix}}Module(Module, {{cookiecutter.capability}}):
