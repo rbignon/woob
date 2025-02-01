@@ -108,7 +108,6 @@ known_first_party = [
 ]
 line_length = 120
 lines_after_imports = 2
-multi_line_output = 5
 profile = "black"
 py_version = "39"
 
