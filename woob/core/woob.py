@@ -22,7 +22,7 @@ import os
 import warnings
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Callable, Dict, List
+from typing import Callable
 
 from woob import __version__
 from woob.capabilities.base import Capability

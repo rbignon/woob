@@ -23,7 +23,7 @@ from collections import OrderedDict, deque
 from collections.abc import Iterable
 from copy import copy, deepcopy
 from decimal import Decimal
-from typing import Any, Dict, Tuple, Type, TypeVar, overload
+from typing import Any, TypeVar, overload
 
 from woob.tools.misc import to_unicode
 

@@ -34,7 +34,7 @@ from functools import wraps
 from hashlib import sha256
 from logging import Logger
 from threading import Lock
-from typing import Any, Callable, ClassVar, Dict, List, Tuple, Type
+from typing import Any, Callable, ClassVar
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse
 from uuid import uuid4
 

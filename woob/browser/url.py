@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import re
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, Dict, Optional, Tuple, Type, TypeVar
+from typing import TYPE_CHECKING, Callable, TypeVar
 from urllib.parse import unquote
 
 import requests

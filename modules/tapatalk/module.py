@@ -20,7 +20,6 @@ import re
 
 import dateutil.parser
 import requests
-from six import text_type
 from six.moves import urllib, xmlrpc_client
 
 from woob.capabilities.messages import CapMessages, Message, Thread

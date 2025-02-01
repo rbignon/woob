@@ -24,7 +24,7 @@ import warnings
 from collections.abc import Iterator
 from copy import copy
 from threading import RLock
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Tuple, Type
+from typing import TYPE_CHECKING, Any, ClassVar
 from urllib.request import getproxies
 
 from packaging.version import Version

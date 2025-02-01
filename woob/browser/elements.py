@@ -25,7 +25,7 @@ import traceback
 import warnings
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Callable, Type
+from typing import Any, Callable
 
 import lxml.html
 

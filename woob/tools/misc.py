@@ -26,7 +26,6 @@ import traceback
 import types
 import unicodedata
 from time import sleep, time
-from typing import Optional, Union
 
 import unidecode
 

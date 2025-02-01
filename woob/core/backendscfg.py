@@ -25,7 +25,6 @@ from collections.abc import Iterator, MutableMapping
 from configparser import DuplicateSectionError, RawConfigParser
 from logging import warning
 from subprocess import CalledProcessError, check_output
-from typing import Tuple
 
 
 __all__ = ["BackendsConfig", "BackendAlreadyExists"]

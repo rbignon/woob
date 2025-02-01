@@ -20,7 +20,6 @@ from __future__ import annotations
 import re
 from binascii import crc32
 from collections.abc import Iterable
-from typing import List
 
 from schwifty import IBAN
 

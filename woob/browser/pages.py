@@ -28,7 +28,7 @@ from collections.abc import Iterator
 from datetime import datetime
 from functools import wraps
 from io import BytesIO, StringIO
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Type
+from typing import TYPE_CHECKING, Any, Callable, ClassVar
 from urllib.parse import urljoin
 
 import lxml

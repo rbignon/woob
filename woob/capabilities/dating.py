@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-from typing import Dict
-
 from woob.tools.value import Value
 
 from .base import BaseObject, Capability, Field, StringField, UserError

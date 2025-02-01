@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import Any, Callable, ClassVar, Dict, Tuple
+from typing import Any, Callable, ClassVar
 
 from dateutil import parser, tz
 

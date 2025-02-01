@@ -19,7 +19,6 @@
 
 from __future__ import annotations
 
-from typing import Dict
 from urllib.parse import parse_qsl, urlencode, urlparse
 
 from woob.tools.misc import NO_DEFAULT, NoDefaultType
