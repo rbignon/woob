@@ -452,28 +452,28 @@ class CapTransfer(Capability):
     # of payment. An empty list means that the transfer will never get the status ACCEPTED_NO_BANK_STATUS
     partial_transfer_status_tracking = ()
 
-    is_app_to_app_used_for_transfer = {
+    is_app_to_app_used_for_transfer: dict[Platform, bool | None] = {
         Platform.ANDROID: None,
         Platform.IOS: None,
-    }  # type: dict[Platform, bool | None]
+    }
     """
     Is an App2App flow used for the payment if the PSU has the bank's app installed.
     None means unknown
     """
 
-    bank_provides_payer_account = None  # type: bool | None
+    bank_provides_payer_account: bool | None = None
     """
     Once the payment is initiated, does the bank return the payer's account identifier?
     None means unknown
     """
 
-    bank_provides_payer_label = None  # type: bool | None
+    bank_provides_payer_label: bool | None = None
     """
     Once the payment is initiated, does the bank return the payer's label?
     None means unknown
     """
 
-    transfer_date_types_where_trusted_beneficiary_required = set()  # type: Iterable[TransferDateType]
+    transfer_date_types_where_trusted_beneficiary_required: Iterable[TransferDateType] = set()
     """
     Set of `TransferDateType` where the beneficiary must be trusted or registered on the payer's banking service.
     If `iter_transfer_recipients` is implemented, such beneficiaries may be found.
