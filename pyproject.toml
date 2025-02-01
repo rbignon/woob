@@ -76,6 +76,10 @@ version_files = [
 max-line-length = 120
 exclude = ['dist', '*.egg-info', 'build', '.git', '__pycache__', 'boilerplate_data']
 extend-ignore = [
+    # Black compatibility options
+    # https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#minimal-configuration
+    "E203",
+    "E701",
     # A lot of the codebase seems keen on visual alignment of operators (e.g. fields declaration)
     "E221",
     "E222",
