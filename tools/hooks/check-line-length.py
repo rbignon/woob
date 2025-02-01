@@ -6,6 +6,9 @@ import tokenize
 from pathlib import Path
 
 
+FSTRING_START = getattr(tokenize, "FSTRING_START", None)
+FSTRING_END = getattr(tokenize, "FSTRING_END", None)
+
 mod = runpy.run_path(str(Path(__file__).with_name("checkerlib.py")))
 Checker = mod["Checker"]
 
@@ -37,6 +40,16 @@ class LineLengthChecker(Checker):
                 if token.start[1] + 1 >= args.line_length:
                     self.add_error("string starts after max line length", line=token.start[0])
                 elif token.end[1] >= args.line_length:
+                    crossing = True
+
+            elif FSTRING_START and token.type == FSTRING_START:
+                if token.start[1] + 1 >= args.line_length:
+                    self.add_error("f-string starts after max line length", line=token.start[0])
+
+            # elif token.type == tokenize.FSTRING_MIDDLE:
+
+            elif FSTRING_END and token.type == FSTRING_END:
+                if token.end[1] >= args.line_length:
                     crossing = True
 
             elif token.type == tokenize.COMMENT:
