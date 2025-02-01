@@ -92,6 +92,8 @@ extend-ignore = [
     'FI58',
     # do not perform function calls in argument defaults: breaks fastapi qs definitions
     'B008',
+    # disable flake8-import-order, isort and black are in charge
+    "I",
 ]
 min-version = "3.9"
 per-file-ignores = [
