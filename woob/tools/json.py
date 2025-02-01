@@ -91,7 +91,7 @@ class WoobEncoder(json.JSONEncoder):
         # avoid simplejson internal Decimal handling
         if "use_decimal" in kwargs:
             kwargs["use_decimal"] = False
-        super(WoobEncoder, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def default(self, o):
         if o is NotAvailable:
@@ -106,7 +106,7 @@ class WoobEncoder(json.JSONEncoder):
             return o.isoformat()
         elif isinstance(o, timedelta):
             return o.total_seconds()
-        return super(WoobEncoder, self).default(o)
+        return super().default(o)
 
 
 WeboobEncoder = WoobEncoder

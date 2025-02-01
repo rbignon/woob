@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012      Gabriel Serme
 # Copyright(C) 2011      Gabriel Kerneis
 # Copyright(C) 2010-2011 Jocelyn Jaubert
@@ -131,7 +129,7 @@ class BoursoramaModule(
 
         # replace � by ?, like the bank does
         old = old.replace("\ufffd", "?")
-        return super(BoursoramaModule, self).transfer_check_label(old, new)
+        return super().transfer_check_label(old, new)
 
     def transfer_check_account_id(self, old, new):
         # We can't verify here automatically that the account_id has not changed

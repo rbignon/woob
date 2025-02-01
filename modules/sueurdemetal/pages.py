@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Vincent A
 #
 # This file is part of a woob module.
@@ -57,9 +55,9 @@ class EventItem(ItemElement):
         parts = []
         for g in self.el["groupes"]:
             if "WebOfficielGroupe" in g:
-                parts.append("%s (%s): %s" % (g["NomGroupe"], g["StyleMusicalGroupe"], g["WebOfficielGroupe"]))
+                parts.append("{} ({}): {}".format(g["NomGroupe"], g["StyleMusicalGroupe"], g["WebOfficielGroupe"]))
             else:
-                parts.append("%s (%s)" % (g["NomGroupe"], g["StyleMusicalGroupe"]))
+                parts.append("{} ({})".format(g["NomGroupe"], g["StyleMusicalGroupe"]))
         if int(self.el["Guest"]):
             parts.append("GUEST(S)")
         return "\n".join(parts)
@@ -73,7 +71,7 @@ class EventItem(ItemElement):
 
     def obj_url(self):
         slug = re.sub("[^a-z]", "", self.el["groupes"][0]["NomGroupe"], flags=re.I).lower()
-        return "http://www.sueurdemetal.com/detail-concert/%s-%s" % (slug, Field("id")(self))
+        return "http://www.sueurdemetal.com/detail-concert/{}-{}".format(slug, Field("id")(self))
 
     def obj_status(self):
         statuses = {
@@ -107,4 +105,4 @@ class ConcertPage(JsonPage):
             return float(re.match(r"[\d.]+", self.el["prix"]).group(0))
 
         def obj_location(self):
-            return "%s, %s" % (self.el["salle"], self.el["adresse"])
+            return "{}, {}".format(self.el["salle"], self.el["adresse"])

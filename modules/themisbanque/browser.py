@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Romain Bignon
 #
 # This file is part of a woob module.
@@ -63,8 +61,7 @@ class ThemisBrowser(LoginBrowser):
     def get_history(self, account):
         if account._link:
             self.location(account._link)
-            for tr in self.page.get_operations():
-                yield tr
+            yield from self.page.get_operations()
 
     @need_login
     def get_profile(self):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019      Guntra
 #
 # This file is part of a woob module.
@@ -60,8 +58,7 @@ class LesterrainsBrowser(PagesBrowser):
                     "surfMax": area_max or "",
                 }
             )
-            for house in self.search.go(query=query).iter_housings():
-                yield house
+            yield from self.search.go(query=query).iter_housings()
 
     def get_housing(self, _id, housing=None):
         return self.housing.go(_id=_id).get_housing(obj=housing)

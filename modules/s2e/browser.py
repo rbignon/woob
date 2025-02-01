@@ -193,14 +193,14 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         if "secret" in self.config:
             self.secret = self.config["secret"].get()
 
-        super(S2eBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.cache = {}
         self.cache["invs"] = {}
         self.cache["pockets"] = {}
         self.cache["details"] = {}
 
     def dump_state(self):
-        state = super(S2eBrowser, self).dump_state()
+        state = super().dump_state()
         state.pop(
             "url", None
         )  # after deinit, we get LoggedOut exception on the next sync by trying to load the url from the state.
@@ -209,7 +209,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
     def deinit(self):
         if self.page and self.page.logged:
             self.logout.go(slug=self.SLUG)
-        super(S2eBrowser, self).deinit()
+        super().deinit()
 
     @retry((BrowserUnavailable), tries=4)
     def initiate_login_page(self):
@@ -604,8 +604,7 @@ class S2eBrowser(LoginBrowser, StatesMixin):
             self.history.go(slug=self.SLUG)
         # Get more transactions on each page
         if self.page.show_more("50"):
-            for tr in self.page.iter_history(accid=account.id, len_space_accs=account._len_space_accs):
-                yield tr
+            yield from self.page.iter_history(accid=account.id, len_space_accs=account._len_space_accs)
 
     @need_login
     def get_profile(self):
@@ -638,13 +637,13 @@ class S2eBrowser(LoginBrowser, StatesMixin):
         for document in self.page.iter_documents():
             if document._url_id in existing_id:
                 id_suffix = 1
-                while "%s-%s" % (document._url_id, id_suffix) in existing_id:
+                while f"{document._url_id}-{id_suffix}" in existing_id:
                     id_suffix += 1
                     if id_suffix > 5:
                         # Avoid infinite loops in case of an issue
                         # There shouldn't be that many documents with the same id, we let it raise an exception
                         break
-                document.id = "%s-%s" % (document._url_id, id_suffix)
+                document.id = f"{document._url_id}-{id_suffix}"
             else:
                 document.id = document._url_id
             existing_id.add(document.id)

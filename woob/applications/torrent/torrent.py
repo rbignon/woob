@@ -28,7 +28,7 @@ __all__ = ["AppTorrent"]
 def sizeof_fmt(num):
     for x in ["bytes", "KB", "MB", "GB", "TB"]:
         if num < 1024.0:
-            return "%-4.1f%s" % (num, x)
+            return f"{num:<4.1f}{x}"
         num /= 1024.0
 
 
@@ -36,7 +36,7 @@ class TorrentInfoFormatter(IFormatter):
     MANDATORY_FIELDS = ("id", "name", "size", "seeders", "leechers", "url", "files", "description")
 
     def format_obj(self, obj, alias):
-        result = "%s%s%s\n" % (self.BOLD, obj.name, self.NC)
+        result = f"{self.BOLD}{obj.name}{self.NC}\n"
         result += "ID: %s\n" % obj.fullid
         if obj.size != NotAvailable and obj.size != NotLoaded:
             result += "Size: %s\n" % sizeof_fmt(obj.size)
@@ -46,10 +46,10 @@ class TorrentInfoFormatter(IFormatter):
         if hasattr(obj, "magnet") and obj.magnet:
             result += "Magnet URL: %s\n" % obj.magnet
         if obj.files:
-            result += "\n%sFiles%s\n" % (self.BOLD, self.NC)
+            result += f"\n{self.BOLD}Files{self.NC}\n"
             for f in obj.files:
                 result += " * %s\n" % f
-        result += "\n%sDescription%s\n" % (self.BOLD, self.NC)
+        result += f"\n{self.BOLD}Description{self.NC}\n"
         result += "%s" % obj.description
         return result
 
@@ -80,7 +80,7 @@ class TorrentListFormatter(PrettyFormatter):
 
     def get_description(self, obj):
         size = self.colored("%10s" % sizeof_fmt(obj.size), "magenta")
-        return "%s   (Seed: %s / Leech: %s)" % (size, self._get_color(obj.seeders), self._get_color(obj.leechers))
+        return f"{size}   (Seed: {self._get_color(obj.seeders)} / Leech: {self._get_color(obj.leechers)})"
 
 
 class AppTorrent(ReplApplication):
@@ -155,8 +155,8 @@ class AppTorrent(ReplApplication):
                         try:
                             with open(dest, "w") as f:
                                 f.write(buf)
-                        except IOError as e:
-                            print('Unable to write .torrent in "%s": %s' % (dest, e), file=self.stderr)
+                        except OSError as e:
+                            print(f'Unable to write .torrent in "{dest}": {e}', file=self.stderr)
                             return 1
                     return
         except CallErrors as errors:

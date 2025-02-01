@@ -79,7 +79,7 @@ class AppContentEdit(ReplApplication):
             subprocess.call([editor, *params, *paths])
 
             for path, content in paths.items():
-                with open(path, "r") as f:
+                with open(path) as f:
                     try:
                         data = f.read()
                     except UnicodeError:

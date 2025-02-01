@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -52,7 +50,7 @@ class LCLEnterpriseBrowser(LoginBrowser):
     profile = URL("/outil/IQGA/FicheUtilisateur/maFicheUtilisateur", ProfilePage)
 
     def __init__(self, config, *args, **kwargs):
-        super(LCLEnterpriseBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.accounts = None
         self.owner_type = AccountOwnerType.ORGANIZATION
 
@@ -61,7 +59,7 @@ class LCLEnterpriseBrowser(LoginBrowser):
             self.login.go(page="logout")
             self.login.go(page="logoutOk")
             assert self.login.is_here(page="logoutOk") or self.login.is_here(page="sessionExpiree")
-        super(LCLEnterpriseBrowser, self).deinit()
+        super().deinit()
 
     def do_login(self):
         self.login.go().login(self.username, self.password)

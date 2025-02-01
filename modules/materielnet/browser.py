@@ -70,5 +70,4 @@ class MaterielnetBrowser(LoginBrowser):
 
         # data will be a dict containing information to retrieve bills by period
         for period in periods:
-            for doc in self.documents.go(data=period).get_documents():
-                yield doc
+            yield from self.documents.go(data=period).get_documents()

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Antoine BOSSY
 #
 # This file is part of woob.

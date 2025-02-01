@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -64,7 +62,7 @@ class PhpBBModule(Module, CapMessages, CapMessagesPost):
 
         for link in links:
             if link.type == link.FORUM:
-                link.title = "%s[%s]" % (root_link.title if root_link else "", link.title)
+                link.title = "{}[{}]".format(root_link.title if root_link else "", link.title)
                 for thread in self._iter_threads(link):
                     yield thread
             if link.type == link.TOPIC:
@@ -114,7 +112,7 @@ class PhpBBModule(Module, CapMessages, CapMessagesPost):
         signature = post.signature
         if signature:
             signature += "<br />"
-        signature += "URL: %s" % self.browser.absurl(id2url("%s.%s" % (thread.id, post.id)))
+        signature += "URL: %s" % self.browser.absurl(id2url(f"{thread.id}.{post.id}"))
         return Message(
             thread=thread,
             id=post.id,
@@ -146,7 +144,7 @@ class PhpBBModule(Module, CapMessages, CapMessagesPost):
                 iterator = limit(iterator, self.config["thread_unread_messages"].get())
             for post in iterator:
                 if not thread:
-                    thread = Thread("%s.%s" % (post.forum_id, post.topic_id))
+                    thread = Thread(f"{post.forum_id}.{post.topic_id}")
                 message = self._post2message(thread, post)
 
                 if child:
@@ -181,7 +179,7 @@ class PhpBBModule(Module, CapMessages, CapMessagesPost):
         if message.thread:
             try:
                 if "." in message.thread.id:
-                    forum, topic = [int(i) for i in message.thread.id.split(".", 1)]
+                    forum, topic = (int(i) for i in message.thread.id.split(".", 1))
                 else:
                     forum = int(message.thread.id)
             except ValueError:

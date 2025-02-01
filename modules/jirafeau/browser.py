@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Vincent A
 #
 # This file is part of a woob module.
@@ -46,7 +44,7 @@ class JirafeauBrowser(PagesBrowser):
 
     def __init__(self, base_url, *args, **kwargs):
         self.BASEURL = base_url
-        super(JirafeauBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def recognize(self, url):
         match = self.dl_page.match(url) or self.file_page.match(url) or self.del_page.match(url)

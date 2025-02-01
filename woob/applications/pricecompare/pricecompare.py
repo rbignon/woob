@@ -33,16 +33,16 @@ class PriceFormatter(IFormatter):
         if hasattr(obj, "message") and obj.message:
             message = obj.message
         else:
-            message = "%s (%s)" % (obj.shop.name, obj.shop.location)
+            message = f"{obj.shop.name} ({obj.shop.location})"
 
-        result = "%s%s%s\n" % (self.BOLD, message, self.NC)
+        result = f"{self.BOLD}{message}{self.NC}\n"
         result += "ID: %s\n" % obj.fullid
         result += "Product: %s\n" % obj.product.name
-        result += "Cost: %s%s\n" % (obj.cost, obj.currency)
+        result += f"Cost: {obj.cost}{obj.currency}\n"
         if hasattr(obj, "date") and obj.date:
             result += "Date: %s\n" % obj.date.strftime("%Y-%m-%d")
 
-        result += "\n%sShop:%s\n" % (self.BOLD, self.NC)
+        result += f"\n{self.BOLD}Shop:{self.NC}\n"
         result += "\tName: %s\n" % obj.shop.name
         if obj.shop.location:
             result += "\tLocation: %s\n" % obj.shop.location
@@ -59,11 +59,11 @@ class PricesFormatter(PrettyFormatter):
         if hasattr(obj, "message") and obj.message:
             message = obj.message
         elif hasattr(obj, "shop") and obj.shop:
-            message = "%s (%s)" % (obj.shop.name, obj.shop.location)
+            message = f"{obj.shop.name} ({obj.shop.location})"
         else:
-            return "%s%s" % (obj.cost, obj.currency)
+            return f"{obj.cost}{obj.currency}"
 
-        return "%s%s - %s" % (obj.cost, obj.currency, message)
+        return f"{obj.cost}{obj.currency} - {message}"
 
     def get_description(self, obj):
         if obj.date:

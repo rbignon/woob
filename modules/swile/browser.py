@@ -46,7 +46,7 @@ class SwileBrowser(OAuth2Mixin, APIBrowser):
     client_id = "533bf5c8dbd05ef18fd01e2bbbab3d7f69e3511dd08402862b5de63b9a238923"
 
     def __init__(self, config, *args, **kwargs):
-        super(SwileBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.session.headers["X-API-Key"] = "50558e8b836b7a8e089c35b7b58a1d3959ca56d6"
         self.session.headers["X-Lunchr-Platform"] = "web"
         self.session.headers["X-Lunchr-App-Version"] = "0.1.0"

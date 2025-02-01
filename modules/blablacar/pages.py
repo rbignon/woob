@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Bezleputh
 #
 # This file is part of a woob module.
@@ -35,7 +33,7 @@ class DeparturesPage(JsonPage):
     ENCODING = None
 
     def __init__(self, browser, response, *args, **kwargs):
-        super(DeparturesPage, self).__init__(browser, response, *args, **kwargs)
+        super().__init__(browser, response, *args, **kwargs)
         self.encoding = self.ENCODING or response.encoding
         parser = html.HTMLParser(encoding=self.encoding)
         if "results" in self.doc["html"]:

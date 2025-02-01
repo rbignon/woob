@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2021  Budget Insight
 #
 # This file is part of a woob module.
@@ -86,7 +84,7 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
     )
 
     def __init__(self, website, *args, **kwargs):
-        super(GanPatrimoineBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.website = website
         self.BASEURL = "https://espaceclient.%s.fr" % website
         self.has_otp = False
@@ -282,8 +280,7 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
                 if self.wps_dashboard.is_here():
                     detail_url = self.page.get_account_history_url(account.id)
                     self.location(detail_url, data="")
-                    for tr in self.page.iter_history(account_id=account.id):
-                        yield tr
+                    yield from self.page.iter_history(account_id=account.id)
         else:
 
             params = {
@@ -298,8 +295,7 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
                 raise BrowserUnavailable()
 
             # Transactions are sorted by category, not chronologically
-            for tr in sorted_transactions(self.page.iter_wealth_history()):
-                yield tr
+            yield from sorted_transactions(self.page.iter_wealth_history())
 
     @need_login
     def iter_coming(self, account):
@@ -308,8 +304,7 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
             if self.wps_dashboard.is_here():
                 detail_url = self.page.get_account_history_url(account.id[-6:])
                 self.location(detail_url, data="")
-                for tr in self.page.iter_card_history():
-                    yield tr
+                yield from self.page.iter_card_history()
 
     @need_login
     def get_profile(self):

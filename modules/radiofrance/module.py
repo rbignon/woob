@@ -1,5 +1,3 @@
-# * -*- coding: utf-8 -*-
-
 # Copyright(C) 2011-2021  Johann Broudin
 #
 # This file is part of a woob module.
@@ -336,8 +334,7 @@ class RadioFranceModule(Module, CapRadio, CapCollection, CapAudio):
                         elif radio == "francetvinfo":
                             podcasts_url = self.browser.get_francetvinfo_podcasts_url(item.id)
 
-                        for pod in self.browser.get_podcasts(podcasts_url):
-                            yield pod
+                        yield from self.browser.get_podcasts(podcasts_url)
 
     def get_audio(self, _id):
         radio = self.get_radio_id(_id)

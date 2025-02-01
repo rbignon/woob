@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -42,7 +40,7 @@ class DailymotionModule(Module, CapVideo, CapCollection):
 
     resolution_choice = OrderedDict(
         [
-            (k, "%s (%s)" % (v, k))
+            (k, f"{v} ({k})")
             for k, v in sorted({"480": "480p", "240": "240p", "380": "380p", "720": "720p", "1080": "1080p"}.items())
         ]
     )
@@ -86,8 +84,7 @@ class DailymotionModule(Module, CapVideo, CapCollection):
             if collection.path_level == 0:
                 yield self.get_collection(objs, ["latest"])
             if collection.split_path == ["latest"]:
-                for video in self.browser.latest_videos():
-                    yield video
+                yield from self.browser.latest_videos()
 
     def validate_collection(self, objs, collection):
         if collection.path_level == 0:

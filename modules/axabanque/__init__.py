@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # flake8: compatible
 
 # Copyright(C) 2013 Romain Bignon

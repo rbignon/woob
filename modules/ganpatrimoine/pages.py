@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2019  Budget Insight
 #
 # This file is part of a woob module.
@@ -380,7 +378,7 @@ class WPSPortalPage(LoggedPage, HTMLPage):
         )(self.doc)
         if src_url == NotAvailable:
             return None
-        return "%s?paramNumCpt=%s" % (src_url, account_id)
+        return f"{src_url}?paramNumCpt={account_id}"
 
     @pagination
     @method

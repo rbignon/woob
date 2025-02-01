@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 # Copyright(C) 2020       Simon Bordeyne
 #
 # This file is part of a woob module.
@@ -83,7 +81,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
             n = 1
             while _id in self.objects:
                 n += 1
-                _id = "%s-%s" % (obj.id, n)
+                _id = f"{obj.id}-{n}"
             obj.id = _id
             self.objects[obj.id] = obj
             return obj

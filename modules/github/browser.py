@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Vincent A
 #
 # This file is part of a woob module.
@@ -35,7 +33,7 @@ class GithubBrowser(CacheMixin, APIBrowser):
     BASEURL = "https://api.github.com"
 
     def __init__(self, username, password, *a, **kw):
-        super(GithubBrowser, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.username = username
         self.password = password
         self.fewer_requests = not bool(self.username)
@@ -50,7 +48,7 @@ class GithubBrowser(CacheMixin, APIBrowser):
             yield d["name"]
 
     def get_issue(self, project_id, issue_number):
-        json = self.request("https://api.github.com/repos/%s/issues/%s" % (project_id, issue_number))
+        json = self.request(f"https://api.github.com/repos/{project_id}/issues/{issue_number}")
         return self._make_issue(project_id, issue_number, json)
 
     def iter_project_issues(self, project_id):
@@ -99,7 +97,7 @@ class GithubBrowser(CacheMixin, APIBrowser):
 
     def edit_issue(self, issue, issue_number):
         base_data = self._issue_post_data(issue)
-        url = "https://api.github.com/repos/%s/issues/%s" % (issue.project.id, issue_number)
+        url = f"https://api.github.com/repos/{issue.project.id}/issues/{issue_number}"
         self.open(url, data=base_data, method="PATCH")
         return issue
 
@@ -118,7 +116,7 @@ class GithubBrowser(CacheMixin, APIBrowser):
 
     def post_comment(self, issue_id, comment):
         project_id, issue_number = issue_id.rsplit("/", 1)
-        url = "https://api.github.com/repos/%s/issues/%s/comments" % (project_id, issue_number)
+        url = f"https://api.github.com/repos/{project_id}/issues/{issue_number}/comments"
         data = {"body": comment}
         self.request(url, data=data)
 
@@ -132,7 +130,7 @@ class GithubBrowser(CacheMixin, APIBrowser):
         d["updated"] = parse_date(json["updated_at"])
         d["author"] = json["user"]["login"]
         d["status"] = json["state"]
-        d["url"] = "https://github.com/%s/issues/%s" % (project_id, issue_number)
+        d["url"] = f"https://github.com/{project_id}/issues/{issue_number}"
 
         if json["assignee"]:
             d["assignee"] = json["assignee"]["login"]
@@ -155,7 +153,7 @@ class GithubBrowser(CacheMixin, APIBrowser):
             yield {"id": jmilestone["number"], "name": jmilestone["title"]}
 
     def iter_comments(self, project_id, issue_number):
-        url = "https://api.github.com/repos/%s/issues/%s/comments" % (project_id, issue_number)
+        url = f"https://api.github.com/repos/{project_id}/issues/{issue_number}/comments"
         for json in self._paginated(url):
             for jcomment in json:
                 d = {}
@@ -186,7 +184,7 @@ class GithubBrowser(CacheMixin, APIBrowser):
     }
 
     def iter_events(self, project_id, issue_number):
-        url = "https://api.github.com/repos/%s/issues/%s/events" % (project_id, issue_number)
+        url = f"https://api.github.com/repos/{project_id}/issues/{issue_number}/events"
         for json in self._paginated(url):
             for jevent in json:
                 d = {}
@@ -256,7 +254,7 @@ class GithubBrowser(CacheMixin, APIBrowser):
 
         left = total = end = None
         try:
-            ret = super(GithubBrowser, self).open_with_cache(*args, **kwargs)
+            ret = super().open_with_cache(*args, **kwargs)
         except ClientError as err:
             left, total, end = self._extract_rate_info(err.response.headers)
             raise

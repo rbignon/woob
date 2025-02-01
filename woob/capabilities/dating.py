@@ -44,7 +44,7 @@ class Optimization(BaseObject):
                  in this dict.
     """
 
-    CONFIG: Dict[str, Value] = {}
+    CONFIG: dict[str, Value] = {}
 
     def start(self):
         """

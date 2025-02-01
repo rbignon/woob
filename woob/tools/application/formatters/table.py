@@ -37,7 +37,7 @@ class TableFormatter(IFormatter):
     HTML = False
 
     def __init__(self):
-        super(TableFormatter, self).__init__()
+        super().__init__()
         self.queue = []
         self.keys = None
         self.header = None

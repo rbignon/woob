@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Romain Bignon
 #
 # This file is part of a woob module.
@@ -37,7 +35,7 @@ from woob.capabilities.base import NotAvailable, empty
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 
-class CarrefourBanqueKeyboard(object):
+class CarrefourBanqueKeyboard:
     symbols = {
         "0": "11100000001111100000000011100000000000110000010000010000011100001000001110000000001111000000000111100000000011111000000001111100000000111100000000011111000000001111000000000111100000000001110000000000111000011000001000001100000000001111000000000111110000000111",
         "1": "11111110001111111110000111111110000011111110000001111100000000111110000000011111000000001111100010000111110011000011111111100001111111110000111111111000011111111100001111111110000111111111000011111111100001111111110000111111111000011111111100001111111111111111",
@@ -110,7 +108,7 @@ class LoginPage(HTMLPage):
         # some redirections are totally blank page
         if not len(data):
             data = b"<html></html>"
-        return super(LoginPage, self).build_doc(data)
+        return super().build_doc(data)
 
     def on_load(self):
         """
@@ -182,7 +180,7 @@ class MaintenancePage(HTMLPage):
 class IncapsulaResourcePage(HTMLPage):
     def __init__(self, *args, **kwargs):
         # this page can be a html page, or just javascript
-        super(IncapsulaResourcePage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.is_javascript = None
 
     def on_load(self):
@@ -214,7 +212,7 @@ class item_account_generic(ItemElement):
 
     def obj_url(self):
         acc_number = Field("id")(self)
-        xpath_link = '//li[contains(., "{acc_number}")]/ul/li/a'.format(acc_number=acc_number)
+        xpath_link = f'//li[contains(., "{acc_number}")]/ul/li/a'
         return Link(xpath_link)(self)
 
 

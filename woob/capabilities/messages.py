@@ -66,7 +66,7 @@ class Message(BaseObject):
         flags=0,
         url=None,
     ):
-        super(Message, self).__init__(id, url)
+        super().__init__(id, url)
         self.thread = thread
         self.title = title
         self.sender = sender
@@ -98,7 +98,7 @@ class Message(BaseObject):
         """
         Full ID of message (in form '**THREAD_ID.MESSAGE_ID**')
         """
-        return "%s.%s" % (self.thread.id, self.id)
+        return f"{self.thread.id}.{self.id}"
 
     @property
     def full_parent_id(self):
@@ -112,7 +112,7 @@ class Message(BaseObject):
         elif self._parent_id is NotLoaded:
             return NotLoaded
         else:
-            return "%s.%s" % (self.thread.id, self._parent_id)
+            return f"{self.thread.id}.{self._parent_id}"
 
     def __eq__(self, msg):
         if not isinstance(msg, Message):
@@ -124,7 +124,7 @@ class Message(BaseObject):
             return str(self.id) == str(msg.id)
 
     def __repr__(self):
-        return "<Message id=%r title=%r date=%r from=%r>" % (self.full_id, self.title, self.date, self.sender)
+        return f"<Message id={self.full_id!r} title={self.title!r} date={self.date!r} from={self.sender!r}>"
 
 
 class Thread(BaseObject):
@@ -148,15 +148,13 @@ class Thread(BaseObject):
         """
         if self.root:
             yield self.root
-            for m in self._iter_all_messages(self.root):
-                yield m
+            yield from self._iter_all_messages(self.root)
 
     def _iter_all_messages(self, message):
         if message.children:
             for child in message.children:
                 yield child
-                for m in self._iter_all_messages(child):
-                    yield m
+                yield from self._iter_all_messages(child)
 
 
 class CapMessages(Capability):

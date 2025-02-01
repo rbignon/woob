@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -120,7 +118,7 @@ class CenetHomePage(LoggedPage, HTMLPage):
 
 class CenetJsonPage(JsonPage):
     def __init__(self, browser, response, *args, **kwargs):
-        super(CenetJsonPage, self).__init__(browser, response, *args, **kwargs)
+        super().__init__(browser, response, *args, **kwargs)
 
         # Why you are so ugly....
         self.doc = json.loads(self.doc["d"])
@@ -388,7 +386,7 @@ class CenetCardSummaryPage(LoggedPage, CenetJsonPage):
                 label = Dict("Libelle")(self)
                 label2 = Dict("Libelle2")(self)
                 if label2 and label2 != "None":
-                    return "%s %s" % (label, label2)
+                    return f"{label} {label2}"
                 else:
                     return label
 
@@ -444,7 +442,7 @@ class SubscriptionPage(LoggedPage, CenetJsonPage):
                 return datetime.fromtimestamp(date).date()
 
             def obj_label(self):
-                return "%s %s" % (CleanText(Dict("Libelle"))(self), Env("french_date")(self))
+                return "{} {}".format(CleanText(Dict("Libelle"))(self), Env("french_date")(self))
 
             def parse(self, el):
                 self.env["french_date"] = Field("date")(self).strftime("%d/%m/%Y")

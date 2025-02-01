@@ -136,8 +136,7 @@ class CesuBrowser(LoginBrowser):
     def iter_subscription(self):
         self.employees.go(employer=self.employer)
 
-        for sub in self.page.iter_subscriptions():
-            yield sub
+        yield from self.page.iter_subscriptions()
 
         s = Subscription()
         s.label = "Prélèvements"
@@ -197,8 +196,7 @@ class CesuBrowser(LoginBrowser):
 
                 has_results = len(self.page.get_objects()) > 0
 
-                for doc in self.page.iter_documents(subscription=subscription.id, employer=self.employer):
-                    yield doc
+                yield from self.page.iter_documents(subscription=subscription.id, employer=self.employer)
 
         elif subscription._type == "prelevements":
             # Start end of month
@@ -217,10 +215,8 @@ class CesuBrowser(LoginBrowser):
 
             has_results = len(self.page.get_objects()) > 0
 
-            for doc in self.page.iter_documents(subscription=subscription.id, employer=self.employer):
-                yield doc
+            yield from self.page.iter_documents(subscription=subscription.id, employer=self.employer)
 
         elif subscription._type == "taxcertificates":
             self.tax_certificates.go(employer=self.employer)
-            for doc in self.page.iter_documents(subscription=subscription.id, employer=self.employer):
-                yield doc
+            yield from self.page.iter_documents(subscription=subscription.id, employer=self.employer)

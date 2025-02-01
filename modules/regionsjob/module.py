@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -41,7 +39,7 @@ class RegionsjobModule(Module, CapJob):
 
     website_choices = OrderedDict(
         [
-            (k, "%s (%s)" % (v, k))
+            (k, f"{v} ({k})")
             for k, v in sorted(
                 {
                     "www.centrejob.com": "CentreJob",

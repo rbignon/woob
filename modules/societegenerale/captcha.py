@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Jocelyn Jaubert
 #
 # This file is part of a woob module.
@@ -26,11 +24,11 @@ from woob.tools.log import getLogger
 
 class TileError(Exception):
     def __init__(self, msg, tile=None):
-        super(TileError, self).__init__(msg)
+        super().__init__(msg)
         self.tile = tile
 
 
-class Captcha(object):
+class Captcha:
     # vk_visuel=swm_ngim : 240 x 240
     # vk_visuel= : 96 x 92
     def __init__(self, file, infos):
@@ -86,7 +84,7 @@ class Captcha(object):
                     self.map[num] = tile
 
 
-class Tile(object):
+class Tile:
     hash = {
         "e7438dc8d0b7db73a9611c2880700d23": 1,
         "111d88d6ea8671a7ca2982e08558743b": 2,

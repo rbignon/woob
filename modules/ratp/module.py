@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Phyks (Lucas Verney)
 #
 # This file is part of a woob module.
@@ -30,7 +28,7 @@ __all__ = ["RATPModule"]
 
 class RATPSensor(GaugeSensor):
     def __init__(self, gauge):
-        super(RATPSensor, self).__init__(id="%s_sensor" % gauge.id)
+        super().__init__(id="%s_sensor" % gauge.id)
         self.name = "%s status" % (gauge.name)
 
 

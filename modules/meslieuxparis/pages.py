@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Vincent A
 #
 # This file is part of a woob module.
@@ -40,7 +38,7 @@ def parsedate(s):
 class ListPage(JsonPage):
     def build_doc(self, content):
         content = content.strip()
-        return super(ListPage, self).build_doc(content)
+        return super().build_doc(content)
 
     @method
     class iter_contacts(DictElement):

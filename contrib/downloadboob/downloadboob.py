@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 
 import codecs
 import locale
@@ -56,7 +55,7 @@ def removeSpecial(s):
 DOWNLOAD_DIRECTORY = ".files"
 
 
-class Downloadboob(object):
+class Downloadboob:
 
     def __init__(self, backend_name, download_directory, links_directory):
         self.download_directory = download_directory
@@ -98,7 +97,7 @@ class Downloadboob(object):
         title_exclude=[],
         id_regexp=None,
     ):
-        print("For backend %s, search for '%s'" % (backend_name, pattern))
+        print(f"For backend {backend_name}, search for '{pattern}'")
 
         # create directory for links
         if not os.path.isdir(self.links_directory):
@@ -114,7 +113,7 @@ class Downloadboob(object):
             self.backend.fillobj(video, ("url", "title", "url", "duration", "ext"))
             if not self.is_downloaded(video):
                 if not (self.is_excluded(video.title, title_exclude)) and self.id_regexp_matched(video.id, id_regexp):
-                    print("  %s\n    Id:%s\n    Duration:%s" % (video.title, video.id, video.duration))
+                    print(f"  {video.title}\n    Id:{video.id}\n    Duration:{video.duration}")
                     videos.append(video)
             else:
                 print("Already downloaded, check %s" % video.id)
@@ -156,7 +155,7 @@ class Downloadboob(object):
 
         ext = self.get_downloaded_ext(video)
 
-        return "%s/%s.%s" % (directory, removeNonAscii(video.id), ext)
+        return f"{directory}/{removeNonAscii(video.id)}.{ext}"
 
     def get_linkname(self, video):
         if not os.path.exists(self.links_directory):
@@ -168,7 +167,7 @@ class Downloadboob(object):
         if not misc:
             misc = video.id
 
-        return "%s/%s (%s).%s" % (self.links_directory, removeSpecial(video.title), removeSpecial(misc), ext)
+        return f"{self.links_directory}/{removeSpecial(video.title)} ({removeSpecial(misc)}).{ext}"
 
     def is_downloaded(self, video):
         # check if the file is 0 byte
@@ -191,7 +190,7 @@ class Downloadboob(object):
         idname = self.get_filename(video, relative=True)
         absolute_idname = self.get_filename(video, relative=False)
         if not os.path.islink(linkname) and os.path.isfile(absolute_idname):
-            print("%s -> %s" % (linkname, idname))
+            print(f"{linkname} -> {idname}")
             os.symlink(idname, linkname)
 
     def do_download(self, video):
@@ -221,13 +220,13 @@ class Downloadboob(object):
             args = ("mimms", video.url, dest)
         elif "m3u8" == video.ext:
             _dest, _ = os.path.splitext(dest)
-            dest = "%s.%s" % (_dest, "mp4")
+            dest = "{}.{}".format(_dest, "mp4")
             content = tuple()
             baseurl = video.url.rpartition("/")[0]
             for line in self.read_url(video.url):
                 if not line.startswith("#"):
                     if not line.startswith("http"):
-                        line = "%s/%s" % (baseurl, line)
+                        line = f"{baseurl}/{line}"
                     content += (line,)
             args = (
                 (

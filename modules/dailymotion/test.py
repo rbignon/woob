@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -43,14 +41,14 @@ class DailymotionTest(BackendTest):
         self.assertTrue(len(l) > 0)
         v = choice(l)
         self.backend.fillobj(v, ("url",))
-        self.assertTrue(v.url and v.url.startswith("http://"), 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.assertTrue(v.url and v.url.startswith("http://"), f'URL for video "{v.id}" not found: {v.url}')
 
     def test_latest(self):
         l = list(itertools.islice(self.backend.iter_resources([BaseVideo], ["latest"]), 0, 20))
         assert len(l)
         v = choice(l)
         self.backend.fillobj(v, ("url",))
-        self.assertTrue(v.url and v.url.startswith("http://"), 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.assertTrue(v.url and v.url.startswith("http://"), f'URL for video "{v.id}" not found: {v.url}')
 
     def test_kids_video(self):
         l = list(itertools.islice(self.backend.search_videos(DailymotionTest.KIDS_VIDEO_TITLE), 0, 20))
@@ -62,7 +60,7 @@ class DailymotionTest(BackendTest):
             if DailymotionTest.KIDS_VIDEO_TITLE in video.title:
                 self.assertTrue(
                     video.url and video.url.startswith("http://"),
-                    'URL for video "%s" not found: %s' % (video.id, video.url),
+                    f'URL for video "{video.id}" not found: {video.url}',
                 )
                 return
 

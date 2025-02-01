@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon
 #
 # This file is part of a woob module.
@@ -32,11 +30,11 @@ class YoupornTest(BackendTest):
         self.assertTrue(len(l) > 0)
         v = l[0]
         v = self.backend.fillobj(v, ("url",))
-        self.assertTrue(v.url and v.url.startswith("https://"), 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.assertTrue(v.url and v.url.startswith("https://"), f'URL for video "{v.id}" not found: {v.url}')
 
     def test_latest(self):
         l = list(self.backend.iter_resources([BaseVideo], ["latest_nsfw"]))
         self.assertTrue(len(l) > 0)
         v = l[0]
         v = self.backend.fillobj(v, ("url",))
-        self.assertTrue(v.url and v.url.startswith("https://"), 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.assertTrue(v.url and v.url.startswith("https://"), f'URL for video "{v.id}" not found: {v.url}')

@@ -1,6 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
-from __future__ import print_function
 
 from woob.capabilities.collection import CapCollection, Collection
 from woob.capabilities.video import BaseVideo, CapVideo
@@ -19,8 +17,7 @@ class Videoobmc(Woobmc):
 
         fields = ["id", "title", "date", "description", "author", "duration", "thumbnail", "url"]
         try:
-            for video in self.woob.do(self._do_complete, self.count, fields, "search_videos", **kwargs):
-                yield video
+            yield from self.woob.do(self._do_complete, self.count, fields, "search_videos", **kwargs)
         except Exception as e:
             print(e)
 

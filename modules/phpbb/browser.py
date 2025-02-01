@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -43,7 +41,7 @@ class PhpBB(LoginBrowser):
 
     def __init__(self, url, *args, **kwargs):
         self.BASEURL = url
-        super(PhpBB, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def home(self):
         self.location(self.BASEURL)
@@ -79,7 +77,7 @@ class PhpBB(LoginBrowser):
         if id.startswith("http"):
             self.location(id)
         else:
-            self.location("%s/%s" % (self.BASEURL, id2url(id)))
+            self.location(f"{self.BASEURL}/{id2url(id)}")
         assert self.topic.is_here()
 
         parent = 0
@@ -101,7 +99,7 @@ class PhpBB(LoginBrowser):
         if id.startswith("http"):
             self.location(id)
         else:
-            self.location("%s/%s" % (self.BASEURL, id2url(id)))
+            self.location(f"{self.BASEURL}/{id2url(id)}")
         assert self.topic.is_here()
 
         child = None
@@ -126,7 +124,7 @@ class PhpBB(LoginBrowser):
             self.location(id)
             id = url2id(id)
         else:
-            self.location("%s/%s" % (self.BASEURL, id2url(id)))
+            self.location(f"{self.BASEURL}/{id2url(id)}")
         assert self.topic.is_here()
 
         post = self.page.get_post(int(id.split(".")[-1]))
@@ -163,7 +161,7 @@ class PhpBB(LoginBrowser):
                         break
 
             if not forum_id:
-                raise CantSendMessage('Forum "%s" not found.\n\n%s' % (m.group(1), forums_prompt))
+                raise CantSendMessage(f'Forum "{m.group(1)}" not found.\n\n{forums_prompt}')
 
             self.location("%s/posting.php?mode=post&f=%d" % (self.BASEURL, forum_id))
 
@@ -175,7 +173,7 @@ class PhpBB(LoginBrowser):
             if error:
                 raise CantSendMessage("Unable to send message: %s" % error)
         else:
-            self.location("%s/%s" % (self.BASEURL, id2url("%s.%s" % (forum_id, topic_id))))
+            self.location("{}/{}".format(self.BASEURL, id2url(f"{forum_id}.{topic_id}")))
             assert self.topic.is_here()
 
             self.page.go_reply()

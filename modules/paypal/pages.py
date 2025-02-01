@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013-2021      Romain Bignon
 #
 # This file is part of a woob module.
@@ -175,7 +173,7 @@ class AccountPage(HomePage):
             account.balance = CleanDecimal(replace_dots=True).filter(
                 li.xpath('.//span[contains(@class, "multiCurrency-label_right")]/text()')[0]
             )
-            account.label = "%s %s*" % (self.browser.username, account.currency)
+            account.label = f"{self.browser.username} {account.currency}*"
             accounts[account.id] = account
             self.browser.account_currencies.append(account.currency)
 
@@ -197,7 +195,7 @@ class AccountPage(HomePage):
                 primary_account.currency = Account.get_currency(balance)
                 primary_account.id = primary_account.currency
                 primary_account.balance = Decimal(FrenchTransaction.clean_amount(balance))
-                primary_account.label = "%s %s*" % (self.browser.username, primary_account.currency)
+                primary_account.label = f"{self.browser.username} {primary_account.currency}*"
 
             accounts[primary_account.id] = primary_account
 
@@ -206,8 +204,7 @@ class AccountPage(HomePage):
 
 class HistoryPage(LoggedPage):
     def iter_transactions(self, account):
-        for trans in self.parse(account):
-            yield trans
+        yield from self.parse(account)
 
     def parse(self, account):
         transactions = list()
@@ -229,7 +226,7 @@ class HistoryPage(LoggedPage):
         """
         if not isinstance(amount, Decimal):
             m = re.search(r"\D", amount.strip("€").strip("\xa0")[::-1])
-            amount = Decimal(re.sub(r"[^\d]", "", amount)) / Decimal((10 ** m.start())) if m else Decimal(amount)
+            amount = Decimal(re.sub(r"[^\d]", "", amount)) / Decimal(10 ** m.start()) if m else Decimal(amount)
 
         if is_credit:
             return abs(amount)
@@ -308,7 +305,7 @@ class ProHistoryPage(HistoryPage, JsonPage):
         else:
             t.amount = Decimal(str(transaction["netAmount"]["amountUnformatted"]))
         date = parse_french_date(transaction["transactionTime"])
-        raw = "%s %s" % (
+        raw = "{} {}".format(
             transaction["transactionDescription"]["description"],
             transaction["transactionDescription"]["name"],
         )
@@ -346,7 +343,7 @@ class PartHistoryPage(HistoryPage, JsonPage):
 
     def return_detail_page(self, link):
         return self.browser.open(
-            "%s%s" % (self.browser.BASEURL, link.replace(self.browser.BASEURL, "")),
+            "{}{}".format(self.browser.BASEURL, link.replace(self.browser.BASEURL, "")),
             headers={"Accept": "application/json"},
         ).page
 

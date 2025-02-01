@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -40,14 +38,12 @@ class LyricsdotcomBrowser(PagesBrowser):
         if criteria == "song":
             self.search.go(pattern=pattern, criteria=1)
             assert self.search.is_here()
-            for song in self.page.iter_lyrics():
-                yield song
+            yield from self.page.iter_lyrics()
         elif criteria == "artist":
             self.search.go(pattern=pattern, criteria=2)
             assert self.search.is_here()
             for artist in self.page.iter_artists():
-                for song in self.artistsong.go(id=artist.id).iter_lyrics():
-                    yield song
+                yield from self.artistsong.go(id=artist.id).iter_lyrics()
 
     def get_lyrics(self, id):
         return self.songLyrics.go(id=id).get_lyrics()

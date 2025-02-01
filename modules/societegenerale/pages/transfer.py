@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016 Baptiste Delpey
 #
 # This file is part of a woob module.
@@ -147,7 +145,7 @@ class TransferJson(LoggedPage, JsonPage):
         transfer = Transfer()
         transfer.id = json_response["idVirement"]
         transfer.label = json_response["motif"]
-        transfer.amount = CleanDecimal.French((CleanText(Dict("montantToDisplay"))))(json_response)
+        transfer.amount = CleanDecimal.French(CleanText(Dict("montantToDisplay")))(json_response)
         transfer.currency = json_response["devise"]
         transfer.exec_date = Date(Dict("dateExecution"), dayfirst=True)(json_response)
 

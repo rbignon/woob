@@ -42,7 +42,7 @@ class Movie(BaseObject):
     thumbnail_url = StringField("Url of movie thumbnail")
 
     def __init__(self, id, original_title, url=None):
-        super(Movie, self).__init__(id, url)
+        super().__init__(id, url)
         self.original_title = original_title
 
     def get_roles_by_person_name(self, name):
@@ -79,7 +79,7 @@ class Person(BaseObject):
     thumbnail_url = StringField("Url of person thumbnail")
 
     def __init__(self, id, name, url=None):
-        super(Person, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = name
 
     def get_roles_by_movie_title(self, title):

@@ -161,7 +161,7 @@ class AbstractElement:
 
         self.loaders = {}
 
-    def use_selector(self, func: _Filter | "ItemElement" | "ListElement" | Callable[[], Any], key: str | None = None):
+    def use_selector(self, func: _Filter | ItemElement | ListElement | Callable[[], Any], key: str | None = None):
         if isinstance(func, _Filter):
             func._obj = self
             func._key = key
@@ -248,8 +248,7 @@ class ListElement(AbstractElement):
         if self.item_xpath is not None:
             element_list = self.el.xpath(self.item_xpath)
             if element_list:
-                for el in element_list:
-                    yield el
+                yield from element_list
             elif self.empty_xpath is not None and not self.el.xpath(self.empty_xpath):
                 # Send a warning if no item_xpath node was found and an empty_xpath is defined
                 self.logger.warning("No element matched the item_xpath and the defined empty_xpath was not found!")
@@ -287,8 +286,7 @@ class ListElement(AbstractElement):
         self.check_next_page()
 
     def flush(self):
-        for obj in self.objects.values():
-            yield obj
+        yield from self.objects.values()
 
     def check_next_page(self):
         if not hasattr(self, "next_page"):
@@ -354,7 +352,7 @@ class _ItemElementMeta(type):
 
 class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
     _attrs = None
-    klass: Type | None = None
+    klass: type | None = None
     validate: Callable[[Any], bool] | None = None
     skip_optional_fields_errors: bool = False
 
@@ -504,7 +502,7 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
             else:
                 value = FetchError
         logger = getLogger("woob.browser.b2filters")
-        logger.log(DEBUG_FILTERS, "%s.%s = %r" % (self._random_id, key, value))
+        logger.log(DEBUG_FILTERS, f"{self._random_id}.{key} = {value!r}")
         setattr(self.obj, key, value)
 
 
@@ -522,7 +520,7 @@ class MetaAbstractItemElement(type):
             if parent_attr:
                 m = re.match(r"^[^.]+\.(.*)\.([^.]+)$", parent_attr)
                 path, klass_name = m.group(1, 2)
-                module = importlib.import_module("woob_modules.%s.%s" % (dct["PARENT"], path))
+                module = importlib.import_module("woob_modules.{}.{}".format(dct["PARENT"], path))
                 browser_klass = getattr(module, klass_name)
             else:
                 module = importlib.import_module("woob_modules.%s" % dct["PARENT"])

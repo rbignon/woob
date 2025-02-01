@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Pierre Mazière
 #
 # This file is part of a woob module.
@@ -133,7 +131,7 @@ class AudioAddictModule(Module, CapRadio, CapCollection):
     )
 
     def __init__(self, *a, **kw):
-        super(AudioAddictModule, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         if "FrescaRadio" in self.config["networks"].get():
             raise self.ConfigError("FresacaRadio does not exists anymore")
         self.RADIOS = {}
@@ -171,7 +169,7 @@ class AudioAddictModule(Module, CapRadio, CapCollection):
                     self.RADIOS = {}
                 if selectedNetwork not in self.RADIOS:
                     document = self.browser.request(
-                        "http://%s/%s" % (self.NETWORKS[selectedNetwork]["domain"], streamName)
+                        "http://{}/{}".format(self.NETWORKS[selectedNetwork]["domain"], streamName)
                     )
                     self.RADIOS[selectedNetwork] = {}
                     for info in document:
@@ -255,8 +253,8 @@ class AudioAddictModule(Module, CapRadio, CapCollection):
         stream = BaseAudioStream(0)
         stream.bitrate = self.NETWORKS[network]["streams"][defaultname]["rate"]
         stream.format = self.NETWORKS[network]["streams"][defaultname]["fmt"]
-        stream.title = "%s %skbps" % (stream.format, stream.bitrate)
-        stream.url = "http://%s/%s/%s.pls" % (self.NETWORKS[network]["domain"], defaultname, radioName)
+        stream.title = f"{stream.format} {stream.bitrate}kbps"
+        stream.url = "http://{}/{}/{}.pls".format(self.NETWORKS[network]["domain"], defaultname, radioName)
         radio.streams.append(stream)
         i = 1
         for name in self.NETWORKS[network]["streams"].keys():
@@ -265,8 +263,8 @@ class AudioAddictModule(Module, CapRadio, CapCollection):
             stream = BaseAudioStream(i)
             stream.bitrate = self.NETWORKS[network]["streams"][name]["rate"]
             stream.format = self.NETWORKS[network]["streams"][name]["fmt"]
-            stream.title = "%s %skbps" % (stream.format, stream.bitrate)
-            stream.url = "http://%s/%s/%s.pls" % (self.NETWORKS[network]["domain"], name, radioName)
+            stream.title = f"{stream.format} {stream.bitrate}kbps"
+            stream.url = "http://{}/{}/{}.pls".format(self.NETWORKS[network]["domain"], name, radioName)
 
             radio.streams.append(stream)
             i = i + 1

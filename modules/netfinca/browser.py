@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2019  Budget-Insight
 #
 # This file is part of a woob module.
@@ -58,8 +56,7 @@ class NetfincaBrowser(LoginBrowser):
         nump_id = self.page.get_nump_id(account)
         self.investments.go(nump_id=nump_id)
 
-        for invest in self.page.get_investments(account_currency=account.currency):
-            yield invest
+        yield from self.page.get_investments(account_currency=account.currency)
 
         liquidity = self.page.get_liquidity()
         if liquidity:

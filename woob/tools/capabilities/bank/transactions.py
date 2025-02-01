@@ -91,7 +91,7 @@ def parse_with_patterns(raw, obj, patterns):
                     else:
                         obj.rdate = datetime.date(yy, mm, dd)
                 except ValueError as e:
-                    raise ParseError("Unable to parse date in label %r: %s" % (raw, e))
+                    raise ParseError(f"Unable to parse date in label {raw!r}: {e}")
 
             break
 
@@ -104,7 +104,7 @@ class FrenchTransaction(Transaction):
     PATTERNS = []
 
     def __init__(self, id="", *args, **kwargs):
-        super(FrenchTransaction, self).__init__(id, *args, **kwargs)
+        super().__init__(id, *args, **kwargs)
         self._logger = getLogger("%s.FrenchTransaction" % __name__)
 
     @classmethod
@@ -179,7 +179,7 @@ class FrenchTransaction(Transaction):
         try:
             parse_with_patterns(self.raw, self, self.PATTERNS)
         except ParseError as e:
-            self._logger.warning("Unable to date in label %r: %s" % (self.raw, e))
+            self._logger.warning(f"Unable to date in label {self.raw!r}: {e}")
 
     @classproperty
     def TransactionElement(k):
@@ -208,11 +208,11 @@ class FrenchTransaction(Transaction):
 
     class Date(CleanText):
         def __call__(self, item):
-            date = super(FrenchTransaction.Date, self).__call__(item)
+            date = super().__call__(item)
             return date
 
         def filter(self, date):
-            date = super(FrenchTransaction.Date, self).filter(date)
+            date = super().filter(date)
             if date is None:
                 return NotAvailable
 
@@ -234,7 +234,7 @@ class FrenchTransaction(Transaction):
 
         class Filter(CleanText):
             def __call__(self, item):
-                raw = super(Filter, self).__call__(item)
+                raw = super().__call__(item)
                 if item.obj.rdate is NotLoaded:
                     item.obj.rdate = item.obj.date
 
@@ -242,14 +242,14 @@ class FrenchTransaction(Transaction):
                 return raw
 
             def filter(self, text):
-                text = super(Filter, self).filter(text)
+                text = super().filter(text)
                 return text.replace("\n", " ").strip()
 
         return Filter(*args, **kwargs)
 
     class Currency(CleanText):
         def filter(self, text):
-            text = super(FrenchTransaction.Currency, self).filter(text)
+            text = super().filter(text)
             return Account.get_currency(text)
 
     class Amount(Filter):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      François Revol
 #
 # This file is part of a woob module.
@@ -28,4 +26,4 @@ class LinuxJobsTest(BackendTest):
         l = list(self.backend.search_job("linux"))
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, l[0])
-        self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))
+        self.assertTrue(advert.url, f'URL for announce "{advert.id}" not found: {advert.url}')

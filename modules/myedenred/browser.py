@@ -67,7 +67,7 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
     authorize = URL(r"https://sso.eu.edenred.io/connect/authorize", AuthorizePage)
 
     def __init__(self, config, *args, **kwargs):
-        super(MyedenredBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.username = config["login"].get()
         self.password = config["password"].get()
@@ -180,7 +180,7 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
             headers["X-Client-Id"] = self.x_client_id
             headers["X-Client-Secret"] = self.x_client_secret
             headers["X-request-id"] = "edg_call"
-        return super(MyedenredBrowser, self).build_request(*args, **kwargs)
+        return super().build_request(*args, **kwargs)
 
     @need_login
     def iter_accounts(self):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Vincent A
 #
 # This file is part of a woob module.
@@ -79,7 +77,7 @@ class NaloBrowser(LoginBrowser):
             kwargs.setdefault("headers", {})["Accept"] = "application/json"
         if self.token:
             kwargs.setdefault("headers", {})["Authorization"] = "Token %s" % self.token
-        return super(NaloBrowser, self).build_request(*args, **kwargs)
+        return super().build_request(*args, **kwargs)
 
     @need_login
     def iter_accounts(self):

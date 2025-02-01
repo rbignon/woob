@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Roger Philibert
 #
 # This file is part of a woob module.
@@ -46,8 +44,7 @@ class SomaFMModule(Module, CapRadio, CapCollection):
         if Radio in objs:
             self._restrict_level(split_path)
 
-            for radio in self.browser.iter_radios():
-                yield radio
+            yield from self.browser.iter_radios()
 
     def get_radio(self, radio_id):
         for radio in self.browser.iter_radios():

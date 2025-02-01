@@ -29,7 +29,7 @@ class BandInfoFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ("id", "name", "genre", "year", "country", "description")
 
     def format_obj(self, obj, alias):
-        result = "\n%s%s%s\n" % (self.BOLD, obj.name, self.NC)
+        result = f"\n{self.BOLD}{obj.name}{self.NC}\n"
         if not empty(obj.genre):
             result += "Genre: %s\n" % obj.genre
         if not empty(obj.country):
@@ -37,7 +37,7 @@ class BandInfoFormatter(PrettyFormatter):
         if not empty(obj.year):
             result += "Formed in: %s\n" % obj.year
         if not empty(obj.description):
-            result += "%sDescription:%s\n" % (self.BOLD, self.NC)
+            result += f"{self.BOLD}Description:{self.NC}\n"
             result += "%s\n" % obj.description
         return result.strip()
 
@@ -76,7 +76,7 @@ class AlbumsFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ("id", "name", "album_type", "year", "reviews")
 
     def format_obj(self, obj, alias):
-        result = "\n%s%s%s\n" % (self.BOLD, obj.name, self.NC)
+        result = f"\n{self.BOLD}{obj.name}{self.NC}\n"
         if not empty(obj.album_type):
             result += "Album type: %s\n" % obj.album_type
         if not empty(obj.id):

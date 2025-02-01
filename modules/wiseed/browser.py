@@ -44,7 +44,7 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        super(WiseedBrowser, self).__init__(config["login"].get(), config["password"].get(), *args, **kwargs)
+        super().__init__(config["login"].get(), config["password"].get(), *args, **kwargs)
 
     def do_login(self):
         if self.session.cookies.get("refresh_token"):
@@ -135,8 +135,7 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
         }
         for invest_type, iter_invest in invest_types.items():
             if self.page.get_invest_list(invest_type):
-                for inv in iter_invest:
-                    yield inv
+                yield from iter_invest
 
     @need_login
     def get_profile(self):

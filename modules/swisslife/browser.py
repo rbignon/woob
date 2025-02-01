@@ -88,7 +88,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
     __states__ = ("mfauuid",)
 
     def __init__(self, config, domain, *args, **kwargs):
-        super(SwisslifeBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
         self.config = config
 
         # use to bypass captcha and sca for 90 days
@@ -355,7 +355,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
             pocket = Pocket()
             nature = natures.get(inv._nature)
             if nature:
-                pocket.label = ("%s %s" % (nature, profiles.get(inv._profile_type, ""))).strip()
+                pocket.label = ("{} {}".format(nature, profiles.get(inv._profile_type, ""))).strip()
             pocket.amount = inv.valuation
             pocket.quantity = inv.quantity
             pocket.availability_date = NotAvailable
@@ -381,8 +381,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
                 has_next_page = self.page.has_next_page(size)
                 index += size
                 if self.page.has_operations():
-                    for tr in self.page.iter_history():
-                        yield tr
+                    yield from self.page.iter_history()
         elif account._history_urls:
             for urls in account._history_urls:
                 try:
@@ -390,8 +389,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
                 except (ConnectionError, ServerError) as e:
                     # Error on swisslife website.
                     self.logger.error(e)
-                for tr in self.page.iter_history():
-                    yield tr
+                yield from self.page.iter_history()
         elif not account.url:
             raise NotImplementedError()
         # Article 39 accounts history
@@ -401,8 +399,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
                 "natureCodes": "A02A,A02B,A02D,A02T,B03A,B03C,B03I,B03R,B03S,B03T,C06A,C06J,C06L,C06M,C06S,C06P,C06B"
             }
             self.location("/api/v3/contratVieucEntreprise/operations/%s" % account.id, params=params)
-            for tr in sorted_transactions(self.page.iter_history()):
-                yield tr
+            yield from sorted_transactions(self.page.iter_history())
         elif "contratVieEuro" in account.url:
             # If there are no transactions, the request will fail
             try:
@@ -410,9 +407,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
             except (BrowserHTTPError, BrowserHTTPNotFound):
                 self.logger.warning("Could not access history for account %s", account.id)
             else:
-                for tr in sorted_transactions(self.page.iter_history()):
-                    yield tr
+                yield from sorted_transactions(self.page.iter_history())
         else:
             self.location(account.url)
-            for tr in sorted_transactions(self.page.iter_history()):
-                yield tr
+            yield from sorted_transactions(self.page.iter_history())

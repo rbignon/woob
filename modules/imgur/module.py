@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Vincent A
 #
 # This file is part of a woob module.
@@ -54,12 +52,12 @@ class Img(BaseImage):
 
     @property
     def raw_url(self):
-        return "https://i.imgur.com/%s.%s" % (self.id, self.ext)
+        return f"https://i.imgur.com/{self.id}.{self.ext}"
 
 
 class ImgGallery(BaseGallery):
     def __init__(self, *args, **kwargs):
-        super(ImgGallery, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._imgs = []
 
     @classmethod

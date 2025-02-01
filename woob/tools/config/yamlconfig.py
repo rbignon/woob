@@ -70,10 +70,10 @@ class YamlConfig(IConfig):
 
         LOGGER.debug("Loading configuration file: %s." % self.path)
         try:
-            with open(self.path, "r") as f:
+            with open(self.path) as f:
                 self.values = yaml.load(f, Loader=self.LOADER)  # nosec: bandit can't detect SafeLoader…
             LOGGER.debug("Configuration file loaded: %s." % self.path)
-        except IOError:
+        except OSError:
             self.save()
             LOGGER.debug("Configuration file created with default values: %s." % self.path)
 

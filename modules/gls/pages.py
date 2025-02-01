@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Matthieu Weber
 #
 # This file is part of a woob module.
@@ -43,7 +41,7 @@ class SearchPage(JsonPage):
 
     def build_event(self, index, data):
         event = Event(index)
-        date = "%s %s" % (data["date"], data["time"])
+        date = "{} {}".format(data["date"], data["time"])
         event.date = parse_date(date, dayfirst=False)
         event.location = ", ".join(
             [str(data["address"][field]) for field in ["city", "countryName"] if data["address"][field]]

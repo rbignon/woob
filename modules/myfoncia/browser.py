@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Phyks (Lucas Verney)
 #
 # This file is part of a woob module.
@@ -38,13 +36,13 @@ class MyFonciaSeleniumBrowser(SeleniumBrowser):
     def __init__(self, config, *args, **kwargs):
         self.username = config["login"].get()
         self.password = config["password"].get()
-        super(MyFonciaSeleniumBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _build_options(self, preferences):
         # MyFoncia login use a library called FingerprintJS
         # It can assert whether or not the user is a bot
         # To successfully pass the login, we have to
-        options = super(MyFonciaSeleniumBrowser, self)._build_options(preferences)
+        options = super()._build_options(preferences)
         # Hide the fact that the navigator is controlled by webdriver
         options.add_argument("--disable-blink-features=AutomationControlled")
         # Hardcode an User Agent so we don't expose Chrome is in headless mode
@@ -78,7 +76,7 @@ class MyFonciaBrowser(PagesBrowser, SubSeleniumMixin):
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        super(MyFonciaBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @need_login
     def get_subscriptions(self):
@@ -88,9 +86,7 @@ class MyFonciaBrowser(PagesBrowser, SubSeleniumMixin):
     @need_login
     def iter_documents(self, subscription):
         self.documents.go(subscription_id=subscription, letter=subscription[-1])
-        for document in self.page.iter_documents(subscription_id=subscription):
-            yield document
+        yield from self.page.iter_documents(subscription_id=subscription)
 
         self.fees.go(subscription_id=subscription)
-        for fee in self.page.iter_fees():
-            yield fee
+        yield from self.page.iter_fees()

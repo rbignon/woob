@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Sylvie Ye
 #
 # This file is part of a woob module.
@@ -51,7 +49,7 @@ class ErrorCheckedJsonPage(JsonPage):
         raise AssertionError("Something went wrong: %s" % self.doc["commun"]["raison"])
 
 
-class LoggedDetectionMixin(object):
+class LoggedDetectionMixin:
     @property
     def logged(self):
         return Dict("commun/raison", default=None)(self.doc) != "niv_auth_insuff"
@@ -221,7 +219,7 @@ class TransferPage(LoggedDetectionMixin, ErrorCheckedJsonPage):
 class ConfirmTransferPage(LoggedDetectionMixin, ErrorCheckedJsonPage):
     def on_load(self):
         try:
-            super(ConfirmTransferPage, self).on_load()
+            super().on_load()
 
         except AssertionError:
             reason = Dict("commun/raison")(self.doc)

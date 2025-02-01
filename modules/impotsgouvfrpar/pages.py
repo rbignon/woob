@@ -164,7 +164,7 @@ class DocumentsPage(LoggedPage, HTMLPage):
             def obj_id(self):
                 # hash _idEnsua to reduce his size at 32 char
                 hash = hashlib.sha1(Field("_idEnsua")(self).encode("utf-8")).hexdigest()
-                return "%s_%s" % (Env("subid")(self), hash)
+                return "{}_{}".format(Env("subid")(self), hash)
 
             obj_date = Date(Env("date"))
             obj_label = Env("label")

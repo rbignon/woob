@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Bezleputh
 #
 # This file is part of a woob module.
@@ -94,7 +92,7 @@ class CitiesPage(JsonPage):
 class HousingPage(XMLPage):
 
     def build_doc(self, content):
-        doc = super(HousingPage, self).build_doc(content).getroot()
+        doc = super().build_doc(content).getroot()
         for elem in doc.iter():
             if not hasattr(elem.tag, "find"):
                 continue

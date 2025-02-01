@@ -22,7 +22,7 @@ from woob.browser.filters.standard import CleanText
 from woob.browser.pages import HTMLPage
 
 
-class Article(object):
+class Article:
     author = ""
     title = ""
 

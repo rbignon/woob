@@ -31,7 +31,7 @@ class RecipeInfoFormatter(IFormatter):
     MANDATORY_FIELDS = ("id", "title", "preparation_time", "ingredients", "instructions")
 
     def format_obj(self, obj, alias):
-        result = "%s%s%s\n" % (self.BOLD, obj.title, self.NC)
+        result = f"{self.BOLD}{obj.title}{self.NC}\n"
         result += "ID: %s\n" % obj.fullid
         if not empty(obj.author):
             result += "Author: %s\n" % obj.author
@@ -42,13 +42,13 @@ class RecipeInfoFormatter(IFormatter):
         if not empty(obj.nb_person):
             nbstr = "-".join(str(num) for num in obj.nb_person)
             result += "Amount of people: %s\n" % nbstr
-        result += "\n%sIngredients%s\n" % (self.BOLD, self.NC)
+        result += f"\n{self.BOLD}Ingredients{self.NC}\n"
         for i in obj.ingredients:
             result += "  * %s\n" % i
-        result += "\n%sInstructions%s\n" % (self.BOLD, self.NC)
+        result += f"\n{self.BOLD}Instructions{self.NC}\n"
         result += "%s\n" % obj.instructions
         if not empty(obj.comments):
-            result += "\n%sComments%s\n" % (self.BOLD, self.NC)
+            result += f"\n{self.BOLD}Comments{self.NC}\n"
             for c in obj.comments:
                 result += "  * %s\n" % c
         return result
@@ -132,8 +132,8 @@ class AppRecipes(ReplApplication):
                 try:
                     with codecs.open(dest, "w", "utf-8") as f:
                         f.write(xmlstring)
-                except IOError as e:
-                    print('Unable to write .kreml in "%s": %s' % (dest, e), file=self.stderr)
+                except OSError as e:
+                    print(f'Unable to write .kreml in "{dest}": {e}', file=self.stderr)
                     return 1
             return
         print('Recipe "%s" not found' % id, file=self.stderr)

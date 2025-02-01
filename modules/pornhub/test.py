@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016 Roger Philibert
 #
 # This file is part of a woob module.
@@ -33,7 +31,7 @@ class PornhubTest(BackendTest):
         self.assertTrue(len(l) > 0)
         v = l[0]
         self.backend.fillobj(v, ("url",))
-        self.assertTrue(v.url and v.url.startswith("http://"), 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.assertTrue(v.url and v.url.startswith("http://"), f'URL for video "{v.id}" not found: {v.url}')
         r = self.backend.browser.open(v.url, stream=True)
         self.assertTrue(r.status_code == 200)
 
@@ -42,4 +40,4 @@ class PornhubTest(BackendTest):
         self.assertTrue(len(l) > 0)
         v = l[0]
         self.backend.fillobj(v, ("url",))
-        self.assertTrue(v.url and v.url.startswith("http://"), 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.assertTrue(v.url and v.url.startswith("http://"), f'URL for video "{v.id}" not found: {v.url}')

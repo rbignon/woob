@@ -30,7 +30,7 @@ class JsonFormatter(IFormatter):
     """
 
     def __init__(self):
-        super(JsonFormatter, self).__init__()
+        super().__init__()
         self.queue = []
 
     def flush(self):

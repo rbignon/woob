@@ -29,9 +29,9 @@ class RentedListFormatter(PrettyFormatter):
     RED = "[1;31m"
 
     def get_title(self, obj):
-        s = "%s — %s (%s)" % (obj.author, obj.name, obj.date)
+        s = f"{obj.author} — {obj.name} ({obj.date})"
         if obj.late:
-            s += " %sLATE!%s" % (self.RED, self.NC)
+            s += f" {self.RED}LATE!{self.NC}"
         return s
 
 

@@ -29,17 +29,17 @@ class HousingFormatter(IFormatter):
     MANDATORY_FIELDS = ("id", "title", "cost", "currency", "area", "date", "text")
 
     def format_obj(self, obj, alias):
-        result = "%s%s%s\n" % (self.BOLD, obj.title, self.NC)
+        result = f"{self.BOLD}{obj.title}{self.NC}\n"
         result += "ID: %s\n" % obj.fullid
 
         if hasattr(obj, "url") and obj.url:
             result += "URL: %s\n" % obj.url
 
-        result += "Cost: %s%s %s\n" % (obj.cost, obj.currency, obj.utilities)
+        result += f"Cost: {obj.cost}{obj.currency} {obj.utilities}\n"
         area = "%.2fm²" % (obj.area) if obj.area else "%s" % obj.area
         result += "Area: %s\n" % area
         if hasattr(obj, "price_per_meter") and not empty(obj.price_per_meter):
-            result += "Price per square meter: %.2f %s/m²\n" % (obj.price_per_meter, obj.currency)
+            result += f"Price per square meter: {obj.price_per_meter:.2f} {obj.currency}/m²\n"
         if hasattr(obj, "rooms") and not empty(obj.rooms):
             result += "Rooms: %d\n" % (obj.rooms)
         if hasattr(obj, "bedrooms") and not empty(obj.bedrooms):
@@ -53,17 +53,17 @@ class HousingFormatter(IFormatter):
             result += "Station: %s\n" % obj.station
 
         if hasattr(obj, "photos") and obj.photos:
-            result += "\n%sPhotos%s\n" % (self.BOLD, self.NC)
+            result += f"\n{self.BOLD}Photos{self.NC}\n"
             for photo in obj.photos:
                 result += " * %s\n" % photo.url
 
-        result += "\n%sDescription%s\n" % (self.BOLD, self.NC)
+        result += f"\n{self.BOLD}Description{self.NC}\n"
         result += obj.text
 
         if hasattr(obj, "details") and obj.details:
-            result += "\n\n%sDetails%s\n" % (self.BOLD, self.NC)
+            result += f"\n\n{self.BOLD}Details{self.NC}\n"
             for key, value in obj.details.items():
-                result += " %s: %s\n" % (key, value)
+                result += f" {key}: {value}\n"
 
         return result
 
@@ -72,7 +72,7 @@ class HousingListFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ("id", "title", "cost", "text")
 
     def get_title(self, obj):
-        return "%s%s %s - %s" % (obj.cost, obj.currency, obj.utilities, obj.title)
+        return f"{obj.cost}{obj.currency} {obj.utilities} - {obj.title}"
 
     def get_description(self, obj):
         result = ""
@@ -112,7 +112,7 @@ class AppHousing(ReplApplication):
         query.cities = []
         while pattern:
             if len(query.cities) > 0:
-                print("\n%sSelected cities:%s %s" % (self.BOLD, self.NC, ", ".join([c.name for c in query.cities])))
+                print("\n{}Selected cities:{} {}".format(self.BOLD, self.NC, ", ".join([c.name for c in query.cities])))
             pattern = self.ask("Enter a city pattern (or empty to stop)", default="")
             if not pattern:
                 break
@@ -232,7 +232,7 @@ class AppHousing(ReplApplication):
 
         if not query_name:
             for name in queries.keys():
-                print("  %s* %s %s" % (self.BOLD, self.NC, name))
+                print(f"  {self.BOLD}* {self.NC} {name}")
             query_name = self.ask("Which one")
 
         if query_name in queries:

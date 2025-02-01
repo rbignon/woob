@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2012 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -74,8 +72,7 @@ class JsonAccSum(LoggedPage, JsonBasePage):
             for country in self.page.doc.get("countriesAccountList"):
                 for acc in country.get("acctLiteWrapper"):
                     yield acc
-                    for subacc in acc.get("subAcctInfo"):
-                        yield subacc
+                    yield from acc.get("subAcctInfo")
 
         class item(ItemElement):
             klass = Account

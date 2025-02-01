@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -30,8 +28,7 @@ class HomePage(HTMLPage):
         form["q"] = pattern
         form.submit()
         assert self.browser.search.is_here()
-        for subtitle in self.browser.page.iter_subtitles(language):
-            yield subtitle
+        yield from self.browser.page.iter_subtitles(language)
 
 
 class SearchPage(HTMLPage):
@@ -45,10 +42,9 @@ class SearchPage(HTMLPage):
                 if len(line.xpath(".//img[@alt=$alt]", alt=language)) > 0:
                     (link,) = line.xpath(".//a")
                     href = link.attrib.get("href", "")
-                    self.browser.location("%s%s" % (self.browser.BASEURL, href))
+                    self.browser.location(f"{self.browser.BASEURL}{href}")
                     assert self.browser.serie.is_here()
-                    for subtitle in self.browser.page.iter_subtitles(language):
-                        yield subtitle
+                    yield from self.browser.page.iter_subtitles(language)
 
 
 class SeriePage(HTMLPage):
@@ -73,10 +69,9 @@ class SeriePage(HTMLPage):
             other_seasons_links = self.doc.xpath('//p[has-class("description")]//a')
             for link in other_seasons_links:
                 href = link.attrib.get("href", "")
-                self.browser.location("%s/%s" % (self.browser.BASEURL, href))
+                self.browser.location(f"{self.browser.BASEURL}/{href}")
                 assert self.browser.serie.is_here()
-                for subtitle in self.browser.page.iter_subtitles(language, True):
-                    yield subtitle
+                yield from self.browser.page.iter_subtitles(language, True)
 
 
 class SeasonPage(HTMLPage):
@@ -86,7 +81,7 @@ class SeasonPage(HTMLPage):
         filename_line = self.doc.xpath('//img[@alt="filename"]')[0].getparent().getparent()
         name = to_unicode(filename_line.xpath(".//td")[2].text)
         id = self.url.split("/")[-1].replace(".html", "").replace("subtitle-", "")
-        url = "%s/download-%s.html" % (self.browser.BASEURL, id)
+        url = f"{self.browser.BASEURL}/download-{id}.html"
         (amount_line,) = self.doc.xpath('//tr[contains(@title, "amount")]')
         nb_cd = int(amount_line.xpath(".//td")[2].text)
         lang = url.split("-")[-1].split(".html")[0]

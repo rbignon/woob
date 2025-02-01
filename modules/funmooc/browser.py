@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Vincent A
 #
 # This file is part of a woob module.
@@ -47,7 +45,7 @@ class FunmoocBrowser(LoginBrowser):
     file = URL(r"https://.*\.cloudfront\.net/videos/(?P<id>[^/]+)/" r"(?P<quality>\w+)\.mp4")
 
     def __init__(self, username, password, quality="hd", *args, **kwargs):
-        super(FunmoocBrowser, self).__init__(username, password, *args, **kwargs)
+        super().__init__(username, password, *args, **kwargs)
         self.quality = quality
 
     def do_login(self):

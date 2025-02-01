@@ -567,8 +567,7 @@ class BumbleBrowser(StatesMixin, APIBrowser):
         }
         r = self.call("?SERVER_GET_USER_LIST", data)
 
-        for user in r["body"][0]["client_user_list"]["section"][-1]["users"]:
-            yield user
+        yield from r["body"][0]["client_user_list"]["section"][-1]["users"]
 
     @need_login
     def get_my_user(self):

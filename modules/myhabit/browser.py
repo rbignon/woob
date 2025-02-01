@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Oleg Plakhotniuk
 #
 # This file is part of a woob module.
@@ -193,7 +191,7 @@ class MyHabit(LoginBrowser):
     def location(self, *args, **kwargs):
         for i in range(self.MAX_RETRIES):
             try:
-                return super(MyHabit, self).location(*args, **kwargs)
+                return super().location(*args, **kwargs)
             except Timeout as e:
                 last_error = e
         raise last_error

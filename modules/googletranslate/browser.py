@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Lucien Loiseau
 #
 # This file is part of a woob module.
@@ -77,7 +75,7 @@ class GoogleTranslateBrowser(PagesBrowser):
             rpc = [[[grpc.name, escaped_parameter, None, "generic"]]]
             espaced_rpc = json.dumps(rpc, separators=(",", ":"))
 
-            self.translate_page.go(data="f.req={}&".format(quote(espaced_rpc)), rpcid=grpc.name)
+            self.translate_page.go(data=f"f.req={quote(espaced_rpc)}&", rpcid=grpc.name)
             res = self.page.get_translation(grpc.result_handler)
             if not empty(res):
                 return res

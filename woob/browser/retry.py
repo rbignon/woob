@@ -116,7 +116,7 @@ class RetryLoginBrowser(LoginBrowser):
     """
 
     def __init__(self, *args, **kwargs):
-        super(RetryLoginBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logging_in = 0
 
         if not hasattr(self.do_login, "login_decorated"):

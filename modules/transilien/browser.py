@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Julien Hébert, Romain Bignon
 # Copyright(C) 2014 Benjamin Carton
 #

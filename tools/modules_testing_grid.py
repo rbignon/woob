@@ -15,7 +15,7 @@ import xunitparser
 
 
 def main(xunit, origin):
-    with open(xunit, "r") as fh:
+    with open(xunit) as fh:
         ts, tr = xunitparser.parse(fh)
 
     # Get test results for each module

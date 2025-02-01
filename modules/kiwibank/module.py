@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015 Cédric Félizard
 #
 # This file is part of a woob module.
@@ -48,5 +46,4 @@ class KiwibankModule(Module, CapBank):
         return self.browser.get_accounts()
 
     def iter_history(self, account):
-        for transaction in self.browser.get_history(account):
-            yield transaction
+        yield from self.browser.get_history(account)

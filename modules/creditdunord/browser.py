@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -246,8 +244,7 @@ class CreditDuNordBrowser(LoginBrowser):
             else:
                 history = self.page.iter_history(account_type=account.type)
 
-            for transaction in sorted_transactions(history):
-                yield transaction
+            yield from sorted_transactions(history)
 
             has_transactions = self.page.has_transactions(account._has_investments)
             current_page = current_page + 1
@@ -257,8 +254,7 @@ class CreditDuNordBrowser(LoginBrowser):
         if account._has_investments:
             self.investments.go(data={"an200_bankAccountId": account._custom_id})
             if self.page.has_investments():
-                for investment in self.page.iter_investment():
-                    yield investment
+                yield from self.page.iter_investment()
             else:
                 yield create_french_liquidity(account.balance)
 

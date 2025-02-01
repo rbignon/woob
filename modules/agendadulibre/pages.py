@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -107,7 +105,7 @@ class EventListPage(HTMLPage):
                 if (self.env["date_to"] is None and start < self.env["max_date"]) or (
                     self.env["date_to"] is not None and datetime.combine(next_month, time.min) < self.env["date_to"]
                 ):
-                    return "/events?start_date=%s%s" % (next_month.strftime("%Y-%m-%d"), region)
+                    return "/events?start_date={}{}".format(next_month.strftime("%Y-%m-%d"), region)
 
         class item(ItemElement):
             klass = AgendaDuLibreCalendarEvent

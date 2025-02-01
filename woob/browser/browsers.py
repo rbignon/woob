@@ -126,7 +126,7 @@ class Browser:
     if it is within the same domain.
     """
 
-    HTTP_ADAPTER_CLASS: ClassVar[Type[HTTPAdapter]] = HTTPAdapter
+    HTTP_ADAPTER_CLASS: ClassVar[type[HTTPAdapter]] = HTTPAdapter
     """
     Adapter class to use.
     """
@@ -160,9 +160,9 @@ class Browser:
     def __init__(
         self,
         logger: Logger | None = None,
-        proxy: Dict[str, str] | None = None,
+        proxy: dict[str, str] | None = None,
         responses_dirname: str | None = None,
-        proxy_headers: Dict[str, str] | None = None,
+        proxy_headers: dict[str, str] | None = None,
         woob: None = None,
         weboob: None = None,
         *,
@@ -286,10 +286,10 @@ class Browser:
 
             request = response.request
             with open(response_filepath + "-request.txt", "w", encoding="utf-8") as f:
-                f.write("%s %s\n\n\n" % (request.method, request.url))
+                f.write(f"{request.method} {request.url}\n\n\n")
 
                 for key, value in request.headers.items():
-                    f.write("%s: %s\n" % (key, value))
+                    f.write(f"{key}: {value}\n")
                 if request.body is not None:  # separate '' from None
                     body = request.body if isinstance(request.body, str) else request.body.decode()
                     f.write("\n\n\n%s" % body)
@@ -299,9 +299,9 @@ class Browser:
             with open(response_filepath + "-response.txt", "w", encoding="utf-8") as f:
                 if hasattr(response.elapsed, "total_seconds"):
                     f.write("Time: %3.3fs\n" % response.elapsed.total_seconds())
-                f.write("%s %s\n\n\n" % (response.status_code, response.reason))
+                f.write(f"{response.status_code} {response.reason}\n\n\n")
                 for key, value in response.headers.items():
-                    f.write("%s: %s\n" % (key, value))
+                    f.write(f"{key}: {value}\n")
 
             with open(response_filepath, "wb") as f:
                 f.write(response.content)
@@ -311,7 +311,7 @@ class Browser:
                 f.write(
                     "# %d %s %s\n" % (response.status_code, response.reason, response.headers.get("Content-Type", ""))
                 )
-                f.write("%s\t%s\n" % (response.url, filename))
+                f.write(f"{response.url}\t{filename}\n")
 
         self.har_manager.save_response(slug, response)
 
@@ -345,10 +345,10 @@ class Browser:
             )
 
             with open(request_filepath, "w", encoding="utf-8") as f:
-                f.write("%s %s\n\n\n" % (request.method, request.url))
+                f.write(f"{request.method} {request.url}\n\n\n")
 
                 for key, value in request.headers.items():
-                    f.write("%s: %s\n" % (key, value))
+                    f.write(f"{key}: {value}\n")
 
                 if request.body is not None:  # separate '' from None
                     body = request.body if isinstance(request.body, str) else request.body.decode()
@@ -384,7 +384,7 @@ class Browser:
                 # urllib3 is too old, warnings won't be disable
                 pass
 
-        adapter_kwargs: Dict[str, Any] = {}
+        adapter_kwargs: dict[str, Any] = {}
 
         # defines a max_retries. It's mandatory in case a server is not
         # handling keep alive correctly, like the proxy burp
@@ -443,8 +443,8 @@ class Browser:
         stream: bool | None = None,
         timeout: float | None = None,
         verify: str | bool | None = None,
-        cert: str | Tuple[str, str] | None = None,
-        proxies: Dict | None = None,
+        cert: str | tuple[str, str] | None = None,
+        proxies: dict | None = None,
         data_encoding: str | None = None,
         is_async: bool = False,
         callback: Callable[[requests.Response], requests.Response] | None = None,
@@ -615,12 +615,12 @@ class Browser:
         * :class:`~woob.browser.exceptions.ServerError` for 5xx errors
         """
         if 400 <= response.status_code < 500:
-            http_error_msg = "%s Client Error: %s" % (response.status_code, response.reason)
+            http_error_msg = f"{response.status_code} Client Error: {response.reason}"
             if response.status_code == 404:
                 raise HTTPNotFound(http_error_msg, response=response)
             raise ClientError(http_error_msg, response=response)
         elif 500 <= response.status_code < 600:
-            http_error_msg = "%s Server Error: %s" % (response.status_code, response.reason)
+            http_error_msg = f"{response.status_code} Server Error: {response.reason}"
             raise ServerError(http_error_msg, response=response)
 
         # in case we did not catch something that should be
@@ -816,7 +816,7 @@ class DomainBrowser(Browser):
     See :meth:`absurl()`.
     """
 
-    RESTRICT_URL: ClassVar[bool | List[str]] = False
+    RESTRICT_URL: ClassVar[bool | list[str]] = False
     """
     URLs allowed to load.
     This can be used to force SSL (if the :attr:`BASEURL` is SSL) or any other leakage.
@@ -1036,7 +1036,7 @@ class PagesBrowser(DomainBrowser):
 
             return callback(response)
 
-        return super(PagesBrowser, self).open(callback=internal_callback, *args, **kwargs)
+        return super().open(callback=internal_callback, *args, **kwargs)
 
     def location(self, *args, **kwargs) -> requests.Response:
         """
@@ -1093,8 +1093,7 @@ class PagesBrowser(DomainBrowser):
         """
         while True:
             try:
-                for r in func(*args, **kwargs):
-                    yield r
+                yield from func(*args, **kwargs)
             except NextPage as e:
                 self.location(e.request)
             else:
@@ -1166,7 +1165,7 @@ class StatesMixin:
     specific stuff.
     """
 
-    __states__: ClassVar[Tuple[str, ...]] = ()
+    __states__: ClassVar[tuple[str, ...]] = ()
     """
     Saved state variables.
     """
@@ -1328,7 +1327,7 @@ class MetaBrowser(type):
             if parent_attr:
                 m = MetaBrowser._parent_attr_re.match(parent_attr)
                 path, klass_name = m.group(1, 2)
-                module = importlib.import_module("woob_modules.%s.%s" % (dct["PARENT"], path))
+                module = importlib.import_module("woob_modules.{}.{}".format(dct["PARENT"], path))
                 klass = getattr(module, klass_name)
             else:
                 module = importlib.import_module("woob_modules.%s" % dct["PARENT"])
@@ -1394,7 +1393,7 @@ class OAuth2Mixin(StatesMixin):
     def build_request(self, *args, **kwargs) -> requests.Request:
         headers = kwargs.setdefault("headers", {})
         if self.access_token:
-            headers["Authorization"] = "{} {}".format(self.token_type, self.access_token)
+            headers["Authorization"] = f"{self.token_type} {self.access_token}"
         return super().build_request(*args, **kwargs)
 
     def dump_state(self) -> dict:
@@ -1498,7 +1497,7 @@ class OAuth2Mixin(StatesMixin):
 
         return self.open(self.ACCESS_TOKEN_URI, data=data)
 
-    def request_access_token(self, auth_uri: str | Dict):
+    def request_access_token(self, auth_uri: str | dict):
         self.logger.info("requesting access token")
 
         if isinstance(auth_uri, dict):

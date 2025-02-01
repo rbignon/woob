@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -50,19 +48,19 @@ class SeLogerBrowser(PagesBrowser):
 
         rooms = ""
         if nb_rooms:
-            rooms = "&rooms={}".format(nb_rooms if nb_rooms <= 5 else 5)
+            rooms = f"&rooms={nb_rooms if nb_rooms <= 5 else 5}"
 
         viager = ""
         if _type not in TYPES:
             raise TypeNotSupported()
         elif _type != POSTS_TYPES.VIAGER:
-            _type = "{}".format(TYPES.get(_type))
+            _type = f"{TYPES.get(_type)}"
             viager = "&natures=1,2,4"
         else:
             _type = TYPES.get(_type)
 
-        places = ",".join(["{}".format(c) for c in cities])
-        places = '[{{"inseeCodes": [{}]}}]'.format(places)
+        places = ",".join([f"{c}" for c in cities])
+        places = f'[{{"inseeCodes": [{places}]}}]'
 
         ret = ",".join([RET.get(t) for t in house_types if t in RET])
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Roger Philibert
 #
 # This file is part of a woob module.
@@ -65,7 +63,7 @@ class SomaFMBrowser(PagesBrowser):
                         stream.bitrate = 0
                         bitrate = subtag.tag.replace("pls", "")
                     stream.format = subtag.get("format")
-                    stream.title = "%s/%s" % (bitrate, stream.format)
+                    stream.title = f"{bitrate}/{stream.format}"
                     stream.url = subtag.text
                     radio.streams.append(stream)
                     stream_id += 1

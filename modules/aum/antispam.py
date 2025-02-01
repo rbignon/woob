@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon
 #
 # This file is part of a woob module.
@@ -20,7 +18,7 @@
 import re
 
 
-class AntiSpam(object):
+class AntiSpam:
     def check_thread(self, thread):
         resume = thread["title"]
 

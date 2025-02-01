@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018 Quentin Defenouillere
 #
 # This file is part of woob.
@@ -43,20 +41,17 @@ class MetalArchivesBrowser(LoginBrowser):
         self.login.go(data=d)
 
     def iter_band_search(self, pattern):
-        for band in self.bands.go(pattern=pattern).iter_bands():
-            yield band
+        yield from self.bands.go(pattern=pattern).iter_bands()
 
     def get_info(self, id):
         return self.band.go(band_id=id).get_info()
 
     def get_albums(self, id):
-        for album in self.albums.go(band_id=id).iter_albums():
-            yield album
+        yield from self.albums.go(band_id=id).iter_albums()
 
     @need_login
     def get_favorites(self):
-        for favorite in self.favorites.go().iter_favorites():
-            yield favorite
+        yield from self.favorites.go().iter_favorites()
 
     @need_login
     def get_suggestions(self, bands):

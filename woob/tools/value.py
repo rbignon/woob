@@ -37,7 +37,7 @@ class ValuesDict(OrderedDict):
     """
 
     def __init__(self, *values):
-        super(ValuesDict, self).__init__()
+        super().__init__()
         for v in values:
             self[v.id] = v
 
@@ -116,7 +116,7 @@ class Value:
         self.choices = kwargs.get("choices", None)
         self.aliases = kwargs.get("aliases")
         if isinstance(self.choices, (list, tuple)):
-            self.choices = OrderedDict(((v, v) for v in self.choices))
+            self.choices = OrderedDict((v, v) for v in self.choices)
         self.tiny = kwargs.get("tiny", None)
         self.transient = kwargs.get("transient", None)
         self.masked = kwargs.get("masked", False)
@@ -198,7 +198,7 @@ class ValueTransient(Value):
         kwargs.setdefault("transient", True)
         kwargs.setdefault("default", None)
         kwargs.setdefault("required", False)
-        super(ValueTransient, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def dump(self):
         return ""
@@ -212,7 +212,7 @@ class ValueBackendPassword(Value):
     def __init__(self, *args, **kwargs):
         kwargs["masked"] = kwargs.pop("masked", True)
         self.noprompt = kwargs.pop("noprompt", False)
-        super(ValueBackendPassword, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.default = kwargs.get("default", "")
 
     def load(self, domain, password, requests):
@@ -225,7 +225,7 @@ class ValueBackendPassword(Value):
         if passwd == "":
             # always allow empty passwords
             return True
-        return super(ValueBackendPassword, self).check_valid(passwd)
+        return super().check_valid(passwd)
 
     def set(self, passwd):
         self.check_valid(passwd)
@@ -271,7 +271,7 @@ class ValueBackendPassword(Value):
 class ValueInt(Value):
     def __init__(self, *args, **kwargs):
         kwargs["regexp"] = r"^\d+$"
-        super(ValueInt, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.default = kwargs.get("default", 0)
 
     def get(self):
@@ -281,7 +281,7 @@ class ValueInt(Value):
 class ValueFloat(Value):
     def __init__(self, *args, **kwargs):
         kwargs["regexp"] = r"^[\d\.]+$"
-        super(ValueFloat, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.default = kwargs.get("default", 0.0)
 
     def check_valid(self, v):
@@ -297,7 +297,7 @@ class ValueFloat(Value):
 class ValueBool(Value):
     def __init__(self, *args, **kwargs):
         kwargs["choices"] = {"y": "True", "n": "False"}
-        super(ValueBool, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.default = kwargs.get("default", False)
 
     def check_valid(self, v):
@@ -331,7 +331,7 @@ class ValueDate(Value):
 
     def __init__(self, *args, **kwargs):
         formats = tuple(kwargs.pop("formats", ()))
-        super(ValueDate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if formats:
             self.preferred_format = formats[0]

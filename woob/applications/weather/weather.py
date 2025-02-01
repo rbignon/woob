@@ -51,7 +51,7 @@ class CurrentFormatter(IFormatter):
     temperature_display = staticmethod(lambda t: "%s" % t.value)
 
     def format_obj(self, obj, alias):
-        result = "%s%s%s: %s" % (self.BOLD, obj.date, self.NC, self.temperature_display(obj.temp))
+        result = f"{self.BOLD}{obj.date}{self.NC}: {self.temperature_display(obj.temp)}"
         if hasattr(obj, "text") and obj.text:
             result += " - %s" % obj.text
         return result

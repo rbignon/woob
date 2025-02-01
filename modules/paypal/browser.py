@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013-2021      Romain Bignon
 #
 # This file is part of a woob module.
@@ -102,7 +100,7 @@ class Paypal(LoginBrowser):
         self.BEGINNING = datetime.date.today() - relativedelta(months=24)
         self.account_type = None
         self.account_currencies = list()
-        super(Paypal, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def do_login(self):
         assert isinstance(self.username, str)
@@ -188,8 +186,7 @@ class Paypal(LoginBrowser):
     @need_login
     def get_download_history(self, account, step_min=None, step_max=None):
         if self.account_type == "perso":
-            for i in self.get_personal_history(account):
-                yield i
+            yield from self.get_personal_history(account)
         else:
             if step_min is None and step_max is None:
                 step_min = 30
@@ -211,14 +208,13 @@ class Paypal(LoginBrowser):
 
             assert step_max <= 365 * 2  # PayPal limitations as of 2014-06-16
             try:
-                for i in self.smart_fetch(
+                yield from self.smart_fetch(
                     beginning=self.BEGINNING,
                     end=datetime.date.today(),
                     step_min=step_min,
                     step_max=step_max,
                     fetch_fn=fetch_fn,
-                ):
-                    yield i
+                )
             except BrowserHTTPError:
                 self.logger.warning("Paypal timeout")
 
@@ -241,8 +237,7 @@ class Paypal(LoginBrowser):
                 # If there's no transactions, or only a bit, in current period,
                 # increase the period.
                 step = min(step_max, step * FACTOR)
-            for trans in chunk:
-                yield trans
+            yield from chunk
 
     def download_history(self, start, end):
         """

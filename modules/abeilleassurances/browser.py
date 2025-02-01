@@ -82,7 +82,7 @@ class AbeilleAssurancesBrowser(LoginBrowser):
 
     def __init__(self, *args, **kwargs):
         self.subsite = "espacepersonnel"
-        super(AbeilleAssurancesBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def post_login_credentials(self):
         # Method to be overloaded by Abeille Assurances's child (Afer)

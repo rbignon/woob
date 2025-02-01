@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Vincent A
 #
 # This file is part of a woob module.
@@ -42,7 +40,7 @@ class ZerobinBrowser(PagesBrowser):
     write_page_0 = URL(".*", WritePage0)
 
     def __init__(self, baseurl, opendiscussion, *args, **kwargs):
-        super(ZerobinBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.BASEURL = baseurl
         self.opendiscussion = opendiscussion
 
@@ -65,7 +63,7 @@ class ZerobinBrowser(PagesBrowser):
             if not m:
                 return
             subid = m.group("id")
-            id = "%s#%s" % (subid, key)
+            id = f"{subid}#{key}"
 
             self.location(server_url)
             if not (self.read_page_zero.is_here() or self.read_page_0.is_here()):
@@ -77,7 +75,7 @@ class ZerobinBrowser(PagesBrowser):
             server_url = self._find_page(subid)
             if not server_url:
                 return
-            url = "%s#%s" % (server_url, key)
+            url = f"{server_url}#{key}"
 
         ret = ZeroPaste(id)
         ret.url = url
@@ -105,4 +103,4 @@ class ZerobinBrowser(PagesBrowser):
         server_url, key = p.url.split("#")
         m = self.read_page_0.match(server_url) or self.read_page_zero.match(server_url)
         p.title = m.group("id")
-        p.id = "%s#%s" % (p.title, key)
+        p.id = f"{p.title}#{key}"

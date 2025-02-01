@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Vincent A
 #
 # This file is part of a woob module.
@@ -248,10 +246,10 @@ class GithubModule(Module, CapBugTracker):
 
     @staticmethod
     def _build_issue_id(project_id, issue_number):
-        return "%s/%s" % (project_id, issue_number)
+        return f"{project_id}/{issue_number}"
 
     def fill_issue(self, issue, fields):
-        if set(["history"]) & set(fields):
+        if {"history"} & set(fields):
             new = self.get_issue(issue.id)
             for f in fields:
                 if empty(getattr(issue, f)):

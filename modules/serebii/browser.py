@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019-2020 Célande Adrien
 #
 # This file is part of a woob module.
@@ -55,13 +53,11 @@ class SerebiiBrowser(PagesBrowser):
         # passive first beacause there is less
         if skill_type is None or int(skill_type) == SkillType.PASSIVE:
             self.abilities.go()
-            for skill in self.page.iter_abilities():
-                yield skill
+            yield from self.page.iter_abilities()
 
         if skill_type is None or int(skill_type) == SkillType.ACTIVE:
             self.gen8_attack_dex.go()
-            for skill in self.page.iter_moves():
-                yield skill
+            yield from self.page.iter_moves()
 
     def get_skill(self, skill_id):
         skill = find_object(self.iter_skills(), id=skill_id, error=SkillNotFound)
@@ -73,12 +69,10 @@ class SerebiiBrowser(PagesBrowser):
         self.location(pokemon.url)
 
         if skill_type is None or int(skill_type) == SkillType.PASSIVE:
-            for ability in self.page.iter_abilities():
-                yield ability
+            yield from self.page.iter_abilities()
 
         if skill_type is None or int(skill_type) == SkillType.ACTIVE:
-            for move in self.page.iter_moves():
-                yield move
+            yield from self.page.iter_moves()
 
     def iter_character_classes(self):
         self.types.go()

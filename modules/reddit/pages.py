@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -158,7 +156,7 @@ class EntryPage(HTMLPage):
             else:
                 assert m.id not in msgs
                 msgs[m.id] = m
-                m.id = "%s.%s" % (thread.id, m.id)
+                m.id = f"{thread.id}.{m.id}"
 
         for m in msgs.values():
             if m is thread.root:

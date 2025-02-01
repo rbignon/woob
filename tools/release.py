@@ -67,13 +67,13 @@ def new_modules(start, end):
     modules_info = configparser.ConfigParser()
     with open("modules/modules.list") as f:
         modules_info.read_file(f)
-    git_cmd = ["git", "diff", "--no-renames", "--name-status", "%s..%s" % (start, end), "--", "modules/"]
+    git_cmd = ["git", "diff", "--no-renames", "--name-status", f"{start}..{end}", "--", "modules/"]
 
     added_modules = sorted(changed_modules(check_output(git_cmd).splitlines(), "A"))
     deleted_modules = sorted(changed_modules(check_output(git_cmd).splitlines(), "D"))
 
     for added_module in added_modules:
-        yield "New %s module (%s)" % (added_module, ", ".join(get_caps(added_module, modules_info)))
+        yield "New {} module ({})".format(added_module, ", ".join(get_caps(added_module, modules_info)))
     for deleted_module in deleted_modules:
         yield "Deleted %s module" % deleted_module
 
@@ -84,7 +84,7 @@ def changelog(start, end="HEAD"):
         return (len(d), d)
 
     commits = {}
-    for commithash in check_output(["git", "rev-list", "{}..{}".format(start, end)]).splitlines():
+    for commithash in check_output(["git", "rev-list", f"{start}..{end}"]).splitlines():
         title, domains = commitinfo(commithash)
         commits.setdefault(domains, []).append(title)
 
@@ -120,12 +120,12 @@ def domain(path):
                     return "Browser"
             elif dirs[1] == "applications":
                 try:
-                    return "Applications: {}".format(dirs[2])
+                    return f"Applications: {dirs[2]}"
                 except IndexError:
                     return "Applications"
             elif dirs[1] == "application":
                 try:
-                    return "Applications: {}".format(dirs[2].title())
+                    return f"Applications: {dirs[2].title()}"
                 except IndexError:
                     return "Applications"
         except IndexError:
@@ -136,7 +136,7 @@ def domain(path):
         return "Documentation"
     if dirs[0] == "modules":
         try:
-            return "Modules: {}".format(dirs[1])
+            return f"Modules: {dirs[1]}"
         except IndexError:
             return "General: Core"
     return "Unknown"
@@ -145,11 +145,11 @@ def domain(path):
 def commitinfo(commithash):
     info = check_output(["git", "show", "--format=%s", "--name-only", commithash]).decode("utf-8").splitlines()
     title = to_unicode(info[0])
-    domains = set([domain(p) for p in info[2:] if domain(p)])
+    domains = {domain(p) for p in info[2:] if domain(p)}
     if "Unknown" in domains and len(domains) > 1:
         domains.remove("Unknown")
     if not domains or len(domains) > 5:
-        domains = set(["Unknown"])
+        domains = {"Unknown"}
 
     return title, tuple(sorted(domains))
 
@@ -163,7 +163,7 @@ def previous_version():
 
 
 def prepare(start, end, version):
-    print("Woob %s (%s)\n" % (version, datetime.date.today().strftime("%Y-%m-%d")))
+    print("Woob {} ({})\n".format(version, datetime.date.today().strftime("%Y-%m-%d")))
     print(changelog(start, end))
 
 

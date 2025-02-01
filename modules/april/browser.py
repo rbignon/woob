@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2020      Ludovic LANGE
 #
 # This file is part of a woob module.
@@ -59,7 +57,7 @@ class AprilBrowser(OAuth2Mixin, LoginBrowser):
             headers["X-selfcare-filiale"] = "ASP"
             headers["X-selfcare-marque"] = "APRIL"
 
-        return super(AprilBrowser, self).build_request(req, *args, **kwargs)
+        return super().build_request(req, *args, **kwargs)
 
     def do_login(self):
         self.access_token = None

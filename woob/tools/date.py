@@ -246,15 +246,15 @@ class ChaoticDateGuesser(LinearDateGuesser):
         if min_date is None:
             raise ValueError("min_date is not set")
         self.min_date = min_date
-        super(ChaoticDateGuesser, self).__init__(current_date, date_max_bump)
+        super().__init__(current_date, date_max_bump)
 
     def guess_date(self, day, month):
         """Returns a possible date between min_date and current_date"""
-        parsed_date = super(ChaoticDateGuesser, self).guess_date(day, month, False)
+        parsed_date = super().guess_date(day, month, False)
         if parsed_date >= self.min_date:
             return parsed_date
         else:
-            raise ValueError("%s is inferior to min_date %s" % (parsed_date, self.min_date))
+            raise ValueError(f"{parsed_date} is inferior to min_date {self.min_date}")
 
 
 DATE_TRANSLATE_FR = [

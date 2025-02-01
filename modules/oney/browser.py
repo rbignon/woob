@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014 Budget Insight
 #
 # This file is part of a woob module.
@@ -116,7 +114,7 @@ class OneyBrowser(TwoFactorBrowser):
     HAS_CREDENTIALS_ONLY = True
 
     def __init__(self, config, *args, **kwargs):
-        super(OneyBrowser, self).__init__(config, config["login"].get(), config["password"].get(), *args, **kwargs)
+        super().__init__(config, config["login"].get(), config["password"].get(), *args, **kwargs)
 
         self.login_steps = None
         self.login_flow_id = None
@@ -149,16 +147,16 @@ class OneyBrowser(TwoFactorBrowser):
             except (HTTPError, TooManyRedirects):
                 pass
         else:
-            super(OneyBrowser, self).locate_browser(state)
+            super().locate_browser(state)
 
     def load_state(self, state):
-        super(OneyBrowser, self).load_state(state)
+        super().load_state(state)
 
         if self.login_client_id:
             self.session.headers.update({"Client-id": self.login_client_id})
 
     def dump_state(self):
-        state = super(OneyBrowser, self).dump_state()
+        state = super().dump_state()
         if self.send_init_step.is_here():
             # We do not want to try to reload this page.
             state.pop("url", None)
@@ -519,7 +517,7 @@ class OneyBrowser(TwoFactorBrowser):
         if newurl.startswith(self.OTHERURL):
             return "https://espaceclient.oney.fr/"
         else:
-            return super(OneyBrowser, self).get_referrer(oldurl, newurl)
+            return super().get_referrer(oldurl, newurl)
 
     def get_site(self):
         try:
@@ -557,7 +555,7 @@ class OneyBrowser(TwoFactorBrowser):
             raise AssertionError("Unkown target_site: %s" % target_site)
 
         current_site = self.get_site()
-        assert current_site == target_site, "Should be on site %s, landed on %s site instead" % (
+        assert current_site == target_site, "Should be on site {}, landed on {} site instead".format(
             target_site,
             current_site,
         )

@@ -43,7 +43,7 @@ PLAYERS = (
 
 class MediaPlayerNotFound(Exception):
     def __init__(self):
-        super(MediaPlayerNotFound, self).__init__(
+        super().__init__(
             "No media player found on this system. Please install one of them: %s."
             % ", ".join(player[0] for player in PLAYERS)
         )
@@ -51,7 +51,7 @@ class MediaPlayerNotFound(Exception):
 
 class InvalidMediaPlayer(Exception):
     def __init__(self, player_name):
-        super(InvalidMediaPlayer, self).__init__(
+        super().__init__(
             "Invalid media player: %s. Valid media players: %s."
             % (player_name, ", ".join(player[0] for player in PLAYERS))
         )
@@ -128,7 +128,7 @@ class MediaPlayer:
         assert args is not None
 
         print(":: Play_proxy streaming from %s" % media.url)
-        print(":: to %s %s" % (player_name, args))
+        print(f":: to {player_name} {args}")
         print(player_name + " " + args)
         cmd = shlex.split(player_name) + shlex.split(args)
         proc = Popen(cmd, stdin=PIPE)
@@ -161,7 +161,7 @@ class MediaPlayer:
         try:
             player_url = media.swf_player
             if media.swf_player:
-                rtmp = "rtmpdump -r %s --swfVfy %s" % (media_url, player_url)
+                rtmp = f"rtmpdump -r {media_url} --swfVfy {player_url}"
             else:
                 rtmp = "rtmpdump -r %s" % media_url
         except AttributeError:
@@ -184,7 +184,7 @@ class MediaPlayer:
         args = shlex.split(args)
 
         print(":: Streaming from %s" % media_url)
-        print(":: to %s %s" % (player_name, args))
+        print(f":: to {player_name} {args}")
         print(":: %s" % rtmp)
         p1 = Popen(shlex.split(rtmp), stdout=PIPE)
         Popen(player_name + args, stdin=p1.stdout, stderr=PIPE)

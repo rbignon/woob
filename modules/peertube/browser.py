@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Vincent A
 #
 # This file is part of a woob module.
@@ -36,7 +34,7 @@ class PeertubeBrowser(APIBrowser):
     }
 
     def __init__(self, baseurl, *args, **kwargs):
-        super(PeertubeBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.BASEURL = baseurl
 
     def search_videos(self, pattern, sortby):

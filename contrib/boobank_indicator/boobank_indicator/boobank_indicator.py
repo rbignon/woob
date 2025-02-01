@@ -42,7 +42,7 @@ class BoobankTransactionsChecker(Thread):
         account_history_menu = Gtk.Menu()
 
         for tr in self.woob.do("iter_history", self.account, backends=self.account.backend):
-            label = "%s - %s: %s%s" % (tr.date, tr.label, tr.amount, self.account.currency_text)
+            label = f"{tr.date} - {tr.label}: {tr.amount}{self.account.currency_text}"
             image = "green_light.png" if tr.amount > 0 else "red_light.png"
             transaction_item = create_image_menu_item(label, image)
             account_history_menu.append(transaction_item)
@@ -99,7 +99,7 @@ class BoobankChecker:
                     image = "personal-loan.png"
 
                 currency = account.currency_text
-                label = "%s: %s%s" % (account.label, balance, account.currency_text)
+                label = f"{account.label}: {balance}{account.currency_text}"
                 account_item = create_image_menu_item(label, image)
                 thread = BoobankTransactionsChecker(self.woob, account_item, account)
                 thread.start()
@@ -126,7 +126,7 @@ class BoobankChecker:
         self.menu.append(sep)
         sep.show()
 
-        total_item = Gtk.MenuItem("%s: %s%s" % ("Total", total, currency))
+        total_item = Gtk.MenuItem("{}: {}{}".format("Total", total, currency))
         self.menu.append(total_item)
         total_item.show()
 

@@ -50,7 +50,7 @@ class VideoListFormatter(PrettyFormatter):
         if hasattr(obj, "author") and not empty(obj.author):
             result += " - %s" % obj.author
         if hasattr(obj, "rating") and not empty(obj.rating):
-            result += " (%s/%s)" % (obj.rating, obj.rating_max)
+            result += f" ({obj.rating}/{obj.rating_max})"
         if hasattr(obj, "thumbnail") and not empty(obj.thumbnail) and not empty(obj.thumbnail.data):
             result += "\n"
             result += image2xterm(BytesIO(obj.thumbnail.data), newsize=get_term_size())
@@ -75,7 +75,7 @@ class AppVideo(ReplApplication):
     nsfw = True
 
     def __init__(self, *args, **kwargs):
-        super(AppVideo, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.player = MediaPlayer(self.logger)
 
     def main(self, argv):
@@ -105,7 +105,7 @@ class AppVideo(ReplApplication):
             args = ("mimms", "-r", video.url, dest)
         elif "m3u8" == video.ext:
             _dest, _ = os.path.splitext(dest)
-            dest = "%s.%s" % (_dest, "mp4")
+            dest = "{}.{}".format(_dest, "mp4")
             content = tuple()
             parsed_uri = urlparse(video.url)
             baseurl = "{uri.scheme}://{uri.netloc}".format(uri=parsed_uri)
@@ -113,7 +113,7 @@ class AppVideo(ReplApplication):
                 line = line.decode("utf-8")
                 if not line.startswith("#"):
                     if not line.startswith("http"):
-                        line = "%s%s" % (baseurl, line)
+                        line = f"{baseurl}{line}"
                     content += (line,)
 
             args = (
@@ -205,7 +205,7 @@ class AppVideo(ReplApplication):
                 )
             self.player.play(video, player_name=player_name, player_args=media_player_args)
         except (InvalidMediaPlayer, MediaPlayerNotFound) as e:
-            print("%s\nVideo URL: %s" % (e, video.url))
+            print(f"{e}\nVideo URL: {video.url}")
 
     def complete_info(self, text, line, *ignored):
         args = line.split(" ")

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011-2021  Romain Bignon
 #
 # This file is part of a woob module.
@@ -30,7 +28,7 @@ class PluzzTest(BackendTest):
         self.assertTrue(len(l) > 0)
         v = l[0]
         v = self.backend.fillobj(v, ("url",)) or v
-        self.assertTrue(v.url, 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.assertTrue(v.url, f'URL for video "{v.id}" not found: {v.url}')
 
     def test_categories(self):
         cat = list(self.backend.iter_resources([BaseVideo], []))
@@ -41,5 +39,5 @@ class PluzzTest(BackendTest):
                 self.assertTrue(len(videos) > 0)
                 v = videos[0]
                 v = self.backend.fillobj(v, ("url",)) or v
-                self.assertTrue(v.url, 'URL for video "%s" not found: %s' % (v.id, v.url))
+                self.assertTrue(v.url, f'URL for video "{v.id}" not found: {v.url}')
                 return

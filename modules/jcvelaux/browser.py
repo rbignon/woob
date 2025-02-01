@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      dud
 #
 # This file is part of a woob module.
@@ -32,7 +30,7 @@ class VelibBrowser(APIBrowser):
     BASEURL = "https://api.jcdecaux.com/vls/v1/"
 
     def __init__(self, api_key, *a, **kw):
-        super(VelibBrowser, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.api_key = api_key or VelibBrowser.API_KEY
 
     def do_get(self, path, **query):
@@ -57,7 +55,7 @@ class VelibBrowser(APIBrowser):
         return self._transform(doc)
 
     def _transform(self, jgauge):
-        jgauge["id"] = "%s.%s" % (jgauge["number"], jgauge["contract_name"])
+        jgauge["id"] = "{}.{}".format(jgauge["number"], jgauge["contract_name"])
         jgauge["city"] = jgauge["contract_name"]
         jgauge["last_update"] = datetime.datetime.fromtimestamp(jgauge["last_update"] / 1000)
         jgauge["latitude"] = "%s" % jgauge["position"]["lat"]

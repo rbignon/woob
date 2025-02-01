@@ -204,7 +204,7 @@ class BNPKeyboard(GridVirtKeyboard):
     def __init__(self, browser, image):
         symbols = list("%02d" % x for x in range(1, 11))
 
-        super(BNPKeyboard, self).__init__(symbols, 5, 2, BytesIO(image.content), self.color, convert="RGB")
+        super().__init__(symbols, 5, 2, BytesIO(image.content), self.color, convert="RGB")
         self.check_symbols(self.symbols, browser.responses_dirname)
 
 
@@ -280,7 +280,7 @@ class BNPPage(LoggedPage, JsonPage):
             self.logger.debug("End of session detected, try to relog...")
             self.browser.do_login()
         elif code:
-            self.logger.debug('Unexpected error: "%s" (code=%s)' % (self.get("message"), code))
+            self.logger.debug('Unexpected error: "{}" (code={})'.format(self.get("message"), code))
             return (self.get("message"), code)
 
 
@@ -479,7 +479,7 @@ class LoanDetailsPage(BNPPage):
 
 class AccountsIBANPage(BNPPage):
     def get_ibans_dict(self):
-        return dict([(a["ibanCrypte"], a["iban"]) for a in self.path("data.listeRib.*.infoCompte")])
+        return {a["ibanCrypte"]: a["iban"] for a in self.path("data.listeRib.*.infoCompte")}
 
 
 class MyRecipient(ItemElement):
@@ -504,12 +504,12 @@ class TransferInitPage(BNPPage):
     def on_load(self):
         message_code = BNPPage.on_load(self)
         if message_code is not None:
-            raise TransferAssertionError("%s, code=%s" % (message_code[0], message_code[1]))
+            raise TransferAssertionError(f"{message_code[0]}, code={message_code[1]}")
 
     def get_ibans_dict(self, account_type):
-        return dict(
-            [(a["ibanCrypte"], a["iban"]) for a in self.path("data.infoVirement.listeComptes%s.*" % account_type)]
-        )
+        return {
+            a["ibanCrypte"]: a["iban"] for a in self.path("data.infoVirement.listeComptes%s.*" % account_type)
+        }
 
     def get_pro_accounts(self, account_type):
         comptes = self.path("data.infoVirement.listeComptes%s.*" % account_type)
@@ -885,7 +885,7 @@ class LifeInsurancesHistoryPage(BNPPage):
             tr.parse(
                 date=parse_french_date(op.get("dateSaisie")),
                 vdate=vdate,
-                raw="%s %s" % (op.get("libelleMouvement"), op.get("canalSaisie") or ""),
+                raw="{} {}".format(op.get("libelleMouvement"), op.get("canalSaisie") or ""),
             )
             tr._op = op
 

@@ -143,7 +143,7 @@ class BredBrowser(TwoFactorBrowser):
         # The js login form remove after 8th char. No comment.
         kwargs["password"] = self.config["password"].get()[:8]
 
-        super(BredBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
 
         self.accnum = accnum
         self.universes = None
@@ -181,7 +181,7 @@ class BredBrowser(TwoFactorBrowser):
 
         if state.get("need_reload_state") or state.get("device_id") or is_2fa:
             state.pop("url", None)
-            super(BredBrowser, self).load_state(state)
+            super().load_state(state)
             self.need_reload_state = None
 
     def init_login(self):
@@ -471,7 +471,7 @@ class BredBrowser(TwoFactorBrowser):
                 self.linebourse_urls[universe_key], data={"SJRToken": self.linebourse_tokens[universe_key]}
             )
             self.linebourse.session.headers["X-XSRF-TOKEN"] = self.linebourse.session.cookies.get("XSRF-TOKEN")
-            params = {"_": "{}".format(int(time.time() * 1000))}
+            params = {"_": f"{int(time.time() * 1000)}"}
             try:
                 self.linebourse.go_account_codes(params=params)
             except self.LINEBOURSE_BROWSER.LinebourseNoSpace:
@@ -564,8 +564,7 @@ class BredBrowser(TwoFactorBrowser):
     @need_login
     def iter_investments(self, account):
         if account.type == Account.TYPE_LIFE_INSURANCE:
-            for invest in account._investments:
-                yield invest
+            yield from account._investments
 
         elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
             if "Portefeuille Titres" in account.label:
@@ -577,8 +576,7 @@ class BredBrowser(TwoFactorBrowser):
                         data={"SJRToken": self.linebourse_tokens[account._univers]},
                     )
                     self.linebourse.session.headers["X-XSRF-TOKEN"] = self.linebourse.session.cookies.get("XSRF-TOKEN")
-                    for investment in self.linebourse.iter_investments(account.id.strip("0").split(".")[0]):
-                        yield investment
+                    yield from self.linebourse.iter_investments(account.id.strip("0").split(".")[0])
                 else:
                     raise NotImplementedError()
             else:
@@ -601,8 +599,7 @@ class BredBrowser(TwoFactorBrowser):
                     self.linebourse_urls[account._univers], data={"SJRToken": self.linebourse_tokens[account._univers]}
                 )
                 self.linebourse.session.headers["X-XSRF-TOKEN"] = self.linebourse.session.cookies.get("XSRF-TOKEN")
-                for order in self.linebourse.iter_market_orders(account.id.strip("0").split(".")[0]):
-                    yield order
+                yield from self.linebourse.iter_market_orders(account.id.strip("0").split(".")[0])
 
     @need_login
     def get_profile(self):

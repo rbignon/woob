@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2021 Damien Ramelet.
 #
 # This file is part of a woob module.
@@ -85,7 +83,7 @@ class HeliosBrowser(OAuth2Mixin, LoginBrowser):
     token_type = "Bearer"
 
     def __init__(self, username, password, *args, **kwargs):
-        super(HeliosBrowser, self).__init__(username, password, *args, **kwargs)
+        super().__init__(username, password, *args, **kwargs)
         self.session.headers["X-Type-Device"] = "WEB"  # Mandatory
 
         self.transfer_id = None

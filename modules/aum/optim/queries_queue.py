@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon
 #
 # This file is part of a woob module.
@@ -26,7 +24,7 @@ from woob.tools.log import getLogger
 
 class QueriesQueue(Optimization):
     def __init__(self, sched, storage, browser):
-        super(QueriesQueue, self).__init__()
+        super().__init__()
         self._sched = sched
         self._storage = storage
         self._browser = browser

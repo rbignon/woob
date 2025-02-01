@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Simon Rochwerg
 #
 # This file is part of a woob module.
@@ -82,7 +80,7 @@ class AccountPage(LoggedPage, HTMLPage):
             n = 1
             while id in self.objects:
                 n += 1
-                id = "%s-%s" % (obj.id, n)
+                id = f"{obj.id}-{n}"
             obj.id = id
             self.objects[obj.id] = obj
             return obj

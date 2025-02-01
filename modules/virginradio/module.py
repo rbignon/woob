@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2020 Johann Broudin
 #
 # This file is part of a woob module.
@@ -55,13 +53,13 @@ class VirginRadioModule(Module, CapRadio, CapCollection):
         stream_hls.url = r["hls_source"]
         stream_hls.bitrate = 135
         stream_hls.format = "aac"
-        stream_hls.title = "%s %skbits/s" % (stream_hls.format, stream_hls.bitrate)
+        stream_hls.title = f"{stream_hls.format} {stream_hls.bitrate}kbits/s"
 
         stream = BaseAudioStream(0)
         stream.url = r["source"]
         stream.bitrate = 128
         stream.format = "mp3"
-        stream.title = "%s %skbits/s" % (stream.format, stream.bitrate)
+        stream.title = f"{stream.format} {stream.bitrate}kbits/s"
 
         radio.streams = [stream_hls, stream]
         radio.current = self.browser.current(r)

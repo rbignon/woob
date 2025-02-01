@@ -9,7 +9,7 @@ __all__ = ["CaptchaMixin"]
 
 class CaptchaMixin:
     def __init__(self, *args, **kwargs):
-        super(CaptchaMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.captcha_woob = Woob()
         self.captcha_woob.load_backends(caps=[CapCaptchaSolver])
 

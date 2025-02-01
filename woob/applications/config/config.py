@@ -49,10 +49,10 @@ class ModuleInfoFormatter(IFormatter):
 
                 if first:
                     result += "|                 | \n"
-                    result += "| Configuration   | %s: %s\n" % (key, label)
+                    result += f"| Configuration   | {key}: {label}\n"
                     first = False
                 else:
-                    result += "|                 | %s: %s\n" % (key, label)
+                    result += f"|                 | {key}: {label}\n"
         result += "'-----------------'\n"
         return result
 
@@ -159,7 +159,7 @@ class AppConfig(ReplApplication):
             try:
                 module = self.woob.modules_loader.get_or_load_module(module_name)
             except ModuleLoadError as e:
-                self.logger.warning("Unable to load module %r: %s" % (module_name, e))
+                self.logger.warning(f"Unable to load module {module_name!r}: {e}")
                 continue
 
             if caps and not module.has_caps(*caps):
@@ -171,7 +171,7 @@ class AppConfig(ReplApplication):
                     (
                         "Configuration",
                         ", ".join(
-                            "%s=%s" % (key, ("*****" if key in module.config and module.config[key].masked else value))
+                            "{}={}".format(key, ("*****" if key in module.config and module.config[key].masked else value))
                             for key, value in params.items()
                         ),
                     ),
@@ -275,7 +275,7 @@ class AppConfig(ReplApplication):
         module_info["description"] = minfo.description
         module_info["capabilities"] = minfo.capabilities
         repo_ver = self.woob.repositories.versions.get(minfo.name)
-        module_info["installed"] = "%s%s" % (
+        module_info["installed"] = "{}{}".format(
             "yes" if module else "no",
             " (new version available)" if repo_ver and repo_ver > minfo.version else "",
         )

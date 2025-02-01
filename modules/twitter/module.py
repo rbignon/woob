@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -138,8 +136,7 @@ class TwitterModule(Module, CapMessages, CapMessagesPost, CapCollection):
 
         if collection.path_level == 1:
             if collection.split_path[0] == "me":
-                for el in self.browser.get_tweets_from_profil(self.browser.get_me()):
-                    yield el
+                yield from self.browser.get_tweets_from_profil(self.browser.get_me())
 
             if collection.split_path[0] == "profils":
                 profils = self.config["profils_subscribe"].get()
@@ -165,24 +162,19 @@ class TwitterModule(Module, CapMessages, CapMessagesPost, CapCollection):
 
         if collection.path_level == 2:
             if collection.split_path[0] == "profils":
-                for el in self.browser.get_tweets_from_profil(collection.split_path[1]):
-                    yield el
+                yield from self.browser.get_tweets_from_profil(collection.split_path[1])
 
             if collection.split_path[0] == "trendy":
                 if collection.split_path[1].startswith("#"):
-                    for el in self.browser.get_tweets_from_hashtag(collection.split_path[1]):
-                        yield el
+                    yield from self.browser.get_tweets_from_hashtag(collection.split_path[1])
                 else:
-                    for el in self.browser.get_tweets_from_search(collection.split_path[1]):
-                        yield el
+                    yield from self.browser.get_tweets_from_search(collection.split_path[1])
 
             if collection.split_path[0] == "hashtags":
-                for el in self.browser.get_tweets_from_hashtag(collection.split_path[1]):
-                    yield el
+                yield from self.browser.get_tweets_from_hashtag(collection.split_path[1])
 
             if collection.split_path[0] == "search":
-                for el in self.browser.get_tweets_from_search(collection.split_path[1]):
-                    yield el
+                yield from self.browser.get_tweets_from_search(collection.split_path[1])
 
     def validate_collection(self, objs, collection):
         if collection.path_level == 0:

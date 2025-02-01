@@ -113,7 +113,7 @@ class BrowserQuestion(BrowserInteraction):
         self.fields = fields
 
     def __str__(self) -> str:
-        return ", ".join("{}: {}".format(field.id or field.label, field.description) for field in self.fields)
+        return ", ".join(f"{field.id or field.label}: {field.description}" for field in self.fields)
 
 
 class OTPQuestion(BrowserQuestion):

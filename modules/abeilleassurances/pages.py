@@ -45,7 +45,7 @@ from woob.tools.capabilities.bank.investments import IsinCode, IsinType
 
 class BasePage(HTMLPage):
     def on_load(self):
-        super(BasePage, self).on_load()
+        super().on_load()
 
         if "Erreur" in CleanText('//div[@id="main"]/h1', default="")(self.doc):
             err = CleanText('//div[@id="main"]/div[@class="content"]', default="Site indisponible")(self.doc)

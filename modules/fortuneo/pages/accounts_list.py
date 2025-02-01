@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Gilles-Alexandre Quenot
 #
 # This file is part of a woob module.
@@ -535,7 +533,7 @@ class InvestmentHistoryPage(ActionNeededPage):
 class AccountHistoryPage(ActionNeededPage):
     def build_doc(self, content):
         content = re.sub(rb"\*<E\w+", b"*", content)
-        return super(AccountHistoryPage, self).build_doc(content)
+        return super().build_doc(content)
 
     @method
     class fill_account(ItemElement):
@@ -752,7 +750,7 @@ class AccountsList(ActionNeededPage):
                         r"(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)", label, re.IGNORECASE
                     ):
                         return AccountOwnership.CO_OWNER
-                    if re.search(r"{} {}".format(gender, name), label, re.IGNORECASE):
+                    if re.search(fr"{gender} {name}", label, re.IGNORECASE):
                         return AccountOwnership.OWNER
                     return AccountOwnership.ATTORNEY
                 return NotAvailable
@@ -823,9 +821,9 @@ class ProfilePageCSV(LoggedPage, CsvPage):
     def get_profile(self):
         d = {el[0]: el[1] for el in self.doc}
         profile = Person()
-        profile.name = "%s %s" % (d["Nom"], d["Prénom"])
+        profile.name = "{} {}".format(d["Nom"], d["Prénom"])
         profile.birth_date = parse_french_date(d["Date de naissance"]).date()
-        profile.address = "%s %s %s" % (
+        profile.address = "{} {} {}".format(
             d["Adresse de correspondance"],
             d["Code postal résidence fiscale"],
             d["Ville adresse de correspondance"],

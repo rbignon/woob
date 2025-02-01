@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Clément Schreiner
 #
 # This file is part of a woob module.
@@ -57,7 +55,7 @@ class NewsfeedModule(Module, CapMessages):
         if thread.id not in self.storage.get("seen", default=[]):
             flags |= Message.IS_UNREAD
         if len(entry.content) > 0:
-            content = "<p>Link %s</p> %s" % (entry.link, entry.content[0])
+            content = f"<p>Link {entry.link}</p> {entry.content[0]}"
         else:
             content = entry.link
 

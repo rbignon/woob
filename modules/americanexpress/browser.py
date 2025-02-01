@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Romain Bignon
 #
 # This file is part of a woob module.
@@ -109,7 +107,7 @@ class AmericanExpressBrowser(TwoFactorBrowser):
     HAS_CREDENTIALS_ONLY = True
 
     def __init__(self, *args, **kwargs):
-        super(AmericanExpressBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # State to keep during OTP
         self.authentication_action_id = None
@@ -205,11 +203,11 @@ class AmericanExpressBrowser(TwoFactorBrowser):
             elif error_code == "LGON013":
                 self.raise_otp()
             else:
-                raise AssertionError('Error code "%s" (msg:"%s") not handled' % (error_code, message))
+                raise AssertionError(f'Error code "{error_code}" (msg:"{message}") not handled')
 
     def prepare_request(self, req):
         # Get all headers in alphabetical order to prevent LGON011 error
-        prep = super(AmericanExpressBrowser, self).prepare_request(req)
+        prep = super().prepare_request(req)
         prep.headers = OrderedDict(sorted(prep.headers.items(), key=lambda i: i[0].lower()))
         return prep
 
@@ -526,10 +524,10 @@ class AmericanExpressSeleniumFingerprintBrowser(SeleniumBrowser):
     DRIVER = webdriver.Chrome
 
     def __init__(self, config, *args, **kwargs):
-        super(AmericanExpressSeleniumFingerprintBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _build_options(self, preferences):
-        ops = super(AmericanExpressSeleniumFingerprintBrowser, self)._build_options(preferences)
+        ops = super()._build_options(preferences)
         if self.DRIVER is webdriver.Chrome:
             ops.add_argument("--no-sandbox")
         return ops
@@ -560,7 +558,7 @@ class AmericanExpressWithSeleniumBrowser(SubSeleniumMixin, AmericanExpressBrowse
     SELENIUM_BROWSER = AmericanExpressSeleniumFingerprintBrowser
 
     def __init__(self, *args, **kwargs):
-        super(AmericanExpressWithSeleniumBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.selenium_login_transaction_id = None
         self.selenium_device_print = None
 
@@ -568,7 +566,7 @@ class AmericanExpressWithSeleniumBrowser(SubSeleniumMixin, AmericanExpressBrowse
         self.__states__ += ("selenium_user_agent",)
 
     def _build_options(self, preferences):
-        ops = super(AmericanExpressWithSeleniumBrowser, self)._build_options(preferences)
+        ops = super()._build_options(preferences)
         if self.DRIVER is webdriver.Chrome:
             ops.add_argument("--no-sandbox")
         return ops
@@ -577,13 +575,13 @@ class AmericanExpressWithSeleniumBrowser(SubSeleniumMixin, AmericanExpressBrowse
         AmericanExpressBrowser.do_login(self, *args, **kwargs)
 
     def load_state(self, *args, **kwargs):
-        super(AmericanExpressWithSeleniumBrowser, self).load_state(*args, **kwargs)
+        super().load_state(*args, **kwargs)
         if self.selenium_user_agent:
             self.session.headers["User-Agent"] = self.selenium_user_agent
 
     def load_selenium_session(self, selenium):
         self.clear_init_cookies()
-        super(AmericanExpressWithSeleniumBrowser, self).load_selenium_session(selenium)
+        super().load_selenium_session(selenium)
 
         # We need to send this value in the login request.
         self.selenium_login_transaction_id = selenium.driver.execute_script("return window.inauth._cc[0][1].tid;")

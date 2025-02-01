@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -77,8 +75,7 @@ class PluzzModule(Module, CapVideo, CapCollection):
                         yield category
 
             elif collection.path_level > 0 and split_path[-1] == "videos":
-                for v in self.browser.iter_videos("/".join(collection.split_path[:-1])):
-                    yield v
+                yield from self.browser.iter_videos("/".join(collection.split_path[:-1]))
 
             elif collection.path_level == 1:
                 yield Collection(collection.split_path + ["videos"], "Vidéos")
@@ -88,15 +85,13 @@ class PluzzModule(Module, CapVideo, CapCollection):
 
             elif collection.path_level == 2:
                 if split_path[-1] == "replay-videos":
-                    for v in self.browser.iter_videos("/".join(collection.split_path)):
-                        yield v
+                    yield from self.browser.iter_videos("/".join(collection.split_path))
                 else:
                     for category in self.browser.get_emissions(collection.split_path):
                         yield category
 
             elif collection.path_level == 3:
-                for v in self.browser.iter_videos("/".join([collection.split_path[0], collection.split_path[-1]])):
-                    yield v
+                yield from self.browser.iter_videos("/".join([collection.split_path[0], collection.split_path[-1]]))
 
     def validate_collection(self, objs, collection):
         if collection.path_level <= 3:

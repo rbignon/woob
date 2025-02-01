@@ -27,10 +27,10 @@ class LRUDict(OrderedDict):
     def __setitem__(self, key, value):
         if key in self:
             del self[key]
-        super(LRUDict, self).__setitem__(key, value)
+        super().__setitem__(key, value)
 
     def __getitem__(self, key):
-        value = super(LRUDict, self).__getitem__(key)
+        value = super().__getitem__(key)
         self[key] = value
         return value
 
@@ -41,6 +41,6 @@ class LimitedLRUDict(LRUDict):
     max_entries = 100
 
     def __setitem__(self, key, value):
-        super(LimitedLRUDict, self).__setitem__(key, value)
+        super().__setitem__(key, value)
         if len(self) > self.max_entries:
             self.popitem(last=False)

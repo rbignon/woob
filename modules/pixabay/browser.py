@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Vincent A
 #
 # This file is part of a woob module.
@@ -46,7 +44,7 @@ class PixabayBrowser(LoginBrowser):
     login_page = URL(r"/(?P<lang>[a-z]{2})/accounts/login/$", LoginPage)
 
     def __init__(self, api_key=None, *args, **kwargs):
-        super(PixabayBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.api_key = api_key or self.DEFAULT_KEY
 

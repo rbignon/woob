@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent Ardisson
 #
 # This file is part of a woob module.
@@ -225,11 +223,11 @@ class AsanaModule(Module, CapBugTracker):
 
     #  filling
     def fill_project(self, project, fields):
-        if set(["members"]) & set(fields):
+        if {"members"} & set(fields):
             return self.get_project(project.id)
 
     def fill_issue(self, issue, fields):
-        if set(["body", "assignee", "due", "creation", "updated", "project"]) & set(fields):
+        if {"body", "assignee", "due", "creation", "updated", "project"} & set(fields):
             new = self.get_issue(issue.id)
             for f in fields:
                 if getattr(new, f):

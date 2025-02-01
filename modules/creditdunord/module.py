@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2013 Romain Bignon
 #
 # This file is part of a woob module.
@@ -57,7 +55,7 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile, CapBankMatching):
         "www.smc.fr": "Société Marseillaise de Crédit",
     }
     website_choices = OrderedDict(
-        [(k, "%s (%s)" % (v, k)) for k, v in sorted(websites.items(), key=lambda k_v: (k_v[1], k_v[0]))]
+        [(k, f"{v} ({k})") for k, v in sorted(websites.items(), key=lambda k_v: (k_v[1], k_v[0]))]
     )
     CONFIG = BackendConfig(
         Value("website", label="Banque", choices=website_choices, default="www.credit-du-nord.fr"),
@@ -77,8 +75,7 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile, CapBankMatching):
         return browser
 
     def iter_accounts(self):
-        for account in self.browser.iter_accounts():
-            yield account
+        yield from self.browser.iter_accounts()
 
     def match_account(self, account, old_accounts):
         """Match an account in `old_accounts` corresponding to `account`.

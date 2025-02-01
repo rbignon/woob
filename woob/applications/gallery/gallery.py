@@ -56,7 +56,7 @@ class AppGallery(ReplApplication):
     )
 
     def __init__(self, *args, **kwargs):
-        super(AppGallery, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @defaultcount(10)
     def do_search(self, pattern):

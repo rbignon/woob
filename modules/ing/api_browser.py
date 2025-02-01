@@ -131,7 +131,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
     def __init__(self, *args, **kwargs):
         self.birthday = kwargs.pop("birthday")
-        super(IngAPIBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         dirname = self.responses_dirname
         if dirname:
@@ -149,7 +149,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         if state.get("need_reload_state"):
             state.pop("url", None)
             self.need_reload_state = None
-            super(IngAPIBrowser, self).load_state(state)
+            super().load_state(state)
 
     WRONGPASS_CODES = (
         "AUTHENTICATION.INVALID_PIN_CODE",
@@ -177,7 +177,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         elif error["code"] in self.ACTIONNEEDED_CODES:
             raise ActionNeeded(error["message"])
 
-        raise Exception("%r code isn't handled yet: %s" % (error["code"], error["message"]))
+        raise Exception("{!r} code isn't handled yet: {}".format(error["code"], error["message"]))
 
     def do_login(self):
         if not self.password.isdigit():
@@ -228,7 +228,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
     def deinit(self):
         self.bourse.deinit()
-        super(IngAPIBrowser, self).deinit()
+        super().deinit()
 
     ############# CapBank #############
     def get_invest_token(self):
@@ -481,8 +481,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             return
 
         self.credit_accounts.go(account_uid=account._uid)
-        for recipient in self.page.iter_recipients(acc_uid=account._uid):
-            yield recipient
+        yield from self.page.iter_recipients(acc_uid=account._uid)
 
     def handle_transfer_errors(self, r):
         error_page = r.response.json()
@@ -495,7 +494,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             raise TransferInvalidAmount(message=error_msg)
         elif error["code"] == "INPUT_INVALID" and len(error["values"]):
             for value in error["values"]:
-                error_msg = "%s %s %s." % (error_msg, value, error["values"][value])
+                error_msg = "{} {} {}.".format(error_msg, value, error["values"][value])
 
         raise TransferBankError(message=error_msg)
 

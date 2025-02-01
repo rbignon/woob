@@ -65,7 +65,7 @@ class ManpageHelpFormatter(optparse.HelpFormatter):
             modules = []
             for name, module in self.app.woob.modules_loader.loaded.items():
                 if module.has_caps(*caps):
-                    modules.append("* %s (%s)" % (name, module.description))
+                    modules.append(f"* {name} ({module.description})")
             if len(modules) > 0:
                 desc += "\n.SS Supported websites:\n"
                 desc += "\n.br\n".join(sorted(modules))
@@ -85,7 +85,7 @@ class ManpageHelpFormatter(optparse.HelpFormatter):
                     arg_re = re.compile(r"([A-Z_]+)")
                     args = re.sub(arg_re, r"\\fI\1\\fR", args)
 
-                    s += "\\fB%s\\fR %s" % (cmdname, args)
+                    s += f"\\fB{cmdname}\\fR {args}"
                 else:
                     s += "\\fB%s\\fR" % h[0]
                 s += "%s\n" % "\n.br\n".join(h[1:])
@@ -147,15 +147,15 @@ def analyze_application(app, script_name):
     helptext = helptext.replace("-", r"\-")
     coding = r".\" -*- coding: utf-8 -*-"
     comment = r".\" This file was generated automatically by tools/make_man.sh."
-    header = '.TH %s 1 "%s" "%s %s"' % (
+    header = '.TH {} 1 "{}" "{} {}"'.format(
         script_name.upper(),
         time.strftime("%d %B %Y"),
         script_name,
         app.VERSION.replace(".", "\\&."),
     )
-    name = ".SH NAME\n%s \- %s" % (script_name, application.SHORT_DESCRIPTION)
+    name = f".SH NAME\n{script_name} \\- {application.SHORT_DESCRIPTION}"
     condition = """.SH CONDITION
-The \-c and \-\-condition is a flexible way to filter and get only interesting results. It supports conditions on numerical values, dates, durations and strings. Dates are given in YYYY\-MM\-DD or YYYY\-MM\-DD HH:MM format. Durations look like XhYmZs where X, Y and Z are integers. Any of them may be omitted. For instance, YmZs, XhZs or Ym are accepted.
+The \\-c and \\-\\-condition is a flexible way to filter and get only interesting results. It supports conditions on numerical values, dates, durations and strings. Dates are given in YYYY\\-MM\\-DD or YYYY\\-MM\\-DD HH:MM format. Durations look like XhYmZs where X, Y and Z are integers. Any of them may be omitted. For instance, YmZs, XhZs or Ym are accepted.
 The syntax of one expression is "\\fBfield operator value\\fR". The field to test is always the left member of the expression.
 .LP
 The field is a member of the objects returned by the command. For example, a bank account has "balance", "coming" or "label" fields.
@@ -182,27 +182,27 @@ You can make a expression combinations with the keywords \\fB" AND "\\fR, \\fB" 
 The \\fBLIMIT\\fR keyword can be used to limit the number of items upon which running the expression. \\fBLIMIT\\fR can only be placed at the end of the expression followed by the number of elements you want.
 .SS Examples:
 .nf
-.B woob bank ls \-\-condition 'label=Livret A'
+.B woob bank ls \\-\\-condition 'label=Livret A'
 .fi
 Display only the "Livret A" account.
 .PP
 .nf
-.B woob bank ls \-\-condition 'balance>10000'
+.B woob bank ls \\-\\-condition 'balance>10000'
 .fi
 Display accounts with a lot of money.
 .PP
 .nf
-.B woob bank history account@backend \-\-condition 'label|rewe'
+.B woob bank history account@backend \\-\\-condition 'label|rewe'
 .fi
 Get transactions containing "rewe".
 .PP
 .nf
-.B woob bank history account@backend \-\-condition 'date>2013\-12\-01 AND date<2013\-12\-09'
+.B woob bank history account@backend \\-\\-condition 'date>2013\\-12\\-01 AND date<2013\\-12\\-09'
 .fi
 Get transactions betweens the 2th December and 8th December 2013.
 .PP
 .nf
-.B woob bank history account@backend \-\-condition 'date>2013\-12\-01  LIMIT 10'
+.B woob bank history account@backend \\-\\-condition 'date>2013\\-12\\-01  LIMIT 10'
 .fi
 Get transactions after the 2th December in the last 10 transactions
 """
@@ -222,11 +222,11 @@ For full copyright information see the COPYING file in the woob package.
     # Skip internal applications.
     footer += "\n\n.SH SEE ALSO\nHome page: https://woob.tech/applications/%s" % application.APPNAME
 
-    mantext = "%s\n%s\n%s\n%s\n%s\n%s\n%s" % (coding, comment, header, name, helptext, condition, footer)
+    mantext = f"{coding}\n{comment}\n{header}\n{name}\n{helptext}\n{condition}\n{footer}"
     with open(os.path.join(BASE_PATH, DEST_DIR, "%s.1" % script_name), "w+") as manfile:
         for line in mantext.split("\n"):
             manfile.write("%s\n" % line.lstrip())
-    print("wrote %s/%s.1" % (DEST_DIR, script_name))
+    print(f"wrote {DEST_DIR}/{script_name}.1")
 
     return application._shell_completion_items()
 
@@ -263,8 +263,8 @@ def write_completions(completions):
     )
     for name, items in completions.items():
         compscript += """
-                {0})
-                    COMPREPLY=( $(compgen -o default -W "{1}" -- "$cur" ) )
+                {})
+                    COMPREPLY=( $(compgen -o default -W "{}" -- "$cur" ) )
                     ;;
         """.format(
             name, " ".join(sorted(items))

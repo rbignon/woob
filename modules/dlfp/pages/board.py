@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -24,7 +22,7 @@ from logging import warning
 from woob.browser.pages import HTMLPage, LoggedPage
 
 
-class Message(object):
+class Message:
     TIMESTAMP_REGEXP = re.compile(r"(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})")
 
     def __init__(self, id, timestamp, login, message, is_me):

@@ -47,7 +47,7 @@ class RadioListFormatter(PrettyFormatter):
 
         if hasattr(obj, "current") and not empty(obj.current):
             if obj.current.who:
-                result += " (Current: %s - %s)" % (obj.current.who, obj.current.what)
+                result += f" (Current: {obj.current.who} - {obj.current.what})"
             else:
                 result += " (Current: %s)" % obj.current.what
         return result
@@ -151,7 +151,7 @@ class AppRadio(ReplApplication):
     PLAYLIST = []
 
     def __init__(self, *args, **kwargs):
-        super(AppRadio, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.player = MediaPlayer(self.logger)
 
     def main(self, argv):
@@ -215,7 +215,7 @@ class AppRadio(ReplApplication):
             if not ext:
                 ext = "audiofile"
             title = _audio.title if _audio.title else _audio.id
-            return "%s.%s" % (re.sub("[?:/]", "-", title), ext)
+            return "{}.{}".format(re.sub("[?:/]", "-", title), ext)
 
         if dest is not None and os.path.isdir(dest):
             dest += "/%s" % audio_to_file(audio)
@@ -320,7 +320,7 @@ class AppRadio(ReplApplication):
                 self.player.play(stream, player_name=player_name, player_args=media_player_args)
 
         except (InvalidMediaPlayer, MediaPlayerNotFound) as e:
-            print("%s\nRadio URL: %s" % (e, stream.url))
+            print(f"{e}\nRadio URL: {stream.url}")
 
     def retrieve_obj(self, _id):
         obj = None
@@ -493,5 +493,5 @@ class AppRadio(ReplApplication):
 
         List radios
         """
-        ret = super(AppRadio, self).do_ls(line)
+        ret = super().do_ls(line)
         return ret

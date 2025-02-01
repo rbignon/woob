@@ -38,7 +38,7 @@ class LCLCardsBrowser(LoginBrowser):
     history = URL(r"/services/porteur/operationscarteporteur", HistoryPage)
 
     def __init__(self, config, *args, **kwargs):
-        super(LCLCardsBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.accounts_page = None
 
     def do_login(self):
@@ -112,8 +112,7 @@ class LCLCardsBrowser(LoginBrowser):
                 "login": logged_user,
             }
             self.history.go(json=json)
-            for tr in self.page.iter_history():
-                yield tr
+            yield from self.page.iter_history()
 
     @need_login
     def iter_coming(self, account):

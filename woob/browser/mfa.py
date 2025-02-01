@@ -53,20 +53,20 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
     Config's key which is set to a non-empty value when we are in interactive mode.
     """
 
-    AUTHENTICATION_METHODS: ClassVar[Dict[str, Callable]] = {}
+    AUTHENTICATION_METHODS: ClassVar[dict[str, Callable]] = {}
     """
     Dict of config keys and methods used for double authentication.
 
     Must be set up in the init to handle function pointers.
     """
 
-    COOKIES_TO_CLEAR: ClassVar[Tuple[str, ...]] = ()
+    COOKIES_TO_CLEAR: ClassVar[tuple[str, ...]] = ()
     """List of cookie keys to clear before dumping state"""
 
     HAS_CREDENTIALS_ONLY: ClassVar[bool] = False
     """Login can also be done with credentials without 2FA"""
 
-    SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES: ClassVar[Tuple[str, ...]] = ()
+    SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES: ClassVar[tuple[str, ...]] = ()
     """
     Skip locate_browser if one of the config values is defined (for example
     its useful to prevent calling twice the url that sends an OTP)
@@ -89,7 +89,7 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
 
         return str(max(expires_dates).replace(microsecond=0))
 
-    def dump_state(self) -> Dict[str, Any]:
+    def dump_state(self) -> dict[str, Any]:
         self.clear_not_2fa_cookies()
         state = super().dump_state()
         if self.twofa_logged_date:
@@ -108,13 +108,13 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
 
         return False
 
-    def locate_browser(self, state: Dict[str, Any]):
+    def locate_browser(self, state: dict[str, Any]):
         if self.should_skip_locate_browser():
             return
 
         super().locate_browser(state)
 
-    def load_state(self, state: Dict[str, Any]):
+    def load_state(self, state: dict[str, Any]):
         super().load_state(state)
         self.twofa_logged_date = None
         if state.get("twofa_logged_date") not in (None, "", "None"):

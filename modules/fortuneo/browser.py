@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Gilles-Alexandre Quenot
 #
 # This file is part of a woob module.
@@ -168,7 +166,7 @@ class FortuneoBrowser(TwoFactorBrowser):
     __states__ = ["need_reload_state", "add_recipient_form", "sms_form", "execute_transfer_form"]
 
     def __init__(self, config, *args, **kwargs):
-        super(FortuneoBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
         self.investments = {}
         self.action_needed_processed = False
         self.add_recipient_form = None
@@ -275,7 +273,7 @@ class FortuneoBrowser(TwoFactorBrowser):
         if state.get("need_reload_state") or state.get("sms_form"):
             # don't use locate browser for add recipient step and 2fa validation
             state.pop("url", None)
-            super(FortuneoBrowser, self).load_state(state)
+            super().load_state(state)
 
     def process_skippable_message(self):
         global_error_message = self.page.get_global_error_message()
@@ -393,8 +391,7 @@ class FortuneoBrowser(TwoFactorBrowser):
             account_api_id = self.page.get_account_api_id()
             self.api_investments_life_insurance.go(id=account_api_id)
 
-        for inv in self.page.iter_investments():
-            yield inv
+        yield from self.page.iter_investments()
 
         # As we already return Compte espèce, we must not return Compte Titres' liquidity
         # Otherwise it would be a duplicate of the same data
@@ -480,8 +477,7 @@ class FortuneoBrowser(TwoFactorBrowser):
                 self.logger.debug("Sleeping for a second before we retry opening CB link...")
                 time.sleep(1)
 
-            for tr in sorted_transactions(self.page.iter_coming()):
-                yield tr
+            yield from sorted_transactions(self.page.iter_coming())
 
     def process_action_needed(self):
         # we have to go in an iframe to know if there are CGUs
@@ -517,12 +513,10 @@ class FortuneoBrowser(TwoFactorBrowser):
     def iter_recipients(self, origin_account):
         self.register_transfer.go(ca=origin_account._ca)
         if self.page.is_account_transferable(origin_account):
-            for internal_recipient in self.page.iter_internal_recipients(origin_account_id=origin_account.id):
-                yield internal_recipient
+            yield from self.page.iter_internal_recipients(origin_account_id=origin_account.id)
 
             self.recipients.go()
-            for external_recipients in self.page.iter_external_recipients():
-                yield external_recipients
+            yield from self.page.iter_external_recipients()
 
     def copy_recipient(self, recipient):
         rcpt = Recipient()

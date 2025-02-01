@@ -48,7 +48,7 @@ class MovieInfoFormatter(IFormatter):
     )
 
     def format_obj(self, obj, alias):
-        result = "%s%s%s\n" % (self.BOLD, obj.original_title, self.NC)
+        result = f"{self.BOLD}{obj.original_title}{self.NC}\n"
         result += "ID: %s\n" % obj.fullid
         if not empty(obj.release_date):
             result += "Released: %s\n" % obj.release_date.strftime("%Y-%m-%d")
@@ -57,21 +57,21 @@ class MovieInfoFormatter(IFormatter):
             result += "Duration: %smin\n" % obj.duration
         result += "Note: %s\n" % obj.note
         if not empty(obj.genres):
-            result += "\n%sGenres%s\n" % (self.BOLD, self.NC)
+            result += f"\n{self.BOLD}Genres{self.NC}\n"
             for g in obj.genres:
                 result += " * %s\n" % g
         if not empty(obj.roles):
-            result += "\n%sRelated persons%s\n" % (self.BOLD, self.NC)
+            result += f"\n{self.BOLD}Related persons{self.NC}\n"
             for role, lpersons in obj.roles.items():
                 result += " -- %s\n" % role
                 for person in lpersons:
                     result += "   * %s\n" % person[1]
         if not empty(obj.other_titles):
-            result += "\n%sOther titles%s\n" % (self.BOLD, self.NC)
+            result += f"\n{self.BOLD}Other titles{self.NC}\n"
             for t in obj.other_titles:
                 result += " * %s\n" % t
         if not empty(obj.pitch):
-            result += "\n%sStory%s\n" % (self.BOLD, self.NC)
+            result += f"\n{self.BOLD}Story{self.NC}\n"
             result += "%s" % obj.pitch
         return result
 
@@ -124,7 +124,7 @@ class PersonInfoFormatter(IFormatter):
     MANDATORY_FIELDS = ("id", "name", "birth_date", "birth_place", "short_biography")
 
     def format_obj(self, obj, alias):
-        result = "%s%s%s\n" % (self.BOLD, obj.name, self.NC)
+        result = f"{self.BOLD}{obj.name}{self.NC}\n"
         result += "ID: %s\n" % obj.fullid
         if not empty(obj.real_name):
             result += "Real name: %s\n" % obj.real_name
@@ -134,7 +134,7 @@ class PersonInfoFormatter(IFormatter):
             result += "Birth date: %s\n" % obj.birth_date.strftime("%Y-%m-%d")
             if not empty(obj.death_date):
                 age = num_years(obj.birth_date, obj.death_date)
-                result += "Death date: %s at %s years old\n" % (obj.death_date.strftime("%Y-%m-%d"), age)
+                result += "Death date: {} at {} years old\n".format(obj.death_date.strftime("%Y-%m-%d"), age)
             else:
                 age = num_years(obj.birth_date)
                 result += "Age: %s\n" % age
@@ -143,13 +143,13 @@ class PersonInfoFormatter(IFormatter):
         if not empty(obj.nationality):
             result += "Nationality: %s\n" % obj.nationality
         if not empty(obj.roles):
-            result += "\n%sRelated movies%s\n" % (self.BOLD, self.NC)
+            result += f"\n{self.BOLD}Related movies{self.NC}\n"
             for role, lmovies in obj.roles.items():
                 result += " -- %s\n" % role
                 for movie in lmovies:
                     result += "   * %s\n" % movie[1]
         if not empty(obj.short_biography):
-            result += "\n%sShort biography%s\n" % (self.BOLD, self.NC)
+            result += f"\n{self.BOLD}Short biography{self.NC}\n"
             result += "%s" % obj.short_biography
         return result
 
@@ -271,7 +271,7 @@ class AppCinema(ReplApplication):
                 year = movie.release_date.year
             else:
                 year = "????"
-            movie.short_description = "(%s) %s as %s ; %s as %s" % (
+            movie.short_description = "({}) {} as {} ; {} as {}".format(
                 year,
                 person1.name,
                 ", ".join(role1),
@@ -327,7 +327,7 @@ class AppCinema(ReplApplication):
             role2 = person.get_roles_by_movie_id(movie2.id)
             if not role2:
                 role2 = person.get_roles_by_movie_title(movie2.original_title)
-            person.short_description = "%s in %s ; %s in %s" % (
+            person.short_description = "{} in {} ; {} in {}".format(
                 ", ".join(role1),
                 movie1.original_title,
                 ", ".join(role2),
@@ -527,8 +527,8 @@ class AppCinema(ReplApplication):
                         try:
                             with open(dest, "wb") as f:
                                 f.write(buf)
-                        except IOError as e:
-                            print('Unable to write .torrent in "%s": %s' % (dest, e), file=self.stderr)
+                        except OSError as e:
+                            print(f'Unable to write .torrent in "{dest}": {e}', file=self.stderr)
                             return 1
                     return
         except CallErrors as errors:
@@ -636,8 +636,8 @@ class AppCinema(ReplApplication):
                     try:
                         with open(dest, "w") as f:
                             f.write(buf)
-                    except IOError as e:
-                        print('Unable to write file in "%s": %s' % (dest, e), file=self.stderr)
+                    except OSError as e:
+                        print(f'Unable to write file in "{dest}": {e}', file=self.stderr)
                         return 1
                 return
 

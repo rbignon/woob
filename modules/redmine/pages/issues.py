@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon
 #
 # This file is part of a woob module.
@@ -146,7 +144,7 @@ class IssuesPage(BaseIssuePage):
             return value
 
     def get_project(self, project_name):
-        project = super(IssuesPage, self).get_project(project_name)
+        project = super().get_project(project_name)
         if len(project["statuses"]) > 0:
             return project
 
@@ -420,7 +418,7 @@ class IssuePage(NewIssuePage):
             a = p.find("a")
             attachment["id"] = int(a.attrib["href"].split("/")[-2])
             attachment["filename"] = p.find("a").text
-            attachment["url"] = "%s%s" % (self.browser.BASEURL, p.find("a").attrib["href"])
+            attachment["url"] = "{}{}".format(self.browser.BASEURL, p.find("a").attrib["href"])
             params["attachments"].append(attachment)
 
         params["updates"] = []

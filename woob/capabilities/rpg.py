@@ -29,28 +29,28 @@ class CharacterNotFound(UserError):
     """Raised when a character is not found"""
 
     def __init__(self, msg="Character not found"):
-        super(CharacterNotFound, self).__init__(msg)
+        super().__init__(msg)
 
 
 class SkillNotFound(UserError):
     """Raised when a skill is not found"""
 
     def __init__(self, msg="Skill not found"):
-        super(SkillNotFound, self).__init__(msg)
+        super().__init__(msg)
 
 
 class CharacterClassNotFound(UserError):
     """Raised when a class is not found"""
 
     def __init__(self, msg="Class not found"):
-        super(CharacterClassNotFound, self).__init__(msg)
+        super().__init__(msg)
 
 
 class CollectableItemNotFound(UserError):
     """Raised when an item is not found"""
 
     def __init__(self, msg="Item not found"):
-        super(CollectableItemNotFound, self).__init__(msg)
+        super().__init__(msg)
 
 
 class ListField(Field):
@@ -59,7 +59,7 @@ class ListField(Field):
     def __init__(self, doc, **kwargs):
         if "default" not in kwargs:
             kwargs["default"] = []
-        super(ListField, self).__init__(doc, list, **kwargs)
+        super().__init__(doc, list, **kwargs)
 
 
 class DictField(Field):
@@ -68,7 +68,7 @@ class DictField(Field):
     def __init__(self, doc, **kwargs):
         if "default" not in kwargs:
             kwargs["default"] = {}
-        super(DictField, self).__init__(doc, dict, **kwargs)
+        super().__init__(doc, dict, **kwargs)
 
 
 class BaseRPGObject(BaseObject):

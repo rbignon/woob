@@ -195,7 +195,7 @@ class BanquePopulaire(TwoFactorBrowser):
 
     def __init__(self, website, config, *args, **kwargs):
         self.config = config
-        super(BanquePopulaire, self).__init__(
+        super().__init__(
             self.config, self.config["login"].get(), self.config["password"].get(), *args, **kwargs
         )
         self.BASEURL = "https://%s" % website
@@ -231,7 +231,7 @@ class BanquePopulaire(TwoFactorBrowser):
         )
 
     def deinit(self):
-        super(BanquePopulaire, self).deinit()
+        super().deinit()
 
     no_login = 0
 
@@ -240,10 +240,10 @@ class BanquePopulaire(TwoFactorBrowser):
             # If starting in the middle of a 2FA, and calling for a new authentication_method_page,
             # we'll lose validation_unit validity.
             state.pop("url", None)
-        super(BanquePopulaire, self).load_state(state)
+        super().load_state(state)
 
     def locate_browser(self, state):
-        super(BanquePopulaire, self).locate_browser(state)
+        super().locate_browser(state)
 
     def init_login(self):
         if self.isSSOBearerValid():
@@ -871,7 +871,7 @@ class BanquePopulaire(TwoFactorBrowser):
                         and "balance" in identity
                         and "contractLabel" in identity
                     ):
-                        account.label = ("%s %s" % (identity["contractLabel"], identity["bankingClientLabel"])).strip()
+                        account.label = ("{} {}".format(identity["contractLabel"], identity["bankingClientLabel"])).strip()
 
                         balance = identity["balance"]
                         if balance is not None and "value" in balance and "currencyCode" in balance:
@@ -976,7 +976,7 @@ class BanquePopulaire(TwoFactorBrowser):
             current_skip_value += pagination_count
 
 
-class iter_retry(object):
+class iter_retry:
     # when the callback is retried, it will create a new iterator, but we may already yielded
     # some values, so we need to keep track of them and seek in the middle of the iterator
 

@@ -174,7 +174,7 @@ class NSSFile(RawIOBase):
         self.open = True
 
     def close(self):
-        super(NSSFile, self).close()
+        super().close()
         if self.open:
             self.obj.close()
             self.open = False
@@ -557,7 +557,7 @@ def update_cert_db(dbpath):
                         db_certs.add(nick)
 
         except subprocess.CalledProcessError:
-            LOGGER.warning("Unable to handle ca file {}".format(cert_file))
+            LOGGER.warning(f"Unable to handle ca file {cert_file}")
 
     for nick in obsolete_certs:
         # Those certs were imported in a previous session, but they don't seem

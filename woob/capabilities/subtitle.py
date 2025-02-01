@@ -28,7 +28,7 @@ class LanguageNotSupported(UserError):
     """
 
     def __init__(self, msg="language is not supported"):
-        super(LanguageNotSupported, self).__init__(msg)
+        super().__init__(msg)
 
 
 class Subtitle(BaseObject):
@@ -43,7 +43,7 @@ class Subtitle(BaseObject):
     description = StringField("Description of corresponding video")
 
     def __init__(self, id="", name="", url=None):
-        super(Subtitle, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = name
 
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Vincent A
 #
 # This file is part of a woob module.
@@ -33,13 +31,13 @@ class SueurDeMetalBrowser(PagesBrowser):
     concert = URL(r"/func/funcGetEvent.php", ConcertPage)
 
     def __init__(self, *args, **kwargs):
-        super(SueurDeMetalBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.cities = {}
 
     def jlocation(self, *args, **kwargs):
         kwargs.setdefault("headers", {})["Content-Type"] = "application/json;charset=utf-8"
         kwargs["data"] = json.dumps(kwargs["data"])
-        return super(SueurDeMetalBrowser, self).location(*args, **kwargs)
+        return super().location(*args, **kwargs)
 
     def search_city(self, city):
         self.jlocation(

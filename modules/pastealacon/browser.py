@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011-2021 Romain Bignon
 #
 # This file is part of a woob module.
@@ -30,7 +28,7 @@ from woob.exceptions import BrowserHTTPNotFound
 
 class Spam(Exception):
     def __init__(self):
-        super(Spam, self).__init__("Detected as spam and unable to handle the captcha")
+        super().__init__("Detected as spam and unable to handle the captcha")
 
 
 class PastealaconPaste(BasePaste):

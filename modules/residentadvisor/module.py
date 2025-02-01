@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Alexandre Morignot
 #
 # This file is part of a woob module.
@@ -153,7 +151,7 @@ class ResidentadvisorModule(Module, CapCalendarEvent):
                 yield event
 
     def fill_event(self, event, fields):
-        if set(fields) & set(("end_date", "price", "description", "ticket")):
+        if set(fields) & {"end_date", "price", "description", "ticket"}:
             return self.get_event(event.id)
 
         return event

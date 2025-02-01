@@ -591,7 +591,7 @@ class IbanPage(LoggedPage, JsonPage):
         content = content.replace(':"}', ':""}')
         # ex: '..."phoneNumber":",...'
         content = re.sub(r'":","(?![,}])', '":"","', content)
-        return super(IbanPage, self).build_doc(content)
+        return super().build_doc(content)
 
     def get_iban(self):
         return Coalesce(

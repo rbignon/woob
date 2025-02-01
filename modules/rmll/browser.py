@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015 Guilhem Bonnefille
 #
 # This file is part of a woob module.
@@ -67,8 +65,7 @@ class RmllBrowser(PagesBrowser):
             url = self.channels_page.build(oid=oid)
             self.location(url)
             assert self.channels_page.is_here()
-            for video in self.page.iter_resources(split_path):
-                yield video
+            yield from self.page.iter_resources(split_path)
 
         except HTTPNotFound:
             pass

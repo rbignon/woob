@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Antoine BOSSY
 #
 # This file is part of a woob module.
@@ -37,7 +35,7 @@ class FnaimBrowser(PagesBrowser):
     housing = URL(r"/annonce-immobiliere/(?P<id>.+)/1[8|7]-.*.htm", HousingPage)
 
     def __init__(self, *args, **kwargs):
-        super(FnaimBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def search_city(self, term):
         return self.cities.open(term=term).iter_cities()

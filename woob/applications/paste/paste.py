@@ -146,8 +146,8 @@ class AppPaste(ReplApplication):
                     m = codecs.open(filename, encoding=self.options.encoding or self.encoding)
                 with m as fp:
                     contents = fp.read()
-            except IOError as e:
-                print('Unable to open file "%s": %s' % (filename, e.strerror), file=self.stderr)
+            except OSError as e:
+                print(f'Unable to open file "{filename}": {e.strerror}', file=self.stderr)
                 return 1
 
         if binary:

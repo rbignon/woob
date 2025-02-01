@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2012 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -132,7 +130,7 @@ class AuthorityManagementPage(HTMLPage):
 
 class RedirectPage(LoggedPage, HTMLPage):
     def on_load(self):
-        super(RedirectPage, self).on_load()
+        super().on_load()
         link = self.doc.xpath('//a[@id="P:F_1.R2:link"]')
         if link:
             self.browser.location(link[0].attrib["href"])
@@ -142,7 +140,7 @@ class RedirectPage(LoggedPage, HTMLPage):
 class NewHomePage(LoggedPage, PartialHTMLPage):
     def on_load(self):
         self.browser.is_new_website = True
-        super(NewHomePage, self).on_load()
+        super().on_load()
 
 
 # PartialHTMLPage: this page may be used while redirecting, and so bear empty text
@@ -411,7 +409,7 @@ class UserSpacePage(LoggedPage, HTMLPage):
                 action_type=ActionType.FILL_KYC,
             )
 
-        super(UserSpacePage, self).on_load()
+        super().on_load()
 
 
 class ChangePasswordPage(LoggedPage, HTMLPage):
@@ -695,7 +693,7 @@ class item_account_generic(ItemElement):
 
                     pattern = r"Carte\s(\w+).*\d{4}\s([A-Za-z\s]+)(.*)"
                     m = re.search(pattern, CleanText(".")(elem))
-                    card.label = "%s %s %s" % (m.group(1), card_id, m.group(2))
+                    card.label = f"{m.group(1)} {card_id} {m.group(2)}"
                     card.balance = Decimal("0.0")
                     card.currency = card.get_currency(m.group(3))
                     card._card_pages = [page]
@@ -725,7 +723,7 @@ class item_account_generic(ItemElement):
         self.env["id"] = _id
 
         if accounting is not None and accounting + (coming or Decimal("0")) != balance:
-            self.page.logger.warning("%s + %s != %s" % (accounting, coming, balance))
+            self.page.logger.warning(f"{accounting} + {coming} != {balance}")
 
         if accounting is not None:
             balance = accounting
@@ -1015,7 +1013,7 @@ class AdvisorPage(LoggedPage, HTMLPage):
         )
 
 
-class Pagination(object):
+class Pagination:
     def next_page(self):
         try:
             form = self.page.get_form('//form[@id="paginationForm" or @id="frmSTARCpag"]')
@@ -1254,7 +1252,7 @@ class CardsActivityPage(LoggedPage, HTMLPage):
 
         col_number = "Numéro"
 
-        idx_col_number = int(self.doc.xpath('count(%s[.="%s"]/preceding-sibling::th)' % (head_xpath, col_number)) + 1)
+        idx_col_number = int(self.doc.xpath(f'count({head_xpath}[.="{col_number}"]/preceding-sibling::th)') + 1)
 
         for row in self.doc.xpath(item_xpath):
             # There's also a status columns that can be used to filter the cards. (active, résiliée, expirée,...)
@@ -1727,7 +1725,7 @@ class CardsOpePage(OperationsPage):
                             r"pour le mois de ((?:\w+\s+){2})",
                             flags=re.UNICODE,
                         )(self)
-                    self.env["date"] = (parse_french_date("%s %s" % ("1", d)) + relativedelta(day=31)).date()
+                    self.env["date"] = (parse_french_date("{} {}".format("1", d)) + relativedelta(day=31)).date()
                 self.env["coming"] = date.today() < self.env["date"]
                 amount = CleanText(TableCell("amount"))(self).split("dont frais")
                 self.env["amount"] = amount[0]
@@ -1880,7 +1878,7 @@ class CardPage2(CardPage, HTMLPage, XMLPage):
             html = xml.xpath("//htmlcontent")[0].text.encode(encoding=self.encoding)
             return HTMLPage.build_doc(self, html)
 
-        return super(CardPage2, self).build_doc(content)
+        return super().build_doc(content)
 
     @method
     class get_history(ListElement):
@@ -2496,9 +2494,9 @@ class IbanPage(LoggedPage, HTMLPage):
         for raw in self.doc.xpath('//table[has-class("liste")]//tbody//tr[not(@class)]'):
             if raw.xpath(".//td[1]")[0].text_content().upper().startswith(subscription_label.upper()):
                 iban_document = Document()
-                iban_document.label = "IBAN {}".format(subscription_label)
+                iban_document.label = f"IBAN {subscription_label}"
                 iban_document.url = Link(raw.xpath(".//a"))(self.doc)
-                iban_document.id = "{}_IBAN".format(subscription_id)
+                iban_document.id = f"{subscription_id}_IBAN"
                 iban_document.format = "pdf"
                 iban_document.type = DocumentTypes.RIB
                 return iban_document
@@ -2780,7 +2778,7 @@ class ListEmitters(ListElement):
             """
             bank_info = self.parent.get_bank_info()
             partial_number = CleanText('.//span[@class="_c1 doux _c1"]', replace=[(" ", "")])(self)
-            return "%s%s" % (bank_info, partial_number)
+            return f"{bank_info}{partial_number}"
 
 
 class TransferPageCommon(LoggedPage, HTMLPage, AppValidationPage):
@@ -3304,7 +3302,7 @@ class RecipientsListPage(LoggedPage, HTMLPage):
             return True
 
     def set_browser_form(self, form):
-        self.browser.recipient_form = dict((k, v) for k, v in form.items() if v)
+        self.browser.recipient_form = {k: v for k, v in form.items() if v}
         self.browser.recipient_form["url"] = form.url
 
     def ask_bic(self, recipient):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Vincent A
 #
 # This file is part of a woob module.
@@ -119,7 +117,7 @@ class PageSection(LoggedPage, HTMLPage):
             try:
                 title = unescape(unescape(list(self.video_title.finditer(beforetext))[-1].group(1)))
             except IndexError:
-                title = "%s - %s" % (match.group("id"), n)
+                title = "{} - {}".format(match.group("id"), n)
 
             yield {
                 "url": url,

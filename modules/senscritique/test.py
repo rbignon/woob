@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -30,4 +28,4 @@ class SenscritiqueTest(BackendTest):
         l = list(self.backend.list_events(datetime.now()))
         assert len(l)
         event = self.backend.get_event(l[0].id)
-        self.assertTrue(event.url, 'URL for event "%s" not found: %s' % (event.id, event.url))
+        self.assertTrue(event.url, f'URL for event "{event.id}" not found: {event.url}')

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from woob.browser import URL, PagesBrowser
 
 from .pages.index import IndexPage

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Julien Veyssier
 # Copyright(C) 2012-2013 Romain Bignon
 #
@@ -75,8 +73,7 @@ class CreditMutuelModule(
         return self.create_browser(self.config)
 
     def iter_accounts(self):
-        for account in self.browser.get_accounts_list():
-            yield account
+        yield from self.browser.get_accounts_list()
 
     def match_account(self, account, old_accounts):
         # This will work for most of accounts

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon
 #
 # This file is part of a woob module.
@@ -41,7 +39,7 @@ class ArteBrowser(PagesBrowser):
     guide = URL(r"/(?P<lang>\w{2})/guide/", GuidePage)
 
     def __init__(self, lang, quality, order, format, version, *args, **kwargs):
-        super(ArteBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.order = order
         self.lang = next(value for key, value in LANG.items if key == lang)
         self.version = next(
@@ -51,11 +49,11 @@ class ArteBrowser(PagesBrowser):
         self.format = format
 
         if self.lang.get("label") not in self.version.keys():
-            raise UserError("%s is not available for %s" % (self.lang.get("label"), version))
+            raise UserError("{} is not available for {}".format(self.lang.get("label"), version))
 
     def search_videos(self, pattern):
         return self.webservice.go(
-            lang=self.lang["site"], method_name="listing_SEARCH", page=1, pattern=r"query={}".format(pattern)
+            lang=self.lang["site"], method_name="listing_SEARCH", page=1, pattern=fr"query={pattern}"
         ).iter_videos()
 
     def get_arte_guide_days(self, split_path):
@@ -81,13 +79,13 @@ class ArteBrowser(PagesBrowser):
             method_name, id = cat.split("_")
 
             return self.webservice.go(
-                lang=self.lang["site"], method_name=method_name, page=1, pattern="id={}".format(id)
+                lang=self.lang["site"], method_name=method_name, page=1, pattern=f"id={id}"
             ).iter_programs(split_path=split_path)
         else:
             method_name = r"collection_videos" if cat.startswith("RC-") else r"videos_subcategory"
 
             return self.webservice.go(
-                lang=self.lang["site"], method_name=method_name, page=1, pattern="id={}".format(cat)
+                lang=self.lang["site"], method_name=method_name, page=1, pattern=f"id={cat}"
             ).iter_videos()
 
     def get_arte_generic_subsites(self, split_path, subsite):
@@ -120,7 +118,7 @@ class ArteBrowser(PagesBrowser):
         for line in r:
             if not line.startswith("#"):
                 if baseurl not in line:
-                    link = "%s/%s" % (baseurl, line.replace("\n", ""))
+                    link = "{}/{}".format(baseurl, line.replace("\n", ""))
                 else:
                     link = str(line.replace("\n", ""))
                 links_by_quality.append(link)

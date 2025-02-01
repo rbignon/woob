@@ -83,7 +83,7 @@ class Launcher:
 
     @classmethod
     def print_version(cls):
-        print("%s v%s %s" % (woob.__name__, woob.__version__, woob.__copyright__))
+        print(f"{woob.__name__} v{woob.__version__} {woob.__copyright__}")
 
     @classmethod
     def run(cls):
@@ -103,11 +103,11 @@ class Launcher:
             sys.argv.insert(1, "config")
 
         if sys.argv[1] not in app_list:
-            print("woob: '{0}' is not a woob command. See 'woob --help'.".format(sys.argv[1]))
+            print(f"woob: '{sys.argv[1]}' is not a woob command. See 'woob --help'.")
             words = difflib.get_close_matches(sys.argv[1], app_list)
             if words:
                 print()
-                print("The most similar command is\n\t{0}".format("\n\t".join(words)))
+                print("The most similar command is\n\t{}".format("\n\t".join(words)))
             return 1
 
         return cls.run_app(sys.argv[1], sys.argv[2:])

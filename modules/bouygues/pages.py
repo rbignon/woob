@@ -129,7 +129,7 @@ class SubscriberPage(LoggedPage, JsonPage):
         elif self.doc["type"] == "ENTREPRISE":
             subscriber_dict = self.doc["representantLegal"]
 
-        subscriber = "%s %s %s" % (
+        subscriber = "{} {} {}".format(
             subscriber_dict.get("civilite", ""),
             subscriber_dict["prenom"],
             subscriber_dict["nom"],
@@ -218,7 +218,7 @@ class MyDate(Date):
     """
 
     def filter(self, txt):
-        date = super(MyDate, self).filter(txt)
+        date = super().filter(txt)
         if date:
             date += timedelta(days=1)
         return date
@@ -229,8 +229,7 @@ class DocumentPage(LoggedPage, JsonPage):
         for invoice_subscription in Dict(self.iter_documents.klass.item_xpath)(self.doc):
             if subscription_id != invoice_subscription["id"]:
                 continue
-            for invoice in invoice_subscription["factures"]:
-                yield invoice
+            yield from invoice_subscription["factures"]
 
     def get_invoice_count(self, subscription_id):
         return len(list(self.iter_subscription_invoices(subscription_id)))
@@ -240,8 +239,7 @@ class DocumentPage(LoggedPage, JsonPage):
         item_xpath = "data/consulterPersonne/factures/comptesFacturation"
 
         def find_elements(self):
-            for invoice in self.page.iter_subscription_invoices(Env("subid")(self)):
-                yield invoice
+            yield from self.page.iter_subscription_invoices(Env("subid")(self))
 
         class item(ItemElement):
             klass = Bill

@@ -102,8 +102,7 @@ class GenericNewspaperModule(Module):
             if thread.id in self.storage.get("seen", default={}):
                 continue
             self.fill_thread(thread, "root")
-            for msg in thread.iter_all_messages():
-                yield msg
+            yield from thread.iter_all_messages()
 
     def set_message_read(self, message):
         self.storage.set(
@@ -124,7 +123,7 @@ class GenericNewspaperModule(Module):
                 l.sort()
                 l.reverse()
                 tosave = [v[1] for v in l[0 : self.RSSSIZE + 10]]
-                toremove = set([v for v in self.storage.get("seen", default={})]).difference(tosave)
+                toremove = {v for v in self.storage.get("seen", default={})}.difference(tosave)
                 for id in toremove:
                     self.storage.delete("seen", id)
 

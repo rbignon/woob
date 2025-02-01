@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Clément Schreiner
 #
 # This file is part of a woob module.
@@ -35,11 +33,11 @@ class MediawikiTest(BackendTest):
 
     def test_push_content(self):
         content = self.backend.get_content("Project:Sandbox")
-        content.content = "%s\nhello %s" % (content.content, datetime.now())
+        content.content = f"{content.content}\nhello {datetime.now()}"
         # ^ warning: wikipedia seems to have blocked lines starting with "test"...
         self.backend.push_content(content, message="test woob", minor=True)
         new_content = self.backend.get_content("Project:Sandbox")
-        self.assertEquals(content.content, new_content.content)
+        self.assertEqual(content.content, new_content.content)
 
     def test_content_preview(self):
         content = self.backend.get_content("Project:Sandbox")

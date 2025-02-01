@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015 Matthieu Weber
 #
 # This file is part of a woob module.
@@ -19,7 +17,6 @@
 
 from datetime import date
 
-from six.moves import filter, map
 
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.json import Dict
@@ -39,8 +36,7 @@ class SearchCitiesPage(JsonPage):
         ignore_duplicate = True
 
         def find_elements(self):
-            for el in self.el:
-                yield el
+            yield from self.el
 
         class item(ItemElement):
             klass = City

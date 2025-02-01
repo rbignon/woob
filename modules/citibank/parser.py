@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Oleg Plakhotniuk
 #
 # This file is part of a woob module.
@@ -59,7 +57,7 @@ def formatted(read_func):
     return wrapped
 
 
-class StatementParser(object):
+class StatementParser:
     """
     Each "read_*" method takes position as its argument,
     and returns next token position if read was successful,

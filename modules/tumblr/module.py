@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -60,8 +58,7 @@ class TumblrModule(Module, CapGallery):
             yield self.get_gallery(urlparse(url).netloc)
 
     def iter_gallery_images(self, gallery):
-        for img in self.browser.iter_images(gallery):
-            yield img
+        yield from self.browser.iter_images(gallery)
 
     def fill_img(self, img, fields):
         if "data" in fields:

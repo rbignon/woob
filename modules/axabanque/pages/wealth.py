@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -254,7 +252,7 @@ class PerformanceMonAxaPage(LoggedPage, HTMLPage):
                 tr_position += 1
         tr_position += position_in_colspan
 
-        return '//div[@id="%s"]/table//td[a[normalize-space()="%s"]]/../td[position()=%s]' % (
+        return '//div[@id="{}"]/table//td[a[normalize-space()="{}"]]/../td[position()={}]'.format(
             table_id,
             inv_label,
             tr_position,

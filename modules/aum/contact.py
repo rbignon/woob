@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2008-2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -30,7 +28,7 @@ from woob.capabilities.contact import ProfileNode
 from woob.tools.html import html2text
 
 
-class FieldBase(object):
+class FieldBase:
     def __init__(self, key, key2=None):
         self.key = key
         self.key2 = key2

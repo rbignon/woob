@@ -150,7 +150,7 @@ class Application:
     # ------ Application methods -------------------------------
 
     def __init__(self, option_parser=None):
-        super(Application, self).__init__()
+        super().__init__()
         self.encoding = self.guess_encoding()
         self.logger = getLogger("woob.applications.%s" % self.APPNAME)
         self.woob = self.create_woob()
@@ -215,7 +215,7 @@ class Application:
 
             try:
                 os.rename(legacy, preferred)
-            except IOError as exc:
+            except OSError as exc:
                 self.logger.warning("can't rename legacy %r: %s", legacy, exc)
                 return legacy
 
@@ -311,9 +311,9 @@ class Application:
         if self.VERSION:
             if self.COPYRIGHT:
                 copyright = self.COPYRIGHT.replace("YEAR", "%d" % datetime.today().year)
-                version = "Woob %s v%s %s" % (self.APPNAME, self.VERSION, copyright)
+                version = f"Woob {self.APPNAME} v{self.VERSION} {copyright}"
             else:
-                version = "Woob %s v%s" % (self.APPNAME, self.VERSION)
+                version = f"Woob {self.APPNAME} v{self.VERSION}"
         return version
 
     def _do_complete_obj(self, backend, fields, obj):
@@ -368,7 +368,7 @@ class Application:
         if isinstance(error, MoreResultsAvailable):
             return False
 
-        print("Error(%s): %s" % (backend.name, error), file=self.stderr)
+        print(f"Error({backend.name}): {error}", file=self.stderr)
         if logging.root.level <= logging.DEBUG:
             print(backtrace, file=self.stderr)
         else:
@@ -508,7 +508,7 @@ class Application:
     def create_logging_file_handler(self, filename):
         try:
             stream = open(os.path.expanduser(filename), "w")
-        except IOError as e:
+        except OSError as e:
             self.logger.error("Unable to create the logging file: %s" % e)
             sys.exit(1)
         else:

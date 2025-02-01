@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Phyks
 #
 # This file is part of a woob module.
@@ -87,4 +85,4 @@ class TicketsDetailsPage(CentQuatrePage, LoggedPage):
             obj_ticket = TICKET.AVAILABLE
 
             def obj_url(self):
-                return "%s%s" % (self.page.browser.BASEURL, Link('//*[@class="alternative_button mticket"]/a')(self))
+                return "{}{}".format(self.page.browser.BASEURL, Link('//*[@class="alternative_button mticket"]/a')(self))

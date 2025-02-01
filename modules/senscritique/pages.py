@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -44,7 +42,7 @@ class Description(Filter):
 
 class FormatDate(Filter):
     def __init__(self, pattern, selector):
-        super(FormatDate, self).__init__(selector)
+        super().__init__(selector)
         self.pattern = pattern
 
     def filter(self, _date):

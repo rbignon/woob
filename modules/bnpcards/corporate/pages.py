@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Baptiste Delpey
 #
 # This file is part of a woob module.
@@ -104,7 +102,7 @@ class AccountsPage(LoggedPage, HTMLPage):
             form["periodeSelectionMode"] = "input"
         onclick = self.doc.xpath(submit)[0].get("onclick")
         url_parts = re.findall(r"'([^']*)'", onclick)
-        form.url = "operation%s%sCorporate.event.do" % (url_parts[1], url_parts[0].title())
+        form.url = f"operation{url_parts[1]}{url_parts[0].title()}Corporate.event.do"
         form.submit()
 
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Roger Philibert
 #
 # This file is part of a woob module.
@@ -83,7 +81,7 @@ class TinderBrowser(APIBrowser):
     recs = []
 
     def __init__(self, facebook, location, *args, **kwargs):
-        super(TinderBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.facebook = facebook
 
         data = self.request("/v2/auth/login/facebook", data={"token": facebook.access_token})["data"]
@@ -136,7 +134,7 @@ class TinderBrowser(APIBrowser):
         if resp["match"]:
             self.logger.error("Match with %s!" % profile["name"])
         else:
-            self.logger.info("Liked %s (%r)" % (profile["name"], profile.get("common_likes", "")))
+            self.logger.info("Liked {} ({!r})".format(profile["name"], profile.get("common_likes", "")))
 
         if len(self.recs) > 0:
             return 1

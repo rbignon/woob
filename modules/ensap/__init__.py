@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Juliette Fourcot
 #
 # This file is part of a woob module.

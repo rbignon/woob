@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -56,7 +54,7 @@ class ComparisonResultsPage(HTMLPage):
             def obj_id(self):
                 product = Field("product")(self)
                 _id = CleanText("./@id")(self)
-                return "%s.%s" % (product.id, _id)
+                return f"{product.id}.{_id}"
 
             def obj_shop(self):
                 _id = Field("id")(self)

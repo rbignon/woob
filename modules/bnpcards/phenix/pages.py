@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019      Budget Insight
 #
 # This file is part of a woob module.
@@ -116,7 +114,7 @@ class TransactionCSV(LoggedPage, CsvPage):
         # Dict splits keys on '/' it is intended behaviour because it's primary
         # use is with json files, but it means I have to replace '/' here
         content = content.replace(b"/", b"-")
-        return super(TransactionCSV, self).build_doc(content)
+        return super().build_doc(content)
 
     @method
     class iter_history(DictElement):

@@ -98,7 +98,7 @@ class CenetBrowser(CaisseEpargneLogin):
         # This value is useful to display deferred transactions if PSU has no card but only CHECKING account
         self.has_cards_displayed = False
         self.accounts = None
-        super(CenetBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         dirname = self.responses_dirname
         if dirname:
@@ -112,7 +112,7 @@ class CenetBrowser(CaisseEpargneLogin):
         )
 
     def deinit(self):
-        super(CenetBrowser, self).deinit()
+        super().deinit()
         self.linebourse.deinit()
 
     def set_base_url(self):
@@ -218,7 +218,7 @@ class CenetBrowser(CaisseEpargneLogin):
                 try:
                     if any(account._access_linebourse for account in market_accounts):
                         self.go_linebourse()
-                        params = {"_": "{}".format(int(time.time() * 1000))}
+                        params = {"_": f"{int(time.time() * 1000)}"}
                         self.linebourse.account_codes.go(params=params)
                         if self.linebourse.account_codes.is_here():
                             linebourse_account_ids = self.linebourse.page.get_accounts_list()

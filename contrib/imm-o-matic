@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Copyright 2015-2016, Roland Mas <lolando@debian.org>
 #
@@ -115,7 +114,7 @@ def getids():
                 os.unlink(wf)
             except FileNotFoundError:
                 pass
-            print("Querying %s for %s" % (b, r))
+            print(f"Querying {b} for {r}")
             subprocess.run(["/usr/bin/flatboob", "load", r, "-n", "1000", "-f", "csv", "-b", b, "-O", wf])
 
     cursor.execute("SELECT id FROM ids")
@@ -129,7 +128,7 @@ def getids():
         for csvrow in reader:
             row = dict(zip(indices, csvrow))
             if row["id"] not in ids:
-                print("Inserting id %s" % (row["id"],))
+                print("Inserting id {}".format(row["id"]))
                 cursor.execute("INSERT INTO ids (id) VALUES (?)", (row["id"],))
                 ids.add(row["id"])
     db.commit()
@@ -152,9 +151,9 @@ def getdetails():
             return x
 
     for i in ids:
-        print("Fetching details for %s" % (i,))
+        print(f"Fetching details for {i}")
         try:
-            d = json.load(os.popen("flatboob info -f json %s" % (i,)))
+            d = json.load(os.popen(f"flatboob info -f json {i}"))
         except ValueError:
             continue
         try:
@@ -229,13 +228,13 @@ def search():
         }
         d["location"] = re.sub("\\d", "", d["location"])
         d["location"] = re.sub("\\s+", " ", d["location"])
-        d["location"] = re.sub("\(.*", "", d["location"])
+        d["location"] = re.sub(r"\(.*", "", d["location"])
         d["location"] = d["location"].strip()
 
         if int(d["cost"]) < minprice or int(d["cost"]) > maxprice:
             continue
 
-        print("Selecting %s, downloading" % (i,))
+        print(f"Selecting {i}, downloading")
 
         for k in kws:
             r = "\\b(" + k + ")\\b"

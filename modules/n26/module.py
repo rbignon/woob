@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Benjamin Bouvier
 #
 # This file is part of a woob module.

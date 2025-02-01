@@ -52,7 +52,7 @@ class HSBCHK(StatesMixin, SubSeleniumMixin, PagesBrowser):
     __states__ = ("auth_token", "logged", "selenium_state")
 
     def __init__(self, username, password, secret, *args, **kwargs):
-        super(HSBCHK, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # accounts index changes at each session
         self.accounts_dict_idx = None
         self.username = username
@@ -71,16 +71,16 @@ class HSBCHK(StatesMixin, SubSeleniumMixin, PagesBrowser):
         )
 
     def load_selenium_session(self, selenium):
-        super(HSBCHK, self).load_selenium_session(selenium)
+        super().load_selenium_session(selenium)
         self.location(selenium.url, referrer="https://www.security.online-banking.hsbc.com.hk/gsa/SaaS30Resource/")
 
     def load_state(self, state):
         if state.get("auth_token"):
-            return super(HSBCHK, self).load_state(state)
+            return super().load_state(state)
 
     def open(self, *args, **kwargs):
         try:
-            return super(HSBCHK, self).open(*args, **kwargs)
+            return super().open(*args, **kwargs)
         except ClientError as e:
             if e.response.status_code == 401:
                 self.auth_token = None
@@ -93,7 +93,7 @@ class HSBCHK(StatesMixin, SubSeleniumMixin, PagesBrowser):
 
     def do_login(self):
         self.auth_token = None
-        super(HSBCHK, self).do_login()
+        super().do_login()
         self.auth_token = self.session.cookies.get("SYNC_TOKEN")
         self.logged = True
 

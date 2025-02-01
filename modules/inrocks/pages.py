@@ -57,4 +57,4 @@ class ArticlePage(GenericNewsPage):
                 div_content_element, ["div.tw_button", "div.wpfblike", "blockquote", "p.wp-caption-text", "img"]
             )
 
-            return "%s\n%s" % (CleanHTML(".")(div_header_element), CleanHTML(".")(div_content_element))
+            return "{}\n{}".format(CleanHTML(".")(div_header_element), CleanHTML(".")(div_content_element))

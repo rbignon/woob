@@ -51,7 +51,7 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from .pages import Transaction
 
 
-class LoggedDetectionMixin(object):
+class LoggedDetectionMixin:
     @property
     def logged(self):
         return Dict("commun/raison", default=None)(self.doc) != "niv_auth_insuff"
@@ -87,7 +87,7 @@ class AccountsJsonPage(SGPEJsonPage):
         if self.doc["commun"]["statut"].lower() == "nok":
             reason = self.doc["commun"]["raison"]
             if reason == "SYD-COMPTES-UNAUTHORIZED-ACCESS":
-                raise NoAccountsException("Vous n'avez pas l'autorisation de consulter : {}".format(reason))
+                raise NoAccountsException(f"Vous n'avez pas l'autorisation de consulter : {reason}")
             elif reason == "niv_auth_insuff":
                 raise AssertionError(reason)
             elif reason in ("chgt_mdp_oblig", "chgt_mdp_init"):
@@ -263,7 +263,7 @@ class BalancesJsonPage(SGPEJsonPage):
         if self.doc["commun"]["statut"] == "NOK":
             reason = self.doc["commun"]["raison"]
             if reason == "SYD-COMPTES-UNAUTHORIZED-ACCESS":
-                raise NoAccountsException("Vous n'avez pas l'autorisation de consulter : {}".format(reason))
+                raise NoAccountsException(f"Vous n'avez pas l'autorisation de consulter : {reason}")
             raise BrowserUnavailable(reason)
 
     def populate_balances(self, accounts):
@@ -476,10 +476,10 @@ class BankStatementPage(SGPEJsonPage):
         for document in statements:
             d = Document()
             d.date = datetime.strptime(document["dateEdition"], "%d/%m/%Y")
-            d.label = "%s %s" % (account["libelle"], document["dateEdition"])
+            d.label = "{} {}".format(account["libelle"], document["dateEdition"])
             d.type = DocumentTypes.STATEMENT
             d.format = "pdf"
-            d.id = "%s_%s" % (account["id"], document["dateEdition"].replace("/", ""))
+            d.id = "{}_{}".format(account["id"], document["dateEdition"].replace("/", ""))
             d.url = "/icd/syd-front/data/syd-rce-telechargerReleve.html?b64e4000_sceau=%s" % quote_plus(
                 document["sceau"]
             )

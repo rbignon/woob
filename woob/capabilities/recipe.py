@@ -56,7 +56,7 @@ class Recipe(BaseObject):
     comments = Field("User comments about the recipe", list)
 
     def __init__(self, id="", title="", url=None):
-        super(Recipe, self).__init__(id, url)
+        super().__init__(id, url)
         self.title = title
 
 

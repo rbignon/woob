@@ -161,8 +161,7 @@ class OperationsPage(JsonPage):
             # local index. We ought to iterate over these.
 
             for per_date in self.el["accountOperations"].values():
-                for transaction_element in per_date:
-                    yield transaction_element
+                yield from per_date
 
         class item(ItemElement):
             klass = FrenchTransaction
@@ -182,7 +181,7 @@ class OperationsPage(JsonPage):
                 elif raw == label:
                     return raw
                 else:
-                    return "%s %s" % (raw, label)
+                    return f"{raw} {label}"
 
             obj_type = Map(
                 Dict("type", default=None),

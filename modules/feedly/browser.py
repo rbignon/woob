@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -38,7 +36,7 @@ class FeedlyBrowser(LoginBrowser):
     marker = URL("v3/markers", MarkerPage)
 
     def __init__(self, username, password, login_browser, *args, **kwargs):
-        super(FeedlyBrowser, self).__init__(username, password, *args, **kwargs)
+        super().__init__(username, password, *args, **kwargs)
         self.user_id = None
         self.login_browser = login_browser
 
@@ -95,7 +93,7 @@ class FeedlyBrowser(LoginBrowser):
             type = "tag"
         else:
             type = "category"
-        url = "user/%s/%s/%s" % (self.user_id, type, category)
+        url = f"user/{self.user_id}/{type}/{category}"
         return self.get_unread_feed(url)
 
     def get_feed_url(self, category, feed):

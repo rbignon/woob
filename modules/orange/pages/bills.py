@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Vincent Paredes
 #
 # This file is part of a woob module.
@@ -64,7 +62,7 @@ class BillsApiProPage(LoggedPage, JsonPage):
     def build_doc(self, content):
         if not content:
             return {"bills": []}  # No bills
-        return super(BillsApiProPage, self).build_doc(content)
+        return super().build_doc(content)
 
     @method
     class get_bills(DictElement):
@@ -85,7 +83,7 @@ class BillsApiProPage(LoggedPage, JsonPage):
                 return "Facture du %s" % Field("date")(self)
 
             def obj_id(self):
-                return "%s_%s" % (Env("subid")(self), Field("date")(self).strftime("%d%m%Y"))
+                return "{}_{}".format(Env("subid")(self), Field("date")(self).strftime("%d%m%Y"))
 
             def get_params(self):
                 params = {
@@ -116,7 +114,7 @@ class BillsApiParPage(LoggedPage, JsonPage):
     def build_doc(self, content):
         if not content:
             return {"billsHistory": {"billList": []}}  # No bills
-        return super(BillsApiParPage, self).build_doc(content)
+        return super().build_doc(content)
 
     @method
     class get_bills(DictElement):
@@ -136,7 +134,7 @@ class BillsApiParPage(LoggedPage, JsonPage):
                 return "Facture du %s" % Field("date")(self)
 
             def obj_id(self):
-                return "%s_%s" % (Env("subid")(self), Field("date")(self).strftime("%d%m%Y"))
+                return "{}_{}".format(Env("subid")(self), Field("date")(self).strftime("%d%m%Y"))
 
             obj_url = Format("%s%s", BrowserURL("doc_api_par"), Dict("hrefPdf"))
             obj__is_v2 = True
@@ -172,7 +170,7 @@ class SubscriptionsPage(LoggedPage, HTMLPage):
             mtc = re.match(r"necFe.bandeau.container.innerHTML\s*=\s*stripslashes\((.*)\);$", line)
             if mtc:
                 html = JSValue().filter(mtc.group(1)).encode(self.encoding)
-                return super(SubscriptionsPage, self).build_doc(html)
+                return super().build_doc(html)
 
     @method
     class iter_subscription(ListElement):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from random import choice
 
 from woob.capabilities.torrent import MagnetOnly
@@ -14,7 +12,7 @@ class TorrentzTest(BackendTest):
         # try something popular so we sometimes get a magnet-only torrent
 
         l = list(self.backend.iter_torrents("ubuntu linux"))
-        self.assertEquals(50, len(l))
+        self.assertEqual(50, len(l))
         for torrent in l:
             assert torrent.id
             assert torrent.name
@@ -23,7 +21,7 @@ class TorrentzTest(BackendTest):
             assert torrent.seeders >= 0
             assert torrent.leechers >= 0
 
-            self.assertEquals(40, len(torrent.id))
+            self.assertEqual(40, len(torrent.id))
 
     def test_get_random_torrentfile(self):
         torrent = choice(list(self.backend.iter_torrents("ubuntu linux")))

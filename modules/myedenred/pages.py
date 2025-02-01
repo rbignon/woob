@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Théo Dorée
 #
 # This file is part of a woob module.
@@ -60,7 +58,7 @@ class JsAppPage(RejectableHTMLPage):
         # It constructs the js url so the regex has several matches,
         # we take the first one that isn't just the filename parameter
         matches = re.findall(r'%s:"(\w+?)"' % filename, self.text)
-        return next((m for m in matches if m != filename))
+        return next(m for m in matches if m != filename)
 
 
 class JsParamsPage(RejectableHTMLPage):

@@ -55,7 +55,7 @@ class SubscriptionNotFound(UserError):
     """
 
     def __init__(self, msg="Subscription not found"):
-        super(SubscriptionNotFound, self).__init__(msg)
+        super().__init__(msg)
 
 
 class DocumentNotFound(UserError):
@@ -64,7 +64,7 @@ class DocumentNotFound(UserError):
     """
 
     def __init__(self, msg="Document not found"):
-        super(DocumentNotFound, self).__init__(msg)
+        super().__init__(msg)
 
 
 class DocumentTypes:
@@ -130,7 +130,7 @@ class Document(BaseObject):
     number = StringField("Number of the document (if present and meaningful for user)")
 
     def __repr__(self):
-        return "<%s id=%r label=%r date=%r>" % (type(self).__name__, self.id, self.label, self.date)
+        return f"<{type(self).__name__} id={self.id!r} label={self.label!r} date={self.date!r}>"
 
 
 class Bill(Document, Currency):
@@ -147,7 +147,7 @@ class Bill(Document, Currency):
     finishdate = DateField("The last day the bill applies to")
 
     def __repr__(self):
-        return "<%s id=%r label=%r date=%r total_price=%r>" % (
+        return "<{} id={!r} label={!r} date={!r} total_price={!r}>".format(
             type(self).__name__,
             self.id,
             self.label,
@@ -217,7 +217,7 @@ class Bill(Document, Currency):
             self._income = None
 
     def __init__(self, *args, **kwargs):
-        super(Bill, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.type = DocumentTypes.BILL
         self._income = None
         # _income shall be set to True or False only if income is set *before* price property
@@ -236,7 +236,7 @@ class Subscription(BaseObject):
     is_fake = BoolField("Set True if website doesn't provide a real subscription", default=False)
 
     def __repr__(self):
-        return "<%s id=%r label=%r>" % (type(self).__name__, self.id, self.label)
+        return f"<{type(self).__name__} id={self.id!r} label={self.label!r}>"
 
 
 class CapDocument(CapCollection, CapCredentialsCheck):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Clément Schreiner
 #
 # This file is part of a woob module.
@@ -122,7 +120,7 @@ class MediawikiModule(Module, CapContent, CapImage, CapGallery):
             yield self._make_image(info)
 
     def fill_img(self, obj, fields):
-        if set(fields) & set(("url", "thumbnail")):
+        if set(fields) & {"url", "thumbnail"}:
             new = self.get_image(obj.id)
 
             if "url" in fields:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright(C) 2014 Julia Leven
 #
 # This file is part of woob.
@@ -58,7 +57,7 @@ def my_browser():
 
 @pytest.fixture()
 def my_browser_without_browser():
-    class MyMockBrowserWithoutBrowser(object):
+    class MyMockBrowserWithoutBrowser:
         BASEURL = "http://woob.tech/"
         absolute_url = URL(r"https://example.org/absolute-url")
         relative_url = URL(r"/relative-url")

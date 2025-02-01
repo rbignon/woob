@@ -26,7 +26,7 @@ class Event(BaseObject):
     location = StringField("Location")
 
     def __repr__(self):
-        return "<Event date=%r activity=%r location=%r>" % (self.date, self.activity, self.location)
+        return f"<Event date={self.date!r} activity={self.activity!r} location={self.location!r}>"
 
 
 class ParcelState(Enum):
@@ -69,4 +69,4 @@ class ParcelNotFound(UserError):
     """
 
     def __init__(self, msg="Parcel not found"):
-        super(ParcelNotFound, self).__init__(msg)
+        super().__init__(msg)

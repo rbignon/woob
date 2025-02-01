@@ -185,7 +185,7 @@ class IFormatter:
                         delattr(obj, name)
 
             if self.MANDATORY_FIELDS:
-                missing_fields = set(self.MANDATORY_FIELDS) - set([name for name, value in obj.iter_fields()])
+                missing_fields = set(self.MANDATORY_FIELDS) - {name for name, value in obj.iter_fields()}
                 if missing_fields:
                     raise MandatoryFieldsNotFound(missing_fields)
 
@@ -250,7 +250,7 @@ class IFormatter:
                     % (self.BOLD, collection.basename, collection.title, collection.backend, self.NC)
                 )
             else:
-                self.output("%s~ (%s) (%s)%s" % (self.BOLD, collection.basename, collection.backend, self.NC))
+                self.output(f"{self.BOLD}~ ({collection.basename}) ({collection.backend}){self.NC}")
 
 
 class PrettyFormatter(IFormatter):
@@ -259,21 +259,21 @@ class PrettyFormatter(IFormatter):
         desc = self.get_description(obj)
 
         if alias is not None:
-            result = "%s %s %s (%s)" % (
+            result = "{} {} {} ({})".format(
                 self.colored("%2s" % alias, "red", "bold"),
                 self.colored("—", "cyan", "bold"),
                 self.colored(title, "yellow", "bold"),
                 self.colored(obj.backend, "blue", "bold"),
             )
         else:
-            result = "%s %s %s" % (
+            result = "{} {} {}".format(
                 self.colored(obj.fullid, "red", "bold"),
                 self.colored("—", "cyan", "bold"),
                 self.colored(title, "yellow", "bold"),
             )
 
         if desc is not None:
-            result += "%s\t%s" % (os.linesep, self.colored(desc, "white"))
+            result += "{}\t{}".format(os.linesep, self.colored(desc, "white"))
 
         return result
 

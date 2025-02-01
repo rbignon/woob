@@ -66,11 +66,11 @@ class ErehsbcBrowser(S2eBrowser):
         self.__states__ += ("otp_json", "redirect_uri")
         kwargs["username"] = self.config["login"].get()
         kwargs["password"] = self.config["password"].get()
-        super(ErehsbcBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
 
     # Parent is popping the URL from the state but we need it
     def dump_state(self):
-        state = super(ErehsbcBrowser, self).dump_state()
+        state = super().dump_state()
         if hasattr(self, "page") and self.page:
             state["url"] = self.page.url
         return state

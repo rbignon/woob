@@ -21,7 +21,8 @@ import logging
 import os
 import warnings
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List
+from typing import Callable, Dict, List
+from collections.abc import Iterator
 
 from woob import __version__
 from woob.capabilities.base import Capability
@@ -77,7 +78,7 @@ class WoobBase:
         self, modules_path: str | None = None, storage: IStorage | None = None, scheduler: IScheduler | None = None
     ):
         self.logger = getLogger("woob")
-        self.backend_instances: Dict[str, Module] = {}
+        self.backend_instances: dict[str, Module] = {}
         self.requests = RequestsManager()
 
         self.modules_path = modules_path
@@ -113,7 +114,7 @@ class WoobBase:
     def build_backend(
         self,
         module_name: str,
-        params: Dict[str, str] | None = None,
+        params: dict[str, str] | None = None,
         storage: IStorage | None = None,
         name: str | None = None,
         nofail: bool = False,
@@ -190,7 +191,7 @@ class WoobBase:
         self.backend_instances[name] = backend
         return backend
 
-    def unload_backends(self, names: str | List[str] | None = None) -> Dict[str, Module]:
+    def unload_backends(self, names: str | list[str] | None = None) -> dict[str, Module]:
         """
         Unload backends.
 
@@ -241,7 +242,7 @@ class WoobBase:
         """
         return len(self.backend_instances)
 
-    def iter_backends(self, caps: List[Capability] | None = None, module: str | None = None) -> Iterator[Module]:
+    def iter_backends(self, caps: list[Capability] | None = None, module: str | None = None) -> Iterator[Module]:
         """
         Iter on each backends.
 
@@ -445,7 +446,7 @@ class Woob(WoobBase):
         """
         return RepositoryModulesLoader(self.repositories)
 
-    def _get_working_dir(self, priority_dirs: List[str | None], user_dir: str | Path) -> str:
+    def _get_working_dir(self, priority_dirs: list[str | None], user_dir: str | Path) -> str:
         for directory in priority_dirs:
             if directory:
                 return str(directory)
@@ -467,7 +468,7 @@ class Woob(WoobBase):
         """
         self.repositories.update(progress)
 
-        modules_to_check = set([module_name for _, module_name, _ in self.backends_config.iter_backends()])
+        modules_to_check = {module_name for _, module_name, _ in self.backends_config.iter_backends()}
         for module_name in modules_to_check:
             minfo = self.repositories.get_module_info(module_name)
             if minfo and not minfo.is_installed():
@@ -476,7 +477,7 @@ class Woob(WoobBase):
     def build_backend(
         self,
         module_name: str,
-        params: Dict[str, str] | None = None,
+        params: dict[str, str] | None = None,
         storage: IStorage | None = None,
         name: str | None = None,
         nofail: bool = False,
@@ -508,13 +509,13 @@ class Woob(WoobBase):
 
     def load_backends(
         self,
-        caps: List[Capability | str] | None = None,
-        names: List[str] | None = None,
-        modules: List[str] | None = None,
-        exclude: List[str] | None = None,
+        caps: list[Capability | str] | None = None,
+        names: list[str] | None = None,
+        modules: list[str] | None = None,
+        exclude: list[str] | None = None,
         storage: IStorage | None = None,
-        errors: List["Woob.LoadError"] | None = None,
-    ) -> Dict[str, Module]:
+        errors: list[Woob.LoadError] | None = None,
+    ) -> dict[str, Module]:
         """
         Load backends listed in config file.
 

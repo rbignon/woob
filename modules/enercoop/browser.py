@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2020      Vincent A
 #
 # This file is part of a woob module.
@@ -89,8 +87,7 @@ class EnercoopBrowser(LoginBrowser):
     @need_login
     def iter_documents(self, _):
         self.bills.go()
-        for doc in self.page.iter_documents():
-            yield doc
+        yield from self.page.iter_documents()
 
     @need_login
     def download_document(self, document):

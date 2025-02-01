@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Baptiste Delpey
 #
 # This file is part of a woob module.
@@ -92,7 +90,7 @@ class BnpcartesentrepriseBrowser(LoginBrowser):
     TIMEOUT = 60.0
 
     def __init__(self, type, *args, **kwargs):
-        super(BnpcartesentrepriseBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.type = type
         self.is_corporate = False
         self.transactions_dict = {}
@@ -191,14 +189,12 @@ class BnpcartesentrepriseBrowser(LoginBrowser):
     def get_ti_transactions(self, account):
         self.ti_card_go()
         self.page.expand(account=account, company=account._company)
-        for tr in sorted_transactions(self.page.get_history()):
-            yield tr
+        yield from sorted_transactions(self.page.get_history())
         self.ti_histo_go()
         self.page.expand(self.page.get_periods()[0], account=account, company=account._company)
         for period in self.page.get_periods():
             self.page.expand(period, account=account, company=account._company)
-            for tr in sorted_transactions(self.page.get_history()):
-                yield tr
+            yield from sorted_transactions(self.page.get_history())
 
     def get_ge_transactions(self, account):
         transactions = []

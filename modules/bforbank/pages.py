@@ -65,8 +65,7 @@ def pagination_with_retry(exc):
         def inner(page, *args, **kwargs):
             while True:
                 try:
-                    for r in func(page, *args, **kwargs):
-                        yield r
+                    yield from func(page, *args, **kwargs)
                 except NextPage as e:
                     if isinstance(e.request, Page):
                         page = e.request
@@ -83,7 +82,7 @@ def pagination_with_retry(exc):
     return decorator_pag_with_retry
 
 
-class BfBKeyboard(object):
+class BfBKeyboard:
     symbols = {
         "0": "00111111001111111111111111111111000000111000000001111111111111111111110011111100",
         "1": "00000000000011000000011100000001100000001111111111111111111100000000000000000000",
@@ -161,7 +160,7 @@ class MyDecimal(CleanDecimal):
         text = super(CleanDecimal, self).filter(text)
         text = re.sub(r"[^\d\-\,]", "", text)
         text = re.sub(r",(?!(\d+$))", "", text)
-        return super(MyDecimal, self).filter(text)
+        return super().filter(text)
 
 
 class RibPage(LoggedPage, HTMLPage):
@@ -425,10 +424,10 @@ class CardPage(LoggedPage, HTMLPage):
             number = CleanText('.//div[@class="m-card-infos-body-num"]', default="")(div)
             number = re.sub(r"[^\d*]", "", number).replace("*", "x")
             debit = CleanText('.//div[@class="m-card-infos-body-text"][contains(text(),"Débit")]')(div)
-            assert debit == "Débit différé", "unrecognized card type %s: %s" % (number, debit)
+            assert debit == "Débit différé", f"unrecognized card type {number}: {debit}"
 
             card = Account()
-            card.id = "%s.%s" % (account_id, number)
+            card.id = f"{account_id}.{number}"
             card.label = label
             card.number = number
             card.type = Account.TYPE_CARD
@@ -510,7 +509,7 @@ class BoursePage(LoggedPage, HTMLPage):
         else:
             form.submit()
 
-        super(BoursePage, self).on_load()
+        super().on_load()
 
     def open_iframe(self):
         # should be done always (in on_load)?

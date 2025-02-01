@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -38,7 +36,7 @@ class BlogspotBrowser(PagesBrowser):
     article = URL(r"/(?P<year>\d+)/(?P<month>\d+)/(?P<title>.*).html$", ArticlePage)
 
     def __init__(self, baseurl, *args, **kwargs):
-        super(BlogspotBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.BASEURL = baseurl
         self.cache = OrderedDict()
 

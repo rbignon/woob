@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Cedric Defortis
 #
 # This file is part of a woob module.
@@ -64,44 +62,44 @@ class WeatherPage(JsonPage):
         obj_date = date.today()
 
         def obj_id(self):
-            return Dict("properties/forecast/{}/time".format(self.cpt))(self)
+            return Dict(f"properties/forecast/{self.cpt}/time")(self)
 
         def obj_text(self):
             return Format(
                 "%s - %s probability %s%% - Cloud coverage %s%% - Wind %s km/h %s° %s - Humidity %s%% - Pressure %s hPa",
-                Dict("properties/forecast/{}/weather_description".format(self.cpt)),
+                Dict(f"properties/forecast/{self.cpt}/weather_description"),
                 Field("precipitation"),
                 Field("precipitation_probability"),
                 Field("wind_speed"),
-                Dict("properties/forecast/{}/total_cloud_cover".format(self.cpt)),
-                Dict("properties/forecast/{}/wind_direction".format(self.cpt)),
+                Dict(f"properties/forecast/{self.cpt}/total_cloud_cover"),
+                Dict(f"properties/forecast/{self.cpt}/wind_direction"),
                 Field("wind_direction"),
                 Field("humidity"),
                 Field("pressure"),
             )(self)
 
         def obj_precipitation_probability(self):
-            return float(Dict("properties/forecast/{}/rain_1h".format(self.cpt), default=0)(self))
+            return float(Dict(f"properties/forecast/{self.cpt}/rain_1h", default=0)(self))
 
         def obj_precipitation(self):
             return Precipitation.RA
 
         def obj_wind_direction(self):
             return Direction[
-                CleanText(Dict("properties/forecast/{}/wind_icon".format(self.cpt)), replace=[("O", "W")])(self)
+                CleanText(Dict(f"properties/forecast/{self.cpt}/wind_icon"), replace=[("O", "W")])(self)
             ]
 
         def obj_wind_speed(self):
-            return float(Dict("properties/forecast/{}/wind_speed".format(self.cpt), default=0)(self))
+            return float(Dict(f"properties/forecast/{self.cpt}/wind_speed", default=0)(self))
 
         def obj_humidity(self):
-            return float(Dict("properties/forecast/{}/relative_humidity".format(self.cpt), default=0)(self))
+            return float(Dict(f"properties/forecast/{self.cpt}/relative_humidity", default=0)(self))
 
         def obj_pressure(self):
-            return float(Dict("properties/forecast/{}/P_sea".format(self.cpt), default=0)(self))
+            return float(Dict(f"properties/forecast/{self.cpt}/P_sea", default=0)(self))
 
         def obj_temp(self):
-            return Temperature(float(Dict("properties/forecast/{}/T".format(self.cpt), default=50)(self)), "C")
+            return Temperature(float(Dict(f"properties/forecast/{self.cpt}/T", default=50)(self)), "C")
 
     @method
     class iter_forecast(DictElement):

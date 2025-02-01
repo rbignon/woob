@@ -38,7 +38,7 @@ class Rate(BaseObject, Currency):
     datetime = DateField("Collection date and time")
 
     def __repr__(self):
-        return "<%s from=%r to=%r value=%r>" % (
+        return "<{} from={!r} to={!r} value={!r}>".format(
             type(self).__name__,
             self.currency_from,
             self.currency_to,

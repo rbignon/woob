@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2020      Vincent A
 #
 # This file is part of a woob module.
@@ -55,4 +53,4 @@ class EnercoopTest(BackendTest):
         measures = [measure for _, measure in zip(range(10), self.backend.iter_gauge_history(sensors[0].id))]
         assert len(measures)
         assert any(measure.level > 0 for measure in measures)
-        assert len(set(measure.date for measure in measures)) == len(measures)
+        assert len({measure.date for measure in measures}) == len(measures)

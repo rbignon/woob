@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -50,13 +48,10 @@ class LameteoagricoleBrowser(PagesBrowser):
 
     def iter_forecast(self, id):
         self.hour.go(id=id)
-        for f in self.page.iter_forecast():
-            yield f
+        yield from self.page.iter_forecast()
 
         self.day5.go(id=id)
-        for f in self.page.iter_forecast():
-            yield f
+        yield from self.page.iter_forecast()
 
         self.day10.go(id=id)
-        for f in self.page.iter_forecast():
-            yield f
+        yield from self.page.iter_forecast()

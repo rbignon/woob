@@ -28,7 +28,7 @@ __all__ = ["CSVFormatter"]
 
 class CSVFormatter(IFormatter):
     def __init__(self, field_separator=";"):
-        super(CSVFormatter, self).__init__()
+        super().__init__()
         self.started = False
         self.field_separator = field_separator
 

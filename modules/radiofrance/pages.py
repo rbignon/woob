@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Bezleputh
 #
 # This file is part of a woob module.
@@ -294,7 +292,7 @@ class JsonPage(JsonPage):
                     emission = item["surtitle"] if "surtitle" in item else None
                     title = item["title"] if "title" in item else item["conceptTitle"]
                     if emission:
-                        title = "%s: %s" % (title, emission)
+                        title = f"{title}: {emission}"
                     return "", title
         return "", ""
 
@@ -339,13 +337,13 @@ class JsonPage(JsonPage):
     def get_current(self):
         if "current" in self.doc:
             person = self.doc["current"]["emission"]["titre"]
-            title = "%s: %s" % (self.doc["current"]["song"]["interpreteMorceau"], self.doc["current"]["song"]["titre"])
+            title = "{}: {}".format(self.doc["current"]["song"]["interpreteMorceau"], self.doc["current"]["song"]["titre"])
             return person, title
         elif "diffusions" in self.doc:
             now = int(time.time())
             for item in self.doc["diffusions"]:
                 if item["debut"] < now and item["fin"] > now:
-                    title = "%s: %s" % (item["title_emission"], item["title_diff"] if "title_diff" in item else "")
+                    title = "{}: {}".format(item["title_emission"], item["title_diff"] if "title_diff" in item else "")
                     person = ""
                     return person, title
             return "", ""
@@ -359,7 +357,7 @@ class JsonPage(JsonPage):
 
                     title = item["title_emission"]
                     if emission:
-                        title = "%s: %s" % (title, emission)
+                        title = f"{title}: {emission}"
 
                     person = ""
                     if "personnes" in item and item["personnes"] and item["personnes"][0]:

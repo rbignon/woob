@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -53,7 +51,7 @@ class LogicimmoBrowser(PagesBrowser):
     }
 
     def __init__(self, *args, **kwargs):
-        super(LogicimmoBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.session.headers["X-Requested-With"] = "XMLHttpRequest"
 
     def get_cities(self, pattern):

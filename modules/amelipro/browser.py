@@ -49,7 +49,7 @@ class AmeliProBrowser(LoginBrowser):
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        super(AmeliProBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def do_login(self):
         # login_page redirects us to the same page but it adds many auth params in the URL

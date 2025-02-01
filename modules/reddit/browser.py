@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -32,7 +30,7 @@ class RedditBrowser(PagesBrowser):
     catch_http = URL(r"http://.*", CatchHTTP)
 
     def __init__(self, sub, *args, **kwargs):
-        super(RedditBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.BASEURL = "https://www.reddit.com/r/%s/" % sub
 
     def iter_images(self, cat=""):
@@ -41,7 +39,7 @@ class RedditBrowser(PagesBrowser):
 
     def search_images(self, pattern, sort="top", nsfw=False):
         nsfw = {True: "yes", False: "no"}[nsfw]
-        pattern = "%s nsfw:%s" % (pattern, nsfw)
+        pattern = f"{pattern} nsfw:{nsfw}"
 
         self.search.go(sort=sort, params={"q": pattern})
         return self.page.iter_images()

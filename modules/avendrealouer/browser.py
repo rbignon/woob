@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      ZeHiro
 #
 # This file is part of a woob module.
@@ -36,7 +34,7 @@ class AvendrealouerBrowser(PagesBrowser):
     housing = URL(r"/(?P<id>[vente|location].*).html", HousingPage)
 
     def __init__(self, datadome_cookie_search, datadome_cookie_detail, *args, **kwargs):
-        super(AvendrealouerBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.datadome_cookie_search = datadome_cookie_search
         self.datadome_cookie_detail = datadome_cookie_detail
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -108,7 +106,7 @@ class RecipePage(HTMLPage):
         def obj_instructions(self):
             instructions = ""
             for item in Dict("recipeInstructions")(self):
-                instructions = "{0} - {1}\n\n".format(instructions, item["text"])
+                instructions = "{} - {}\n\n".format(instructions, item["text"])
             return instructions
 
         obj_preparation_time = Eval(int, CleanDecimal(Dict("prepTime")))

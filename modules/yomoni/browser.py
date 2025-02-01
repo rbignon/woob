@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -55,7 +53,7 @@ class YomoniBrowser(APIBrowser):
     }
 
     def __init__(self, username, password, *args, **kwargs):
-        super(YomoniBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.username = username
         self.password = password
         self.users = None
@@ -95,15 +93,14 @@ class YomoniBrowser(APIBrowser):
     @need_login
     def iter_accounts(self):
         if self.accounts:
-            for account in self.accounts:
-                yield account
+            yield from self.accounts
             return
 
         waiting = False
         for project in self.users["projects"]:
-            self.open("/user/%s/project/%s/" % (self.users["userId"], project["projectId"]), method="OPTIONS")
+            self.open("/user/{}/project/{}/".format(self.users["userId"], project["projectId"]), method="OPTIONS")
             me = self.request(
-                "/user/%s/project/%s/" % (self.users["userId"], project["projectId"]), headers=self.request_headers
+                "/user/{}/project/{}/".format(self.users["userId"], project["projectId"]), headers=self.request_headers
             )
 
             waiting = me["status"] in self.waiting_statuses
@@ -146,7 +143,7 @@ class YomoniBrowser(APIBrowser):
                 # If nothing is given to make the label, we use the ISIN instead
                 # We let it crash if the ISIN is not available either.
                 if all([inv["classification"], inv["description"]]):
-                    i.label = "%s - %s" % (inv["classification"], inv["description"])
+                    i.label = "{} - {}".format(inv["classification"], inv["description"])
                 else:
                     i.label = Coalesce().filter(
                         (
@@ -180,11 +177,11 @@ class YomoniBrowser(APIBrowser):
     def iter_history(self, account):
         if account.id not in self.histories:
             histories = []
-            self.open("/user/%s/project/%s/activity" % (self.users["userId"], account._project_id), method="OPTIONS")
+            self.open("/user/{}/project/{}/activity".format(self.users["userId"], account._project_id), method="OPTIONS")
             for activity in [
                 acc
                 for acc in self.request(
-                    "/user/%s/project/%s/activity" % (self.users["userId"], account._project_id),
+                    "/user/{}/project/{}/activity".format(self.users["userId"], account._project_id),
                     headers=self.request_headers,
                 )["activities"]
                 if acc["details"] is not None
@@ -200,7 +197,7 @@ class YomoniBrowser(APIBrowser):
                     continue
 
                 t = Transaction()
-                t.label = "%s - %s" % (" ".join(activity["type"].split("_")), activity["title"])
+                t.label = "{} - {}".format(" ".join(activity["type"].split("_")), activity["title"])
                 t.date = Date().filter(activity["date"])
                 t.type = Transaction.TYPE_BANK
                 amount = (

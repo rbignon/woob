@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Oleg Plakhotniuk
 #
 # This file is part of a woob module.
@@ -110,8 +108,7 @@ class VicSecCard(LoginBrowser):
 
     @need_login
     def iter_history(self, account):
-        for trans in self.recent.stay_or_go().iter_transactions():
-            yield trans
+        yield from self.recent.stay_or_go().iter_transactions()
 
     def do_login(self):
         self.session.cookies.clear()
@@ -122,7 +119,7 @@ class VicSecCard(LoginBrowser):
     def location(self, *args, **kwargs):
         for i in range(self.MAX_RETRIES):
             try:
-                return super(VicSecCard, self).location(*args, **kwargs)
+                return super().location(*args, **kwargs)
             except (ServerError, Timeout, ConnectionError) as e:
                 last_error = e
         raise last_error

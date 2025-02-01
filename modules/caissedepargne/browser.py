@@ -191,7 +191,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.validation_domain = None  # Needed to validate authentication operations and can vary among CE's children.
         self.id_token = None
 
-        super(CaisseEpargneLogin, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
 
         self.AUTHENTICATION_METHODS = {
             "otp_emv": self.handle_otp_emv,
@@ -1008,7 +1008,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             "https://www.caisse-epargne.offrebourse.com",
         )
 
-        super(CaisseEpargne, self).__init__(nuser, config, *args, **kwargs)
+        super().__init__(nuser, config, *args, **kwargs)
 
         dirname = self.responses_dirname
         if dirname:
@@ -1035,7 +1035,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         # if 'login_otp_validation' in state and state['login_otp_validation'] is not None:
         #    super(CaisseEpargne, self).load_state(state)
 
-        super(CaisseEpargne, self).load_state(state)
+        super().load_state(state)
 
     def locate_browser(self, state):
         # after entering the emv otp the locate browser is making a request on
@@ -1050,7 +1050,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             self.session.headers["Authorization"] = f"Bearer {self.authorization_token}"
 
         try:
-            super(CaisseEpargne, self).locate_browser(state)
+            super().locate_browser(state)
         except LoggedOut:
             # If the cookies are expired (it's not clear for how long they last),
             # we'll get redirected to the LogoutPage which will raise a LoggedOut.

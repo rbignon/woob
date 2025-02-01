@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -43,7 +41,7 @@ from woob.tools.capabilities.housing.housing import PricePerMeterFilter
 
 class PopDetail(_Filter):
     def __init__(self, name, default=NotAvailable):
-        super(PopDetail, self).__init__(default)
+        super().__init__(default)
         self.name = name
 
     def __call__(self, item):
@@ -53,7 +51,7 @@ class PopDetail(_Filter):
 class CityListPage(HTMLPage):
 
     def build_doc(self, content):
-        content = super(CityListPage, self).build_doc(content)
+        content = super().build_doc(content)
         if content.getroot() is not None:
             return content
         return etree.Element("html")

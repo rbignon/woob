@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011-2021 Romain Bignon
 #
 # This file is part of a woob module.
@@ -136,7 +134,7 @@ class PastebinBrowser(LoginBrowser):
     raw = URL(r"raw\.php\?i=(?P<id>\w+)", RawPage)
 
     def __init__(self, api_key, *args, **kwargs):
-        super(PastebinBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.api_key = api_key
         self.user_key = None
 

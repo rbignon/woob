@@ -55,7 +55,7 @@ class ImpotsParBrowser(FranceConnectBrowser):
     documents = URL(r"/enp/documents.do", DocumentsPage)
 
     def __init__(self, login_source, *args, **kwargs):
-        super(ImpotsParBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.login_source = login_source
 
     def france_connect_do_login(self):

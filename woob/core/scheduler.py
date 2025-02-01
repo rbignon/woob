@@ -110,7 +110,7 @@ class Scheduler(IScheduler):
 
         with self.mutex:
             self.count += 1
-            self.logger.debug('function "%s" will be called in %s seconds' % (function.__name__, interval))
+            self.logger.debug(f'function "{function.__name__}" will be called in {interval} seconds')
             timer = klass(interval, meta_func, (self.count, interval, function, args))
             self.queue[self.count] = timer
             timer.start()
@@ -129,7 +129,7 @@ class Scheduler(IScheduler):
             except KeyError:
                 return
             else:
-                self.logger.debug('function "%s" will be called in %s seconds' % (function.__name__, e.interval))
+                self.logger.debug(f'function "{function.__name__}" will be called in {e.interval} seconds')
 
     def cancel(self, ev):
         with self.mutex:

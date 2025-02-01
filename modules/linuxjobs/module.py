@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      François Revol
 #
 # This file is part of a woob module.
@@ -65,5 +63,4 @@ class LinuxJobsModule(Module, CapJob):
         :type pattern: str
         :rtype: iter[:class:`BaseJobAdvert`]
         """
-        for job_advert in self.browser.search_job(pattern):
-            yield job_advert
+        yield from self.browser.search_job(pattern)

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Roger Philibert
 #
 # This file is part of a woob module.
@@ -44,7 +42,7 @@ __all__ = ["HappnModule"]
 
 class ProfilesWalker(Optimization):
     def __init__(self, sched, storage, browser, location, distance):
-        super(ProfilesWalker, self).__init__()
+        super().__init__()
         self._sched = sched
         self._storage = storage
         self._browser = browser
@@ -148,7 +146,7 @@ class HappnContact(Contact):
         if last_seen >= datetime.datetime.now(tzlocal()) - datetime.timedelta(minutes=30):
             status = Contact.STATUS_ONLINE
 
-        super(HappnContact, self).__init__(info["id"], info["first_name"], status)
+        super().__init__(info["id"], info["first_name"], status)
 
         self.summary = info["about"]
         for photo in info["profiles"]:

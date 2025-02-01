@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Bezleputh
 #
 # This file is part of a woob module.
@@ -243,20 +241,18 @@ class ManpowerModule(Module, CapJob):
     )
 
     def advanced_search_job(self):
-        for advert in self.browser.advanced_search_job(
+        yield from self.browser.advanced_search_job(
             job=self.config["job"].get(),
             place=self.config["place"].get(),
             contract=self.config["contract"].get(),
             activity_domain=self.config["activity_domain"].get(),
-        ):
-            yield advert
+        )
 
     def get_job_advert(self, _id, advert=None):
         return self.browser.get_job_advert(_id, advert)
 
     def search_job(self, pattern=None):
-        for advert in self.browser.search_job(pattern):
-            yield advert
+        yield from self.browser.search_job(pattern)
 
     def fill_obj(self, advert, fields):
         return self.get_job_advert(advert.id, advert)

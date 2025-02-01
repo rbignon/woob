@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Baptiste Delpey
 #
 # This file is part of a woob module.
@@ -67,7 +65,7 @@ class BnpcartesentrepriseCorporateBrowser(LoginBrowser):
     TIMEOUT = 60.0
 
     def __init__(self, user_type, *args, **kwargs):
-        super(BnpcartesentrepriseCorporateBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.accounts = []
 
     def do_login(self):
@@ -89,7 +87,7 @@ class BnpcartesentrepriseCorporateBrowser(LoginBrowser):
             for acc in self.page.iter_accounts():
                 if acc.id in [a.id for a in self.accounts]:
                     # TODO apply that id to all accounts
-                    acc.id = "%s_%s" % (acc.id, "".join(acc.label.split()))
+                    acc.id = "{}_{}".format(acc.id, "".join(acc.label.split()))
                 self.accounts.append(acc)
         for acc in self.accounts:
             yield acc

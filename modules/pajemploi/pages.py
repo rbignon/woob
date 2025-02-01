@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2020      Ludovic LANGE
 #
 # This file is part of a woob module.
@@ -115,7 +113,7 @@ class TaxCertificatesPage(PajemploiPage):
             d = Document()
 
             d._annee = CleanText(Attr('.//input[@id="annee"]', "value"))(frm)
-            d.id = "%s_%s" % (subscription.id, d._annee)
+            d.id = f"{subscription.id}_{d._annee}"
             d.date = parse_french_date("%s-12-31" % d._annee)
             d.label = "Attestation fiscale %s" % (d._annee)
             d.type = DocumentTypes.CERTIFICATE
@@ -245,11 +243,11 @@ class DeclarationDetailPage(PajemploiPage):
         frm = self.doc.xpath('//form[@name="formBulletinSalaire"]')
         if frm and traitementEffectue and (presAnnule == 0):
             bs = Document()
-            bs.id = "%s_%s" % (proto_doc.id, "bs")
+            bs.id = "{}_{}".format(proto_doc.id, "bs")
             bs.date = date
             bs.format = "pdf"
             bs.type = DocumentTypes.STATEMENT
-            bs.label = "Bulletin de salaire %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
+            bs.label = "Bulletin de salaire {} {}".format(subscription.label, date.strftime("%d/%m/%Y"))
             bs.url = Attr(".", "action")(frm[0])
             bs._ref = FormValue('./input[@id="ref"]')(frm[0])
             yield bs
@@ -258,11 +256,11 @@ class DeclarationDetailPage(PajemploiPage):
         frm = self.doc.xpath('//form[@name="formReleveMensuel"]')
         if frm and traitementEffectue and (presAnnule == 0):
             rm = Document()
-            rm.id = "%s_%s" % (proto_doc.id, "rm")
+            rm.id = "{}_{}".format(proto_doc.id, "rm")
             rm.date = date
             rm.format = "pdf"
             rm.type = DocumentTypes.STATEMENT
-            rm.label = "Relevé mensuel %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
+            rm.label = "Relevé mensuel {} {}".format(subscription.label, date.strftime("%d/%m/%Y"))
             rm.url = Attr(".", "action")(frm[0])
             rm._need_refresh_previous_page = True
             yield rm
@@ -271,11 +269,11 @@ class DeclarationDetailPage(PajemploiPage):
         frm = self.doc.xpath('//form[@name="formGenererPDF"]')
         if frm:
             ce = Document()
-            ce.id = "%s_%s" % (proto_doc.id, "ce")
+            ce.id = "{}_{}".format(proto_doc.id, "ce")
             ce.date = date
             ce.format = "pdf"
             ce.type = DocumentTypes.CERTIFICATE
-            ce.label = "Certificat d'enregistrement %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
+            ce.label = "Certificat d'enregistrement {} {}".format(subscription.label, date.strftime("%d/%m/%Y"))
             ce.url = Attr(".", "action")(frm[0])
             ce._need_refresh_previous_page = True
             yield ce
@@ -284,10 +282,10 @@ class DeclarationDetailPage(PajemploiPage):
         frm = self.doc.xpath('//form[@name="formDecomptCoti"]')
         if frm:
             dc = Document()
-            dc.id = "%s_%s" % (proto_doc.id, "dc")
+            dc.id = "{}_{}".format(proto_doc.id, "dc")
             dc.date = date
             dc.format = "pdf"
             dc.type = DocumentTypes.STATEMENT
-            dc.label = "Décompte de cotisations %s %s" % (subscription.label, date.strftime("%d/%m/%Y"))
+            dc.label = "Décompte de cotisations {} {}".format(subscription.label, date.strftime("%d/%m/%Y"))
             dc.url = Attr(".", "action")(frm[0])
             yield dc

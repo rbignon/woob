@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import sys
 
 import resources.lib.base.common_xbmc as common_xbmc

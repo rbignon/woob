@@ -83,7 +83,7 @@ class OpenEDXModule(Module, CapMessages):
         )
 
     def _build_thread(self, data):
-        thread = Thread("%s.%s" % (data["commentable_id"], data["id"]))
+        thread = Thread("{}.{}".format(data["commentable_id"], data["id"]))
         thread.title = data["title"]
         thread.date = dateutil.parser.parse(data["created_at"])
         thread.url = self.browser.thread.build(course=self.browser.course, topic=data["commentable_id"], id=data["id"])

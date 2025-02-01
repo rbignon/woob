@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Romain Bignon
 #
 # This file is part of a woob module.
@@ -30,7 +28,7 @@ class TrackPage(JsonPage):
     ENCODING = "utf-8"
 
     def build_doc(self, text):
-        doc = super(TrackPage, self).build_doc(text)
+        doc = super().build_doc(text)
 
         content = "".join([doc["top"], doc["tab"]])
         html_page = HTMLPage(self.browser, self.response)

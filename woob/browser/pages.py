@@ -27,7 +27,8 @@ from collections import OrderedDict
 from datetime import datetime
 from functools import wraps
 from io import BytesIO, StringIO
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Type
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Type
+from collections.abc import Iterator
 from urllib.parse import urljoin
 
 import lxml
@@ -80,8 +81,7 @@ def pagination(func: Callable):
     def inner(page: Page, *args, **kwargs):
         while True:
             try:
-                for r in func(page, *args, **kwargs):
-                    yield r
+                yield from func(page, *args, **kwargs)
             except NextPage as e:
                 if isinstance(e.request, Page):
                     page = e.request
@@ -174,7 +174,7 @@ class Page:
         self,
         browser: Browser,
         response: requests.Response,
-        params: None | Dict[str, str] = None,
+        params: None | dict[str, str] = None,
         encoding: str | None = None,
     ):
         self.browser = browser
@@ -311,7 +311,7 @@ class Form(OrderedDict):
         self.url: str = el.attrib.get("action", page.url)
         self.name: str = el.attrib.get("name", "")
         self.req: None | requests.Request = None
-        self.headers: None | Dict[str, str] = None
+        self.headers: None | dict[str, str] = None
         submits = 0
 
         # Find all elements of the form that will be useful to create the request
@@ -403,7 +403,7 @@ class CsvPage(Page):
     Dialect given to the :mod:`csv` module.
     """
 
-    FMTPARAMS: ClassVar[Dict] = {}
+    FMTPARAMS: ClassVar[dict] = {}
     """
     Parameters given to the :mod:`csv` module.
     """
@@ -424,7 +424,7 @@ class CsvPage(Page):
     This means the rows will be also available as dictionaries.
     """
 
-    def build_doc(self, content: bytes) -> List:
+    def build_doc(self, content: bytes) -> list:
         # We may need to temporarily convert content to utf-8 because csv
         # does not support Unicode.
         encoding = self.encoding
@@ -436,7 +436,7 @@ class CsvPage(Page):
             content = content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
         return self.parse(StringIO(content.decode(encoding)))
 
-    def parse(self, data: StringIO, encoding: str | None = None) -> List:
+    def parse(self, data: StringIO, encoding: str | None = None) -> list:
         """
         Method called by the constructor of :class:`CsvPage` to parse the document.
 
@@ -447,8 +447,8 @@ class CsvPage(Page):
         """
         reader = csv.reader(data, dialect=self.DIALECT, **self.FMTPARAMS)
         header = None
-        drows: List = []
-        rows: List = []
+        drows: list = []
+        rows: list = []
         for i, row in enumerate(reader):
             if self.HEADER and i + 1 < self.HEADER:
                 continue
@@ -464,7 +464,7 @@ class CsvPage(Page):
                     drows.append(drow)
         return drows if header is not None else rows
 
-    def decode_row(self, row: List, encoding: str) -> List:
+    def decode_row(self, row: list, encoding: str) -> list:
         """
         Method called by :meth:`CsvPage.parse` to decode a row using the given encoding.
         """
@@ -496,10 +496,10 @@ class JsonPage(Page):
         except StopIteration:
             return default
 
-    def path(self, path: str, context: str | Dict | List | None = None) -> Iterator:
+    def path(self, path: str, context: str | dict | list | None = None) -> Iterator:
         return mini_jsonpath(context or self.doc, path)
 
-    def build_doc(self, text) -> Dict | List:
+    def build_doc(self, text) -> dict | list:
         return json.loads(text)
 
 
@@ -518,10 +518,10 @@ class XLSPage(Page):
     Specify the index of the worksheet to use.
     """
 
-    def build_doc(self, content: bytes) -> List:
+    def build_doc(self, content: bytes) -> list:
         return self.parse(content)
 
-    def parse(self, data: bytes) -> List:
+    def parse(self, data: bytes) -> list:
         """
         Method called by the constructor of :class:`XLSPage` to parse the document.
         """
@@ -532,8 +532,8 @@ class XLSPage(Page):
         sh = wb.sheet_by_index(self.SHEET_INDEX)
 
         header = None
-        drows: List = []
-        rows: List = []
+        drows: list = []
+        rows: list = []
         for i in range(sh.nrows):
             if self.HEADER and i + 1 < self.HEADER:
                 continue
@@ -593,7 +593,7 @@ class HTMLPage(Page):
 
     """
 
-    FORM_CLASS: ClassVar[Type[Form]] = Form
+    FORM_CLASS: ClassVar[type[Form]] = Form
     """
     The class to instanciate when using :meth:`HTMLPage.get_form`. Default to :class:`Form`.
     """
@@ -640,7 +640,7 @@ class HTMLPage(Page):
                 self.browser.location(url)
                 break
             else:
-                self.logger.debug("Do not refresh to %s because %s > REFRESH_MAX(%s)" % (url, sleep, self.REFRESH_MAX))
+                self.logger.debug(f"Do not refresh to {url} because {sleep} > REFRESH_MAX({self.REFRESH_MAX})")
 
     @classmethod
     def setup_xpath_functions(cls):
@@ -686,9 +686,9 @@ class HTMLPage(Page):
             0
             """
             expressions = " and ".join(
-                ["contains(concat(' ', normalize-space(@class), ' '), ' {0} ')".format(c) for c in classes]
+                [f"contains(concat(' ', normalize-space(@class), ' '), ' {c} ')" for c in classes]
             )
-            xpath = "self::*[@class and {0}]".format(expressions)
+            xpath = f"self::*[@class and {expressions}]"
             return bool(context.context_node.xpath(xpath))
 
         def starts_with(context, text, prefix):
@@ -841,7 +841,7 @@ class GWTPage(Page):
     More info about GWT protcol here : https://goo.gl/GP5dv9
     """
 
-    def build_doc(self, content: str | bytes) -> List:
+    def build_doc(self, content: str | bytes) -> list:
         """
         Reponse starts with "//" followed by "OK" or "EX".
         2 last elements in list are protocol and flag.
@@ -852,8 +852,8 @@ class GWTPage(Page):
             content = content.decode(self.encoding)
 
         assert content[2:4] == "OK"
-        doc: List[Any] = []
-        array: List[Any] = []
+        doc: list[Any] = []
+        array: list[Any] = []
         for el in reversed(literal_eval(content[4:])[:-2]):
             # If we find an array, args after are indices or date
             if not array and isinstance(el, list):
@@ -873,7 +873,7 @@ class GWTPage(Page):
         timestamp = sum(base.index(data[el]) * (len(base) ** (len(data) - el - 1)) for el in range(len(data)))
         return datetime.fromtimestamp(int(str(timestamp)[:10])).strftime("%d/%m/%Y")
 
-    def get_elements(self, type: str = "String") -> List:
+    def get_elements(self, type: str = "String") -> list:
         """
         Get elements of specified type
         """
@@ -932,7 +932,7 @@ class MetaPage(type):
             if parent_attr:
                 m = re.match(r"^[^.]+\.(.*)\.([^.]+)$", parent_attr)
                 path, klass_name = m.group(1, 2)
-                module = importlib.import_module("woob_modules.%s.%s" % (dct["PARENT"], path))
+                module = importlib.import_module("woob_modules.{}.{}".format(dct["PARENT"], path))
                 browser_klass = getattr(module, klass_name)
             else:
                 module = importlib.import_module("woob_modules.%s" % dct["PARENT"])

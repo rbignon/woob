@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2014 Roger Philibert
 #
 # This file is part of a woob module.
@@ -61,8 +59,7 @@ class YoujizzModule(Module, CapVideo, CapCollection):
             if collection.path_level == 0:
                 yield self.get_collection(objs, ["latest_nsfw"])
             if collection.split_path == ["latest_nsfw"]:
-                for video in self.browser.latest_videos():
-                    yield video
+                yield from self.browser.latest_videos()
 
     def validate_collection(self, objs, collection):
         if collection.path_level == 0:

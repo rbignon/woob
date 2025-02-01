@@ -38,7 +38,7 @@ class BandSearch(BaseObject):
     short_description = StringField("Short description of the band")
 
     def __init__(self, id="", name=None, short_description=None, url=None):
-        super(BandSearch, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = name
         self.short_description = short_description
 
@@ -63,7 +63,7 @@ class BandInfo(BaseObject):
     description = StringField("Description of the band")
 
     def __init__(self, name=None, year=None, country=None, genre=None, description=None, url=None):
-        super(BandInfo, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = name
         self.genre = genre
         self.year = year
@@ -82,7 +82,7 @@ class Albums(BaseObject):
     reviews = StringField("Album reviews")
 
     def __init__(self, name=None, album_type=None, year=None, reviews=None, url=None):
-        super(Albums, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = name
         self.album_type = album_type
         self.year = year
@@ -99,7 +99,7 @@ class Favorite(BaseObject):
     short_description = StringField("Short description of the favorite band")
 
     def __init__(self, id="", name=None, band_url=None, short_description=None):
-        super(Favorite, self).__init__(id, name)
+        super().__init__(id, name)
         self.name = name
         self.band_url = band_url
         self.short_description = short_description
@@ -115,7 +115,7 @@ class Suggestion(BaseObject):
     url = StringField("URL of suggested band")
 
     def __init__(self, id="", name=None, description=None, url=None):
-        super(Suggestion, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = name
         self.url = url
         self.description = description

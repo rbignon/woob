@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -74,7 +72,7 @@ class CDNVirtKeyboard(GridVirtKeyboard):
     def __init__(self, browser, crypto, grid):
         f = BytesIO(browser.open("/sec/vk/gen_ui?modeClavier=0&cryptogramme=%s" % crypto).content)
 
-        super(CDNVirtKeyboard, self).__init__(range(16), self.ncol, self.nrow, f, self.color)
+        super().__init__(range(16), self.ncol, self.nrow, f, self.color)
         self.check_symbols(self.symbols, browser.responses_dirname)
         self.codes = grid
 
@@ -169,7 +167,7 @@ class ErrorPage(HTMLPage):
         return CleanText('//h1[contains(text(), "Erreur technique")]/following-sibling::p')(self.doc)
 
 
-class LoggedDetectionMixin(object):
+class LoggedDetectionMixin:
     @property
     def logged(self):
         return Dict("commun/raison", default=None)(self.doc) != "niv_auth_insuff"

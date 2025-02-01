@@ -105,7 +105,7 @@ class AmeliBrowser(TwoFactorBrowser):
     __states__ = ("otp_form_data", "otp_form_url", "trust_connect")
 
     def __init__(self, config, *args, **kwargs):
-        super(AmeliBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
         self.login_source = config["login_source"].get()
         self.otp_email = config["otp_email"].get()
         self.otp_form_data = None
@@ -303,21 +303,18 @@ class AmeliBrowser(TwoFactorBrowser):
         # The monthly statements for the last 23 months are available in two parts.
         # The first part contains the last 6 months on an HTML page.
         self.documents_first_summary_page.go()
-        for doc in self.page.iter_documents(subid=subscription.id):
-            yield doc
+        yield from self.page.iter_documents(subid=subscription.id)
 
         # The second part is retrieved in JSON via this page which displays the next 6 months at each iteration.
         for _ in range(3):
             self.documents_last_summary_page.go()
-            for doc in self.page.iter_documents(subid=subscription.id):
-                yield doc
+            yield from self.page.iter_documents(subid=subscription.id)
 
     @need_login
     def iter_documents(self, subscription):
-        for doc in merge_iterators(
+        yield from merge_iterators(
             self._iter_details_documents(subscription), self._iter_summary_documents(subscription)
-        ):
-            yield doc
+        )
 
     @need_login
     def get_profile(self):

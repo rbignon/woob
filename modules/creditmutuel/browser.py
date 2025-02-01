@@ -348,7 +348,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         self.config = config
         kwargs["username"] = self.config["login"].get()
         kwargs["password"] = self.config["password"].get()
-        super(CreditMutuelBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
 
         self.__states__ = self.__states__ + (
             "currentSubBank",
@@ -388,7 +388,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 .isoformat()
             )
             return expires
-        return super(CreditMutuelBrowser, self).get_expire()
+        return super().get_expire()
 
     def load_state(self, state):
         # when add recipient fails, state can't be reloaded.
@@ -410,7 +410,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             state.pop("url", None)
 
         # if state is empty (first login), it does nothing
-        super(CreditMutuelBrowser, self).load_state(state)
+        super().load_state(state)
 
     def finalize_twofa(self, twofa_data):
         """
@@ -529,7 +529,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             if "erroné" not in error_msg:
                 raise BrowserUnavailable(error_msg)
             else:
-                label = "%s %s" % (error_msg, self.page.get_message())
+                label = f"{error_msg} {self.page.get_message()}"
                 raise BrowserQuestion(Value("code", label=label))
 
         self.otp_data = {}
@@ -985,7 +985,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 self.location(page)
             else:
                 try:
-                    self.location("%s/%sfr/banque/%s" % (self.BASEURL, self.currentSubBank, page))
+                    self.location(f"{self.BASEURL}/{self.currentSubBank}fr/banque/{page}")
                 except ServerError as e:
                     self.logger.warning(
                         "Page cannot be visited: %s/%sfr/banque/%s: %s", self.BASEURL, self.currentSubBank, page, e
@@ -1296,8 +1296,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
         # access the transfer page
         self.internal_transfer.go(subbank=self.currentSubBank)
         if self.page.can_transfer(origin_account.id):
-            for recipient in self.page.iter_recipients(origin_account=origin_account):
-                yield recipient
+            yield from self.page.iter_recipients(origin_account=origin_account)
         self.external_transfer.go(subbank=self.currentSubBank)
         if self.page.can_transfer(origin_account.id):
             origin_account._external_recipients = set()
@@ -1305,13 +1304,11 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 for category in self.page.iter_categories():
                     self.page.go_on_category(category["index"])
                     self.page.IS_PRO_PAGE = True
-                    for recipient in self.page.iter_recipients(
+                    yield from self.page.iter_recipients(
                         origin_account=origin_account, category=category["name"]
-                    ):
-                        yield recipient
+                    )
             else:
-                for recipient in self.page.iter_recipients(origin_account=origin_account):
-                    yield recipient
+                yield from self.page.iter_recipients(origin_account=origin_account)
 
     def continue_transfer(self, transfer, **params):
         if "Clé" in params:
@@ -1657,7 +1654,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
             params = {
                 "_pid": "SelectDocument",
                 "_tabi": "C",
-                "k_crit": "CTRREF={}".format(internal_account_id),
+                "k_crit": f"CTRREF={internal_account_id}",
                 "k_typePageDoc": "DocsFavoris",
             }
             for i in range(security_limit):
@@ -1666,8 +1663,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 # so we have to ask the bank only documents for the wanted subscription
 
                 go_subscription(params=params, subbank=self.currentSubBank)
-                for doc in self.page.iter_documents(sub_id=account_id):
-                    yield doc
+                yield from self.page.iter_documents(sub_id=account_id)
 
                 if self.page.is_last_page():
                     break

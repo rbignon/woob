@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015 Budget Insight
 #
 # This file is part of a woob module.
@@ -45,7 +43,7 @@ class SogecarteTitulaireBrowser(SeleniumBrowser):
         self.config = config
         self.username = self.config["login"].get()
         self.password = self.config["password"].get()
-        super(SogecarteTitulaireBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def do_login(self):
         self.pre_login.go()

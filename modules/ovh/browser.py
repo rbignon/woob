@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Vincent Paredes
 #
 # This file is part of a woob module.
@@ -57,7 +55,7 @@ class OvhBrowser(LoginBrowser, StatesMixin):
         self.config = config
         kwargs["username"] = self.config["login"].get()
         kwargs["password"] = self.config["password"].get()
-        super(OvhBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def locate_browser(self, state):
         # Add Referer to avoid 401 response code when call url for the second time

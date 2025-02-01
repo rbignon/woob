@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Vincent A
 #
 # This file is part of a woob module.
@@ -41,7 +39,7 @@ class ParisKiwiBrowser(APIBrowser):
         # titles are in m-d-y format, so we're forced to fetch everything
         while True:
             data = self.request(
-                "/api.php?action=query&list=allpages&apprefix=%s&aplimit=500&format=json&apcontinue=%s" % (CAL, cont)
+                f"/api.php?action=query&list=allpages&apprefix={CAL}&aplimit=500&format=json&apcontinue={cont}"
             )
             ids.extend(id_from_title(p["title"]) for p in data["query"]["allpages"])
 
@@ -61,7 +59,7 @@ class ParisKiwiBrowser(APIBrowser):
     def get_event(self, _id):
         _id = id_from_title(_id)
         j = self.request(
-            "/api.php?action=query&format=json&prop=revisions&rvprop=content&rvlimit=1&titles=%s/%s" % (CAL, _id)
+            f"/api.php?action=query&format=json&prop=revisions&rvprop=content&rvlimit=1&titles={CAL}/{_id}"
         )
         pages = j["query"]["pages"]
         page = pages[list(pages.keys())[0]]
@@ -71,7 +69,7 @@ class ParisKiwiBrowser(APIBrowser):
             "id": _id,
             "date": date_from_id(_id),
             "datetime": date_from_id(_id),
-            "url": "https://pariskiwi.org/index.php/%s/%s" % (CAL, _id),
+            "url": f"https://pariskiwi.org/index.php/{CAL}/{_id}",
             "description": text,
             "summary": find_title(text),
         }

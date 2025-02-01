@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Vincent A
 #
 # This file is part of a woob module.
@@ -40,7 +38,7 @@ class SueurDeMetalModule(Module, CapCalendarEvent):
     ASSOCIATED_CATEGORIES = [CATEGORIES.CONCERT]
 
     def __init__(self, *a, **kw):
-        super(SueurDeMetalModule, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.cities = {}
 
     def search_events(self, query):
@@ -64,7 +62,7 @@ class SueurDeMetalModule(Module, CapCalendarEvent):
         return self.browser.get_concert(id)
 
     def fill_concert(self, obj, fields):
-        if set(fields) & set(("location", "price")):
+        if set(fields) & {"location", "price"}:
             new = self.get_event(obj.id)
             for f in fields:
                 setattr(obj, f, getattr(new, f))

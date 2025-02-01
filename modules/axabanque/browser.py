@@ -116,7 +116,7 @@ class AXAOldLoginBrowser(OAuth2PKCEMixin, LoginBrowser):
     )
 
     def __init__(self, config, username, password, *args, **kwargs):
-        super(AXAOldLoginBrowser, self).__init__(username, password, *args, **kwargs)
+        super().__init__(username, password, *args, **kwargs)
         # Not sure about this one, might be needed to generate it instead of hardcoding it
         self.client_id = "ef65ad31-82e2-4131-99fc-f2e3504fd02c"
         self.oauth_state = os.urandom(5).hex()
@@ -267,7 +267,7 @@ class AXANewLoginBrowser(AllianzbanqueBrowser):
         return self.code_verifier(code_challenge), code_challenge
 
     def build_authorization_uri_params(self):
-        params = super(AXANewLoginBrowser, self).build_authorization_uri_params()
+        params = super().build_authorization_uri_params()
         params["state"] = self.auth_state()
         return params
 
@@ -308,7 +308,7 @@ class AXABanqueBrowser(AXANewLoginBrowser):
         pass
 
     def __init__(self, *args, **kwargs):
-        super(AXABanqueBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.axa_assurance_base_url = None
         self.axa_assurance_url_path = None
         self.is_coming_from_axa_bank = None
@@ -331,8 +331,7 @@ class AXABanqueBrowser(AXANewLoginBrowser):
             yield account
 
         if self.go_to_insurance_accounts():
-            for acc in self.page.iter_accounts():
-                yield acc
+            yield from self.page.iter_accounts()
 
     def go_to_outremer_or_metropolitan(self, axa_assurance_url_path, url_domain):
         self.axa_assurance_url_path = axa_assurance_url_path  # This will be needed when switching browser
@@ -377,7 +376,7 @@ class AXABanqueBrowser(AXANewLoginBrowser):
     def iter_history(self, account):
         # History for bank account is well managed by parents
         if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
-            return super(AXABanqueBrowser, self).iter_history(account)
+            return super().iter_history(account)
         # On the other hand for wealth products, there's a dedicated space for them
         # Which has nothing to do with parents modules
         elif account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
@@ -548,7 +547,7 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
     )
 
     def __init__(self, *args, **kwargs):
-        super(AXAAssuranceBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.axa_assurance_url_path = "espace-client"  # Default path for URLs for AXAAssuranceBrowser accounts only
         self.is_coming_from_axa_bank = None  # Default for AXAassuranceBrowser accounts only
 

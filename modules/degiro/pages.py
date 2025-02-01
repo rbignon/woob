@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a woob module.
@@ -417,7 +415,7 @@ class HistoryPage(LoggedPage, JsonPage):
                 return Investment.CODE_TYPE_ISIN
 
     def get_products(self):
-        return set(d["productId"] for d in self.doc["data"])
+        return {d["productId"] for d in self.doc["data"]}
 
 
 class ExchangesPage(JsonPage):

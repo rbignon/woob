@@ -243,7 +243,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         # if 'login_otp_validation' in state and state['login_otp_validation'] is not None:
         #    super(CaisseEpargne, self).load_state(state)
 
-        super(OldCaisseEpargneBrowser, self).load_state(state)
+        super().load_state(state)
 
     def locate_browser(self, state):
         # after entering the emv otp the locate browser is making a request on
@@ -253,7 +253,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
             return
 
         try:
-            super(OldCaisseEpargneBrowser, self).locate_browser(state)
+            super().locate_browser(state)
         except LoggedOut:
             # If the cookies are expired (it's not clear for how long they last),
             # we'll get redirected to the LogoutPage which will raise a LoggedOut.
@@ -277,7 +277,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         # for non-DST
         # d = '%s %s %s %s %s:%s:%s GMT+0100 (heure normale d’Europe centrale)' % (days[now.weekday()], now.day, month[now.month - 1], now.year, now.hour, format(now.minute, "02"), now.second)
         # TODO use babel library to simplify this code
-        d = "%s %s %s %s %s:%s:%s GMT+0200 (heure d’été d’Europe centrale)" % (
+        d = "{} {} {} {} {}:{}:{} GMT+0200 (heure d’été d’Europe centrale)".format(
             days[now.weekday()],
             now.day,
             month[now.month - 1],
@@ -461,7 +461,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
             for card in self.page.iter_cards():
                 card.parent = find_object(self.accounts, number=card._parent_id)
                 if not card.parent:
-                    self.logger.info("The parent %s of the card %s wasn't found." % (card._parent_id, card.id))
+                    self.logger.info(f"The parent {card._parent_id} of the card {card.id} wasn't found.")
                     continue
 
                 card.owner_type = card.parent.owner_type
@@ -739,7 +739,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
             if not self.page.go_next():
                 return
 
-        raise AssertionError("More than {} history pages".format(self.HISTORY_MAX_PAGE))
+        raise AssertionError(f"More than {self.HISTORY_MAX_PAGE} history pages")
 
     @need_login
     def _get_history_invests(self, account):
@@ -755,7 +755,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
 
         if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION, Account.TYPE_PERP):
             if self.page.is_account_inactive(account.id):
-                self.logger.warning("Account %s %s is inactive." % (account.label, account.id))
+                self.logger.warning(f"Account {account.label} {account.id} is inactive.")
                 return []
 
             if "MILLEVIE" in account.label:
@@ -940,8 +940,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                     return
 
                 self.update_linebourse_token()
-                for investment in self.linebourse.iter_investments(account.id):
-                    yield investment
+                yield from self.linebourse.iter_investments(account.id)
 
                 # We need to go back to the synthesis, else we can not go home later
                 self.home_tache.go(tache="CPTSYNT0")
@@ -954,7 +953,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                 self.page.go_history(account._info)
 
             if self.page.is_account_inactive(account.id):
-                self.logger.warning("Account %s %s is inactive." % (account.label, account.id))
+                self.logger.warning(f"Account {account.label} {account.id} is inactive.")
                 return
             if "MILLEVIE" in account.label:
                 # This way we ensure we can access all type of MILLEVIE accounts
@@ -963,8 +962,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                 self.natixis_life_ins_inv.go(account_path=account._natixis_url_path)
                 if self.natixis_error.is_here():
                     raise BrowserUnavailable()
-                for tr in self.page.get_investments():
-                    yield tr
+                yield from self.page.get_investments()
                 return
 
             if not self.go_life_insurance_investments(account):
@@ -973,8 +971,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         if self.garbage.is_here():
             self.page.come_back()
             return
-        for i in self.page.iter_investment():
-            yield i
+        yield from self.page.iter_investment()
         if self.market.is_here():
             self.page.come_back()
 
@@ -1013,8 +1010,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                 self.linebourse.session.cookies.update(self.session.cookies)
                 self.update_linebourse_token()
                 try:
-                    for order in self.linebourse.iter_market_orders(account.id):
-                        yield order
+                    yield from self.linebourse.iter_market_orders(account.id)
                 finally:
                     # We need to go back to the synthesis, else we can not go home later
                     self.home_tache.go(tache="CPTSYNT0")
@@ -1026,9 +1022,9 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         if len([k for k in self.session.cookies.keys() if k == "CTX"]) > 1:
             del self.session.cookies["CTX"]
 
-        ctx = decode_utf8_cookie(self.session.cookies.get("CTX", str()))
+        ctx = decode_utf8_cookie(self.session.cookies.get("CTX", ''))
         # str() to make sure a native str is used as expected by decode_utf8_cookie
-        headerdei = decode_utf8_cookie(self.session.cookies.get("headerdei", str()))
+        headerdei = decode_utf8_cookie(self.session.cookies.get("headerdei", ''))
         if "username=" in ctx:
             profile.name = re.search("username=([^&]+)", ctx).group(1)
         elif "nomusager=" in headerdei:

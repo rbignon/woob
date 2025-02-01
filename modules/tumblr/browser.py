@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -29,7 +27,7 @@ from woob.tools.json import json
 
 class TumblrBrowser(APIBrowser):
     def __init__(self, baseurl, *args, **kwargs):
-        super(TumblrBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.BASEURL = baseurl
 
     def consent(self):
@@ -50,7 +48,7 @@ class TumblrBrowser(APIBrowser):
             "X-tumblr-form-key": token,
             "Referer": response.url,
         }
-        super(TumblrBrowser, self).request("https://www.tumblr.com/svc/privacy/consent", data=data, headers=headers)
+        super().request("https://www.tumblr.com/svc/privacy/consent", data=data, headers=headers)
 
     def request(self, *args, **kwargs):
         def perform():
@@ -131,7 +129,7 @@ class TumblrBrowser(APIBrowser):
                 url=photo["photo-url-1280"],
                 thumbnail=Thumbnail(photo["photo-url-250"]),
             )
-            img.id = "%s.%s" % (post["id"], photo["offset"])
+            img.id = "{}.{}".format(post["id"], photo["offset"])
             index += 1
             img.title = CleanText().filter(photo["caption"] or post["photo-caption"])
             img.date = datetime.strptime(post["date-gmt"], "%Y-%m-%d %H:%M:%S %Z")

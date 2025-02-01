@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019      Guntra
 #
 # This file is part of a woob module.
@@ -30,7 +28,7 @@ class CitiesPage(JsonPage):
     ENCODING = "UTF-8"
 
     def build_doc(self, content):
-        content = super(CitiesPage, self).build_doc(content)
+        content = super().build_doc(content)
         if content:
             return content
         else:

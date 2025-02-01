@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -81,10 +79,10 @@ class WeatherPage(HTMLPage):
 
 class HourPage(WeatherPage):
     def get_cell(self, row, col):
-        return CleanText('//table[@id="meteoHour"]/tr[{row}]/td[{col}]'.format(row=row + 1, col=col + 1))(self.doc)
+        return CleanText(f'//table[@id="meteoHour"]/tr[{row + 1}]/td[{col + 1}]')(self.doc)
 
     def get_img_cell(self, row, col):
-        return CleanText('//table[@id="meteoHour"]/tr[{row}]/td[{col}]/img/@alt'.format(row=row + 1, col=col + 1))(
+        return CleanText(f'//table[@id="meteoHour"]/tr[{row + 1}]/td[{col + 1}]/img/@alt')(
             self.doc
         )
 
@@ -123,13 +121,13 @@ class HourPage(WeatherPage):
 
 class Days5Page(WeatherPage):
     def get_cell(self, row, col):
-        return CleanText('//table[@id="meteo2"]/tr[2]/td[{col}]/table/tr[{row}]/td'.format(row=row + 1, col=col + 1))(
+        return CleanText(f'//table[@id="meteo2"]/tr[2]/td[{col + 1}]/table/tr[{row + 1}]/td')(
             self.doc
         )
 
     def get_img_cell(self, row, col):
         return CleanText(
-            '//table[@id="meteo2"]/tr[2]/td[{col}]/table/tr[{row}]/td//img/@alt'.format(row=row + 1, col=col + 1)
+            f'//table[@id="meteo2"]/tr[2]/td[{col + 1}]/table/tr[{row + 1}]/td//img/@alt'
         )(self.doc)
 
     def iter_forecast(self):
@@ -156,13 +154,13 @@ class Days5Page(WeatherPage):
 
 class Days10Page(WeatherPage):
     def get_cell(self, row, col):
-        return CleanText('(//table[@id="meteo2"]//td/table)[{col}]/tr[{row}]/td'.format(row=row + 1, col=col + 1))(
+        return CleanText(f'(//table[@id="meteo2"]//td/table)[{col + 1}]/tr[{row + 1}]/td')(
             self.doc
         )
 
     def get_img_cell(self, row, col):
         return CleanText(
-            '(//table[@id="meteo2"]//td/table)[{col}]/tr[{row}]/td//img/@alt'.format(row=row + 1, col=col + 1)
+            f'(//table[@id="meteo2"]//td/table)[{col + 1}]/tr[{row + 1}]/td//img/@alt'
         )(self.doc)
 
     def iter_forecast(self):

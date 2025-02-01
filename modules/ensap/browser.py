@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Juliette Fourcot
 #
 # This file is part of a woob module.
@@ -30,7 +28,7 @@ class MyURL(URL):
             kwargs["json"] = {}
         # because this URL is always supposed to be called like a POST,
         # with a application/json Content-Type, or else it crash
-        return super(MyURL, self).go(*args, **kwargs)
+        return super().go(*args, **kwargs)
 
 
 class EnsapBrowser(LoginBrowser):

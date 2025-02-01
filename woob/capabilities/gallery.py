@@ -54,7 +54,7 @@ class BaseGallery(BaseObject):
         thumbnail_url=None,
         nsfw=False,
     ):
-        super(BaseGallery, self).__init__(str(_id), url)
+        super().__init__(str(_id), url)
 
         self.title = title
         self.date = date
@@ -90,7 +90,7 @@ class BaseImage(CIBaseImage):
     gallery = Field("Reference to the Gallery object", BaseGallery)
 
     def __init__(self, _id="", index=None, thumbnail=NotLoaded, url=NotLoaded, ext=NotLoaded, gallery=None):
-        super(BaseImage, self).__init__(str(_id), url)
+        super().__init__(str(_id), url)
 
         self.index = index
         self.thumbnail = thumbnail

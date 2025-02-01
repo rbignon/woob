@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2012 Romain Bignon, Florent Fourcot
 #
 # This file is part of a woob module.
@@ -26,7 +24,7 @@ from woob.capabilities.gauge import GaugeMeasure, GaugeSensor
 
 class Split(Filter):
     def __init__(self, selector, mode):
-        super(Split, self).__init__(selector)
+        super().__init__(selector)
         self.mode = mode
 
     @debug()

@@ -59,7 +59,7 @@ class BaseFile(BaseObject):
         return self.url or ""
 
     def __repr__(self):
-        return "<%s title=%r url=%r>" % (type(self).__name__, self.title, self.url)
+        return f"<{type(self).__name__} title={self.title!r} url={self.url!r}>"
 
     @classmethod
     def id2url(cls, _id):

@@ -92,8 +92,7 @@ class ProAccountsList(LoggedPage, JsonPage):
             for data in self.el.values():
                 if not isinstance(data, dict):
                     continue
-                for account in data.get("comptes", []):
-                    yield account
+                yield from data.get("comptes", [])
 
         class item(ItemElement):
             klass = Account

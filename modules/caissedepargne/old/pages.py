@@ -62,7 +62,7 @@ def MyDecimal(*args, **kwargs):
 
 class MyTableCell(TableCell):
     def __init__(self, *names, **kwargs):
-        super(MyTableCell, self).__init__(*names, **kwargs)
+        super().__init__(*names, **kwargs)
         self.td = "./tr[%s]/td"
 
 
@@ -84,7 +84,7 @@ class GarbagePage(LoggedPage, HTMLPage):
             assert len(go_back_link) != 1
             go_back_link = re.search(r"\(~deibaseurl\)(.*)$", go_back_link).group(1)
 
-            self.browser.location("%s%s" % (self.browser.BASEURL, go_back_link))
+            self.browser.location(f"{self.browser.BASEURL}{go_back_link}")
 
 
 class MessagePage(GarbagePage):
@@ -325,7 +325,7 @@ class IndexPage(LoggedPage, BasePage, NoAccountCheck):
     ):
         info = self._get_account_info(link, accounts)
         if info is None:
-            self.logger.warning("Unable to parse account %r: %r" % (label, link))
+            self.logger.warning(f"Unable to parse account {label!r}: {link!r}")
             return
 
         account = Account()
@@ -1559,7 +1559,7 @@ class CardsOldWebsitePage(IndexPage):
 
             def obj_id(self):
                 number = Field("number")(self).replace("X", "")
-                account_id = "%s-%s" % (self.obj__parent_id(), number)
+                account_id = f"{self.obj__parent_id()}-{number}"
                 return account_id
 
             def obj__coming_eventargument(self):
@@ -1685,7 +1685,7 @@ class LifeInsuranceHistory(LoggedPage, JsonPage):
         # If history is empty, there is no text
         if not text:
             return {}
-        return super(LifeInsuranceHistory, self).build_doc(text)
+        return super().build_doc(text)
 
     @method
     class iter_history(DictElement):

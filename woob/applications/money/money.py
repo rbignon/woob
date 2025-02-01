@@ -82,13 +82,13 @@ class MoneyOfxFormatter(OfxFormatter):
         self.outfile = StringIO()
 
         kwargs["account"].type = AccountType.CHECKING
-        super(MoneyOfxFormatter, self).start_format(**kwargs)
+        super().start_format(**kwargs)
         kwargs["account"].type = self.original_type
 
     def format_obj(self, obj, alias):
         cat = obj.category
         obj.category = obj.raw
-        result = super(MoneyOfxFormatter, self).format_obj(obj, alias)
+        result = super().format_obj(obj, alias)
         obj.category = cat
         return result
 
@@ -96,10 +96,10 @@ class MoneyOfxFormatter(OfxFormatter):
         if self.outfile != sys.stdout:
             self.outfile.write(formatted + os.linesep)
         else:
-            super(MoneyOfxFormatter, self).output(formatted)
+            super().output(formatted)
 
     def flush(self):
-        super(MoneyOfxFormatter, self).flush()
+        super().flush()
 
         # we process the output by restoring the account type
         collected_output = self.outfile.getvalue()
@@ -116,7 +116,7 @@ class ListFormatter(SimpleFormatter):
         if self.outfile != sys.stdout:
             self.outfile.write(formatted + os.linesep)
         else:
-            super(ListFormatter, self).output(formatted)
+            super().output(formatted)
 
 
 class HistoryThread(Thread):
@@ -148,14 +148,14 @@ class HistoryThread(Thread):
 class HistoryThreadAsAProcess(HistoryThread):
 
     def __init__(self, money, accounts):
-        super(HistoryThreadAsAProcess, self).__init__(money, accounts)
+        super().__init__(money, accounts)
         self.ofxcontent = ""
         self.stderr = ""
         self.loop = asyncio.new_event_loop()
 
     def terminate(self):
         self.process.terminate()
-        return super(HistoryThreadAsAProcess, self).terminate()
+        return super().terminate()
 
     def retrieve_history(self, account):
         self.ofxcontent[account] = re.sub(r"\r\r\n", r"\n", self.ofxcontent[account])
@@ -302,7 +302,7 @@ class AppMoney(Appbank):
     COMMANDS_FORMATTERS = {"list": "list", "history": "ops_list", "coming": "ops_list"}
 
     def __init__(self):
-        super(AppMoney, self).__init__()
+        super().__init__()
         self.importIndex = 0
         application_options = OptionGroup(self._parser, "Money Options")
         application_options.add_option(
@@ -515,7 +515,7 @@ class AppMoney(Appbank):
         id, backend = account.split("@")
         module_name, foo = self.woob.backends_config.get_backend(backend)
         moduleHandler = "%s.bat" % os.path.join(os.path.dirname(self.get_money_file()), module_name)
-        self.logger.info("Starting history of %s (%s)..." % (account, label))
+        self.logger.info(f"Starting history of {account} ({label})...")
 
         MAX_RETRIES = 3
         count = 0
@@ -684,7 +684,7 @@ class AppMoney(Appbank):
                     cmd = "cmd /C "
                     for f in field:
                         value = field[f]
-                        cmd = cmd + "set field_%s=%s& " % (f, value)
+                        cmd = cmd + f"set field_{f}={value}& "
                     cmd = cmd + '"' + moduleHandler + '"'
 
                     self.logger.info(cmd)
@@ -697,7 +697,7 @@ class AppMoney(Appbank):
                         if stderr != b"":
                             self.logger.warning(cmd)
                         for f in field:
-                            self.print("field_%s=%s" % (f, field[f]))
+                            self.print(f"field_{f}={field[f]}")
                         self.print("Output:")
                         self.print(stdout.decode("CP850"), end="")
                         self.print(stderr.decode("CP850"), end="")
@@ -791,7 +791,7 @@ class AppMoney(Appbank):
                 else:
                     # MSMoney does not support NAME field longer than 64
                     value = value[:64]
-            output.write("<%s>%s\n" % (f, value))
+            output.write(f"<{f}>{value}\n")
         output.write("</STMTTRN>\n")
 
     def handle_ofx_content(self, account, ofxcontent, stderrcontent):
@@ -846,7 +846,7 @@ class AppMoney(Appbank):
                 )
         if not self.options.no_import:
             if nbTransactions > 0:
-                subprocess.check_call('"%s" %s' % (os.path.join(self.get_money_path(), "mnyimprt.exe"), ofxfile))
+                subprocess.check_call('"{}" {}'.format(os.path.join(self.get_money_path(), "mnyimprt.exe"), ofxfile))
 
     def main(self, argv):
 

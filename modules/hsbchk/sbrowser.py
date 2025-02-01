@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2013  Romain Bignon
 #
 # This file is part of a woob module.
@@ -37,7 +35,7 @@ class LoginBrowser(SeleniumBrowser):
     login = URL(r"https://www.security.online-banking.hsbc.com.hk/gsa/SaaS30Resource/*", LoginPage)
 
     def __init__(self, username, password, secret, *args, **kwargs):
-        super(LoginBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.username = username
         self.password = password
         self.secret = secret
@@ -45,7 +43,7 @@ class LoginBrowser(SeleniumBrowser):
         self.home_url = None
 
     def _build_capabilities(self):
-        capa = super(LoginBrowser, self)._build_capabilities()
+        capa = super()._build_capabilities()
         capa["marionette"] = True
         return capa
 

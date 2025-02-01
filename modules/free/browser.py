@@ -59,7 +59,7 @@ class FreeBrowser(LoginBrowser):
                 raise BrowserIncorrectPassword(error)
             if error and "reeconnecter" in error:
                 raise BrowserUnavailable(error)
-            raise AssertionError('Unhandled behavior at login: error is "{}"'.format(error))
+            raise AssertionError(f'Unhandled behavior at login: error is "{error}"')
 
         elif self.documents.is_here():
             self.email = self.username
@@ -88,8 +88,7 @@ class FreeBrowser(LoginBrowser):
         self.documents.stay_or_go(urlid=self.urlid)
         bills_iterator = sorted_documents(self.page.get_documents(subid=subscription.id))
 
-        for doc in merge_iterators(contracts_iterator, bills_iterator):
-            yield doc
+        yield from merge_iterators(contracts_iterator, bills_iterator)
 
     @need_login
     def get_profile(self):

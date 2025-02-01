@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2022 Budget Insight
 #
 # This file is part of a woob module.
@@ -29,7 +27,7 @@ from .akamai import AkamaiHTMLPage
 
 class HomePage(AkamaiHTMLPage):
     def get_akamai_url(self):
-        url = super(HomePage, self).get_akamai_url()
+        url = super().get_akamai_url()
         if url.endswith(".js"):
             # wrong url, the good one is very probably missing
             return

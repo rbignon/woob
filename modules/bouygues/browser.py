@@ -52,7 +52,7 @@ from .pages import (
 class MyURL(URL):
     def go(self, *args, **kwargs):
         kwargs["id_personne"] = self.browser.id_personne
-        return super(MyURL, self).go(*args, **kwargs)
+        return super().go(*args, **kwargs)
 
 
 class BouyguesBrowser(TwoFactorBrowser):
@@ -90,7 +90,7 @@ class BouyguesBrowser(TwoFactorBrowser):
     HAS_CREDENTIALS_ONLY = True
 
     def __init__(self, config, username, password, lastname, *args, **kwargs):
-        super(BouyguesBrowser, self).__init__(config, username, password, *args, **kwargs)
+        super().__init__(config, username, password, *args, **kwargs)
         self.lastname = lastname
         self.execution = None
         self.otp_url = None
@@ -165,7 +165,7 @@ class BouyguesBrowser(TwoFactorBrowser):
                     return
                 raise
         else:
-            super(BouyguesBrowser, self).locate_browser(state)
+            super().locate_browser(state)
 
     @staticmethod
     def create_random_string(n=32):
@@ -326,7 +326,7 @@ class BouyguesBrowser(TwoFactorBrowser):
             yield sub
 
     def request_invoices(self, invoice_number):
-        with open(self.asset("invoices_query.txt"), "r") as rf:
+        with open(self.asset("invoices_query.txt")) as rf:
             query = rf.read()
 
         payload = {

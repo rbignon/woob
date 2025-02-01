@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Jocelyn Jaubert
 # Copyright(C) 2012-2013 Romain Bignon
 #
@@ -83,8 +81,7 @@ class SocieteGeneraleModule(
         return self.create_browser(self.config, self.config["login"].get(), self.config["password"].get())
 
     def iter_accounts(self):
-        for account in self.browser.get_accounts_list():
-            yield account
+        yield from self.browser.get_accounts_list()
 
     def fill_account(self, account, fields):
         if all(

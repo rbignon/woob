@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014 Budget Insight
 #
 # This file is part of a woob module.
@@ -54,8 +52,6 @@ class OneyModule(Module, CapBank):
     def iter_history(self, account):
         # To prevent issues in calcul of actual balance and coming one, all
         # operations are marked as debited.
-        for tr in self.browser.iter_coming(account):
-            yield tr
+        yield from self.browser.iter_coming(account)
 
-        for tr in self.browser.iter_history(account):
-            yield tr
+        yield from self.browser.iter_history(account)

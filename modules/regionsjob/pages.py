@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -60,7 +58,7 @@ class SearchPage(HTMLPage):
                     site = Regexp(Env("domain"), r"https://www\.(.*)\.com")(self)
 
                 _id = Regexp(CleanText("./div/h3/a/@href"), r"/emplois/(.*)\.html")(self)
-                return "%s#%s" % (site, _id)
+                return f"{site}#{_id}"
 
             obj_url = CleanText("./div/h3/a/@href")
             obj_title = CleanText("./div/h3/a/@title")

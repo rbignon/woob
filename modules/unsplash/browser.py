@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -29,7 +27,7 @@ class UnsplashBrowser(PagesBrowser):
     image_search = URL(r"/napi/search/photos\?query=(?P<term>[^&]+)&page=(?P<page>\d+)&per_page=20", ImageSearch)
 
     def __init__(self, *args, **kwargs):
-        super(UnsplashBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.session.headers["Authorization"] = (
             "Client-ID d69927c7ea5c770fa2ce9a2f1e3589bd896454f7068f689d8e41a25b54fa6042"
         )
@@ -39,7 +37,6 @@ class UnsplashBrowser(PagesBrowser):
         nb_pages = 1
         while n <= nb_pages:
             self.image_search.go(term=term, page=n)
-            for img in self.page.iter_images():
-                yield img
+            yield from self.page.iter_images()
             nb_pages = self.page.nb_pages()
             n += 1

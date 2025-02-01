@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon
 #
 # This file is part of a woob module.
@@ -48,7 +46,7 @@ class RedmineBrowser(LoginBrowser):
     issues_time_entry = URL(r"/projects/[\w-]+/time_entries", IssueTimeEntriesPage)
 
     def __init__(self, url, *args, **kwargs):
-        super(RedmineBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._userid = 0
         self.BASEURL = url
         self.projects = {}
@@ -72,7 +70,7 @@ class RedmineBrowser(LoginBrowser):
 
     @need_login
     def get_wiki_source(self, project, page, version=None):
-        url = self.absurl("projects/%s/wiki/%s/edit" % (project, quote(page)), True)
+        url = self.absurl(f"projects/{project}/wiki/{quote(page)}/edit", True)
         if version:
             url += "?version=%s" % version
         self.location(url)
@@ -80,15 +78,15 @@ class RedmineBrowser(LoginBrowser):
 
     @need_login
     def set_wiki_source(self, project, page, data, message):
-        self.location(self.absurl("projects/%s/wiki/%s/edit" % (project, quote(page)), True))
+        self.location(self.absurl(f"projects/{project}/wiki/{quote(page)}/edit", True))
         self.page.set_source(data, message)
 
     @need_login
     def get_wiki_preview(self, project, page, data):
         if not self.wiki_edit.is_here() or self.page.params["project"] != project or self.page.params["page"] != page:
-            url = self.absurl("projects/%s/wiki/%s/edit" % (project, quote(page)), True)
+            url = self.absurl(f"projects/{project}/wiki/{quote(page)}/edit", True)
             self.location(url)
-        url = self.absurl("projects/%s/wiki/%s/preview" % (project, quote(page)), True)
+        url = self.absurl(f"projects/{project}/wiki/{quote(page)}/preview", True)
         params = self.get_submit()
         params["content[text]"] = data
         # params['authenticity_token'] = self.page.get_authenticity_token()

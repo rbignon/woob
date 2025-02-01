@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a woob module.
@@ -55,7 +53,7 @@ from .pages import (
 class URLWithDate(URL):
     def go(self, fromDate, toDate=None, *args, **kwargs):
         toDate_ = toDate or datetime.datetime.now().strftime("%d/%m/%Y")
-        return super(URLWithDate, self).go(
+        return super().go(
             toDate=toDate_,
             fromDate=fromDate,
             account_id=self.browser.int_account,
@@ -107,7 +105,7 @@ class DegiroBrowser(TwoFactorBrowser):
     __states__ = ("staging", "session_id", "int_account", "name")
 
     def __init__(self, config, *args, **kwargs):
-        super(DegiroBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
 
         self.staging = None
         self.int_account = None
@@ -398,7 +396,7 @@ class DegiroBrowser(TwoFactorBrowser):
         return self.products[id]
 
 
-class NoCopy(object):
+class NoCopy:
     # params passed to a @method are deepcopied, in each iteration of ItemElement
     # so we want to avoid repeatedly copying objects since we don't intend to modify them
 

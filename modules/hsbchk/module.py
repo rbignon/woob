@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2013 Romain Bignon
 #
 # This file is part of a woob module.
@@ -48,16 +46,13 @@ class HSBCHKModule(Module, CapBankWealth):
         )
 
     def iter_accounts(self):
-        for account in self.browser.iter_accounts():
-            yield account
+        yield from self.browser.iter_accounts()
 
     def iter_history(self, account):
-        for tr in self.browser.get_history(account):
-            yield tr
+        yield from self.browser.get_history(account)
 
     def iter_investment(self, account):
         raise NotImplementedError
 
     def iter_coming(self, account):
-        for tr in self.browser.get_history(account, coming=True):
-            yield tr
+        yield from self.browser.get_history(account, coming=True)

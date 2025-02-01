@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import re
 import time
@@ -95,4 +94,4 @@ class Videoobmc(Woobmc):
     def download(self, _id, path, backend):
         # woob video download _id path
         options = {"-b": backend}
-        self._call_woob("video", "download", options=options, argument="%s %s" % (_id, path))
+        self._call_woob("video", "download", options=options, argument=f"{_id} {path}")

@@ -139,7 +139,7 @@ class ApproxVecDict(dict):
         for i in (0, -1, 1):
             for j in (0, -1, 1):
                 try:
-                    return super(ApproxVecDict, self).__getitem__((x + i, y + j))
+                    return super().__getitem__((x + i, y + j))
                 except KeyError:
                     pass
         raise KeyError()
@@ -161,17 +161,17 @@ class ApproxRectDict(dict):
                 if x0 == x1:
                     for j2 in (0, -1, 1):
                         try:
-                            return super(ApproxRectDict, self).__getitem__((x0 + i, y0 + j, x0 + i, y1 + j2))
+                            return super().__getitem__((x0 + i, y0 + j, x0 + i, y1 + j2))
                         except KeyError:
                             pass
                 elif y0 == y1:
                     for i2 in (0, -1, 1):
                         try:
-                            return super(ApproxRectDict, self).__getitem__((x0 + i, y0 + j, x1 + i2, y0 + j))
+                            return super().__getitem__((x0 + i, y0 + j, x1 + i2, y0 + j))
                         except KeyError:
                             pass
                 else:
-                    return super(ApproxRectDict, self).__getitem__((x0, y0, x1, y1))
+                    return super().__getitem__((x0, y0, x1, y1))
 
         raise KeyError()
 
@@ -496,11 +496,11 @@ def blinkpdf(browser, url, extra_options=None, filter_cookie=None, start_xvfb=Tr
         if c.value:
             if not filter_cookie or filter_cookie(c):
                 args.append("--cookie")
-                args.append("%s=%s" % (c.name, c.value))
+                args.append(f"{c.name}={c.value}")
 
     for key, value in browser.session.headers.items():
         args.append("--header")
-        args.append("%s=%s" % (key, value))
+        args.append(f"{key}={value}")
 
     if extra_options and "run-script" in extra_options:
         args.append("--run-script")

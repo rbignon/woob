@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -87,7 +85,7 @@ class DailymotionBrowser(PagesBrowser):
         if sortby is None:
             url = "en/search/%s/1" % quote_plus(pattern)
         else:
-            url = "en/%s/search/%s/1" % (sortby, quote_plus(pattern))
+            url = f"en/{sortby}/search/{quote_plus(pattern)}/1"
 
         return self.index_page.go(search=url).iter_videos()
 

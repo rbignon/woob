@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Gilles-Alexandre Quenot
 #
 # This file is part of a woob module.
@@ -61,8 +59,7 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         )
 
     def iter_accounts(self):
-        for account in self.browser.iter_accounts():
-            yield account
+        yield from self.browser.iter_accounts()
 
     def iter_history(self, account):
         """Iter history of transactions on a specific account"""

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019      Vincent A
 #
 # This file is part of a woob module.
@@ -37,7 +35,7 @@ class AttrURL(URL):
                 if hasattr(self.browser, k) and k not in kwargs:
                     kwargs[k] = getattr(self.browser, k)
 
-        return super(AttrURL, self).build(*args, **kwargs)
+        return super().build(*args, **kwargs)
 
 
 class LendosphereBrowser(LoginBrowser):

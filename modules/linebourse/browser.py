@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent Ardisson
 #
 # This file is part of a woob module.
@@ -59,7 +57,7 @@ class LinebourseAPIBrowser(LoginBrowser):
 
     def __init__(self, baseurl, *args, **kwargs):
         self.BASEURL = baseurl
-        super(LinebourseAPIBrowser, self).__init__(username="", password="", *args, **kwargs)
+        super().__init__(username="", password="", *args, **kwargs)
 
     def get_account_code(self, account_id):
         # 'account_codes' is a JSON containing the id_contracts

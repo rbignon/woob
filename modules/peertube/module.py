@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Vincent A
 #
 # This file is part of a woob module.
@@ -53,7 +51,7 @@ class PeertubeModule(Module, CapVideo):
                 yield video
 
     def fill_video(self, obj, fields):
-        if set(("url", "size")) & set(fields):
+        if {"url", "size"} & set(fields):
             self.browser.get_video(obj.id, obj)
         if "thumbnail" in fields and obj.thumbnail:
             obj.thumbnail.data = self.browser.open(obj.thumbnail.url).content

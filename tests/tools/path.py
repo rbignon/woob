@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2021 Nicolas Duhamel
 #
 # This file is part of woob.
@@ -39,8 +37,8 @@ def test():
     assert wp.get() == []
     assert str(wp) == "/"
     wp.location(["aa / aa", "bbbb"])
-    assert str(wp) == "/aa \/ aa/bbbb"
+    assert str(wp) == r"/aa \/ aa/bbbb"
     wp.up()
-    assert str(wp) == "/aa \/ aa"
+    assert str(wp) == r"/aa \/ aa"
     wp.cd1("héhé/hé")
-    assert str(wp) == "/aa \/ aa/héhé\/hé"
+    assert str(wp) == r"/aa \/ aa/héhé\/hé"

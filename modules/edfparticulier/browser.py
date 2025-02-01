@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2022  Budget Insight
 #
 # This file is part of a woob module.
@@ -84,7 +82,7 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
         self.otp_data = None
         kwargs["username"] = self.config["login"].get()
         kwargs["password"] = self.config["password"].get()
-        super(EdfParticulierBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def locate_browser(self, state):
         pass

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -30,10 +28,8 @@ class FreeteknomusicBrowser(PagesBrowser):
 
     def ls_content(self, split_path):
         self.location("/" + "/".join(split_path))
-        for el in self.page.iter_dirs():
-            yield el
-        for el in self.page.iter_files():
-            yield el
+        yield from self.page.iter_dirs()
+        yield from self.page.iter_files()
 
     def get_file(self, id):
         split_path = id.split("/")[:-1]

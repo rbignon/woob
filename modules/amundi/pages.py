@@ -173,7 +173,7 @@ class InvestItemElement(ItemElement):
         return Dict("mtBrut", default=None)(self)
 
     obj_label = Dict("libelleFonds")
-    obj_unitvalue = CleanDecimal.SI((Dict("vl")))
+    obj_unitvalue = CleanDecimal.SI(Dict("vl"))
     obj_vdate = Date(Dict("dtVl"))
     obj__details_url = Dict("urlFicheFonds", default=None)
     obj_code = IsinCode(Dict("codeIsin", default=NotAvailable), default=NotAvailable)

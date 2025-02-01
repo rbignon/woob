@@ -180,7 +180,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     __states__ = ("rcpt_transfer_id",)
 
     def __init__(self, config, *args, **kwargs):
-        super(BNPParibasBrowser, self).__init__(config["login"].get(), config["password"].get(), *args, **kwargs)
+        super().__init__(config["login"].get(), config["password"].get(), *args, **kwargs)
         self.accounts_list = None
         self.card_to_transaction_type = {}
         self.rotating_password = config["rotating_password"].get()
@@ -191,7 +191,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     @retry(ConnectionError, tries=3)
     def open(self, *args, **kwargs):
-        return super(BNPParibasBrowser, self).open(*args, **kwargs)
+        return super().open(*args, **kwargs)
 
     def check_redirections(self):
         # We must check each request one by one to check if an otp will be sent after the redirections
@@ -294,13 +294,13 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             if message in messages:
                 return exception(error_message)
         else:
-            return AssertionError("Unhandled error at login: %s: %s" % (message, error_message))
+            return AssertionError(f"Unhandled error at login: {message}: {error_message}")
 
     def load_state(self, state):
         # reload state only for new recipient feature
         if state.get("rcpt_transfer_id"):
             state.pop("url", None)
-            super(BNPParibasBrowser, self).load_state(state)
+            super().load_state(state)
 
     def change_pass(self, oldpass, newpass):
         res = self.open("/mcs-wspl/rpc/grille?accessible=false")
@@ -934,7 +934,7 @@ class BNPPartPro(DocumentsBNPParibasBrowser):
 
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
-        super(BNPPartPro, self).__init__(self.config, *args, **kwargs)
+        super().__init__(self.config, *args, **kwargs)
 
     def switch(self, subdomain):
         self.BASEURL = self.BASEURL_TEMPLATE % subdomain

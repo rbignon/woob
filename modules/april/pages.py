@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2020      Ludovic LANGE
 #
 # This file is part of a woob module.
@@ -35,7 +33,7 @@ class HomePage(HTMLPage):
 class AprilJsonPage(JsonPage):
     def on_load(self):
         if self.get("error") and self.get("statusCode") and (self.get("statusCode") == 401):
-            raise BrowserIncorrectPassword("%s : %s" % (Dict("error"), Dict("message")))
+            raise BrowserIncorrectPassword("{} : {}".format(Dict("error"), Dict("message")))
         elif self.get("error") or self.get("status") or self.get("message"):
             raise BrowserUnavailable("%d - %s : %s" % (Dict("status"), Dict("error"), Dict("message")))
 

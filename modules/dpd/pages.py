@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Matthieu Weber
 #
 # This file is part of a woob module.
@@ -43,7 +41,7 @@ class SearchPage(JsonPage):
         if not result_id:
             raise ParcelNotFound("No such ID: %s" % _id)
         if not _id.startswith(result_id):
-            raise ParcelNotFound("ID mismatch: expecting %s, got %s" % (_id, result_id))
+            raise ParcelNotFound(f"ID mismatch: expecting {_id}, got {result_id}")
 
         p = Parcel(_id)
         events = self.doc.get("TrackingStatusJSON", {}).get("statusInfos", [])
@@ -59,7 +57,7 @@ class SearchPage(JsonPage):
 
     def build_event(self, index, data):
         event = Event(index)
-        date = "%s %s" % (data["date"], data["time"])
+        date = "{} {}".format(data["date"], data["time"])
         event.date = parse_date(date, dayfirst=False)
         event.location = str(data["city"])
         event.activity = ", ".join([_["label"] for _ in data["contents"]])

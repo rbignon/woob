@@ -30,9 +30,9 @@ class EventListFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ("date", "type")
 
     def get_title(self, event):
-        s = "(%s) %s" % (event.date, event.type)
+        s = f"({event.date}) {event.type}"
         if hasattr(event, "contact") and event.contact:
-            s += " — %s (%s)" % (event.contact.name, event.contact.id)
+            s += f" — {event.contact.name} ({event.contact.id})"
 
         return s
 
@@ -99,24 +99,24 @@ class AppDating(AppMsg):
                     backends_optims[optim.backend] = optim
             for backend_name, optim in backends_optims.items():
                 if len(optim.CONFIG) == 0:
-                    print("%s.%s does not require configuration." % (backend_name, optim_name))
+                    print(f"{backend_name}.{optim_name} does not require configuration.")
                     continue
 
                 was_running = optim.is_running()
                 if stop and was_running:
-                    print("Stopping %s: %s" % (optim_name, backend_name))
+                    print(f"Stopping {optim_name}: {backend_name}")
                     optim.stop()
                 params = optim.get_config()
                 if params is None:
                     params = {}
-                print("Configuration of %s.%s" % (backend_name, optim_name))
-                print("-----------------%s-%s" % ("-" * len(backend_name), "-" * len(optim_name)))
+                print(f"Configuration of {backend_name}.{optim_name}")
+                print("-----------------{}-{}".format("-" * len(backend_name), "-" * len(optim_name)))
                 for key, value in optim.CONFIG.items():
                     params[key] = self.ask(value, default=params[key] if (key in params) else value.default)
 
                 optim.set_config(params)
                 if stop and was_running:
-                    print("Starting %s: %s" % (optim_name, backend_name))
+                    print(f"Starting {optim_name}: {backend_name}")
                     optim.start()
 
     def optims(self, function, backend_names, optims, store=True):
@@ -128,7 +128,7 @@ class AppDating(AppMsg):
             try:
                 if store:
                     storage_optim = set(self.storage.get("optims", optim_name, default=[]))
-                self.stdout.write("%sing %s:" % (function.capitalize(), optim_name))
+                self.stdout.write(f"{function.capitalize()}ing {optim_name}:")
                 for optim in self.do("get_optimization", optim_name, backends=backend_names):
                     if optim:
                         # It's useless to start a started optim, or to stop a stopped one.
@@ -158,7 +158,7 @@ class AppDating(AppMsg):
             except CallErrors as errors:
                 for backend, error, backtrace in errors:
                     if isinstance(error, OptimizationNotFound):
-                        self.logger.error('Error(%s): Optimization "%s" not found' % (backend.name, optim_name))
+                        self.logger.error(f'Error({backend.name}): Optimization "{optim_name}" not found')
                     else:
                         self.bcall_error_handler(backend, error, backtrace)
             if store:

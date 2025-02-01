@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014, 2015      Oleg Plakhotniuk
 #
 # This file is part of a woob module.
@@ -61,13 +59,13 @@ class AccountsPage(JsonPage):
     logged = True
 
     def inner_ids_dict(self):
-        return dict(
-            (prod["parsedAccountName"][-4:], prod["accountInstanceId"])
+        return {
+            prod["parsedAccountName"][-4:]: prod["accountInstanceId"]
             for bean in self.doc["summaryViewBeanList"]
             for cat in bean["accountsSummaryViewObj"]["categoryList"]
             for prod in cat["products"]
             if cat["categoryType"] == "CRD"
-        )
+        }
 
 
 class AccDetailsPage(JsonPage):
@@ -106,7 +104,7 @@ class AccDetailsPage(JsonPage):
             tdate = jnl["columns"][0]["activityColumn"][0]
             label = jnl["columns"][1]["activityColumn"][0]
             amount = jnl["columns"][3]["activityColumn"][0]
-            xdescs = dict((x["label"], x["value"][0]) for x in jnl["extendedDescriptions"])
+            xdescs = {x["label"]: x["value"][0] for x in jnl["extendedDescriptions"]}
             pdate = xdescs["Posted Date :"]
             ref = xdescs.get("Reference Number:") or ""
 
@@ -195,11 +193,9 @@ class Citibank(LoginBrowser):
 
     def iter_history(self, account):
         innerId = self.to_accounts().inner_ids_dict()[account.id]
-        for trans in self.to_account(innerId).transactions():
-            yield trans
+        yield from self.to_account(innerId).transactions()
         for date in self.to_statements(innerId).dates():
-            for trans in self.to_statement(date).transactions():
-                yield trans
+            yield from self.to_statement(date).transactions()
 
     def to_account(self, innerId):
         return self.to_page(self.accdetails, accountID=innerId)

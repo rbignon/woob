@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2021      Vincent A
 #
 # This file is part of a woob module.
@@ -40,7 +38,7 @@ class JsonURL(URL):
     def handle(self, response):
         if not response.headers.get("content-type").startswith("application/json"):
             return
-        return super(JsonURL, self).handle(response)
+        return super().handle(response)
 
 
 class PrivatebinBrowser(PagesBrowser):
@@ -51,7 +49,7 @@ class PrivatebinBrowser(PagesBrowser):
     index_page = URL("/$", IndexPage)
 
     def __init__(self, baseurl, opendiscussion, *args, **kwargs):
-        super(PrivatebinBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.BASEURL = baseurl
         self.opendiscussion = opendiscussion
 
@@ -68,7 +66,7 @@ class PrivatebinBrowser(PagesBrowser):
             if not m:
                 return
             subid = m.group("id")
-            id = "%s#%s" % (subid, key)
+            id = f"{subid}#{key}"
 
             self.location(server_url, headers={"Accept": "application/json"})
             if not self.read_page.is_here():
@@ -80,7 +78,7 @@ class PrivatebinBrowser(PagesBrowser):
             server_url = self._find_page(subid)
             if not server_url:
                 return
-            url = "%s#%s" % (server_url, key)
+            url = f"{server_url}#{key}"
 
         ret = PrivatePaste(id)
         ret.url = url

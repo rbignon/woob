@@ -114,7 +114,7 @@ class FuturesSession(WoobSession):
         * If you provide both `executor` and `max_workers`, the latter is
           ignored and provided executor is used as is.
         """
-        super(FuturesSession, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if executor is None and ThreadPoolExecutor is not None:
             executor = ThreadPoolExecutor(max_workers=max_workers)
             # set connection pool size equal to max_workers if needed
@@ -143,7 +143,7 @@ class FuturesSession(WoobSession):
             kwargs["is_async"] = kwargs["async"]
             del kwargs["async"]
 
-        sup = super(FuturesSession, self).send
+        sup = super().send
 
         callback = kwargs.pop("callback", lambda future, response: response)
         is_async = kwargs.pop("is_async", False)
@@ -160,6 +160,6 @@ class FuturesSession(WoobSession):
         return func(*args, **kwargs)
 
     def close(self):
-        super(FuturesSession, self).close()
+        super().close()
         if self.executor:
             self.executor.shutdown()

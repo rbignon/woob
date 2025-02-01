@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -29,7 +27,7 @@ class DLFPTest(BackendTest):
     MODULE = "dlfp"
 
     def __init__(self, *args, **kwargs):
-        super(DLFPTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         DLFP.DOMAIN = "alpha.linuxfr.org"
 
     def test_new_messages(self):

@@ -44,7 +44,7 @@ class FormattersLoader:
                 self.formatters[name] = self.load_builtin_formatter(name)
             except ImportError as e:
                 FormattersLoader.BUILTINS.remove(name)
-                raise FormatterLoadError('Unable to load formatter "%s": %s' % (name, e))
+                raise FormatterLoadError(f'Unable to load formatter "{name}": {e}')
         return self.formatters[name]()
 
     def load_builtin_formatter(self, name):

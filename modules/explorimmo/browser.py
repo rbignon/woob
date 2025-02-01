@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -82,7 +80,7 @@ class ExplorimmoBrowser(PagesBrowser):
             "page": "1",
         }
 
-        query = "%s%s%s" % (urlencode(data), "&type=", "&type=".join(ret))
+        query = "{}{}{}".format(urlencode(data), "&type=", "&type=".join(ret))
 
         return self.search.go(query=query).iter_housings(query_type=type, advert_types=advert_types)
 

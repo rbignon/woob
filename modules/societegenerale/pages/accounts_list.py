@@ -812,7 +812,7 @@ class CreditHistoryPage(LoggedPage, HTMLPage):
         # for some reason, lxml discards the first tag inside the CDATA
         # (of course, there shouldn't be XML inside the CDATA in the first place)
         content = content.replace(b"<![CDATA[", b"<![CDATA[<bullshit/>")
-        return super(CreditHistoryPage, self).build_doc(content)
+        return super().build_doc(content)
 
     @method
     class iter_history(ListElement):

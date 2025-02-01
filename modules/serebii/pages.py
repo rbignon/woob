@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019-2020 Célande Adrien
 #
 # This file is part of a woob module.
@@ -142,8 +140,7 @@ class PkmnDetailsPage(HTMLPage):
             }
 
     def iter_moves(self):
-        for move in chain(self.iter_moves_1(), self.iter_moves_2()):
-            yield move
+        yield from chain(self.iter_moves_1(), self.iter_moves_2())
 
     @method
     class fill_pkmn(ItemElement):
@@ -303,7 +300,7 @@ class XYTypePage(HTMLPage):
                 else:  # damage == '*0 Damage'
                     no_effect.append(type_id)
 
-        pkmn_type.description = "A Pokémon with the type %s undergoes\nWeakness: %s\nResistance: %s\nNo Effect: %s" % (
+        pkmn_type.description = "A Pokémon with the type {} undergoes\nWeakness: {}\nResistance: {}\nNo Effect: {}".format(
             pkmn_type.name,
             ", ".join(weaknesses),
             ", ".join(resistances),

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2020 Guillaume Risbourg
 #
 # This file is part of a woob module.
@@ -55,7 +53,7 @@ class EmittersListPage(LoggedPage, JsonPage):
         for obj in Dict("content")(self.doc):
 
             for account in Dict("postes")(obj):
-                _id = "%s.%s" % (
+                _id = "{}.{}".format(
                     Dict("numero")(obj),
                     Dict("codeNature")(account),
                 )

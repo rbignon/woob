@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon
 #
 # This file is part of a woob module.
@@ -32,7 +30,7 @@ class CanalPlusTest(BackendTest):
         self.backend.fillobj(v, ("url",))
         self.assertTrue(
             v.url and (v.url.startswith("rtmp://") or v.url.startswith("http://")),
-            'URL for video "%s" not found: %s' % (v.id, v.url),
+            f'URL for video "{v.id}" not found: {v.url}',
         )
 
     def test_ls(self):

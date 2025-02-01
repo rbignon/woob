@@ -194,7 +194,7 @@ class ESAmundiVirtKeyboard(SimpleVirtualKeyboard):
     def __init__(self, browser, image_base64):
         image_file = BytesIO(base64.b64decode(image_base64))
 
-        super(ESAmundiVirtKeyboard, self).__init__(
+        super().__init__(
             image_file,
             cols=5,
             rows=2,

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015 Guilhem Bonnefille
 #
 # This file is part of a woob module.
@@ -64,12 +62,10 @@ class RmllModule(Module, CapVideo, CapCollection):
                 # Add fake Collection
                 yield Collection(["latest"], "Latest")
             if len(split_path) == 1 and split_path[0] == "latest":
-                for video in self.browser.get_latest_videos():
-                    yield video
+                yield from self.browser.get_latest_videos()
             else:
                 channel_videos = self.browser.get_channel_videos(split_path)
                 if channel_videos:
-                    for content in channel_videos:
-                        yield content
+                    yield from channel_videos
 
     OBJECTS = {RmllVideo: fill_video}

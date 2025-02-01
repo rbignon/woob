@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -163,8 +161,8 @@ class DetailsPage(LoggedPage, HTMLPage):
         markers = [b"partial-response", b"ongletHistoOperations:ongletHistoriqueOperations"]
         if all(marker in content for marker in markers):
             parts = re.findall(rb"\!\[CDATA\[(.*?)\!\[CDATA\[", content, re.DOTALL)
-            return super(DetailsPage, self).build_doc(parts[0])
-        return super(DetailsPage, self).build_doc(content)
+            return super().build_doc(parts[0])
+        return super().build_doc(content)
 
     DEBIT_WORDS = ["rachat", "frais", "désinvestir"]
 

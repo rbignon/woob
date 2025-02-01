@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Alexandre Morignot
 #
 # This file is part of a woob module.
@@ -52,8 +50,7 @@ class ResidentadvisorBrowser(LoginBrowser):
         self.list_events.go(v=v, year=date.year, month=date.month, day=date.day, city=city)
         assert self.list_events.is_here()
 
-        for event in self.page.get_events():
-            yield event
+        yield from self.page.get_events()
 
     def get_event(self, _id):
         self.event.go(id=_id)
@@ -71,8 +68,7 @@ class ResidentadvisorBrowser(LoginBrowser):
         self.search_page.go(query=pattern)
         assert self.search_page.is_here()
 
-        for event in self.page.get_events():
-            yield event
+        yield from self.page.get_events()
 
     def get_country_city_id(self, country, city):
         now = datetime.now()

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014 Vicnet
 #
 # This file is part of a woob module.
@@ -32,7 +30,7 @@ class LaCentraleBrowser(PagesBrowser):
     advert_page = URL(r"/auto-occasion-annonce-(?P<_id>.*).html", AdvertPage)
 
     def iter_prices(self, product):
-        _request = "&".join(["%s=%s" % (key, item) for key, item in product._criteria.items()])
+        _request = "&".join([f"{key}={item}" for key, item in product._criteria.items()])
         return self.list_page.go(_request=_request).iter_prices()
 
     def get_price(self, _id, obj):

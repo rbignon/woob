@@ -54,7 +54,7 @@ class GaugeMeasure(BaseObject):
         if empty(self.level):
             return "<GaugeMeasure is %s>" % self.level
         else:
-            return "<GaugeMeasure level=%f alarm=%s date=%s>" % (self.level, self.alarm, self.date)
+            return f"<GaugeMeasure level={self.level:f} alarm={self.alarm} date={self.date}>"
 
 
 class GaugeSensor(BaseObject):
@@ -77,7 +77,7 @@ class GaugeSensor(BaseObject):
     gaugeid = StringField("Id of the gauge")
 
     def __repr__(self):
-        return "<GaugeSensor id=%s name=%s>" % (self.id, self.name)
+        return f"<GaugeSensor id={self.id} name={self.name}>"
 
 
 class CapGauge(Capability):

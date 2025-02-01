@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent Ardisson
 #
 # This file is part of a woob module.
@@ -35,13 +33,13 @@ class AsanaBrowser(APIBrowser):
     STATUS_CLOSED = Status(1, "Closed", Status.VALUE_RESOLVED)
 
     def __init__(self, token, *args, **kwargs):
-        super(AsanaBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.token = token
         self.session.headers["Authorization"] = "Bearer %s" % token
 
     def open(self, *args, **kwargs):
         try:
-            return super(AsanaBrowser, self).open(*args, **kwargs)
+            return super().open(*args, **kwargs)
         except ClientError as e:
             if e.response.status_code == 401:
                 raise BrowserIncorrectPassword()
@@ -51,7 +49,7 @@ class AsanaBrowser(APIBrowser):
                 if waiting <= 60:
                     self.logger.warning("waiting %s seconds", waiting)
                     time.sleep(waiting)
-                    return super(AsanaBrowser, self).open(*args, **kwargs)
+                    return super().open(*args, **kwargs)
                 else:
                     self.logger.warning("not waiting %s seconds, just fuck it", waiting)
 
@@ -131,7 +129,7 @@ class AsanaBrowser(APIBrowser):
         u = Update(str(data["id"]))
         if "created_at" in data:
             u.date = parse_date(data["created_at"])
-        u.message = "%s: %s" % (data["type"], data["text"])
+        u.message = "{}: {}".format(data["type"], data["text"])
         if "created_by" in data:
             u.author = self._make_user(data["created_by"])
         return u
@@ -140,9 +138,7 @@ class AsanaBrowser(APIBrowser):
         params = kwargs.setdefault("params", {})
         params["limit"] = 20
         reply = self.request(*args, **kwargs)
-        for d in reply["data"]:
-            yield d
+        yield from reply["data"]
         while reply.get("next_page") and reply["next_page"].get("uri"):
             reply = self.request(reply["next_page"]["uri"])
-            for d in reply["data"]:
-                yield d
+            yield from reply["data"]

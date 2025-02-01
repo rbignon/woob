@@ -69,10 +69,10 @@ class URL:
         self,
         *args,
         base: str = "BASEURL",
-        headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        methods: Tuple[str, ...] = (),
-        content_type: Optional[str] = None,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
+        methods: tuple[str, ...] = (),
+        content_type: str | None = None,
     ):
         if content_type is not None and ";" in content_type:
             raise ValueError(
@@ -140,11 +140,11 @@ class URL:
 
     def stay_or_go(
         self,
-        params: Dict | None = None,
-        data: str | Dict | None = None,
-        json: Dict | None = None,
+        params: dict | None = None,
+        data: str | dict | None = None,
+        json: dict | None = None,
         method: str | None = None,
-        headers: Dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
         **kwargs,
     ) -> requests.Response | Page:
         """
@@ -165,12 +165,12 @@ class URL:
     def go(
         self,
         *,
-        params: Dict | None = None,
-        data: str | Dict | None = None,
-        json: Dict | None = None,
+        params: dict | None = None,
+        data: str | dict | None = None,
+        json: dict | None = None,
         method: str | None = None,
-        headers: Dict[str, str] | None = None,
-        timeout: Optional[float] = None,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
         **kwargs,
     ) -> requests.Response | Page:
         """
@@ -204,11 +204,11 @@ class URL:
     def open(
         self,
         *,
-        params: Dict | None = None,
-        data: Dict | str | None = None,
-        json: Dict | None = None,
+        params: dict | None = None,
+        data: dict | str | None = None,
+        json: dict | None = None,
         method: str | None = None,
-        headers: Dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
         timeout: float | None = None,
         is_async: bool = False,
         callback: Callable[[requests.Response], requests.Response] = lambda response: response,
@@ -401,7 +401,7 @@ class URL:
 
     def with_headers(
         self: URLType,
-        headers: Optional[Dict[str, str]],
+        headers: dict[str, str] | None,
     ) -> URLType:
         """Get the current URL with different stored headers.
 
@@ -447,7 +447,7 @@ class URL:
         """
         return self.with_headers(None)
 
-    def with_timeout(self: URLType, timeout: Optional[float]) -> URLType:
+    def with_timeout(self: URLType, timeout: float | None) -> URLType:
         """Get a new URL object with timeout.
 
         :param timeout: The new timeout to apply, or ``None`` if the default
@@ -473,7 +473,7 @@ class URL:
         """
         return self.with_timeout(None)
 
-    def with_page(self: URLType, cls: Type[Page]) -> URLType:
+    def with_page(self: URLType, cls: type[Page]) -> URLType:
         """Get a new URL with the same path but a different page class.
 
         :param cls: The new page class to use.
@@ -545,7 +545,7 @@ class URL:
 
     def with_methods(
         self: URLType,
-        methods: Tuple[str, ...],
+        methods: tuple[str, ...],
     ) -> URLType:
         """Get a new URL object with custom methods.
 
@@ -569,7 +569,7 @@ class URL:
         """
         return self.with_methods(())
 
-    def with_content_type(self: URLType, content_type: Optional[str]) -> URLType:
+    def with_content_type(self: URLType, content_type: str | None) -> URLType:
         """Get a new URL object with custom Content-Type matching.
 
         :param content_type: The new content type to match with.

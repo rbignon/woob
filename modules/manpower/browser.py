@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Bezleputh
 #
 # This file is part of a woob module.
@@ -67,7 +65,7 @@ class ManpowerBrowser(PagesBrowser):
         squery2 = "".join(query2)
 
         if squery2 != "":
-            query = "%s/%s.html" % (squery1, squery2)
+            query = f"{squery1}/{squery2}.html"
         else:
             query = squery1
 

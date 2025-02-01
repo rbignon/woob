@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013-2021      Romain Bignon
 #
 # This file is part of a woob module.
@@ -47,5 +45,4 @@ class PaypalModule(Module, CapBank):
         return self.browser.get_accounts().values()
 
     def iter_history(self, account):
-        for history in self.browser.get_download_history(account):
-            yield history
+        yield from self.browser.get_download_history(account)

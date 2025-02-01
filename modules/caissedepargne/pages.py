@@ -337,7 +337,7 @@ class AuthenticationMethodPage(JsonPage):
         }
         FEATURES_ERRORS[feature](error=result)
 
-        raise AssertionError("Error during %s authentication is not handled yet: %s" % (feature, result))
+        raise AssertionError(f"Error during {feature} authentication is not handled yet: {result}")
 
 
 class SAMLRequestFailure(HTMLPage):
@@ -464,7 +464,7 @@ class CaissedepargneNewKeyboard(SplitKeyboard):
             b = BytesIO()
             img.save(b, format="PNG")
             code_to_filedata[img_item["value"]] = b.getvalue()
-        super(CaissedepargneNewKeyboard, self).__init__(code_to_filedata)
+        super().__init__(code_to_filedata)
 
 
 class Transaction(FrenchTransaction):
@@ -1052,7 +1052,7 @@ class LifeInsuranceHistory(LoggedPage, JsonPage):
         # If history is empty, there is no text
         if not text:
             return {}
-        return super(LifeInsuranceHistory, self).build_doc(text)
+        return super().build_doc(text)
 
     @method
     class iter_history(DictElement):

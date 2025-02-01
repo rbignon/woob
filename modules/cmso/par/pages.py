@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -220,9 +218,9 @@ class AccountsPage(LoggedPage, JsonPage):
                     # The `nomCotitulaire` sometimes contains both last name and
                     # first name, sometimes just the last name.
                     if co_owner_firstname:
-                        co_owner_name = "%s %s" % (co_owner_name, co_owner_firstname)
+                        co_owner_name = f"{co_owner_name} {co_owner_firstname}"
 
-                    return "%s %s / %s" % (
+                    return "{} {} / {}".format(
                         Upper(Dict("nomClient"))(self),
                         Upper(Dict("prenomClient"))(self),
                         co_owner_name.upper(),
@@ -274,7 +272,7 @@ class AccountsPage(LoggedPage, JsonPage):
             while id in self.objects:
                 self.logger.warning("There are two objects with the same ID! %s" % id)
                 n += 1
-                id = "%s-%s" % (obj.id, n)
+                id = f"{obj.id}-{n}"
 
             obj.id = id
             self.objects[obj.id] = obj
@@ -294,7 +292,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 while id in self.objects:
                     self.logger.warning("There are two objects with the same ID! %s" % id)
                     n += 1
-                    id = "%s-%s" % (obj.id, n)
+                    id = f"{obj.id}-{n}"
 
                 obj.id = id
                 self.objects[obj.id] = obj
@@ -363,9 +361,9 @@ class AccountsPage(LoggedPage, JsonPage):
                         # The `nomCotitulaire` sometimes contains both last name
                         # and first name, sometimes just the last name.
                         if co_owner_firstname:
-                            co_owner_name = "%s %s" % (co_owner_name, co_owner_firstname)
+                            co_owner_name = f"{co_owner_name} {co_owner_firstname}"
 
-                        return "%s / %s" % (
+                        return "{} / {}".format(
                             Upper(Field("_owner"))(self),
                             co_owner_name.upper(),
                         )
@@ -553,7 +551,7 @@ class HistoryPage(LoggedPage, JsonPage):
 
                 # Compute the long label from the short one and the extra one
                 # label_extra[4:] is the extra label minus the leading " |   "
-                return "%s%s" % (label_short, label_extra[4:])
+                return f"{label_short}{label_extra[4:]}"
 
             def parse(self, el):
                 key = Env("key", default=None)(self)
@@ -729,8 +727,8 @@ class MarketPage(LoggedPage, HTMLPage):
             # - the 9 digits in the middle identify the owner of the account
             # These info are separated on the page so we need to get them from the id to match the account.
             owner_id = account.id[5:14]
-            account_number = "%s%s" % (account.id[:5], account.id[-2:])
-            for acc in self.doc.xpath('//a[contains(@%s, "%s")]' % (ref, param_name)):
+            account_number = f"{account.id[:5]}{account.id[-2:]}"
+            for acc in self.doc.xpath(f'//a[contains(@{ref}, "{param_name}")]'):
                 self.logger.debug("get investment from %s" % ref)
                 number = Coalesce(
                     CleanText("./ancestor::td/preceding-sibling::td", children=False),

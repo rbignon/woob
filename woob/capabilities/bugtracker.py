@@ -56,7 +56,7 @@ class Project(BaseObject):
     fields = Field("Custom fields names", list)
 
     def __init__(self, id, name, url=None):
-        super(Project, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = str(name)
 
     def __repr__(self):
@@ -124,7 +124,7 @@ class User(BaseObject):
     name = StringField("Name of user")
 
     def __init__(self, id, name, url=None):
-        super(User, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = str(name)
 
     def __repr__(self):
@@ -139,7 +139,7 @@ class Version(BaseObject):
     name = StringField("Name of version")
 
     def __init__(self, id, name, url=None):
-        super(Version, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = str(name)
 
     def __repr__(self):
@@ -170,7 +170,7 @@ class Status(BaseObject):
     value = IntField("Value of status (constants VALUE_*)")
 
     def __init__(self, id, name, value, url=None):
-        super(Status, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = str(name)
         self.value = value
 
@@ -199,7 +199,7 @@ class Change(BaseObject):
     new = StringField("New value of field")
 
     def __repr__(self):
-        return "<%s %r: %r (old: %r)>" % (type(self).__name__, self.field, self.new, self.last)
+        return f"<{type(self).__name__} {self.field!r}: {self.new!r} (old: {self.last!r})>"
 
 
 class Update(BaseObject):
@@ -260,7 +260,7 @@ class Query(BaseObject):
     fields = Field("Filter on custom fields", dict)
 
     def __init__(self, id="", url=None):
-        super(Query, self).__init__(id, url)
+        super().__init__(id, url)
 
 
 class CapBugTracker(Capability):

@@ -606,7 +606,7 @@ class AVInvestmentsPage(LoggedPage, JsonPage):
             Dict("situationAdministrativeEpargne/lppeoscp"),
             Dict("situationAdministrativeEpargne/lnpeoscp"),
         )(self.doc)
-        life_insurance.label = "%s %s" % (
+        life_insurance.label = "{} {}".format(
             Dict("situationAdministrativeEpargne/lcofc")(self.doc),
             life_insurance._owner,
         )
@@ -691,7 +691,7 @@ class DiscPage(LoggedPage, HTMLPage):
             # Sometime no form is present, just a redirection
             self.logger.debug("no form on this page")
 
-        super(DiscPage, self).on_load()
+        super().on_load()
 
 
 class BoursePreLoadPage(LoggedPage, HTMLPage):
@@ -733,7 +733,7 @@ class BoursePage(LoggedPage, HTMLPage):
         else:
             form.submit()
 
-        super(BoursePage, self).on_load()
+        super().on_load()
 
     def open_iframe(self):
         # should be done always (in on_load)?

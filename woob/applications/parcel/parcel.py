@@ -42,19 +42,19 @@ class HistoryFormatter(IFormatter):
 
     def format_obj(self, obj, alias):
         if isinstance(obj, Parcel):
-            result = "Parcel %s (%s)\n" % (
+            result = "Parcel {} ({})\n".format(
                 self.colored(obj.id, "red", "bold"),
                 self.colored(obj.backend, "blue", "bold"),
             )
-            result += "%sArrival:%s %s\n" % (self.BOLD, self.NC, obj.arrival)
+            result += f"{self.BOLD}Arrival:{self.NC} {obj.arrival}\n"
             status, status_color = STATUS[obj.status]
-            result += "%sStatus:%s  %s\n" % (self.BOLD, self.NC, self.colored(status, status_color))
-            result += "%sInfo:%s  %s\n\n" % (self.BOLD, self.NC, obj.info)
+            result += f"{self.BOLD}Status:{self.NC}  {self.colored(status, status_color)}\n"
+            result += f"{self.BOLD}Info:{self.NC}  {obj.info}\n\n"
             result += " Date                  Location          Activity                                          \n"
             result += "---------------------+-----------------+---------------------------------------------------"
             return result
 
-        return " %s   %s %s" % (
+        return " {}   {} {}".format(
             self.colored("%-19s" % obj.date, "blue"),
             self.colored("%-17s" % (obj.location or ""), "magenta"),
             self.colored(obj.activity or "", "yellow"),
@@ -66,11 +66,11 @@ class StatusFormatter(IFormatter):
 
     def format_obj(self, obj, alias):
         if alias is not None:
-            id = "%s (%s)" % (
+            id = "{} ({})".format(
                 self.colored("%3s" % ("#" + alias), "red", "bold"),
                 self.colored(obj.backend, "blue", "bold"),
             )
-            clean = "#%s (%s)" % (alias, obj.backend)
+            clean = f"#{alias} ({obj.backend})"
             if len(clean) < 15:
                 id += " " * (15 - len(clean))
         else:
@@ -78,7 +78,7 @@ class StatusFormatter(IFormatter):
 
         status, status_color = STATUS[obj.status]
         arrival = obj.arrival.strftime("%Y-%m-%d") if not empty(obj.arrival) else ""
-        result = "%s %s %s %s  %s" % (
+        result = "{} {} {} {}  {}".format(
             id,
             self.colored("—", "cyan"),
             self.colored("%-10s" % status, status_color),

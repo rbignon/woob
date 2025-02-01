@@ -24,7 +24,7 @@ class GeoCoordinates(BaseObject):
     altitude = DecimalField("Altitude")
 
     def __repr__(self):
-        return "<%s %s;%s>" % (type(self).__name__, self.latitude, self.longitude)
+        return f"<{type(self).__name__} {self.latitude};{self.longitude}>"
 
 
 class PostalAddress(BaseObject):
@@ -39,8 +39,8 @@ class PostalAddress(BaseObject):
 
     def __repr__(self):
         if self.full_address:
-            return "<%s full_address=%r>" % (type(self).__name__, self.full_address)
-        return "<%s street=%r postal_code=%r region=%r city=%r country=%r country_code=%r>" % (
+            return f"<{type(self).__name__} full_address={self.full_address!r}>"
+        return "<{} street={!r} postal_code={!r} region={!r} city={!r} country={!r} country_code={!r}>".format(
             type(self).__name__,
             self.street,
             self.postal_code,

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Vincent A
 #
 # This file is part of a woob module.
@@ -43,8 +41,7 @@ class ParisKiwiModule(Module, CapCalendarEvent):
 
     def search_events(self, query):
         if self.has_matching_categories(query):
-            for event in self.list_events(query.start_date, query.end_date or None):
-                yield event
+            yield from self.list_events(query.start_date, query.end_date or None)
 
     def list_events(self, date_from, date_to=None):
         for d in self.browser.list_events_all():

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016       Baptiste Delpey
 #
 # This file is part of a woob module.
@@ -200,7 +198,7 @@ class VirtKeyboardPage(HTMLPage):
     pass
 
 
-class BoursoramaVirtKeyboard(object):
+class BoursoramaVirtKeyboard:
     # sha256 hexdigest of data in src of img
     symbols = {
         "0": "8560081e18568aba02ef3b1f7ac0e8b238cbbd21b70a5e919360ac456d45d506",
@@ -690,8 +688,7 @@ def otp_pagination(func):
     def inner(page, *args, **kwargs):
         while True:
             try:
-                for r in func(page, *args, **kwargs):
-                    yield r
+                yield from func(page, *args, **kwargs)
             except NextPage as e:
                 result = page.browser.otp_location(e.request)
                 if result is None:
@@ -777,7 +774,7 @@ class HistoryPage(LoggedPage, HTMLPage):
                     "continuationToken": next_page_token,
                 }
                 parsed = urlparse(self.page.url)
-                return "%s://%s%s?%s" % (parsed.scheme, parsed.netloc, parsed.path, urlencode(params))
+                return f"{parsed.scheme}://{parsed.netloc}{parsed.path}?{urlencode(params)}"
 
         class item(ItemElement):
             klass = Transaction
@@ -859,7 +856,7 @@ class HistoryPage(LoggedPage, HTMLPage):
                     return Field("date")(self)
                 s = s.replace("/", "")
                 # Sometimes the user enters an invalid date 16/17/19 for example
-                return Date(dayfirst=True, default=NotAvailable).filter("%s-%s-%s" % (s[:2], s[2:4], s[4:]))
+                return Date(dayfirst=True, default=NotAvailable).filter(f"{s[:2]}-{s[2:4]}-{s[4:]}")
 
             def obj_coming(self):
                 return (
@@ -955,7 +952,7 @@ class CardSumDetailPage(LoggedPage, HTMLPage):
 
 class CardHistoryPage(LoggedPage, CsvPage):
     ENCODING = "latin-1"
-    FMTPARAMS = {"delimiter": str(";")}
+    FMTPARAMS = {"delimiter": ";"}
     HEADER = 1
 
     @method
@@ -988,7 +985,7 @@ class CardHistoryPage(LoggedPage, CsvPage):
                     return Field("date")(self)
                 s = s.replace("/", "")
                 # Sometimes the user enters an invalid date 16/17/19 for example
-                return Date(dayfirst=True, default=NotAvailable).filter("%s%s%s%s%s" % (s[:2], "-", s[2:4], "-", s[4:]))
+                return Date(dayfirst=True, default=NotAvailable).filter("{}{}{}{}{}".format(s[:2], "-", s[2:4], "-", s[4:]))
 
             def obj_type(self):
                 if "CARTE" in self.obj.raw:
@@ -1038,8 +1035,7 @@ def my_pagination(func):
     def inner(page, *args, **kwargs):
         while True:
             try:
-                for r in func(page, *args, **kwargs):
-                    yield r
+                yield from func(page, *args, **kwargs)
             except NextPage as e:
                 try:
                     result = page.browser.location(e.request)
@@ -1176,7 +1172,7 @@ class MarketPage(LoggedPage, HTMLPage):
                 if el.xpath("./td[2]/a"):
                     m = re.search(r"(\d+)", el.xpath("./td[2]/a")[0].get("data-modal-alert-behavior", ""))
                     if m:
-                        url = "%s%s%s" % (self.page.url.split("mouvements")[0], "mouvement/", m.group(1))
+                        url = "{}{}{}".format(self.page.url.split("mouvements")[0], "mouvement/", m.group(1))
                         page = self.page.browser.open(url).page
                         self.env["account"]._history_pages.append((Field("raw")(self), page))
                         raise SkipItem()
@@ -1597,7 +1593,7 @@ class TransferMainPage(LoggedPage, HTMLPage):
 
 class TransferAccounts(LoggedPage, HTMLPage):
     def on_load(self):
-        super(TransferAccounts, self).on_load()
+        super().on_load()
         self.logger.warning("CANARY Boursorama: Usage detected of an old interface transfer web page")
 
     @method
@@ -2005,7 +2001,7 @@ class TransferOtpPage(LoggedPage, HTMLPage):
         if resource_id:
             otp_url = otp_url.replace("{resourceId}", resource_id)
 
-        otp_data["url"] = "%s%s" % (api_config["baseurl"], otp_url)
+        otp_data["url"] = "{}{}".format(api_config["baseurl"], otp_url)
 
         # Note that we have removed 'resourceId' from the parameters here
         # beforehand, so it will be excluded here.
@@ -2199,7 +2195,7 @@ class TransferSent(TransferOtpPage):
 
 class AddRecipientPage(TransferOtpPage):
     def on_load(self):
-        super(AddRecipientPage, self).on_load()
+        super().on_load()
 
         err = CleanText('//div[@class="form-errors"]', default=None)(self.doc)
         if err:

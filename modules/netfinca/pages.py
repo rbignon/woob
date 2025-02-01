@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2019  Budget-Insight
 #
 # This file is part of a woob module.
@@ -285,7 +283,7 @@ class InvestmentsPage(LoggedPage, HTMLPage):
 
                 if ":" in vdate_scraped:
                     today = datetime.date.today()
-                    h, m = [int(x) for x in vdate_scraped.split(":")]
+                    h, m = (int(x) for x in vdate_scraped.split(":"))
                     hour = datetime.time(hour=h, minute=m)
                     vdate = datetime.datetime.combine(today, hour)
 

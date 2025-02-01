@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -193,7 +191,7 @@ class DLFP(LoginBrowser):
         try:
             form.submit()
         except HTTPError as e:
-            raise CantSendMessage("Unable to send message to %s.%s: %s" % (thread, reply_id, e))
+            raise CantSendMessage(f"Unable to send message to {thread}.{reply_id}: {e}")
 
         if self.node.is_here():
             errors = self.page.get_errors()
@@ -243,7 +241,7 @@ class DLFP(LoginBrowser):
             return False
 
         res = self.open(
-            "%s%s" % (comment.relevance_url, what), data={"authenticity_token": comment.relevance_token}
+            f"{comment.relevance_url}{what}", data={"authenticity_token": comment.relevance_token}
         ).content
 
         return res

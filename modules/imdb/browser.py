@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -173,8 +171,7 @@ class ImdbBrowser(PagesBrowser):
     def iter_movie_persons(self, movie_id, role):
         self.movie_crew.go(id=movie_id)
         assert self.movie_crew.is_here()
-        for p in self.page.iter_persons(role):
-            yield p
+        yield from self.page.iter_persons(role)
 
     def iter_person_movies(self, person_id, role):
         self.person.go(id=person_id)
@@ -184,14 +181,12 @@ class ImdbBrowser(PagesBrowser):
     def iter_person_movies_ids(self, person_id):
         self.person.go(id=person_id)
         assert self.person.is_here()
-        for movie in self.page.iter_movies_ids():
-            yield movie
+        yield from self.page.iter_movies_ids()
 
     def iter_movie_persons_ids(self, movie_id):
         self.movie_crew.go(id=movie_id)
         assert self.movie_crew.is_here()
-        for person in self.page.iter_persons_ids():
-            yield person
+        yield from self.page.iter_persons_ids()
 
     def get_movie_releases(self, id, country):
         self.release.go(id=id)

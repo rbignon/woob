@@ -17,7 +17,8 @@
 
 from __future__ import annotations
 
-from typing import Iterable, List
+from typing import List
+from collections.abc import Iterable
 
 from woob.capabilities.bank import Account
 from woob.capabilities.base import BaseObject, find_object
@@ -94,7 +95,7 @@ class CCFModule(CmsoModule, CapDocument):
             subscription = self.get_subscription(subscription)
         return self.browser.iter_documents(subscription)
 
-    def iter_resources(self, objs: List[BaseObject], split_path: List[str]) -> Iterable[BaseObject]:
+    def iter_resources(self, objs: list[BaseObject], split_path: list[str]) -> Iterable[BaseObject]:
         """
         Iter resources.
 

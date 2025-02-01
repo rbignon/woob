@@ -153,7 +153,7 @@ class BforbankBrowser(TwoFactorBrowser):
     def __init__(self, config, *args, **kwargs):
         username = config["login"].get()
         password = config["password"].get()
-        super(BforbankBrowser, self).__init__(config, username, password, *args, **kwargs)
+        super().__init__(config, username, password, *args, **kwargs)
         self.birthdate = self.config["birthdate"].get()
         self.accounts = None
         self.tokenDto = None
@@ -169,7 +169,7 @@ class BforbankBrowser(TwoFactorBrowser):
         }
 
     def deinit(self):
-        super(BforbankBrowser, self).deinit()
+        super().deinit()
         self.spirica.deinit()
 
     def get_expire(self):
@@ -180,7 +180,7 @@ class BforbankBrowser(TwoFactorBrowser):
                 .isoformat()
             )
             return expires
-        return super(BforbankBrowser, self).get_expire()
+        return super().get_expire()
 
     def handle_errors(self, error, clear_twofa=False):
         if error and clear_twofa:

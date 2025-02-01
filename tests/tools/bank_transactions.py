@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2009-2012  Romain Bignon
 #
 # This file is part of woob.

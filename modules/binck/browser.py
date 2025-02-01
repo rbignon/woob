@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -85,7 +83,7 @@ class BinckBrowser(LoginBrowser):
     def deinit(self):
         if self.page and self.page.logged:
             self.location("https://www.binck.fr/deconnexion-site-client")
-        super(BinckBrowser, self).deinit()
+        super().deinit()
 
     def do_login(self):
         self.login.go()
@@ -120,7 +118,7 @@ class BinckBrowser(LoginBrowser):
                 )
             ):
                 raise ActionNeeded(error)
-            raise AssertionError('Unhandled behavior at login: error is "{}"'.format(error))
+            raise AssertionError(f'Unhandled behavior at login: error is "{error}"')
 
         if self.personal_info.is_here():
             message = self.page.get_message()
@@ -145,8 +143,7 @@ class BinckBrowser(LoginBrowser):
         # we can call iter_old_accounts() right away.
         if self.old_website_connection:
             self.logger.warning("This connection has accounts on the old version of the website.")
-            for account in self.iter_old_accounts():
-                yield account
+            yield from self.iter_old_accounts()
             return
 
         if self.unique_account:
@@ -176,8 +173,7 @@ class BinckBrowser(LoginBrowser):
         # so we need to fetch them on the OldAccountsPage for now:
         else:
             self.old_website_connection = True
-            for account in self.iter_old_accounts():
-                yield account
+            yield from self.iter_old_accounts()
 
     @need_login
     def iter_old_accounts(self):
@@ -274,24 +270,21 @@ class BinckBrowser(LoginBrowser):
             return
 
         # First market order page
-        for order in self.page.iter_market_orders():
-            yield order
+        yield from self.page.iter_market_orders()
 
         # Verify if there are other pages and handle pagination
         total_pages = self.page.count_total_pages()
         if total_pages > 1:
             for page in range(2, total_pages + 1):
                 self.go_to_market_orders(headers, page)
-                for order in self.page.iter_market_orders():
-                    yield order
+                yield from self.page.iter_market_orders()
 
     @need_login
     def iter_history(self, account):
         if self.old_website_connection:
             if account._histpages:
                 for page in account._histpages:
-                    for tr in page.iter_history():
-                        yield tr
+                    yield from page.iter_history()
             return
 
         self.switch_account(account.id)
@@ -302,5 +295,4 @@ class BinckBrowser(LoginBrowser):
             history_pages.append(self.history.go(data=self.page.get_nextpage_data(data[:]), headers=token))
 
         for page in history_pages:
-            for tr in page.iter_history():
-                yield tr
+            yield from page.iter_history()

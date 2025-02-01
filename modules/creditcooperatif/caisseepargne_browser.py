@@ -47,4 +47,4 @@ class CaisseEpargneBrowser(CaisseEpargne):
 
     def __init__(self, nuser, config, *args, **kwargs):
         kwargs["market_url"] = "https://www.offrebourse.com"
-        super(CaisseEpargneBrowser, self).__init__(nuser, config, *args, **kwargs)
+        super().__init__(nuser, config, *args, **kwargs)

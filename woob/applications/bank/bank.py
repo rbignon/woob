@@ -258,7 +258,7 @@ class TransactionsFormatter(IFormatter):
             label = obj.raw or ""
         date = obj.date.strftime("%Y-%m-%d") if not empty(obj.date) else ""
         amount = obj.amount or Decimal("0")
-        return " %s   %s %s %s" % (
+        return " {}   {} {} {}".format(
             self.colored("%-10s" % date, "blue"),
             self.colored("%-12s" % _type[:12], "magenta"),
             self.colored("%-50s" % label[:50], "yellow"),
@@ -274,16 +274,16 @@ class TransferFormatter(IFormatter):
         result = "------- Transfer %s -------\n" % obj.fullid
         result += "Date:       %s\n" % obj.exec_date
         if obj.account_iban:
-            result += "Origin:     %s (%s)\n" % (obj.account_label, obj.account_iban)
+            result += f"Origin:     {obj.account_label} ({obj.account_iban})\n"
         else:
             result += "Origin:     %s\n" % obj.account_label
 
         if obj.recipient_iban:
-            result += "Recipient:  %s (%s)\n" % (obj.recipient_label, obj.recipient_iban)
+            result += f"Recipient:  {obj.recipient_label} ({obj.recipient_iban})\n"
         else:
             result += "Recipient:  %s\n" % obj.recipient_label
 
-        result += "Amount:     %.2f %s\n" % (obj.amount, obj.currency or "")
+        result += "Amount:     {:.2f} {}\n".format(obj.amount, obj.currency or "")
         if obj.label:
             result += "Label:      %s\n" % obj.label
         return result
@@ -352,7 +352,7 @@ class InvestmentFormatter(IFormatter):
         else:
             code = obj.code
 
-        return " %s  %s  %s  %s  %s  %s" % (
+        return " {}  {}  {}  {}  {}  {}".format(
             self.colored("%-30s" % label[:30], "red"),
             self.colored("%-12s" % code[:12], "yellow") if not empty(code) else " " * 12,
             self.colored(format_quantity % quantity, "yellow"),
@@ -384,7 +384,7 @@ class RecipientListFormatter(PrettyFormatter):
     def get_title(self, obj):
         details = " - ".join(filter(None, (obj.iban, obj.bank_name)))
         if details:
-            return "%s (%s)" % (obj.label, details)
+            return f"{obj.label} ({details})"
         return obj.label
 
 
@@ -419,13 +419,13 @@ class AdvisorListFormatter(IFormatter):
         else:
             first_contact = ""
 
-        result = "  %s %s %s " % (
+        result = "  {} {} {} ".format(
             self.colored("%-15s" % bank, "yellow"),
             self.colored("%-30s" % obj.name, "red"),
             self.colored("%-30s" % first_contact, "green"),
         )
         for contact in contacts:
-            result += "\n %s %s" % ((" ") * 47, self.colored("%-25s" % contact, "green"))
+            result += "\n {} {}".format((" ") * 47, self.colored("%-25s" % contact, "green"))
 
         return result
 
@@ -447,11 +447,11 @@ class AccountListFormatter(IFormatter):
 
     def format_obj(self, obj, alias):
         if alias is not None:
-            id = "%s (%s)" % (
+            id = "{} ({})".format(
                 self.colored("%3s" % ("#" + alias), "red", "bold"),
                 self.colored(obj.backend, "blue", "bold"),
             )
-            clean = "#%s (%s)" % (alias, obj.backend)
+            clean = f"#{alias} ({obj.backend})"
             if len(clean) < 15:
                 id += " " * (15 - len(clean))
         else:
@@ -460,7 +460,7 @@ class AccountListFormatter(IFormatter):
         balance = obj.balance or Decimal("0")
         coming = obj.coming or Decimal("0")
         currency = obj.currency or "EUR"
-        result = "%s %s %s  %s" % (
+        result = "{} {} {}  {}".format(
             id,
             self.colored("%-25s" % obj.label[:25], "yellow" if obj.type != Account.TYPE_LOAN else "blue"),
             (
@@ -519,7 +519,7 @@ class EmitterListFormatter(IFormatter):
     def format_emitter_number(self, obj):
         account_number = " " * 11
         if obj.number_type != "unknown" and obj.number:
-            account_number = "%s***%s" % (obj.number[:4], obj.number[len(obj.number) - 4 :])
+            account_number = f"{obj.number[:4]}***{obj.number[len(obj.number) - 4 :]}"
         return account_number
 
     def format_obj(self, obj, alias):
@@ -534,7 +534,7 @@ class EmitterListFormatter(IFormatter):
 
         account_number = self.format_emitter_number(obj)
 
-        return "%s %s %s %s %s %s" % (
+        return "{} {} {} {} {} {}".format(
             obj_id,
             self.colored("%-25s" % obj.label[:25], "yellow", "bold"),
             self.colored("%-10s" % obj.currency, "green", "bold"),
@@ -638,36 +638,36 @@ class Appbank(CaptchaMixin, ReplApplication):
                 self.bcall_errors_handler(e)
         elif isinstance(error, AppValidationCancelled):
             print(
-                "Error(%s): %s" % (backend.name, to_unicode(error) or "The app validation has been cancelled"),
+                "Error({}): {}".format(backend.name, to_unicode(error) or "The app validation has been cancelled"),
                 file=self.stderr,
             )
         elif isinstance(error, AppValidationExpired):
             print(
-                "Error(%s): %s" % (backend.name, to_unicode(error) or "The app validation has expired"),
+                "Error({}): {}".format(backend.name, to_unicode(error) or "The app validation has expired"),
                 file=self.stderr,
             )
         elif isinstance(error, TransferInvalidAmount):
             print(
-                "Error(%s): %s" % (backend.name, to_unicode(error) or "The transfer amount is invalid"),
+                "Error({}): {}".format(backend.name, to_unicode(error) or "The transfer amount is invalid"),
                 file=self.stderr,
             )
         elif isinstance(error, TransferInvalidLabel):
             print(
-                "Error(%s): %s" % (backend.name, to_unicode(error) or "The transfer label is invalid"), file=self.stderr
+                "Error({}): {}".format(backend.name, to_unicode(error) or "The transfer label is invalid"), file=self.stderr
             )
         elif isinstance(error, TransferInvalidEmitter):
             print(
-                "Error(%s): %s" % (backend.name, to_unicode(error) or "The transfer emitter is invalid"),
+                "Error({}): {}".format(backend.name, to_unicode(error) or "The transfer emitter is invalid"),
                 file=self.stderr,
             )
         elif isinstance(error, TransferInvalidRecipient):
             print(
-                "Error(%s): %s" % (backend.name, to_unicode(error) or "The transfer recipient is invalid"),
+                "Error({}): {}".format(backend.name, to_unicode(error) or "The transfer recipient is invalid"),
                 file=self.stderr,
             )
         elif isinstance(error, TransferInvalidDate):
             print(
-                "Error(%s): %s" % (backend.name, to_unicode(error) or "The transfer execution date is invalid"),
+                "Error({}): {}".format(backend.name, to_unicode(error) or "The transfer execution date is invalid"),
                 file=self.stderr,
             )
         elif isinstance(error, CaptchaQuestion):
@@ -688,7 +688,7 @@ class Appbank(CaptchaMixin, ReplApplication):
             self.solve_captcha(job, backend)
             return False
         else:
-            return super(Appbank, self).bcall_error_handler(backend, error, backtrace)
+            return super().bcall_error_handler(backend, error, backtrace)
 
     def load_default_backends(self):
         self.load_backends(CapBank, storage=self.create_storage())
@@ -845,7 +845,7 @@ class Appbank(CaptchaMixin, ReplApplication):
                 return
             id_from, backend = self.parse_id(id_from)
 
-            account = find_object(self.objects, fullid="%s@%s" % (id_from, backend))
+            account = find_object(self.objects, fullid=f"{id_from}@{backend}")
             if not account:
                 return
             id_from = account.id
@@ -865,7 +865,7 @@ class Appbank(CaptchaMixin, ReplApplication):
                 return
             id_to, backend = self.parse_id(id_to)
 
-            rcpt = find_object(self.objects, fullid="%s@%s" % (id_to, backend))
+            rcpt = find_object(self.objects, fullid=f"{id_to}@{backend}")
             if not rcpt:
                 return
 
@@ -1050,9 +1050,9 @@ class Appbank(CaptchaMixin, ReplApplication):
         for rate in self.do("get_rate", currency_from, currency_to):
             if rate is not None:
                 converted_amount = rate.convert(amount)
-                print("%s %s is equal to %s %s" % (amount, rate.currency_from, converted_amount, rate.currency_to))
+                print(f"{amount} {rate.currency_from} is equal to {converted_amount} {rate.currency_to}")
                 break
 
     def main(self, argv):
         self.load_config()
-        return super(Appbank, self).main(argv)
+        return super().main(argv)

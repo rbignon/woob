@@ -138,7 +138,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
 
     def transfer_check_label(self, old, new):
         old = old.upper()
-        return super(AXABanqueModule, self).transfer_check_label(old, new)
+        return super().transfer_check_label(old, new)
 
     def transfer_check_account_id(self, old, new):
         old = old[:11]

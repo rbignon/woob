@@ -184,8 +184,7 @@ class BNPModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapMessages,
         if not hasattr(self.browser, "get_advisor"):
             raise NotImplementedError()
 
-        for advisor in self.browser.get_advisor():
-            yield advisor
+        yield from self.browser.get_advisor()
 
     def get_profile(self):
         if not hasattr(self.browser, "get_profile"):

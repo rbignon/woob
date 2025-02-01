@@ -82,8 +82,7 @@ class ProfilePage(LoggedPage, JsonPage):
 
 class DocumentCategoriesPage(LoggedPage, JsonPage):
     def iter_categories(self):
-        for obj in self.doc["data"]["Classeurs"]:
-            yield obj
+        yield from self.doc["data"]["Classeurs"]
 
 
 class DocumentsPage(LoggedPage, JsonPage):

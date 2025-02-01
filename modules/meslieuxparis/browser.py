@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Vincent A
 #
 # This file is part of a woob module.
@@ -95,5 +93,4 @@ class MeslieuxparisBrowser(PagesBrowser):
     def search_contacts(self, pattern):
         ids = ",".join(str(id) for id in self.ALL)
         self.search.go(cid=ids, params={"keyword": pattern})
-        for res in self.page.iter_contacts():
-            yield res
+        yield from self.page.iter_contacts()

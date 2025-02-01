@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2021 Damien Ramelet.
 #
 # This file is part of a woob module.
@@ -41,7 +39,7 @@ class CustomJsonPage(JsonPage):
         # Hence this hack
         if content == "":
             return json.dumps(content)
-        return super(CustomJsonPage, self).build_doc(content)
+        return super().build_doc(content)
 
 
 class TokenPage(CustomJsonPage):

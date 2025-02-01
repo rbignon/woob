@@ -94,7 +94,7 @@ LANGUAGE_CONV = {
 def sizeof_fmt(num):
     for x in ["bytes", "KB", "MB", "GB", "TB"]:
         if num < 1024.0:
-            return "%-4.1f%s" % (num, x)
+            return f"{num:<4.1f}{x}"
         num /= 1024.0
 
 
@@ -102,14 +102,14 @@ class SubtitleInfoFormatter(IFormatter):
     MANDATORY_FIELDS = ("id", "name", "url", "description")
 
     def format_obj(self, obj, alias):
-        result = "%s%s%s\n" % (self.BOLD, obj.name, self.NC)
+        result = f"{self.BOLD}{obj.name}{self.NC}\n"
         result += "ID: %s\n" % obj.fullid
         result += "URL: %s\n" % obj.url
         if not empty(obj.language):
             result += "LANG: %s\n" % obj.language
         if not empty(obj.nb_cd):
             result += "NB CD: %s\n" % obj.nb_cd
-        result += "\n%sDescription%s\n" % (self.BOLD, self.NC)
+        result += f"\n{self.BOLD}Description{self.NC}\n"
         result += "%s" % obj.description
         return result
 
@@ -184,7 +184,7 @@ class AppSubtitles(ReplApplication):
             ext = subtitle.ext
             if empty(ext):
                 ext = "zip"
-            dest = "%s.%s" % (subtitle.name, ext)
+            dest = f"{subtitle.name}.{ext}"
 
         for buf in self.do("get_subtitle_file", subtitle.id, backends=subtitle.backend):
             if buf:
@@ -194,8 +194,8 @@ class AppSubtitles(ReplApplication):
                     try:
                         with open(dest, "wb") as f:
                             f.write(buf)
-                    except IOError as e:
-                        print('Unable to write file in "%s": %s' % (dest, e), file=self.stderr)
+                    except OSError as e:
+                        print(f'Unable to write file in "{dest}": {e}', file=self.stderr)
                         return 1
                     else:
                         print("Saved to %s" % dest)

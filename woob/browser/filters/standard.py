@@ -116,7 +116,7 @@ class Async(Filter):
     """
 
     def __init__(self, name, selector=None):
-        super(Async, self).__init__()
+        super().__init__()
         self.selector = selector
         self.name = name
 
@@ -156,7 +156,7 @@ class Base(Filter):
         return self.select(self.selector, base)
 
     def __init__(self, base, selector=None, default=_NO_DEFAULT):
-        super(Base, self).__init__(selector, default)
+        super().__init__(selector, default)
         self.base = base
 
 
@@ -201,7 +201,7 @@ class Env(_Filter):
     """
 
     def __init__(self, name, default=_NO_DEFAULT):
-        super(Env, self).__init__(default)
+        super().__init__(default)
         self.name = name
 
     def __call__(self, item):
@@ -223,7 +223,7 @@ class RawText(Filter):
         :type children: bool
         """
 
-        super(RawText, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         self.children = children
 
     @debug()
@@ -293,7 +293,7 @@ class CleanText(Filter):
         :type transliterate: bool
         """
 
-        super(CleanText, self).__init__(selector, **kwargs)
+        super().__init__(selector, **kwargs)
         self.symbols = symbols
         self.toreplace = replace
         self.children = children
@@ -354,7 +354,7 @@ class Lower(CleanText):
 
     @debug()
     def filter(self, txt):
-        txt = super(Lower, self).filter(txt)
+        txt = super().filter(txt)
         return txt.lower()
 
 
@@ -363,7 +363,7 @@ class Upper(CleanText):
 
     @debug()
     def filter(self, txt):
-        txt = super(Upper, self).filter(txt)
+        txt = super().filter(txt)
         return txt.upper()
 
 
@@ -372,14 +372,14 @@ class Title(CleanText):
 
     @debug()
     def filter(self, txt):
-        txt = super(Title, self).filter(txt)
+        txt = super().filter(txt)
         return txt.title()
 
 
 class Currency(CleanText):
     @debug()
     def filter(self, txt):
-        txt = super(Currency, self).filter(txt)
+        txt = super().filter(txt)
         if empty(txt):
             return self.default_or_raise(FormatError("Unable to parse %r" % txt))
         return BaseCurrency.get_currency(txt)
@@ -443,7 +443,7 @@ class CleanDecimal(CleanText):
         :param sign: function accepting the text as param and returning the sign
         """
 
-        super(CleanDecimal, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         self.replace_dots = replace_dots
         self.sign = sign
         self.legacy = legacy
@@ -465,7 +465,7 @@ class CleanDecimal(CleanText):
         if empty(text):
             return self.default_or_raise(FormatError("Unable to parse %r" % text))
 
-        original_text = text = super(CleanDecimal, self).filter(text)
+        original_text = text = super().filter(text)
 
         text = text.replace("\u2212", "-")
 
@@ -489,7 +489,7 @@ class CleanDecimal(CleanText):
                 if not matches:
                     return self.default_or_raise(NumberFormatError("There should be exactly one number to parse"))
 
-            text = "%s%s" % (matches[0][0], matches[0][1].strip())
+            text = f"{matches[0][0]}{matches[0][1].strip()}"
 
             if thousands_sep and thousands_sep in text and not self.thousand_check.match(text):
                 return self.default_or_raise(NumberFormatError("Thousands separator is misplaced in %r" % text))
@@ -567,7 +567,7 @@ class Type(Filter):
     """
 
     def __init__(self, selector=None, type=None, minlen=0, default=_NO_DEFAULT):
-        super(Type, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         self.type_func = type
         self.minlen = minlen
 
@@ -582,7 +582,7 @@ class Type(Filter):
         try:
             return self.type_func(txt)
         except ValueError as e:
-            return self.default_or_raise(FormatError("Unable to parse %r: %s" % (txt, e)))
+            return self.default_or_raise(FormatError(f"Unable to parse {txt!r}: {e}"))
 
 
 class Field(_Filter):
@@ -598,7 +598,7 @@ class Field(_Filter):
     """
 
     def __init__(self, name):
-        super(Field, self).__init__()
+        super().__init__()
         self.name = name
 
     def __call__(self, item):
@@ -647,7 +647,7 @@ class Regexp(Filter):
     """
 
     def __init__(self, selector=None, pattern=None, template=None, nth=0, flags=0, default=_NO_DEFAULT):
-        super(Regexp, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         if pattern is None:
             raise FilterError("Missing pattern parameter")
         self.pattern = pattern
@@ -683,7 +683,7 @@ class Regexp(Filter):
         if not m:
             if len(txt) > 1024:
                 txt = txt[:1021] + "..."
-            msg = "Unable to find %s %s in %r" % (ordinal(self.nth), self.pattern, txt)
+            msg = f"Unable to find {ordinal(self.nth)} {self.pattern} in {txt!r}"
             return self.default_or_raise(RegexpError(msg))
 
         if isinstance(m, Iterator):
@@ -710,7 +710,7 @@ class Map(Filter):
         :param selector: key from `map_dict` to use
         """
 
-        super(Map, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         self.map_dict = map_dict
 
     @debug()
@@ -722,7 +722,7 @@ class Map(Filter):
         try:
             return self.map_dict[txt]
         except KeyError:
-            return self.default_or_raise(ItemNotFound("Unable to handle %r on %r" % (txt, self.map_dict)))
+            return self.default_or_raise(ItemNotFound(f"Unable to handle {txt!r} on {self.map_dict!r}"))
 
 
 class MapIn(Filter):
@@ -734,7 +734,7 @@ class MapIn(Filter):
         """
         :param selector: key from `map_dict` to use
         """
-        super(MapIn, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         self.map_dict = map_dict
 
     @debug()
@@ -747,7 +747,7 @@ class MapIn(Filter):
                 if key in txt:
                     return self.map_dict[key]
 
-        return self.default_or_raise(ItemNotFound("Unable to handle %r on %r" % (txt, self.map_dict)))
+        return self.default_or_raise(ItemNotFound(f"Unable to handle {txt!r} on {self.map_dict!r}"))
 
 
 class DateTime(Filter):
@@ -773,7 +773,7 @@ class DateTime(Filter):
         :type tzinfo: :class:`datetime.tzinfo`
         """
 
-        super(DateTime, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         self.kwargs = kwargs
         self.translations = translations
         self.parse_func = parse_func
@@ -806,14 +806,14 @@ class DateTime(Filter):
 
             return parse1
         except (ValueError, TypeError) as e:
-            return self.default_or_raise(FormatError("Unable to parse %r: %s" % (txt, e)))
+            return self.default_or_raise(FormatError(f"Unable to parse {txt!r}: {e}"))
 
 
 class FromTimestamp(Filter):
     """Parse a timestamp into a datetime."""
 
     def __init__(self, selector, millis=False, tz=None, default=_NO_DEFAULT):
-        super(FromTimestamp, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         self.millis = millis
         self.tz = tz
 
@@ -822,7 +822,7 @@ class FromTimestamp(Filter):
         try:
             ts = float(txt)
         except (TypeError, ValueError) as exc:
-            return self.default_or_raise(FormatError("Unable to parse %r: %s" % (txt, exc)))
+            return self.default_or_raise(FormatError(f"Unable to parse {txt!r}: {exc}"))
 
         if self.millis:
             ts /= 1000
@@ -830,7 +830,7 @@ class FromTimestamp(Filter):
         try:
             return datetime.datetime.fromtimestamp(ts, tz=self.tz)
         except TypeError as exc:
-            return self.default_or_raise(FormatError("Unable to parse %r: %s" % (txt, exc)))
+            return self.default_or_raise(FormatError(f"Unable to parse {txt!r}: {exc}"))
 
 
 class Date(DateTime):
@@ -839,7 +839,7 @@ class Date(DateTime):
     def __init__(
         self, selector=None, default=_NO_DEFAULT, translations=None, parse_func=parse_date, strict=True, **kwargs
     ):
-        super(Date, self).__init__(
+        super().__init__(
             selector, default=default, translations=translations, parse_func=parse_func, strict=strict, **kwargs
         )
 
@@ -848,7 +848,7 @@ class Date(DateTime):
 
     @debug()
     def filter(self, txt):
-        datetime = super(Date, self).filter(txt)
+        datetime = super().filter(txt)
         if hasattr(datetime, "date"):
             return datetime.date()
         else:
@@ -857,7 +857,7 @@ class Date(DateTime):
 
 class DateGuesser(Filter):
     def __init__(self, selector, date_guesser, **kwargs):
-        super(DateGuesser, self).__init__(selector)
+        super().__init__(selector)
         self.date_guesser = date_guesser
         self.kwargs = kwargs
 
@@ -885,7 +885,7 @@ class Time(Filter):
     kwargs = {"hour": "hh", "minute": "mm", "second": "ss"}
 
     def __init__(self, selector=None, default=_NO_DEFAULT):
-        super(Time, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
 
     @debug()
     def filter(self, txt):
@@ -910,7 +910,7 @@ class Duration(Time):
 class MultiFilter(Filter):
     def __init__(self, *args, **kwargs):
         default = kwargs.pop("default", _NO_DEFAULT)
-        super(MultiFilter, self).__init__(args, default)
+        super().__init__(args, default)
 
     def __call__(self, item):
         values = [self.select(selector, item) for selector in self.selector]
@@ -928,7 +928,7 @@ class CombineDate(MultiFilter):
         :type date: filter
         :type time: filter
         """
-        super(CombineDate, self).__init__(date, time)
+        super().__init__(date, time)
 
     @debug()
     def filter(self, values):
@@ -953,7 +953,7 @@ class Format(MultiFilter):
         :param args: other filters to insert in `fmt` string.
                      There should be as many args as there are "%" in `fmt`.
         """
-        super(Format, self).__init__(*args)
+        super().__init__(*args)
         self.fmt = fmt
 
     @debug()
@@ -981,14 +981,14 @@ class BrowserURL(MultiFilter):
     """
 
     def __init__(self, url_name, **kwargs):
-        super(BrowserURL, self).__init__(*kwargs.values())
+        super().__init__(*kwargs.values())
         self.url_name = url_name
         self.keys = list(kwargs.keys())
 
     def __call__(self, item):
-        values = super(BrowserURL, self).__call__(item)
+        values = super().__call__(item)
         url = getattr(item.page.browser, self.url_name)
-        assert isinstance(url, URL), "%s.%s must be an URL object" % (type(item.page.browser).__name__, self.url_name)
+        assert isinstance(url, URL), f"{type(item.page.browser).__name__}.{self.url_name} must be an URL object"
         return url.build(**dict(zip(self.keys, values)))
 
     @debug()
@@ -1021,7 +1021,7 @@ class Join(Filter):
         addAfter="",
         default=_NO_DEFAULT,
     ):
-        super(Join, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         self.pattern = pattern
         self.textCleaner = textCleaner
         self.newline = newline
@@ -1039,10 +1039,10 @@ class Join(Filter):
         result = self.pattern.join(items)
 
         if self.addBefore:
-            result = "%s%s" % (self.addBefore, result)
+            result = f"{self.addBefore}{result}"
 
         if self.addAfter:
-            result = "%s%s" % (result, self.addAfter)
+            result = f"{result}{self.addAfter}"
 
         if not result and self.default is not _NO_DEFAULT:
             return self.default
@@ -1068,7 +1068,7 @@ class MultiJoin(MultiFilter):
 
     def __init__(self, *args, **kwargs):
         self.pattern = kwargs.pop("pattern", ", ")
-        super(MultiJoin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @debug()
     def filter(self, values):
@@ -1097,7 +1097,7 @@ class Eval(MultiFilter):
                      accept as many args as there are filters passed to
                      Eval.
         """
-        super(Eval, self).__init__(*args)
+        super().__init__(*args)
         self.func = func
 
     @debug()
@@ -1117,7 +1117,7 @@ class QueryValue(Filter):
     """
 
     def __init__(self, selector, key, default=_NO_DEFAULT):
-        super(QueryValue, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         self.querykey = key
 
     @debug()

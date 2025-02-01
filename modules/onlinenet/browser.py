@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -50,7 +48,5 @@ class OnlinenetBrowser(LoginBrowser):
 
     @need_login
     def iter_documents(self, subscription):
-        for b in self.documents.stay_or_go().get_bills():
-            yield b
-        for d in self.documents.stay_or_go().get_documents():
-            yield d
+        yield from self.documents.stay_or_go().get_bills()
+        yield from self.documents.stay_or_go().get_documents()

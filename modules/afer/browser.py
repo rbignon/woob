@@ -28,7 +28,7 @@ class AferBrowser(AbeilleAssurancesBrowser):
     BASEURL = "https://adherent.gie-afer.fr"
 
     def __init__(self, *args, **kwargs):
-        super(AferBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.subsite = "espaceadherent"
 
     def post_login_credentials(self):

@@ -116,7 +116,7 @@ class AuraPage(LoggedPage, JsonPage):
     # useful tip, when request is malformed this page contains a malformed json (yes i know)
     # and it crash on build_doc, hope that can help you to debug
     def build_doc(self, text):
-        doc = super(AuraPage, self).build_doc(text)
+        doc = super().build_doc(text)
 
         if doc["actions"][0]["id"] == "685;a":  # this is the code when we get documents
             # they are also encoded in json

@@ -98,7 +98,7 @@ class TransferINGVirtKeyboard(SimpleVirtualKeyboard):
             else:
                 # Dump file only when the symbol is not found
                 self.dump_tiles(self.path)
-                raise Exception("Symbol '%s' not found; all symbol hashes are available in %s" % (digit, self.path))
+                raise Exception(f"Symbol '{digit}' not found; all symbol hashes are available in {self.path}")
 
         formatted_password = []
         safe_margin = self.safe_tile_margin

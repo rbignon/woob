@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Phyks (Lucas Verney)
 #
 # This file is part of a woob module.
@@ -41,13 +39,13 @@ class FonciaSeleniumBrowser(SeleniumBrowser):
     home = URL("/$", IndexPage)
 
     def __init__(self, config, *args, **kwargs):
-        super(FonciaSeleniumBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _build_options(self, preferences):
         # MyFoncia login use a library called FingerprintJS
         # It can assert whether or not the user is a bot
         # To successfully pass the login, we have to
-        options = super(FonciaSeleniumBrowser, self)._build_options(preferences)
+        options = super()._build_options(preferences)
         # Hide the fact that the navigator is controlled by webdriver
         options.add_argument("--disable-blink-features=AutomationControlled")
         # Hardcode an User Agent so we don't expose Chrome is in headless mode
@@ -70,7 +68,7 @@ class FonciaBrowser(PagesBrowser, SubSeleniumMixin):
 
     def __init__(self, *args, **kwargs):
         self.config = None
-        super(FonciaBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         sub_browser = self.create_selenium_browser()
         try:
             if self.selenium_state and hasattr(sub_browser, "load_state"):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -37,4 +35,4 @@ class BasePage(HTMLPage):
     def build_doc(self, content):
         # don't know if it's still relevant...
         content = content.strip(b"\x00")
-        return super(BasePage, self).build_doc(content)
+        return super().build_doc(content)

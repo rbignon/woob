@@ -30,7 +30,7 @@ class BackendTest(TestCase):
     MODULE = None
 
     def __init__(self, *args, **kwargs):
-        super(BackendTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.backends = {}
         self.backend_instance = None
@@ -70,7 +70,7 @@ class BackendTest(TestCase):
         Generate a description with the backend instance name.
         """
         # do not use TestCase.shortDescription as it returns None
-        return "%s [%s]" % (str(self), self.backend_instance)
+        return f"{str(self)} [{self.backend_instance}]"
 
     def is_backend_configured(self):
         """

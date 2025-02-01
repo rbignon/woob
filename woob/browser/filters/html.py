@@ -101,7 +101,7 @@ class Attr(Filter):
         :param attr: name of the attribute to take
         """
 
-        super(Attr, self).__init__(selector, default=default)
+        super().__init__(selector, default=default)
         self.attr = attr
 
     @debug()
@@ -117,7 +117,7 @@ class Attr(Filter):
             return self.default_or_raise(XPathNotFound("Unable to find element %s" % self.selector))
         except KeyError:
             return self.default_or_raise(
-                AttributeNotFound("Element %s does not have attribute %s" % (el[0], self.attr))
+                AttributeNotFound(f"Element {el[0]} does not have attribute {self.attr}")
             )
 
 
@@ -129,14 +129,14 @@ class Link(Attr):
     """
 
     def __init__(self, selector=None, default=_NO_DEFAULT):
-        super(Link, self).__init__(selector, "href", default=default)
+        super().__init__(selector, "href", default=default)
 
 
 class AbsoluteLink(Link):
     """Get the absolute link URI of an element."""
 
     def __call__(self, item):
-        ret = super(AbsoluteLink, self).__call__(item)
+        ret = super().__call__(item)
         if ret:
             ret = urljoin(item.page.url, ret)
         return ret
@@ -154,7 +154,7 @@ class CleanHTML(Filter):
         :type options: dict
         """
 
-        super(CleanHTML, self).__init__(selector=selector, default=default)
+        super().__init__(selector=selector, default=default)
         self.options = options
 
     @debug()
@@ -249,7 +249,7 @@ class HasElement(Filter):
     """
 
     def __init__(self, selector, yesvalue=True, novalue=False):
-        super(HasElement, self).__init__(selector, default=novalue)
+        super().__init__(selector, default=novalue)
         self.yesvalue = yesvalue
 
     @debug()
@@ -265,7 +265,7 @@ class ReplaceEntities(CleanText):
     """
 
     def filter(self, data):
-        txt = super(ReplaceEntities, self).filter(data)
+        txt = super().filter(data)
         return unescape(txt)
 
 
@@ -298,7 +298,7 @@ class TableCell(_Filter):
     def __init__(self, *names, **kwargs):
         support_th = kwargs.pop("support_th", False)
         kwargs.pop("colspan", True)
-        super(TableCell, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.names = names
 
         if support_th:

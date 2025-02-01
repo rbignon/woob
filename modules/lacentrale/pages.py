@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014 Vicnet
 #
 # This file is part of a woob module.
@@ -41,7 +39,7 @@ class ListingAutoPage(HTMLPage):
             obj_id = CleanText("./p/a/@data-annid")
             obj_cost = CleanDecimal('./a/div/div/div/div[@class="fieldPrice"]')
             obj_currency = Regexp(
-                CleanText('./a/div/div/div/div[@class="fieldPrice"]'), ".*([%s%s%s])" % ("€", "$", "£"), default="€"
+                CleanText('./a/div/div/div/div[@class="fieldPrice"]'), ".*([{}{}{}])".format("€", "$", "£"), default="€"
             )
             obj_message = Format(
                 "%s / %s / %s",
@@ -68,7 +66,7 @@ class AdvertPage(HTMLPage):
 
         obj_cost = CleanDecimal('//div[@class="mainInfos"]/div/p[@class="gpfzj"]')
         obj_currency = Regexp(
-            CleanText('//div[@class="mainInfos"]/div/p[@class="gpfzj"]'), ".*([%s%s%s])" % ("€", "$", "£"), default="€"
+            CleanText('//div[@class="mainInfos"]/div/p[@class="gpfzj"]'), ".*([{}{}{}])".format("€", "$", "£"), default="€"
         )
         obj_message = Format(
             "%s %s", CleanText('//div[@class="mainInfos"]/div/div/h1'), CleanText('//div[@class="mainInfos"]/div/div/p')

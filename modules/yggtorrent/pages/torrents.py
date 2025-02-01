@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -46,7 +44,7 @@ class SearchPage(LoggedPage, HTMLPage):
             obj_magnet = NotAvailable
 
             def obj_url(self):
-                return "%sengine/download_torrent?id=%s" % (self.page.browser.BASEURL, self.obj_id)
+                return f"{self.page.browser.BASEURL}engine/download_torrent?id={self.obj_id}"
 
             def obj_size(self):
                 rawsize = CleanText("./td[last()-3]")(self)

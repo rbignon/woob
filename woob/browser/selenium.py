@@ -318,7 +318,7 @@ class SeleniumPage:
     logged = False
 
     def __init__(self, browser):
-        super(SeleniumPage, self).__init__()
+        super().__init__()
         self.params = {}
         self.browser = browser
         self.driver = browser.driver
@@ -353,7 +353,7 @@ class HTMLPage(BaseHTMLPage):
             encoding="utf-8",
         )
 
-        super(HTMLPage, self).__init__(browser, fake, encoding="utf-8")
+        super().__init__(browser, fake, encoding="utf-8")
         self.driver = browser.driver
 
 
@@ -372,12 +372,12 @@ CAPA_CLASSES = {
 class DirFirefoxProfile(FirefoxProfile):
     def __init__(self, custom_dir):
         self._woob_dir = custom_dir
-        super(DirFirefoxProfile, self).__init__()
+        super().__init__()
 
     def _create_tempfolder(self):
         if self._woob_dir:
             return self._woob_dir
-        return super(DirFirefoxProfile, self)._create_tempfolder()
+        return super()._create_tempfolder()
 
 
 class FakeResponse:
@@ -441,7 +441,7 @@ class SeleniumBrowser:
         remote_driver_url=None,
         woob=None,
     ):
-        super(SeleniumBrowser, self).__init__()
+        super().__init__()
         self.responses_dirname = responses_dirname
         self.responses_count = 0
         self.woob = woob or weboob

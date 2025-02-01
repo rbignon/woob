@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      smurail
 #
 # This file is part of a woob module.
@@ -83,7 +81,7 @@ class CmsoProBrowser(CmsoLoginBrowser):
     space = "PRO"
 
     def __init__(self, config, *args, **kwargs):
-        super(CmsoProBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
 
         self.areas = []
         self.curr_area = None
@@ -96,7 +94,7 @@ class CmsoProBrowser(CmsoLoginBrowser):
         # but not to the API, which we need to browse the other areas.
         # We remove the URL to force a relogin.
         state.pop("url", None)
-        super(CmsoProBrowser, self).load_state(state)
+        super().load_state(state)
 
     def fetch_areas(self):
         if not self.areas:
@@ -249,8 +247,7 @@ class CmsoProBrowser(CmsoLoginBrowser):
                         # Yes, they really did that heresy...
                     else:
                         raise
-            for tr in sorted_transactions(self.page.iter_history(date_guesser=date_guesser)):
-                yield tr
+            yield from sorted_transactions(self.page.iter_history(date_guesser=date_guesser))
 
     def update_csrf_token(self, history_url):
         return re.sub("(?<=csrf=)[0-9a-zA-Z]+", self.last_csrf, history_url)

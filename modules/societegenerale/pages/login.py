@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Jocelyn Jaubert
 #
 # This file is part of a woob module.
@@ -35,7 +33,7 @@ from ..captcha import Captcha, TileError
 from .base import BasePage
 
 
-class PasswordPage(object):
+class PasswordPage:
     STRANGE_KEY = [
         "180",
         "149",

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Vincent A
 #
 # This file is part of a woob module.
@@ -46,7 +44,7 @@ class HomePage(LoggedPage, HTMLPage):
     pass
 
 
-class User(object):
+class User:
     id = None
     name = None
     start = None

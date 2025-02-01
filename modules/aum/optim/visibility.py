@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon
 #
 # This file is part of a woob module.
@@ -24,7 +22,7 @@ from woob.exceptions import BrowserUnavailable
 
 class Visibility(Optimization):
     def __init__(self, sched, browser):
-        super(Visibility, self).__init__()
+        super().__init__()
         self._sched = sched
         self._browser = browser
         self._cron = None

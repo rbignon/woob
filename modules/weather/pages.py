@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Arno Renevier
 #
 # This file is part of a woob module.
@@ -31,7 +29,7 @@ class WeatherDict(Filter):
         pass
 
     def __init__(self, selector=None, default=_NO_DEFAULT):
-        super(WeatherDict, self).__init__(selector, default)
+        super().__init__(selector, default)
 
     def __call__(self, item):
         self.selector = Format(

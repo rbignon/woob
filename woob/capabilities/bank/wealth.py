@@ -92,7 +92,7 @@ class Investment(BaseObject):
     original_diff = DecimalField("Original diff (in another currency)")
 
     def __repr__(self):
-        return "<Investment label=%r code=%r valuation=%r>" % (self.label, self.code, self.valuation)
+        return f"<Investment label={self.label!r} code={self.code!r} valuation={self.valuation!r}>"
 
     # compatibility alias
     @property

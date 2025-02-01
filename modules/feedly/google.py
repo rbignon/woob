@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -39,7 +37,7 @@ class GoogleBrowser(LoginBrowser):
     google_login = URL("https://accounts.google.com/(?P<auth>.+)", "AccountLoginInfo", GoogleLoginPage)
 
     def __init__(self, username, password, redirect_uri, *args, **kwargs):
-        super(GoogleBrowser, self).__init__(username, password, *args, **kwargs)
+        super().__init__(username, password, *args, **kwargs)
         self.redirect_uri = redirect_uri
 
     def do_login(self):

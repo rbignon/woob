@@ -19,7 +19,8 @@ from __future__ import annotations
 
 import re
 from binascii import crc32
-from typing import Iterable, List
+from typing import List
+from collections.abc import Iterable
 
 from schwifty import IBAN
 
@@ -409,7 +410,7 @@ class Account(BaseAccount):
     party = Field("Party associated to the account", AccountParty, default=None)
 
     def __repr__(self):
-        return "<%s id=%r label=%r>" % (type(self).__name__, self.id, self.label)
+        return f"<{type(self).__name__} id={self.id!r} label={self.label!r}>"
 
     # compatibility alias
     @property
@@ -583,7 +584,7 @@ class Transaction(BaseObject):
     bank_transaction_code = Field("Bank transaction code of transaction", BankTransactionCode)
 
     def __repr__(self):
-        return "<Transaction date=%r label=%r amount=%r>" % (self.date, self.label, self.amount)
+        return f"<Transaction date={self.date!r} label={self.label!r} amount={self.amount!r}>"
 
     def unique_id(self, seen: set | None = None, account_id: str | None = None) -> str:
         """
@@ -645,7 +646,7 @@ class CapBank(CapCollection, CapCredentialsCheck):
 
         return True
 
-    def iter_resources(self, objs: List[BaseObject], split_path: List[str]) -> Iterable[BaseObject]:
+    def iter_resources(self, objs: list[BaseObject], split_path: list[str]) -> Iterable[BaseObject]:
         """
         Iter resources.
 

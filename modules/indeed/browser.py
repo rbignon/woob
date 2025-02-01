@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Bezleputh
 #
 # This file is part of a woob module.
@@ -33,14 +31,14 @@ class IndeedBrowser(PagesBrowser):
     advert_page = URL("/cmp/(?P<company>.*)/jobs/(?P<title>.*)-(?P<nb>.*)", AdvertPage)
 
     def search_job(self, metier="", contrat="", limit_date="", radius="", place=""):
-        params = "?q=%s&limit=10&sort=date&st=employer&sr=directhire&jt=%s&fromage=%s&radius=%s" % (
+        params = "?q={}&limit=10&sort=date&st=employer&sr=directhire&jt={}&fromage={}&radius={}".format(
             metier.replace(" ", "+"),
             contrat,
             limit_date,
             radius,
         )
         if place:
-            params = "%s&l=%s" % (params, place)
+            params = f"{params}&l={place}"
         self.search_page.go(parameters=params)
         assert self.search_page.is_here(parameters=params)
         return self.page.iter_job_adverts()

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright(C) 2014 Julia Leven
 #
 # This file is part of woob.
@@ -26,7 +25,7 @@ from woob.browser.pages import Form, FormSubmitWarning
 
 
 # Mock that allows to represent a Page
-class MyMockPage(object):
+class MyMockPage:
     url = URL("http://httpbin.org")
 
 

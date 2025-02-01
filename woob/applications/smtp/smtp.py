@@ -237,14 +237,14 @@ class AppSmtp(ReplApplication):
         parent_message = mail.parent
         references = []
         while parent_message:
-            references.append("<%s.%s@%s>" % (backend_name, mail.parent.full_id, domain))
+            references.append(f"<{backend_name}.{mail.parent.full_id}@{domain}>")
             parent_message = parent_message.parent
         subject = mail.title
-        sender = '"%s" <%s@%s>' % (mail.sender.replace('"', '""') if mail.sender else "", backend_name, domain)
+        sender = '"{}" <{}@{}>'.format(mail.sender.replace('"', '""') if mail.sender else "", backend_name, domain)
 
         # assume that .date is an UTC datetime
         date = formatdate(time.mktime(utc2local(mail.date).timetuple()), localtime=True)
-        msg_id = "<%s.%s@%s>" % (backend_name, mail.full_id, domain)
+        msg_id = f"<{backend_name}.{mail.full_id}@{domain}>"
 
         if self.config.get("html") and mail.flags & mail.IS_HTML:
             body = mail.content
@@ -306,7 +306,7 @@ class AppSmtp(ReplApplication):
             msg["In-Reply-To"] = references[0]
             msg["References"] = " ".join(reversed(references))
 
-        self.logger.info("Send mail from <%s> to <%s>" % (sender, recipient))
+        self.logger.info(f"Send mail from <{sender}> to <{recipient}>")
         if len(self.config.get("pipe")) > 0:
             p = subprocess.Popen(
                 shlex.split(self.config.get("pipe")),

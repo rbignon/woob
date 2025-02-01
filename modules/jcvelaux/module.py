@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      dud
 #
 # This file is part of a woob module.
@@ -83,7 +81,7 @@ class jcvelauxModule(Module, CapGauge):
     )
 
     def __init__(self, *a, **kw):
-        super(jcvelauxModule, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.cities = None
 
     def create_default_browser(self):
@@ -98,7 +96,7 @@ class jcvelauxModule(Module, CapGauge):
         return gauge
 
     def _make_sensor(self, sensor_type, info, gauge):
-        id = "%s.%s" % (sensor_type, gauge.id)
+        id = f"{sensor_type}.{gauge.id}"
         sensor = GaugeSensor(id)
         sensor.gaugeid = gauge.id
         sensor.name = SENSOR_TYPES[sensor_type]
@@ -109,7 +107,7 @@ class jcvelauxModule(Module, CapGauge):
         return sensor
 
     def _make_measure(self, sensor_type, info, gauge):
-        id = "%s.%s" % (sensor_type, gauge.id)
+        id = f"{sensor_type}.{gauge.id}"
 
         measure = BikeMeasure(id)
         measure.date = info["last_update"]
@@ -190,7 +188,7 @@ class jcvelauxModule(Module, CapGauge):
         except ValueError:
             raise UserError("Expected format NAME.ID.CITY for sensor: %r" % id)
 
-        gauge = self._get_gauge_by_id("%s.%s" % (gauge_name, contract))
+        gauge = self._get_gauge_by_id(f"{gauge_name}.{contract}")
         if not gauge:
             raise SensorNotFound()
         for sensor in gauge.sensors:

@@ -75,13 +75,13 @@ class ItemDocument(ItemElement):
 
     def obj_label(self):
         if "ibanCrypte" in self.el:
-            return "%s %s N° %s" % (
+            return "{} {} N° {}".format(
                 Dict("dateDoc")(self),
                 Dict("libelleSousFamille")(self),
                 Dict("numeroCompteAnonymise")(self),
             )
         else:
-            return "%s %s N° %s" % (Dict("dateDoc")(self), Dict("libelleSousFamille")(self), Dict("idContrat")(self))
+            return "{} {} N° {}".format(Dict("dateDoc")(self), Dict("libelleSousFamille")(self), Dict("idContrat")(self))
 
     def obj_url(self):
         keys_to_copy = {

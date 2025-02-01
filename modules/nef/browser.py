@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019      Damien Cassou
 #
 # This file is part of a woob module.
@@ -47,7 +45,7 @@ class NefBrowser(TwoFactorBrowser):
     __states__ = ("login_token",)
 
     def __init__(self, config, *args, **kwargs):
-        super(NefBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
         self.login_token = None
         self.otp_sms = config["otp_sms"].get()
 
@@ -58,7 +56,7 @@ class NefBrowser(TwoFactorBrowser):
     def locate_browser(self, state):
         if self.otp_sms:
             return
-        super(NefBrowser, self).locate_browser(state)
+        super().locate_browser(state)
 
     def init_login(self):
         self.login_home.go()

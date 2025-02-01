@@ -36,7 +36,7 @@ class SubscriptionsFormatter(PrettyFormatter):
 
     def get_title(self, obj):
         if obj.renewdate:
-            return "%s - %s" % (obj.label, obj.renewdate.strftime("%d/%m/%y"))
+            return "{} - {}".format(obj.label, obj.renewdate.strftime("%d/%m/%y"))
         return obj.label
 
 
@@ -230,8 +230,8 @@ class AppBill(CaptchaMixin, ReplApplication):
                             f.write(buf)
                         if not document.has_file:
                             print("Warning: document.has_file is falsy but the file is available", file=self.stderr)
-                    except IOError as e:
-                        print('Unable to write document in "%s": %s' % (dest, e), file=self.stderr)
+                    except OSError as e:
+                        print(f'Unable to write document in "{dest}": {e}', file=self.stderr)
                         return 1
                 return
 
@@ -278,8 +278,8 @@ class AppBill(CaptchaMixin, ReplApplication):
                         f.write(buf)
                         if not document.has_file:
                             print("Warning: document.has_file is falsy but the file is available", file=self.stderr)
-                except IOError as e:
-                    print('Unable to write bill in "%s": %s' % (dest, e), file=self.stderr)
+                except OSError as e:
+                    print(f'Unable to write bill in "{dest}": {e}', file=self.stderr)
                     return False
         return True
 

@@ -25,7 +25,8 @@ from collections.abc import MutableMapping
 from configparser import DuplicateSectionError, RawConfigParser
 from logging import warning
 from subprocess import CalledProcessError, check_output
-from typing import Iterator, Tuple
+from typing import Tuple
+from collections.abc import Iterator
 
 
 __all__ = ["BackendsConfig", "BackendAlreadyExists"]
@@ -119,7 +120,7 @@ class BackendsConfig:
         with f:
             config.write(f)
 
-    def iter_backends(self) -> Iterator[Tuple[str, str, DictWithCommands]]:
+    def iter_backends(self) -> Iterator[tuple[str, str, DictWithCommands]]:
         """
         Iter on all saved backends.
 
@@ -188,7 +189,7 @@ class BackendsConfig:
 
         self._write_config(config)
 
-    def get_backend(self, backend_name: str) -> Tuple[str, dict]:
+    def get_backend(self, backend_name: str) -> tuple[str, dict]:
         """
         Get options of backend.
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -56,8 +54,8 @@ class IndexPage(HTMLPage):
             value = self._get_coef_value(AM=AM)
 
             if value:
-                coef = GaugeSensor("%s-%s-%s" % (gauge_id, name, _name))
-                coef.name = "%s %s" % (name, _name)
+                coef = GaugeSensor(f"{gauge_id}-{name}-{_name}")
+                coef.name = f"{name} {_name}"
                 coef.lastvalue = value
                 coef.gaugeid = gauge_id
 
@@ -91,7 +89,7 @@ class IndexPage(HTMLPage):
             value = self._get_high_tide_value(AM=AM)
 
             if value:
-                tide = GaugeSensor("%s-%s-PM-%s" % (gauge_id, name, _name))
+                tide = GaugeSensor(f"{gauge_id}-{name}-PM-{_name}")
                 tide.name = "Pleine Mer %s" % (_name)
                 tide.unit = "m"
                 tide.lastvalue = value
@@ -129,7 +127,7 @@ class IndexPage(HTMLPage):
             value = self._get_low_tide_value(AM=AM)
 
             if value:
-                tide = GaugeSensor("%s-%s-BM-%s" % (gauge_id, name, _name))
+                tide = GaugeSensor(f"{gauge_id}-{name}-BM-{_name}")
                 tide.name = "Basse Mer %s" % (_name)
                 tide.unit = "m"
                 tide.lastvalue = value

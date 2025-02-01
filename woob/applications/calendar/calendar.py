@@ -34,7 +34,7 @@ class UpcomingSimpleFormatter(IFormatter):
     MANDATORY_FIELDS = ("id", "start_date", "category", "summary", "status")
 
     def format_obj(self, obj, alias):
-        result = "%s - %s" % (obj.backend, obj.category)
+        result = f"{obj.backend} - {obj.category}"
         if not empty(obj.start_date):
             result += " - %s" % obj.start_date.strftime("%H:%M")
         result += " - %s" % obj.summary
@@ -116,7 +116,7 @@ class UpcomingListFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ("id", "start_date", "end_date", "summary", "category", "status")
 
     def get_title(self, obj):
-        return " %s - %s " % (obj.category, obj.summary)
+        return f" {obj.category} - {obj.summary} "
 
     def get_description(self, obj):
         result = ""
@@ -138,13 +138,13 @@ class UpcomingFormatter(IFormatter):
     MANDATORY_FIELDS = ("id", "start_date", "end_date", "summary", "category", "status")
 
     def format_obj(self, obj, alias):
-        result = "%s%s - %s%s\n" % (self.BOLD, obj.category, obj.summary, self.NC)
+        result = f"{self.BOLD}{obj.category} - {obj.summary}{self.NC}\n"
 
         if not empty(obj.start_date):
             if not empty(obj.end_date):
                 days_diff = (obj.end_date - obj.start_date).days
                 if days_diff >= 1:
-                    result += "From: %s to %s " % (
+                    result += "From: {} to {} ".format(
                         obj.start_date.strftime("%A %d %B %Y"),
                         obj.end_date.strftime("%A %d %B %Y"),
                     )
@@ -173,7 +173,7 @@ class UpcomingFormatter(IFormatter):
             and hasattr(obj, "max_entries")
             and not empty(obj.max_entries)
         ):
-            result += "Entry: %s/%s \n" % (obj.booked_entries, obj.max_entries)
+            result += f"Entry: {obj.booked_entries}/{obj.max_entries} \n"
         elif hasattr(obj, "booked_entries") and not empty(obj.booked_entries):
             result += "Entry: %s \n" % (obj.booked_entries)
         elif hasattr(obj, "max_entries") and not empty(obj.max_entries):
@@ -303,7 +303,7 @@ class AppCalendar(ReplApplication):
 
         if not query_name:
             for name in queries.keys():
-                print("  %s* %s %s" % (self.BOLD, self.NC, name))
+                print(f"  {self.BOLD}* {self.NC} {name}")
             query_name = self.ask("Which one")
 
         if query_name in queries:

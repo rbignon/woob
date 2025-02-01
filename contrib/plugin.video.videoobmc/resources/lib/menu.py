@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import sys
 from datetime import datetime, timedelta
 
@@ -29,7 +28,7 @@ class MenuItemPath(MenuItem):
 
 class MenuItemVideo(BaseMenuLink):
     def __init__(self, video, iconimage="DefaultFolder.png"):
-        name = "[%s] %s" % (video.backend, video.title)
+        name = f"[{video.backend}] {video.title}"
         BaseMenuLink.__init__(
             self, name, video.url, constants.VIDEO, video.thumbnail.url if video.thumbnail.url else iconimage
         )
@@ -43,7 +42,7 @@ class MenuItemVideo(BaseMenuLink):
         cm.append((common_xbmc.get_translation("30110"), "XBMC.Action(Info)"))
 
         # Téléchargement
-        url = "%s?action=%s&id=%s&backend=%s" % (sys.argv[0], constants.DOWNLOAD, self.video.id, self.video.backend)
+        url = f"{sys.argv[0]}?action={constants.DOWNLOAD}&id={self.video.id}&backend={self.video.backend}"
         cm.append((common_xbmc.get_translation("30100"), "XBMC.PlayMedia(%s)" % (url)))
 
         return cm

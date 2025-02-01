@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon
 #
 # This file is part of a woob module.
@@ -46,7 +44,7 @@ class ArteItemElement(ItemElement):
         if not vtu:
             return vti
 
-        return "%s: %s" % (vti, vtu)
+        return f"{vti}: {vtu}"
 
     def obj_description(self):
         try:
@@ -160,7 +158,7 @@ class ArteJsonPage(JsonPage):
             streamer = Dict("videoJsonPlayer/VSR/%s/streamer" % (found), default=None)(self.doc)
             url = Dict("videoJsonPlayer/VSR/%s/url" % (found))(self.doc)
             if streamer:
-                return "%s%s" % (streamer, url), found
+                return f"{streamer}{url}", found
             return url, found
         return NotAvailable, ""
 

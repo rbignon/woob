@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright(C) 2016 Matthieu Weber
 #
 # This file is part of woob.

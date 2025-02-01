@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Vincent A
 #
 # This file is part of a woob module.
@@ -31,7 +29,7 @@ __all__ = ["PixabayModule"]
 
 class Img(BaseImage):
     def __init__(self, *args):
-        super(Img, self).__init__(*args)
+        super().__init__(*args)
         self._page_url = None
 
     @classmethod

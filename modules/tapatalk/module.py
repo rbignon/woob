@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Simon Lipp
 #
 # This file is part of a woob module.
@@ -38,7 +36,7 @@ class TapatalkError(Exception):
     pass
 
 
-class RequestsTransport(object):
+class RequestsTransport:
     def __init__(self, uri):
         self._uri = uri
         self._session = requests.Session()
@@ -79,9 +77,9 @@ def xmlrpc_str(data):
     ensure that the result is always a str (even if the input is a number)
     """
     if isinstance(data, xmlrpc_client.Binary):
-        return text_type(data.data, "utf-8")
+        return str(data.data, "utf-8")
     else:
-        return text_type(data)
+        return str(data)
 
 
 class TapatalkModule(Module, CapMessages):
@@ -104,7 +102,7 @@ class TapatalkModule(Module, CapMessages):
     )
 
     def __init__(self, *args, **kwargs):
-        super(TapatalkModule, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._xmlrpc_client = None
 
     @property
@@ -132,7 +130,7 @@ class TapatalkModule(Module, CapMessages):
         msg = re.sub(r"\[quote\s?.*\](.*?)\[/quote\]", r"<blockquote><p>\1</p></blockquote>", msg)
         msg = re.sub(r"\[img\](.*?)\[/img\]", r'<img src="\1">', msg)
         if post.get("icon_url"):
-            return '<img style="float:right;position:relative" src="%s"> %s' % (xmlrpc_str(post["icon_url"]), msg)
+            return '<img style="float:right;position:relative" src="{}"> {}'.format(xmlrpc_str(post["icon_url"]), msg)
         else:
             return msg
 
@@ -242,16 +240,13 @@ class TapatalkModule(Module, CapMessages):
         def process_forum(forum, prefix):
             if (not unread or forum.get("new_post", True)) and not forum["sub_only"]:
                 for mode in ("TOP", "ANN", None):
-                    for thread in browse_forum_mode(forum, prefix, mode):
-                        yield thread
+                    yield from browse_forum_mode(forum, prefix, mode)
 
             for child in forum.get("child", []):
-                for thread in process_forum(child, "%s.%s" % (prefix, xmlrpc_str(child["forum_name"]))):
-                    yield thread
+                yield from process_forum(child, "{}.{}".format(prefix, xmlrpc_str(child["forum_name"])))
 
         for forum in self._conn.get_forum():
-            for thread in process_forum(forum, xmlrpc_str(forum["forum_name"])):
-                yield thread
+            yield from process_forum(forum, xmlrpc_str(forum["forum_name"]))
 
     def iter_unread_messages(self):
         for thread in self.iter_threads(unread=True):

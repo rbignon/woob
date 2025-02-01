@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014 Budget Insight
 #
 # This file is part of a woob module.
@@ -101,7 +99,7 @@ class ContextInitPage(JsonPage):
         return Dict("context/errors/0/label", default=None)(self.doc)
 
 
-class StepsMixin(object):
+class StepsMixin:
     def get_steps(self):
         return Dict(self.steps_path)(self.doc)
 
@@ -207,7 +205,7 @@ class ClientPage(OneySpacePage, HTMLPage):
                     "value",
                     default="",
                 )(self)
-                self.env["id"] = Format("%s%s" % (self.page.browser.username, Field("_num")(self)))(self)
+                self.env["id"] = Format("{}{}".format(self.page.browser.username, Field("_num")(self)))(self)
 
                 # On the multiple accounts page, decimals are separated with dots, and separated with commas on single account page.
                 amount_due = CleanDecimal('./p[@class = "somme-due"]/span[@class = "synthese-montant"]', default=None)(
@@ -286,7 +284,7 @@ class ClientSpacePage(OneySpacePage, HTMLPage):
     pass
 
 
-class OtherSpaceMixin(object):
+class OtherSpaceMixin:
     def get_site(self):
         return "other"
 

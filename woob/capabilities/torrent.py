@@ -30,7 +30,7 @@ class MagnetOnly(UserError):
 
     def __init__(self, magnet):
         self.magnet = magnet
-        super(MagnetOnly, self).__init__("Only magnet URL is available")
+        super().__init__("Only magnet URL is available")
 
 
 class Torrent(BaseObject):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      smurail
 #
 # This file is part of a woob module.
@@ -169,7 +167,7 @@ class InvestmentPage(CMSOPage):
 
                 acc_id = Regexp(CleanText("./td[1]"), r"(\d+)\s*(\d+)", r"\1\2")(self)
                 if area_id:
-                    return "%s.%s" % (area_id, acc_id)
+                    return f"{area_id}.{acc_id}"
                 return acc_id
 
             def obj__formdata(self):
@@ -297,7 +295,7 @@ class HistoryPage(CMSOPage):
             obj_amount = Transaction.Amount('./div[contains(@class, "c-credit")]', './div[contains(@class, "c-debit")]')
 
 
-class UpdateTokenMixin(object):
+class UpdateTokenMixin:
     def on_load(self):
         if "Authentication" in self.response.headers:
             self.browser.token = self.response.headers["Authentication"].split(" ")[-1]

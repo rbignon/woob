@@ -182,7 +182,7 @@ class DocumentsDetailsPage(LoggedPage, PartialHTMLPage):
 
     def build_doc(self, content):
         res = json.loads(content)
-        return super(DocumentsDetailsPage, self).build_doc(res["tableauPaiement"].encode("utf-8"))
+        return super().build_doc(res["tableauPaiement"].encode("utf-8"))
 
     @method
     class iter_documents(ListElement):
@@ -195,7 +195,7 @@ class DocumentsDetailsPage(LoggedPage, PartialHTMLPage):
                 _id = Regexp(Field("url"), r"idPaiement=(.*)")(self)
                 # idPaiement is very long, about 192 char, and sometimes they change it, (even existing id)
                 # to make it much longer, (because 120 char wasn't enough apparently)
-                return "%s_%s" % (Env("subid")(self), sha1(_id.encode("utf-8")).hexdigest())
+                return "{}_{}".format(Env("subid")(self), sha1(_id.encode("utf-8")).hexdigest())
 
             obj_label = CleanText('.//div[has-class("col-label")]')
             obj_total_price = CleanDecimal.French('.//div[has-class("col-montant")]/span')
@@ -236,7 +236,7 @@ class DocumentsFirstSummaryPage(LoggedPage, HTMLPage):
                 year = Regexp(CleanText('.//span[@class="mois"]'), r"(\d+)")(self)
                 month = Regexp(CleanText('.//span[@class="mois"]'), r"(\D+)")(self)
 
-                return "%s_%s" % (Env("subid")(self), parse_french_date(month + " " + year).strftime("%Y%m"))
+                return "{}_{}".format(Env("subid")(self), parse_french_date(month + " " + year).strftime("%Y%m"))
 
 
 class DocumentsLastSummaryPage(LoggedPage, JsonPage):
@@ -267,4 +267,4 @@ class DocumentsLastSummaryPage(LoggedPage, JsonPage):
                 year = Regexp(CleanText(Dict("mois")), r"(\d+)")(self)
                 month = Regexp(CleanText(Dict("mois")), r"(\D+)")(self)
 
-                return "%s_%s" % (Env("subid")(self), parse_french_date(month + " " + year).strftime("%Y%m"))
+                return "{}_{}".format(Env("subid")(self), parse_french_date(month + " " + year).strftime("%Y%m"))

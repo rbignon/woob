@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Matthieu Weber
 #
 # This file is part of a woob module.
@@ -38,7 +36,7 @@ class SearchPage(JsonPage):
         shipment = shipments[0]
         result_id = shipment["items"][0]["trackingNumbers"][0]
         if result_id != _id:
-            raise ParcelNotFound("ID mismatch: expecting %s, got %s" % (_id, result_id))
+            raise ParcelNotFound(f"ID mismatch: expecting {_id}, got {result_id}")
 
         p = Parcel(_id)
         if shipment["estimatedDeliveryTime"]:

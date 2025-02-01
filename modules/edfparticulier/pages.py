@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2020  Budget Insight
 #
 # This file is part of a woob module.
@@ -159,13 +157,13 @@ class ProfilePage(LoggedPage, JsonPage):
         data = self.doc["bp"]
         profile = Profile()
 
-        profile.address = "%s %s %s %s" % (
+        profile.address = "{} {} {} {}".format(
             data["streetNumber"],
             data["streetName"],
             data["postCode"],
             data["city"],
         )
-        profile.name = "%s %s %s" % (data["civility"], data["lastName"], data["firstName"])
+        profile.name = "{} {} {}".format(data["civility"], data["lastName"], data["firstName"])
         profile.phone = data["mobilePhoneNumber"] or data["fixPhoneNumber"]
         profile.email = data["mail"]
 

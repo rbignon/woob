@@ -27,7 +27,7 @@ class PasteNotFound(UserError):
     """
 
     def __init__(self):
-        return super(PasteNotFound, self).__init__("Paste not found")
+        return super().__init__("Paste not found")
 
 
 class BasePaste(BaseObject):
@@ -41,7 +41,7 @@ class BasePaste(BaseObject):
     public = BoolField("Is this paste public?")
 
     def __init__(self, _id, title=NotLoaded, language=NotLoaded, contents=NotLoaded, public=NotLoaded, url=None):
-        super(BasePaste, self).__init__(str(_id), url)
+        super().__init__(str(_id), url)
 
         self.title = title
         self.language = language

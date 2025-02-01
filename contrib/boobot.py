@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 # Copyright(C) 2012  Romain Bignon
 #
@@ -135,11 +134,11 @@ class BoobotBrowser(Browser):
         if size:
             units = ("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB")
             exponent = int(log(size, 1024))
-            return "%.1f %s" % (float(size) / pow(1024, exponent), units[exponent])
+            return f"{float(size) / pow(1024, exponent):.1f} {units[exponent]}"
         return "0 B"
 
 
-class Task(object):
+class Task:
     def __init__(self, datetime, message, channel=None):
         self.datetime = datetime
         self.message = message
@@ -187,9 +186,9 @@ class MyThread(Thread):
                     "lastpurge"
                 ):
                     _item = thread.id.split("#")
-                    url = "https://twitter.com/%s/status/%s" % (_item[0], _item[1])
+                    url = f"https://twitter.com/{_item[0]}/status/{_item[1]}"
                     for msg in self.bot.on_url(url):
-                        self.bot.send_message("%s: %s" % (_item[0], url))
+                        self.bot.send_message(f"{_item[0]}: {url}")
                         self.bot.send_message(msg)
 
                     backend.set_message_read(backend.fill_thread(thread, ["root"]).root)
@@ -199,7 +198,7 @@ class MyThread(Thread):
             word = self.find_keywords(msg.content)
             if word is not None:
                 url = msg.signature[msg.signature.find("https://linuxfr") :]
-                self.bot.send_message("[DLFP] %s talks about %s: %s" % (msg.sender, word, url))
+                self.bot.send_message(f"[DLFP] {msg.sender} talks about {word}: {url}")
             self.woob[msg.backend].set_message_read(msg)
 
     def check_board(self):
@@ -210,7 +209,7 @@ class MyThread(Thread):
             word = self.find_keywords(msg.message)
             if word is not None and msg.login != "moules":
                 message = msg.message.replace(word, "\002%s\002" % word)
-                self.bot.send_message("[DLFP] <%s> %s" % (msg.login, message))
+                self.bot.send_message(f"[DLFP] <{msg.login}> {message}")
 
     def check_tasks(self):
         for task in list(self.bot.tasks_queue):
@@ -356,7 +355,7 @@ class Boobot(SingleServerIRCBot):
         except IndexError:
             self.send_message("Unable to find quote #%s" % n, channel)
         else:
-            self.send_message("[%s] %s" % (n, quote["text"]), channel)
+            self.send_message("[{}] {}".format(n, quote["text"]), channel)
 
     def on_boobid(self, boobid):
         _id, backend_name = boobid.split("@", 1)
@@ -366,11 +365,10 @@ class Boobot(SingleServerIRCBot):
                 func = "obj_info_%s" % cap.__name__[3:].lower()
                 if hasattr(self, func):
                     try:
-                        for msg in getattr(self, func)(backend, _id):
-                            yield msg
+                        yield from getattr(self, func)(backend, _id)
                     except Exception as e:
                         print(get_backtrace())
-                        yield "Oops: [%s] %s" % (type(e).__name__, e)
+                        yield f"Oops: [{type(e).__name__}] {e}"
                     break
 
     def on_url(self, url):
@@ -380,24 +378,24 @@ class Boobot(SingleServerIRCBot):
             if title:
                 yield "URL: %s" % title
             elif hsize:
-                yield "URL (file): %s, %s" % (content_type, hsize)
+                yield f"URL (file): {content_type}, {hsize}"
             else:
                 yield "URL (file): %s" % content_type
         except BrowserUnavailable as e:
             yield "URL (error): %s" % e
         except Exception as e:
             print(get_backtrace())
-            yield "Oops: [%s] %s" % (type(e).__name__, e)
+            yield f"Oops: [{type(e).__name__}] {e}"
 
     def obj_info_video(self, backend, id):
         v = backend.get_video(id)
         if v:
-            yield "Video: %s (%s)" % (v.title, v.duration)
+            yield f"Video: {v.title} ({v.duration})"
 
     def obj_info_housing(self, backend, id):
         h = backend.get_housing(id)
         if h:
-            yield "Housing: %s (%sm² / %s%s)" % (h.title, h.area, h.cost, h.currency)
+            yield f"Housing: {h.title} ({h.area}m² / {h.cost}{h.currency})"
 
 
 def main():

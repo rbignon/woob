@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2022      Guillaume Thomas
 #
 # This file is part of a woob module.
@@ -82,8 +80,7 @@ class SohappyBrowser(LoginBrowser):
     def iter_documents(self, subscription):
         for client in subscription.clients:
             self.bills.go(child=subscription.id, client=client)
-            for document in self.page.get_document_list(child=subscription.id, client=client):
-                yield document
+            yield from self.page.get_document_list(child=subscription.id, client=client)
 
     @need_login
     def download_document(self, document):

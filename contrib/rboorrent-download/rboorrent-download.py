@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright(C) 2017 Matthieu Weber
 #
@@ -16,12 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 
 import sys
 
 
-class RboorrentDownload(object):
+class RboorrentDownload:
     def __init__(self, _id, no_tracker):
         self.id, self.backend_name = _id.split("@")
         self.no_tracker = no_tracker
@@ -35,27 +33,27 @@ class RboorrentDownload(object):
             return torrent.magnet
 
     def write_meta(self, torrent):
-        dest = "meta-%s-%s.torrent" % (torrent.id, torrent.name)
+        dest = f"meta-{torrent.id}-{torrent.name}.torrent"
         magnet = self.get_magnet(torrent)
         buf = "d10:magnet-uri%d:%se" % (len(magnet), magnet)
         try:
             with open(dest, "w") as f:
                 f.write(buf)
-        except IOError as e:
-            print('Unable to write "%s": %s' % (dest, e.message))
+        except OSError as e:
+            print(f'Unable to write "{dest}": {e.message}')
 
     def write_torrent(self, torrent):
-        dest = "%s-%s.torrent" % (torrent.id, torrent.name)
+        dest = f"{torrent.id}-{torrent.name}.torrent"
         try:
             buf = self.backend.get_torrent_file(torrent.id)
             if buf:
                 try:
                     with open(dest, "w") as f:
                         f.write(buf)
-                except IOError as e:
-                    print('Unable to write "%s": %s' % (dest, e))
+                except OSError as e:
+                    print(f'Unable to write "{dest}": {e}')
         except Exception as e:
-            print("Could not get torrent file for %s@%s" % (self.id, self.backend_name))
+            print(f"Could not get torrent file for {self.id}@{self.backend_name}")
 
     def run(self):
         try:
@@ -65,7 +63,7 @@ class RboorrentDownload(object):
             else:
                 self.write_torrent(torrent)
         except HTTPNotFound:
-            print("Could not find %s@%s" % (self.id, self.backend_name))
+            print(f"Could not find {self.id}@{self.backend_name}")
 
 
 def usage():

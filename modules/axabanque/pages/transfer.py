@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Sylvie Ye
 #
 # This file is part of a woob module.
@@ -195,10 +193,10 @@ class AddRecipientPage(LoggedPage, HTMLPage):
         # fill iban part
         _iban_rcpt_part = 4
         for i in range(3, 10):
-            form_key = "ibanContenuZone{}Hidden".format(i)
+            form_key = f"ibanContenuZone{i}Hidden"
             form[form_key] = rcpt_iban[_iban_rcpt_part : _iban_rcpt_part + 4]
             if form[form_key]:
-                form["ibanContenuZone{}".format(i)] = form[form_key]
+                form[f"ibanContenuZone{i}"] = form[form_key]
             _iban_rcpt_part += 4
 
         remove_form_keys = (
@@ -254,7 +252,7 @@ class AddRecipientPage(LoggedPage, HTMLPage):
 
 class RegisterTransferPage(LoggedPage, HTMLPage):
     def on_load(self):
-        super(RegisterTransferPage, self).on_load()
+        super().on_load()
 
         error_xpath = '//span[@class="erreur_phrase"]'
         if self.doc.xpath(error_xpath):
@@ -346,7 +344,7 @@ class RegisterTransferPage(LoggedPage, HTMLPage):
                 if raw_label.count("-") != 2:
                     return raw_label
                 label = raw_label.split("-")
-                return "%s - %s" % (label[0].strip(), label[2].strip())
+                return f"{label[0].strip()} - {label[2].strip()}"
 
     @method
     class iter_transfers(TableElement):
@@ -481,7 +479,7 @@ class ScheduledTransfersPage(LoggedPage, HTMLPage):
             args[sub[0]] = sub[1]
 
         sub = re.search(r"oamSubmitForm.+?,\'([^:]+).([^\']+)", s)
-        args["%s:_idcl" % sub.group(1)] = "%s:%s" % (sub.group(1), sub.group(2))
+        args["%s:_idcl" % sub.group(1)] = f"{sub.group(1)}:{sub.group(2)}"
         args["%s_SUBMIT" % sub.group(1)] = 1
         args["_form_name"] = sub.group(1)
 

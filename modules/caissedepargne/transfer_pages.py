@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -216,7 +214,7 @@ class TransferListPage(LoggedPage, HTMLPage):
         obj_date_type = TransferDateType.PERIODIC
 
 
-class TransferErrorPage(object):
+class TransferErrorPage:
     def on_load(self):
         errors_xpaths = [
             '//div[h2[text()="Information"]]/p[contains(text(), "Il ne pourra pas être crédité avant")]',
@@ -377,7 +375,7 @@ class RecipientPage(LoggedPage, HTMLPage):
         form["__EVENTTARGET"] = "%s$m_WizardBar$m_lnkNext$m_lnkButton" % self.EVENTTARGET
         form["%s$m_RibIban$txtTitulaireCompte" % self.FORM_FIELD_ADD] = recipient.label
         for i in range(len(recipient.iban) // 4 + 1):
-            form["%s$m_RibIban$txtIban%s" % (self.FORM_FIELD_ADD, str(i + 1))] = recipient.iban[4 * i : 4 * i + 4]
+            form[f"{self.FORM_FIELD_ADD}$m_RibIban$txtIban{str(i + 1)}"] = recipient.iban[4 * i : 4 * i + 4]
         form.submit()
 
     def confirm_recipient(self):
@@ -400,7 +398,7 @@ class ProAddRecipientOtpPage(IndexPage):
     def set_browser_form(self):
         form = self.get_form(id="main")
         form["__EVENTTARGET"] = "MM$ANR_WS_AUTHENT$m_WizardBar$m_lnkNext$m_lnkButton"
-        self.browser.recipient_form = dict((k, v) for k, v in form.items())
+        self.browser.recipient_form = {k: v for k, v in form.items()}
         self.browser.recipient_form["url"] = form.url
 
     def get_prompt_text(self):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2020 Johann Broudin
 #
 # This file is part of a woob module.
@@ -30,7 +28,7 @@ class VirginBrowser(Browser):
     _WEBRADIOS_URL = "https://www.virginradio.fr/webradios/"
 
     def __init__(self, *args, **kwargs):
-        super(VirginBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._radios = {}
 
     def radios(self):

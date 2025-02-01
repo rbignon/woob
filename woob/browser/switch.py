@@ -27,7 +27,7 @@ class SiteSwitch(Exception):
                      the new browser class to use
         :type name: str
         """
-        super(SiteSwitch, self).__init__("Switching to site %s" % name)
+        super().__init__("Switching to site %s" % name)
         self.name = name
 
 
@@ -64,7 +64,7 @@ class SwitchingBrowser:
     """
 
     def __init__(self, *args, **kwargs):
-        super(SwitchingBrowser, self).__init__()
+        super().__init__()
         self._browser_args = args
         self._browser_kwargs = kwargs
         self._browser = None
@@ -108,7 +108,7 @@ class SwitchingBrowserWithState(SwitchingBrowser):
     """Use state to transmit knowledge of last browser used during a previous sync to later start on the same browser"""
 
     def set_browser(self, name):
-        super(SwitchingBrowserWithState, self).set_browser(name)
+        super().set_browser(name)
         self.last_browser = name
 
     def load_state(self, state):

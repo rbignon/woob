@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Phyks (Lucas Verney)
 #
 # This file is part of a woob module.
@@ -77,7 +75,7 @@ class MeteoPage(HTMLPage):
                 details = CleanText(
                     '//*[@class="lignes"]//div[@id="%s"]//div[@class="popin_hover_text"]//span[1]' % self.env["line"]
                 )(self)
-                return "%s: %s" % (title, details)
+                return f"{title}: {details}"
 
             def obj_date(self):
                 time = CleanText('//span[@id="refresh_time"]')(self)

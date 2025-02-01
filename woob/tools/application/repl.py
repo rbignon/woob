@@ -61,7 +61,7 @@ class ReplOptionParser(OptionParser):
         if not formatter:
             formatter = self.formatter
 
-        return "%s\n%s" % (formatter.format_commands(self.commands), OptionParser.format_option_help(self, formatter))
+        return f"{formatter.format_commands(self.commands)}\n{OptionParser.format_option_help(self, formatter)}"
 
 
 class ReplOptionFormatter(IndentedHelpFormatter):
@@ -125,7 +125,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         copyright = self.COPYRIGHT.replace("YEAR", "%d" % datetime.today().year)
         self.intro = "\n".join(
             (
-                "Welcome to %s v%s" % (colored(self.APPNAME, attrs=["bold"]), self.VERSION),
+                "Welcome to {} v{}".format(colored(self.APPNAME, attrs=["bold"]), self.VERSION),
                 "",
                 copyright,
                 "This program is free software: you can redistribute it and/or modify",
@@ -191,7 +191,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         # self.prompt = self.BOLD + '%s> ' % self.APPNAME + self.NC
         if len(self.working_path.get()):
             wp_enc = str(self.working_path)
-            self.prompt = "%s:%s> " % (self.APPNAME, wp_enc)
+            self.prompt = f"{self.APPNAME}:{wp_enc}> "
         else:
             self.prompt = "%s> " % (self.APPNAME)
 
@@ -355,7 +355,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                     )
                 try:
                     readline.read_history_file(history_filepath)
-                except IOError:
+                except OSError:
                     pass
 
                 def savehist():
@@ -445,8 +445,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                     backend.config[key].set({})
 
         try:
-            for obj in self.do(*args, **kwargs):
-                yield obj
+            yield from self.do(*args, **kwargs)
         except CallErrors as errors:
             # Errors which are not handled here and which will be re-raised.
             remaining_errors = []
@@ -482,8 +481,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                 # only on this ones.
                 kwargs["backends"] = backends
                 try:
-                    for obj in self._do_and_retry(*args, **kwargs):
-                        yield obj
+                    yield from self._do_and_retry(*args, **kwargs)
                 except CallErrors as sub_errors:
                     # As we called _do_and_retry, these sub errors are not
                     # interactive ones, so we can add them to the remaining
@@ -528,10 +526,10 @@ class ReplApplication(ConsoleApplication, Cmd):
         cmd, arg, ignored = super().parseline(line)
 
         if cmd is not None:
-            names = set(name for name in self.get_names() if name.startswith("do_"))
+            names = {name for name in self.get_names() if name.startswith("do_")}
 
             if "do_" + cmd not in names:
-                long = set(name for name in names if name.startswith("do_" + cmd))
+                long = {name for name in names if name.startswith("do_" + cmd)}
                 # if more than one result, ambiguous command, do nothing (error will display suggestions)
                 if len(long) == 1:
                     cmd = long.pop()[3:]
@@ -586,7 +584,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         print('Unknown command: "%s"' % line, file=self.stderr)
         cmd, arg, ignore = super().parseline(line)
         if cmd is not None:
-            names = set(name[3:] for name in self.get_names() if name.startswith("do_" + cmd))
+            names = {name[3:] for name in self.get_names() if name.startswith("do_" + cmd)}
             if len(names) > 0:
                 print("Do you mean: %s?" % ", ".join(names), file=self.stderr)
         return os.EX_USAGE
@@ -597,7 +595,7 @@ class ReplApplication(ConsoleApplication, Cmd):
     def _shell_completion_items(self):
         items = super()._shell_completion_items()
         items.update(
-            set(self.completenames("")) - set(("debug", "condition", "count", "formatter", "logging", "select", "quit"))
+            set(self.completenames("")) - {"debug", "condition", "count", "formatter", "logging", "select", "quit"}
         )
         return items
 
@@ -700,7 +698,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         return "\n".join(lines)
 
     def get_commands_doc(self):
-        names = set(name for name in self.get_names() if name.startswith("do_"))
+        names = {name for name in self.get_names() if name.startswith("do_")}
         appname = self.APPNAME.capitalize()
         d = OrderedDict(((appname, []), ("Woob", [])))
 
@@ -738,14 +736,14 @@ class ReplApplication(ConsoleApplication, Cmd):
         List commands, or get information about a command.
         """
         if arg:
-            cmd_names = set(name[3:] for name in self.get_names() if name.startswith("do_"))
+            cmd_names = {name[3:] for name in self.get_names() if name.startswith("do_")}
             if arg in cmd_names:
                 command_help = self.get_command_help(arg)
                 if command_help is None:
                     logging.warning('Command "%s" is undocumented' % arg)
                 else:
                     lines = command_help.split("\n")
-                    lines[0] = "%s%s%s" % (self.BOLD, lines[0], self.NC)
+                    lines[0] = f"{self.BOLD}{lines[0]}{self.NC}"
                     self.stdout.write("%s\n" % "\n".join(lines))
             else:
                 print('Unknown command: "%s"' % arg, file=self.stderr)
@@ -758,8 +756,8 @@ class ReplApplication(ConsoleApplication, Cmd):
     def complete_backends(self, text, line, begidx, endidx):
         choices = []
         commands = ["enable", "disable", "only", "list", "add", "register", "edit", "remove", "list-modules"]
-        available_backends_names = set(backend.name for backend in self.woob.iter_backends())
-        enabled_backends_names = set(backend.name for backend in self.enabled_backends)
+        available_backends_names = {backend.name for backend in self.woob.iter_backends()}
+        enabled_backends_names = {backend.name for backend in self.enabled_backends}
 
         args = line.split(" ")
         if len(args) == 2:
@@ -879,7 +877,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                 print("Please give at least a backend name.", file=self.stderr)
                 return 2
 
-        given_backends = set(backend for backend in self.woob.iter_backends() if backend.name in given_backend_names)
+        given_backends = {backend for backend in self.woob.iter_backends() if backend.name in given_backend_names}
 
         if action == "enable":
             for backend in given_backends:
@@ -895,9 +893,9 @@ class ReplApplication(ConsoleApplication, Cmd):
             for backend in given_backends:
                 self.enabled_backends.add(backend)
         elif action == "list":
-            enabled_backends_names = set(backend.name for backend in self.enabled_backends)
+            enabled_backends_names = {backend.name for backend in self.enabled_backends}
             disabled_backends_names = (
-                set(backend.name for backend in self.woob.iter_backends()) - enabled_backends_names
+                {backend.name for backend in self.woob.iter_backends()} - enabled_backends_names
             )
             print("Enabled: %s" % ", ".join(enabled_backends_names))
             if len(disabled_backends_names) > 0:
@@ -1081,7 +1079,7 @@ class ReplApplication(ConsoleApplication, Cmd):
             if len(args) == 4:
                 return option_values
         elif args[1] in formatters:
-            return list(set(name[3:] for name in self.get_names() if name.startswith("do_")))
+            return list({name[3:] for name in self.get_names() if name.startswith("do_")})
 
     def do_formatter(self, line):
         """
@@ -1141,7 +1139,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         else:
             print("Default formatter: %s" % self.DEFAULT_FORMATTER)
             for key, klass in self.commands_formatters.items():
-                print('Command "%s": %s' % (key, klass))
+                print(f'Command "{key}": {klass}')
 
     def do_select(self, line):
         """
@@ -1293,8 +1291,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         split_path = self.working_path.get()
 
         try:
-            for res in self._do_and_retry("iter_resources", objs=objs, split_path=split_path, caps=CapCollection):
-                yield res
+            yield from self._do_and_retry("iter_resources", objs=objs, split_path=split_path, caps=CapCollection)
         except CallErrors as errors:
             self.bcall_errors_handler(errors, CollectionNotFound)
 
@@ -1441,7 +1438,7 @@ class ReplApplication(ConsoleApplication, Cmd):
             locs["browser"] = locs["backend"].browser
 
         banner = "Woob debug shell\n\nAvailable variables:\n" + "\n".join(
-            ["  %s: %s" % (k, v) for k, v in locs.items()]
+            [f"  {k}: {v}" for k, v in locs.items()]
         )
 
         funcs = [app.ipython, app.bpython, app.python]

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Vincent A
 #
 # This file is part of a woob module.
@@ -35,7 +33,7 @@ class DeathbycaptchaBrowser(DomainBrowser):
     BASEURL = "http://api.dbcapi.me"
 
     def __init__(self, username, password, *args, **kwargs):
-        super(DeathbycaptchaBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.username = username
         self.password = password
 

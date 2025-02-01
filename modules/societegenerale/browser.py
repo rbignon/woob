@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Jocelyn Jaubert
 #
 # This file is part of a woob module.
@@ -105,7 +103,7 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
     )
 
     def __init__(self, config, *args, **kwargs):
-        super(SocieteGeneraleTwoFactorBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
 
         self.AUTHENTICATION_METHODS = {
             "resume": self.handle_polling,
@@ -117,7 +115,7 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
             # can't start in the middle of a AppValidation process
             # or we will launch another one with that URL
             state.pop("url", None)
-        super(SocieteGeneraleTwoFactorBrowser, self).load_state(state)
+        super().load_state(state)
 
     def clear_init_cookies(self):
         # Keep the 2FA cookie(s) to prevent a 2FA trigger
@@ -232,7 +230,7 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
         else:
             self.logger.warning('Unknown sign method "%s" found', auth_method["type_proc"])
 
-        raise AssertionError('Unknown auth method "%s: %s" found' % (auth_method["type_proc"], auth_method.get("mod")))
+        raise AssertionError('Unknown auth method "{}: {}" found'.format(auth_method["type_proc"], auth_method.get("mod")))
 
     def check_skippable_action_needed(self):
         if not self.login.is_here():
@@ -441,7 +439,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     id_transaction = None
 
     def __init__(self, config, *args, **kwargs):
-        super(SocieteGenerale, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
 
         self.__states__ += (
             "context",
@@ -459,7 +457,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             return
         elif self.json_recipient.match(state["url"]):
             return
-        super(SocieteGenerale, self).locate_browser(state)
+        super().locate_browser(state)
 
     def iter_cards(self, account):
         for el in account._cards:
@@ -512,8 +510,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         if not self.page.is_new_website_available():
             # return in old pages to get accounts
             self.accounts_main_page.go(params={"NoRedirect": True})
-            for acc in self.page.iter_accounts():
-                yield acc
+            yield from self.page.iter_accounts()
             return
 
         accounts = {}
@@ -631,8 +628,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             elif history_url:
                 self.location(self.absurl(history_url))
 
-            for tr in self.page.iter_history(transfer_recipients=transfer_recipients):
-                yield tr
+            yield from self.page.iter_history(transfer_recipients=transfer_recipients)
             return
 
         if account.type == account.TYPE_CARD:
@@ -658,8 +654,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
 
         next_page = True
         while next_page:
-            for transaction in self.page.iter_history(transfer_recipients=transfer_recipients):
-                yield transaction
+            yield from self.page.iter_history(transfer_recipients=transfer_recipients)
             next_page = self.next_page_retry("history")
 
     @need_login
@@ -709,8 +704,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
 
         next_page = True
         while next_page:
-            for intraday_tr in self.page.iter_intraday_comings():
-                yield intraday_tr
+            yield from self.page.iter_intraday_comings()
             next_page = self.next_page_retry("intraday")
 
     @need_login
@@ -729,8 +723,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         self.account_details_page.go(params={"idprest": account._prestation_id})
 
         if account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
-            for invest in self.page.iter_investments(account=account):
-                yield invest
+            yield from self.page.iter_investments(account=account)
 
         if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_PERP, Account.TYPE_PER):
 
@@ -757,8 +750,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
                 if self.page.has_link():
                     self.life_insurance_invest.go()
 
-            for invest in self.page.iter_investment():
-                yield invest
+            yield from self.page.iter_investment()
 
     @need_login
     def access_market_orders(self, account):
@@ -1019,8 +1011,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
     @need_login
     def iter_documents(self, subscription):
         yield self._fetch_rib_document(subscription)
-        for doc in self._iter_statements(subscription):
-            yield doc
+        yield from self._iter_statements(subscription)
 
     @need_login
     def iter_documents_by_types(self, subscription, accepted_types):
@@ -1030,8 +1021,7 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
         if DocumentTypes.STATEMENT not in accepted_types:
             return
 
-        for doc in self._iter_statements(subscription):
-            yield doc
+        yield from self._iter_statements(subscription)
 
     @need_login
     def iter_emitters(self):

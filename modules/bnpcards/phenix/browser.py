@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019      Budget Insight
 #
 # This file is part of a woob module.
@@ -38,7 +36,7 @@ class BnpcartesentreprisePhenixBrowser(LoginBrowser):
     password_expired = URL(r"https://corporatecards.bnpparibas.com/group/bddf/mot-de-passe-expire", PasswordExpiredPage)
 
     def __init__(self, website, *args, **kwargs):
-        super(BnpcartesentreprisePhenixBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.website = website
         self.corporate_browser = None
 
@@ -96,5 +94,4 @@ class BnpcartesentreprisePhenixBrowser(LoginBrowser):
             data = self.page.get_form()
             page_csv = self.transaction_csv.go(data=data, params=params)
 
-        for tr in page_csv.iter_history():
-            yield tr
+        yield from page_csv.iter_history()

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -26,7 +24,7 @@ from ..tools import parse_date
 from .index import PhpBBPage
 
 
-class Link(object):
+class Link:
     (FORUM, TOPIC) = range(2)
 
     def __init__(self, type, url):
@@ -69,7 +67,7 @@ class ForumPage(PhpBBPage):
             yield value, option.text.strip("» \xa0\n\r")
 
 
-class Post(object):
+class Post:
     def __init__(self, forum_id, topic_id, id):
         self.id = int(id)
         self.forum_id = forum_id

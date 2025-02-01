@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Vincent A
 #
 # This file is part of a woob module.
@@ -40,7 +38,7 @@ class LuccaBrowser(LoginBrowser):
     download_document = URL(r"/pagga/services/download/(?P<document_id>.+)")
 
     def __init__(self, subdomain, *args, **kwargs):
-        super(LuccaBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.BASEURL = "https://%s.ilucca.net" % subdomain
         self.id_card_doc = None
 
@@ -70,7 +68,7 @@ class LuccaBrowser(LoginBrowser):
             window_end = start + timedelta(days=14)
 
             params = {
-                "date": "between,%s,%s" % (start.strftime("%Y-%m-%d"), window_end.strftime("%Y-%m-%d")),
+                "date": "between,{},{}".format(start.strftime("%Y-%m-%d"), window_end.strftime("%Y-%m-%d")),
                 "leavePeriod.ownerId": ",".join(str(u.id) for u in users.values()),
                 "fields": "leavePeriod[id,ownerId,isConfirmed],isAm,date,color,isRemoteWork,leaveAccount[name,isRemoteWork]",
             }
@@ -102,5 +100,4 @@ class LuccaBrowser(LoginBrowser):
             "orderBy": "import.endDate,desc,import.startDate,desc,import.creationDate,desc",
         }
         self.payslips.go(params=params)
-        for doc in self.page.iter_documents():
-            yield doc
+        yield from self.page.iter_documents()

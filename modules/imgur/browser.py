@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Vincent A
 #
 # This file is part of a woob module.
@@ -41,7 +39,7 @@ class ImgurBrowser(APIBrowser):
     get_image_url = URL(r"/3/image/(?P<id>\w+)")
 
     def open_raw(self, *args, **kwargs):
-        return super(ImgurBrowser, self).open(*args, **kwargs)
+        return super().open(*args, **kwargs)
 
     def fill_file(self, file, fields):
         response = self.open_raw(file.url)
@@ -55,10 +53,10 @@ class ImgurBrowser(APIBrowser):
     def open(self, *args, **kwargs):
         kwargs.setdefault("headers", {})
         kwargs["headers"]["Authorization"] = "Client-ID %s" % self.CLIENT_ID
-        return super(ImgurBrowser, self).open(*args, **kwargs)
+        return super().open(*args, **kwargs)
 
     def request(self, *args, **kwargs):
-        reply = super(ImgurBrowser, self).request(*args, **kwargs)
+        reply = super().request(*args, **kwargs)
         if reply["success"]:
             return reply["data"]
 

@@ -56,8 +56,7 @@ class VirtualRootDict(Mapping):
         raise KeyError("%s table not found" % base)
 
     def __iter__(self):
-        for base in self.config._tables:
-            yield base
+        yield from self.config._tables
 
     def __len__(self):
         return len(self.config._tables)
@@ -72,14 +71,13 @@ class VirtualDict(MutableMapping):
         try:
             return self.config.get(self.base, key)
         except ConfigError:
-            raise KeyError("%s key in %s table not found" % (key, self.base))
+            raise KeyError(f"{key} key in {self.base} table not found")
 
     def __contains__(self, key):
         return self.config.has(self.base, key)
 
     def __iter__(self):
-        for key in self.config.keys(self.base):
-            yield key
+        yield from self.config.keys(self.base)
 
     def items(self):
         return self.config.items(self.base)
@@ -91,7 +89,7 @@ class VirtualDict(MutableMapping):
         try:
             self.config.delete(self, self.base, key)
         except ConfigError:
-            raise KeyError("%s key in %s table not found" % (key, self.base))
+            raise KeyError(f"{key} key in {self.base} table not found")
 
     def __setitem__(self, key, value):
         self.config.set(self.base, key, value)
@@ -134,7 +132,7 @@ class SQLiteConfig(IConfig):
 
     def __exit__(self, t, v, tb):
         self.force_save()
-        super(SQLiteConfig, self).__exit__(t, v, tb)
+        super().__exit__(t, v, tb)
 
     def commit(self, **kwargs):
         kwargs.pop("since_seconds", None)

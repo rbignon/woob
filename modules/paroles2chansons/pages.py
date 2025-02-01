@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -47,7 +45,7 @@ class SearchPage(HTMLPage):
                     self
                 )
                 subid = href.replace(".html", "").replace("paroles-", "").split("/")[-2:]
-                id = "%s|%s" % (subid[0], subid[1])
+                id = f"{subid[0]}|{subid[1]}"
                 return id
 
             obj_title = CleanText(
@@ -81,7 +79,7 @@ class ArtistPage(HTMLPage):
             def obj_id(self):
                 href = CleanText('.//a[has-class("link")]/@href')(self)
                 subid = href.replace(".html", "").replace("paroles-", "").split("/")[-2:]
-                id = "%s|%s" % (subid[0], subid[1])
+                id = f"{subid[0]}|{subid[1]}"
                 return id
 
 
@@ -92,7 +90,7 @@ class LyricsPage(HTMLPage):
 
         def obj_id(self):
             subid = self.page.url.replace(".html", "").replace("paroles-", "").split("/")[-2:]
-            id = "%s|%s" % (subid[0], subid[1])
+            id = f"{subid[0]}|{subid[1]}"
             return id
 
         obj_content = Regexp(

@@ -84,12 +84,10 @@ class NRJMobileBrowser(LoginBrowser, StatesMixin):
     @need_login
     def iter_documents(self):
         self.periodic_bills_page.stay_or_go()
-        for bill in self.page.iter_documents():
-            yield bill
+        yield from self.page.iter_documents()
 
         self.order_bills_page.go()
-        for bill in self.page.iter_documents():
-            yield bill
+        yield from self.page.iter_documents()
 
     @need_login
     def download_document(self, document):

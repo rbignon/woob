@@ -52,7 +52,7 @@ class AmazonModule(Module, CapDocument):
 
     website_choices = OrderedDict(
         [
-            (k, "%s (%s)" % (v, k))
+            (k, f"{v} ({k})")
             for k, v in sorted(
                 {
                     "www.amazon.com": "Amazon.com",

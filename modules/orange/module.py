@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Nicolas Duhamel
 #
 # This file is part of a woob module.
@@ -55,7 +53,7 @@ class OrangeModule(Module, CapAccount, CapDocument, CapProfile):
 
     def __init__(self, *args, **kwargs):
         self._browsers = dict()
-        super(OrangeModule, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     accepted_document_types = (DocumentTypes.BILL,)
     document_categories = {DocumentCategory.INTERNET_TELEPHONY}

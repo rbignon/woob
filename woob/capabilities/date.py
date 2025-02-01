@@ -30,7 +30,7 @@ class DateField(Field):
     """
 
     def __init__(self, doc, **kwargs):
-        super(DateField, self).__init__(doc, datetime.date, datetime.datetime, **kwargs)
+        super().__init__(doc, datetime.date, datetime.datetime, **kwargs)
 
     def __setattr__(self, name, value):
         if name == "value":
@@ -49,7 +49,7 @@ class TimeField(Field):
     """
 
     def __init__(self, doc, **kwargs):
-        super(TimeField, self).__init__(doc, datetime.time, datetime.datetime, **kwargs)
+        super().__init__(doc, datetime.time, datetime.datetime, **kwargs)
 
 
 class DeltaField(Field):
@@ -58,7 +58,7 @@ class DeltaField(Field):
     """
 
     def __init__(self, doc, **kwargs):
-        super(DeltaField, self).__init__(doc, datetime.timedelta, **kwargs)
+        super().__init__(doc, datetime.timedelta, **kwargs)
 
     def convert(self, value):
         if isinstance(value, int):

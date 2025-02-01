@@ -353,7 +353,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             "resume": self.handle_polling,
         }
 
-        super(BoursoramaBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
 
     def clear_twofa_params(self):
         self.otp_number = None
@@ -376,7 +376,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if state.get("recipient_form") or state.get("transfer_form") or state.get("otp_number"):
             state.pop("url", None)
 
-        super(BoursoramaBrowser, self).load_state(state)
+        super().load_state(state)
 
     def trigger_twofa(self):
         # With bourso, the user could perform several consecutive twofa (e.g. SMS + email).
@@ -642,7 +642,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     @login_method
     def do_login(self):
-        return super(BoursoramaBrowser, self).do_login()
+        return super().do_login()
 
     def ownership_guesser(self, accounts_list):
         ownerless_accounts = [account for account in accounts_list if empty(account.ownership)]
@@ -764,11 +764,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     account.iban = account_iban
 
             for card in self.cards_list:
-                (checking,) = [
+                (checking,) = (
                     account
                     for account in accounts_list
                     if account.type == Account.TYPE_CHECKING and account.url in card.url
-                ]
+                )
                 card.parent = checking
 
         if exc:
@@ -850,7 +850,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # without this header, we don't get a 401 but a 302 that logs us out
         kwargs.setdefault("headers", {}).update({"X-Requested-With": "XMLHttpRequest"})
         try:
-            return super(BoursoramaBrowser, self).location(*args, **kwargs)
+            return super().location(*args, **kwargs)
         except ClientError as e:
             # as done in boursorama's js : a 401 results in a popup
             # asking to send an otp to get more than x months of transactions
@@ -1183,7 +1183,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         if account.label != ret.account_label:
             raise TransferError(
-                'Account label changed during transfer (from "%s" to "%s")' % (account.label, ret.account_label)
+                f'Account label changed during transfer (from "{account.label}" to "{ret.account_label}")'
             )
 
         ret.account_id = account.id
@@ -1524,7 +1524,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
             # build id with account id because get_transfer will receive only the account id
             assert transfer.id, "transfer should have an id from site"
-            transfer.id = "%s.%s" % (emitter.id, transfer.id)
+            transfer.id = f"{emitter.id}.{transfer.id}"
             yield transfer
 
         self.transfer_list.go(acc_type="temp", webid=emitter._bourso_id, type="permanents")
@@ -1536,7 +1536,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             self.page.fill_periodic_transfer(obj=transfer)
 
             assert transfer.id, "transfer should have an id from site"
-            transfer.id = "%s.%s" % (emitter.id, transfer.id)
+            transfer.id = f"{emitter.id}.{transfer.id}"
             yield transfer
 
     def iter_currencies(self):
@@ -1578,8 +1578,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     @need_login
     def iter_documents(self, subscription):
         self.rib_page.go()
-        for doc in self.page.get_document(subid=subscription.id):
-            yield doc
+        yield from self.page.get_document(subid=subscription.id)
 
         params = {
             "FiltersType[accountsKeys][]": subscription._account_key,
@@ -1590,5 +1589,4 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         }
         self.statements_page.go(params=params)
 
-        for doc in self.page.iter_documents(subid=subscription.id):
-            yield doc
+        yield from self.page.iter_documents(subid=subscription.id)

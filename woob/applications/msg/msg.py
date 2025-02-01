@@ -110,11 +110,11 @@ class MessageFormatter(IFormatter):
     MANDATORY_FIELDS = ("title", "date", "sender", "signature", "content")
 
     def format_obj(self, obj, alias):
-        result = "%sTitle:%s %s\n" % (self.BOLD, self.NC, obj.title)
-        result += "%sDate:%s %s\n" % (self.BOLD, self.NC, obj.date.strftime("%Y-%m-%d %H:%M"))
-        result += "%sFrom:%s %s\n" % (self.BOLD, self.NC, obj.sender)
+        result = f"{self.BOLD}Title:{self.NC} {obj.title}\n"
+        result += "{}Date:{} {}\n".format(self.BOLD, self.NC, obj.date.strftime("%Y-%m-%d %H:%M"))
+        result += f"{self.BOLD}From:{self.NC} {obj.sender}\n"
         if hasattr(obj, "receivers") and obj.receivers:
-            result += "%sTo:%s %s\n" % (self.BOLD, self.NC, ", ".join(obj.receivers))
+            result += "{}To:{} {}\n".format(self.BOLD, self.NC, ", ".join(obj.receivers))
 
         if obj.flags & Message.IS_HTML:
             content = html2text(obj.content)
@@ -152,7 +152,7 @@ class MessagesListFormatter(IFormatter):
         if self.interactive:
             result = "%s* (%d) %s (%s)%s" % (self.BOLD, self.count, obj.title, obj.backend, self.NC)
         else:
-            result = "%s* (%s) %s%s" % (self.BOLD, obj.id, obj.title, self.NC)
+            result = f"{self.BOLD}* ({obj.id}) {obj.title}{self.NC}"
         if obj.date:
             result += "\n             %s" % obj.date
         return result
@@ -196,7 +196,7 @@ class MessagesListFormatter(IFormatter):
                 backend,
             )
         else:
-            result = "%s%s* (%s.%s@%s)%s %s <%s> %s\n" % (
+            result = "{}{}* ({}.{}@{}){} {} <{}> {}\n".format(
                 depth * "  ",
                 self.BOLD,
                 message.thread.id,
@@ -293,7 +293,7 @@ class AppMsg(ReplApplication):
                     value = html2text(f.value)
                 else:
                     value = f.value
-                print("%s: %s" % (f.label, value))
+                print(f"{f.label}: {value}")
             print("")
 
     def do_post(self, line):
@@ -409,8 +409,7 @@ class AppMsg(ReplApplication):
                 if not thread:
                     continue
                 t = backend.fillobj(thread, None)
-                for msg in t.iter_all_messages():
-                    yield msg
+                yield from t.iter_all_messages()
 
         self.start_format()
         for msg in self.do(func):

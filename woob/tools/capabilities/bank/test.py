@@ -123,7 +123,7 @@ class BankStandardTest:
         self.assertTrue(account.currency, "account %r has no currency" % account)
         self.assertIsNot(account.number, NotLoaded, "account %r number is not loaded" % account)
         if account.iban:
-            self.assertTrue(is_iban_valid(account.iban), "account %r IBAN is invalid: %r" % (account, account.iban))
+            self.assertTrue(is_iban_valid(account.iban), f"account {account!r} IBAN is invalid: {account.iban!r}")
 
         if account.type in (account.TYPE_LOAN,):
             self.assertLessEqual(account.balance, 0, "loan %r should not have positive balance" % account)
@@ -167,15 +167,15 @@ class BankStandardTest:
             self.assertLess(
                 abs(tr.date.year - tr.rdate.year),
                 2,
-                "transaction %r date (%r) and rdate (%r) are too far away" % (tr, tr.date, tr.rdate),
+                f"transaction {tr!r} date ({tr.date!r}) and rdate ({tr.rdate!r}) are too far away",
             )
 
         if tr.original_amount or tr.original_currency:
             self.assertTrue(tr.original_amount and tr.original_currency, "transaction %r has missing foreign info" % tr)
 
         for inv in tr.investments or []:
-            self.assertTrue(inv.label, "transaction %r investment %r has no label" % (tr, inv))
-            self.assertTrue(inv.valuation, "transaction %r investment %r has no valuation" % (tr, inv))
+            self.assertTrue(inv.label, f"transaction {tr!r} investment {inv!r} has no label")
+            self.assertTrue(inv.valuation, f"transaction {tr!r} investment {inv!r} has no valuation")
 
     def check_investments(self, account):
         if not isinstance(self.backend, CapBankWealth):
@@ -191,7 +191,7 @@ class BankStandardTest:
             self.assertEqual(
                 total,
                 account.balance,
-                "investments total (%s) is different than account balance (%s)" % (total, account.balance),
+                f"investments total ({total}) is different than account balance ({account.balance})",
             )
 
     def check_investment(self, account, inv):
@@ -200,7 +200,7 @@ class BankStandardTest:
         if inv.code and not inv.code.startswith("XX-"):
             self.assertTrue(inv.code_type, "investment %r has code but no code type" % inv)
         if inv.code_type == inv.CODE_TYPE_ISIN:
-            self.assertTrue(is_isin_valid(inv.code), "investment %r has invalid ISIN: %r" % (inv, inv.code))
+            self.assertTrue(is_isin_valid(inv.code), f"investment {inv!r} has invalid ISIN: {inv.code!r}")
         if not empty(inv.portfolio_share):
             self.assertTrue(0 < inv.portfolio_share <= 1, "investment %r has invalid portfolio_share" % inv)
 

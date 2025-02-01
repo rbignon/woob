@@ -121,13 +121,13 @@ def debug(*args):
             if self._key is not None:
                 result += ".%s" % self._key
             name = str(self)
-            result += " %s(%r" % (name, outputvalue)
+            result += f" {name}({outputvalue!r}"
             for arg in self.__dict__:
                 if arg.startswith("_") or arg == "selector":
                     continue
                 if arg == "default" and getattr(self, arg) == _NO_DEFAULT:
                     continue
-                result += ", %s=%r" % (arg, getattr(self, arg))
+                result += f", {arg}={getattr(self, arg)!r}"
             result += ")"
             logger.log(DEBUG_FILTERS, result)
 
@@ -164,7 +164,7 @@ class Filter(_Filter):
                         the requested value
         """
 
-        super(Filter, self).__init__(default=default)
+        super().__init__(default=default)
         self.selector = selector
 
     def select(self, selector, item):

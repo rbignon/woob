@@ -29,7 +29,7 @@ class PriceNotFound(UserError):
     """
 
     def __init__(self, msg="Price not found"):
-        super(PriceNotFound, self).__init__(msg)
+        super().__init__(msg)
 
 
 class Product(BaseObject):

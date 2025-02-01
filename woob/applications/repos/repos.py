@@ -89,9 +89,9 @@ class AppWoobRepos(ReplApplication):
 
         r = Repository("https://")
         try:
-            with open(index_file, "r") as fp:
+            with open(index_file) as fp:
                 r.parse_index(fp)
-        except IOError as e:
+        except OSError as e:
             print("Unable to open repository: %s" % e, file=self.stderr)
             print('Use the "create" command before.', file=self.stderr)
             return 1

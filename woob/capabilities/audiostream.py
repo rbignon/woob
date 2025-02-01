@@ -34,10 +34,10 @@ class BaseAudioStream(BaseAudio):
     current = Field("Information related to current broadcast", StreamInfo)
 
     def __str__(self):
-        return "%s (%s)" % (self.title, self.url)
+        return f"{self.title} ({self.url})"
 
     def __repr__(self):
-        return "%r (%r)" % (self.title, self.url)
+        return f"{self.title!r} ({self.url!r})"
 
 
 class CapAudioStream(CapAudio):

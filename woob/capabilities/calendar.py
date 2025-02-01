@@ -190,8 +190,7 @@ class CapCalendarEvent(CapCollection):
             query.start_date = datetime.combine(parse_date("today"), time.min)
             query.end_date = parse_date("")
             query.city = ""
-            for event in self.search_events(query):
-                yield event
+            yield from self.search_events(query)
 
     def validate_collection(self, objs, collection):
         """

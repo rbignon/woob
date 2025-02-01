@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Vincent A
 #
 # This file is part of a woob module.
@@ -116,7 +114,7 @@ class WritePageZero(HTMLPage):
         j = response.json()
 
         assert j["status"] == 0
-        return "%s?%s#%s" % (self.url, j["id"], password)
+        return "{}?{}#{}".format(self.url, j["id"], password)
 
 
 class WritePage0(HTMLPage):
@@ -139,4 +137,4 @@ class WritePage0(HTMLPage):
         j = form.submit().json()
 
         assert j["status"] == "ok"
-        return urljoin(urljoin(self.url, form.url), "%s#%s" % (j["paste"], password))
+        return urljoin(urljoin(self.url, form.url), "{}#{}".format(j["paste"], password))

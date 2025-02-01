@@ -260,8 +260,7 @@ class CmesBrowser(LoginBrowser):
         self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
         if "compte courant bloqué" in account.label.lower():
             # CCB accounts have a specific table containing only Pockets
-            for pocket in self.page.iter_ccb_pockets(account=account):
-                yield pocket
+            yield from self.page.iter_ccb_pockets(account=account)
         else:
             for inv in self.page.iter_investments(account=account):
                 # Go to the investment details to get employee savings attributes

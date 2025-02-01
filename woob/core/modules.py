@@ -302,8 +302,7 @@ class RepositoryModulesLoader(ModulesLoader):
         # sys.path.append(os.path.dirname(repositories.modules_dir))
 
     def iter_existing_module_names(self):
-        for name in self.repositories.get_all_modules_info():
-            yield name
+        yield from self.repositories.get_all_modules_info()
 
     def get_module_path(self, module_name):
         minfo = self.repositories.get_module_info(module_name)

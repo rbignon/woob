@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Romain Bignon, Christophe Benz
 #
 # This file is part of a woob module.
@@ -26,7 +24,7 @@ from woob.tools.log import getLogger
 
 class ProfilesWalker(Optimization):
     def __init__(self, sched, storage, browser):
-        super(ProfilesWalker, self).__init__()
+        super().__init__()
         self._sched = sched
         self._storage = storage
         self._browser = browser
@@ -75,7 +73,7 @@ class ProfilesWalker(Optimization):
 
             try:
                 profile = self._browser.get_profile(id)
-                self._logger.info("Visited profile %s (%s)" % (profile["pseudo"], id))
+                self._logger.info("Visited profile {} ({})".format(profile["pseudo"], id))
 
                 # Get score from the aum_score module
                 # d = self.nucentral_core.callService(context.Context.fromComponent(self), 'aum_score', 'score', profile)

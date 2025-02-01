@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -137,7 +135,7 @@ class CmsoLoginBrowser(TwoFactorBrowser):
     def __init__(self, config, *args, **kwargs):
         origin = kwargs.pop("origin", None)
         self.website = kwargs.pop("website", None)
-        super(CmsoLoginBrowser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
 
         if origin:
             self.session.headers["origin"] = origin
@@ -710,8 +708,7 @@ class CmsoParBrowser(CmsoLoginBrowser):
             return
 
         # Internal recipients
-        for rcpt in self.iter_internal_recipients(account):
-            yield rcpt
+        yield from self.iter_internal_recipients(account)
 
         # _type is found in iter_internal_recipients
         # and is more accurate than checking the
@@ -722,8 +719,7 @@ class CmsoParBrowser(CmsoLoginBrowser):
             # to internal checking accounts.
             return
 
-        for rcpt in self.iter_external_recipients(account):
-            yield rcpt
+        yield from self.iter_external_recipients(account)
 
     @need_login
     def init_transfer(self, account, recipient, amount, reason, exec_date):
@@ -836,11 +832,10 @@ class CmsoParBrowser(CmsoLoginBrowser):
             return
         emitter_keys = ["listCompteTitulaireCotitulaire", "listCompteMandataire", "listCompteLegalRep"]
         for key in emitter_keys:
-            for em in self.page.iter_emitters(key=key):
-                yield em
+            yield from self.page.iter_emitters(key=key)
 
 
-class iter_retry(object):
+class iter_retry:
     # when the callback is retried, it will create a new iterator, but we may already yielded
     # some values, so we need to keep track of them and seek in the middle of the iterator
 

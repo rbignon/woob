@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Roger Philibert
 #
 # This file is part of a woob module.
@@ -88,7 +86,7 @@ class HappnBrowser(DomainBrowser):
     recs = []
 
     def __init__(self, facebook, *args, **kwargs):
-        super(HappnBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.facebook = facebook
         self.session.headers["User-Agent"] = "Happn/18.3.1 AndroidSDK/11"
 
@@ -177,7 +175,7 @@ class HappnBrowser(DomainBrowser):
 
     def set_position(self, lat, lng):
         r = self.request(
-            "/api/users/%s/devices/%s" % (self.my_id, self.device_id),
+            f"/api/users/{self.my_id}/devices/{self.device_id}",
             method="PUT",
             json={"latitude": lat, "longitude": lng, "location_accuracy": "EXACT"},
         )

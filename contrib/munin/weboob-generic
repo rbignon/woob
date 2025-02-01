@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim: ft=python et softtabstop=4 cinoptions=4 shiftwidth=4 ts=4 ai
 
 # Copyright(C) 2013  Romain Bignon, Florent Fourcot
@@ -81,7 +80,6 @@
 # Example: env.category bank
 # For some running examples, see at the end of the script
 
-from __future__ import print_function
 
 import locale
 import logging
@@ -94,7 +92,7 @@ from woob.core import CallErrors, Woob
 from woob.exceptions import BrowserIncorrectPassword
 
 
-class GenericMuninPlugin(object):
+class GenericMuninPlugin:
     def __init__(self):
         if "woob_path" in os.environ:
             self.woob = Woob(os.environ["woob_path"])
@@ -178,8 +176,8 @@ class GenericMuninPlugin(object):
 
     def print_cache(self, name, check=False):
         try:
-            f = open(self.cachepath(name), "r")
-        except IOError:
+            f = open(self.cachepath(name))
+        except OSError:
             return False
 
         try:
@@ -200,8 +198,8 @@ class GenericMuninPlugin(object):
         filename = self.cachepath(new_name)
         try:
             f = open(filename, "w")
-        except IOError as e:
-            print("Unable to create the cache file %s: %s" % (filename, e), file=sys.stderr)
+        except OSError as e:
+            print(f"Unable to create the cache file {filename}: {e}", file=sys.stderr)
             return
 
         self.cache = f
@@ -225,20 +223,16 @@ class GenericMuninPlugin(object):
                 results.append(result)
             for result in results:
                 try:
-                    for i in self.woob.do(self.do[0], result.id, backends=result.backend):
-                        yield i
+                    yield from self.woob.do(self.do[0], result.id, backends=result.backend)
                 # Do not crash if one module does not implement the feature
                 except CallErrors:
                     pass
         elif len(self.do) == 1:
-            for i in self.woob.do(self.do[0]):
-                yield i
+            yield from self.woob.do(self.do[0])
         elif len(self.do) == 2:
-            for i in self.woob.do(self.do[0], self.do[1]):
-                yield i
+            yield from self.woob.do(self.do[0], self.do[1])
         elif len(self.do) == 3:
-            for i in self.woob.do(self.do[0], self.do[1], backends=self.do[2]):
-                yield i
+            yield from self.woob.do(self.do[0], self.do[1], backends=self.do[2])
 
     def get_value(self, result):
         attribs = self.attribvalue.split("/")
@@ -256,7 +250,7 @@ class GenericMuninPlugin(object):
 
     def result2woobid(self, result):
         attribs = self.attribid.split("/")
-        id = "%s@%s" % (getattr(result, attribs[0]), result.backend)
+        id = f"{getattr(result, attribs[0])}@{result.backend}"
         return id
 
     def result2id(self, result):
@@ -264,7 +258,7 @@ class GenericMuninPlugin(object):
         id = result
         for attrib in attribs:
             id = getattr(id, attrib)
-        return "%s_%s" % (result.backend, id)
+        return f"{result.backend}_{id}"
 
     def config(self):
         if self.check_cache("%s-config" % self.name):
@@ -306,10 +300,10 @@ class GenericMuninPlugin(object):
                     type = "AREA"
                     first = False
                 self.write_output(
-                    "%s.label %s" % (id.encode("iso-8859-15"), getattr(result, self.attriblabel).encode("iso-8859-15"))
+                    "{}.label {}".format(id.encode("iso-8859-15"), getattr(result, self.attriblabel).encode("iso-8859-15"))
                 )
                 if self.cumulate:
-                    self.write_output("%s.draw %s" % (id, type))
+                    self.write_output(f"{id}.draw {type}")
         except CallErrors as errors:
             self.print_errors(errors)
             self.print_cache("%s-config" % self.name)
@@ -319,7 +313,7 @@ class GenericMuninPlugin(object):
     def print_errors(self, errors):
         for backend, err, backtrace in errors:
             print(
-                ("%s(%s): %s" % (type(err).__name__, backend.name, err)).encode(
+                (f"{type(err).__name__}({backend.name}): {err}").encode(
                     sys.stdout.encoding or locale.getpreferredencoding(), "replace"
                 ),
                 file=sys.stderr,
@@ -338,7 +332,7 @@ class GenericMuninPlugin(object):
                 if self.monitored(result):
                     value = self.get_value(result)
                     if value is not NotAvailable:
-                        self.write_output("%s.value %f" % (self.result2id(result).encode("iso-8859-15"), value))
+                        self.write_output("{}.value {:f}".format(self.result2id(result).encode("iso-8859-15"), value))
         except CallErrors as errors:
             self.print_errors(errors)
             self.print_cache(self.name)

@@ -40,7 +40,7 @@ class GaugeFormatter(IFormatter):
             city = obj.city
 
         if not obj.sensors or (len(obj.sensors) == 0):
-            result = " %s %s %s \n" % (
+            result = " {} {} {} \n".format(
                 self.colored("%-27s" % name[:27], "red"),
                 self.colored("%-10s" % obj.object[:10], "yellow"),
                 self.colored("%-10s" % city[:10], "yellow"),
@@ -62,7 +62,7 @@ class GaugeFormatter(IFormatter):
                 else:
                     lastvalue = "? "
                 if first:
-                    result = " %s %s %s " % (
+                    result = " {} {} {} ".format(
                         self.colored("%-27s" % name[:27], "red"),
                         self.colored("%-10s" % obj.object[:10], "yellow"),
                         self.colored("%-10s" % city[:10], "yellow"),
@@ -71,13 +71,13 @@ class GaugeFormatter(IFormatter):
                         result += "%s" % self.colored("%-33s" % sensor.address[:33], "yellow")
                     result += "\n"
                     result += " %s" % self.colored("%-47s" % obj.fullid[:47], "blue")
-                    result += "   %s %s\n" % (
+                    result += "   {} {}\n".format(
                         self.colored("%-20s" % sensorname[:20], "magenta"),
                         self.colored("%-13s" % lastvalue[:13], "red"),
                     )
                     first = False
                 else:
-                    result += "                                                   %s %s\n" % (
+                    result += "                                                   {} {}\n".format(
                         self.colored("%-20s" % sensorname[:20], "magenta"),
                         self.colored("%-13s" % lastvalue[:13], "red"),
                     )
@@ -111,7 +111,7 @@ class AppGauge(ReplApplication):
     def bcall_error_handler(self, backend, error, backtrace):
         if isinstance(error, SensorNotFound):
             msg = str(error) or "Sensor not found (hint: try details command)"
-            print("Error(%s): %s" % (backend.name, msg), file=self.stderr)
+            print(f"Error({backend.name}): {msg}", file=self.stderr)
         else:
             return super().bcall_error_handler(backend, error, backtrace)
 

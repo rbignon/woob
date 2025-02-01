@@ -121,7 +121,7 @@ class CapAccount(Capability):
         """
         raise NotImplementedError()
 
-    def get_account_status(self) -> List[StatusField]:
+    def get_account_status(self) -> list[StatusField]:
         """
         Get status of the current account.
 

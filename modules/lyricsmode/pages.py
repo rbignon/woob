@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -42,7 +40,7 @@ class SearchPage(HTMLPage):
                 lid = spl[2]
                 aid = spl[3]
                 sid = spl[4]
-                return "%s|%s|%s" % (lid, aid, sid)
+                return f"{lid}|{aid}|{sid}"
 
             obj_title = Regexp(CleanText("./td[2]", default=NotAvailable), "(.*) lyrics$")
             obj_artist = CleanText("./td[1]/a", default=NotAvailable)
@@ -59,7 +57,7 @@ class LyricsPage(HTMLPage):
             lid = spl[2]
             aid = spl[3]
             sid = spl[4]
-            return "%s|%s|%s" % (lid, aid, sid)
+            return f"{lid}|{aid}|{sid}"
 
         obj_content = CleanText(CleanHTML('//p[@id="lyrics_text"]', default=NotAvailable), newlines=False)
         obj_artist = CleanText('//a[has-class("artist_name")]', default=NotAvailable)

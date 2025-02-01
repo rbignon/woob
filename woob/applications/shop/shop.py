@@ -36,7 +36,7 @@ class OrdersFormatter(IFormatter):
     def format_obj(self, obj, alias):
         date = obj.date.strftime("%Y-%m-%d") if not empty(obj.date) else ""
         total = obj.total or Decimal("0")
-        result = "%s  %s  %s" % (
+        result = "{}  {}  {}".format(
             self.colored("%-28s" % obj.fullid, "yellow"),
             self.colored("%-10s" % date, "blue"),
             self.colored("%9.2f" % total, "green"),
@@ -61,7 +61,7 @@ class ItemsFormatter(IFormatter):
 
     def format_obj(self, obj, alias):
         price = obj.price or Decimal("0")
-        result = "%s  %s  %s" % (
+        result = "{}  {}  {}".format(
             self.colored("%-75s" % obj.label[:75], "yellow"),
             self.colored("%-43s" % obj.url, "magenta"),
             self.colored("%9.2f" % price, "green"),
@@ -85,7 +85,7 @@ class PaymentsFormatter(IFormatter):
     def format_obj(self, obj, alias):
         date = obj.date.strftime("%Y-%m-%d") if not empty(obj.date) else ""
         amount = obj.amount or Decimal("0")
-        result = "%s  %s  %s" % (
+        result = "{}  {}  {}".format(
             self.colored("%-10s" % date, "blue"),
             self.colored("%-17s" % obj.method, "yellow"),
             self.colored("%9.2f" % amount, "green"),

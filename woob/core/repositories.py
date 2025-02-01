@@ -154,7 +154,7 @@ class Repository:
         else:
             # This is probably a file in ~/.woob/repositories/, we
             # don't know if this is a local or a remote repository.
-            with open(self.url, "r", encoding="utf-8") as fp:
+            with open(self.url, encoding="utf-8") as fp:
                 self.parse_index(fp)
 
     def __repr__(self):
@@ -183,13 +183,13 @@ class Repository:
             # Repository is local, open the file.
             filename = os.path.join(self.localurl2path(), self.INDEX)
             try:
-                fp = open(filename, "r", encoding="utf-8")
-            except IOError:
+                fp = open(filename, encoding="utf-8")
+            except OSError:
                 # This local repository doesn't contain a built modules.list index.
                 self.name = Repositories.url2filename(self.url)
                 self.build_index(self.localurl2path(), filename)
                 built = True
-                fp = open(filename, "r", encoding="utf-8")
+                fp = open(filename, encoding="utf-8")
         else:
             # This is a remote repository, download file
             try:
@@ -410,14 +410,14 @@ class Versions:
 
         config_filename = os.path.join(self.path, self.VERSIONS_LIST)
         try:
-            with open(config_filename, "r", encoding="utf-8") as fp:
+            with open(config_filename, encoding="utf-8") as fp:
                 config = RawConfigParser()
                 config.read_file(fp, config_filename)
 
                 # Read default parameters
                 for key, value in config.items(DEFAULTSECT):
                     self.versions[key] = int(value)
-        except IOError:
+        except OSError:
             pass
 
     def get(self, name):
@@ -452,7 +452,7 @@ class IProgress:
 
 class PrintProgress(IProgress):
     def progress(self, percent, message):
-        print("=== [%3.0f%%] %s" % (percent * 100, message), file=sys.stderr)
+        print(f"=== [{percent * 100:3.0f}%] {message}", file=sys.stderr)
 
     def error(self, message):
         print(f"ERROR: {message}", file=sys.stderr)
@@ -603,13 +603,13 @@ class Repositories:
     def create_namespace_package(self, path):
         pypath = os.path.join(path, "__init__.py")
         if os.path.exists(pypath):
-            with open(pypath, "r", encoding="utf-8") as fd:
+            with open(pypath, encoding="utf-8") as fd:
                 create_file = fd.read() != self.namespace_package_content
         else:
             create_file = True
 
         if create_file:
-            with open(pypath, "wt", encoding="utf-8") as fd:
+            with open(pypath, "w", encoding="utf-8") as fd:
                 fd.write(self.namespace_package_content)
 
     def _extend_module_info(self, repo, info):
@@ -695,7 +695,7 @@ class Repositories:
 
     def _parse_source_list(self):
         l = []
-        with open(self.sources_list, "r", encoding="utf-8") as f:
+        with open(self.sources_list, encoding="utf-8") as f:
             for line in f:
                 line = line.strip() % {"version": packaging.version.Version(self.version).major}
                 m = re.match("(file|https?)://.*", line)
@@ -923,8 +923,7 @@ class Repositories:
         return "".join([l if l.isalnum() else "_" for l in url])
 
     def __iter__(self):
-        for repository in self.repositories:
-            yield repository
+        yield from self.repositories
 
     @property
     def errors(self):
@@ -937,7 +936,7 @@ class Repositories:
 class InvalidSignature(Exception):
     def __init__(self, filename):
         self.filename = filename
-        super(InvalidSignature, self).__init__(f"Invalid signature for {filename}")
+        super().__init__(f"Invalid signature for {filename}")
 
 
 class Keyring:
@@ -949,7 +948,7 @@ class Keyring:
         self.version = 0
 
         if self.exists():
-            with open(self.vpath, "r", encoding="utf-8") as f:
+            with open(self.vpath, encoding="utf-8") as f:
                 self.version = int(f.read().strip())
         else:
             if os.path.exists(self.path):

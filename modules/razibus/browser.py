@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -34,7 +32,7 @@ class RazibusBrowser(PagesBrowser):
     region = None
 
     def __init__(self, region, *args, **kwargs):
-        super(RazibusBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.region = region
 
     def get_event(self, _id, event=None):

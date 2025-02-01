@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2020 Johann Broudin
 #
 # This file is part of a woob module.
@@ -62,6 +60,6 @@ def description(r):
     description = ""
     info = r.json()["root_tab"]["events"]
     if len(info) > 0:
-        description = "%s - %s" % (info[0]["title"], info[0]["tab_foreign_type"]["resum"])
+        description = "{} - {}".format(info[0]["title"], info[0]["tab_foreign_type"]["resum"])
 
     return description

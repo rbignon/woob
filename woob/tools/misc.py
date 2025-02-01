@@ -228,7 +228,7 @@ def clean_text(
     text: str,
     *,
     remove_newlines: bool = True,
-    normalize: Optional[Union[str, bool]] = "NFC",
+    normalize: str | bool | None = "NFC",
     transliterate: bool = False,
 ) -> str:
     """Clean a given text.

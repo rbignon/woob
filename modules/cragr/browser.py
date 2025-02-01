@@ -360,7 +360,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     __states__ = ("BASEURL", "transaction_id", "sms_csrf_token", "need_reload_state", "accounts_url")
 
     def __init__(self, website, *args, **kwargs):
-        super(CreditAgricoleBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.website = website
         self.accounts_url = None
         self.total_spaces = None
@@ -384,7 +384,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if state.get("need_reload_state"):
             # Do not locate_browser for 2fa
             state.pop("url", None)
-            super(CreditAgricoleBrowser, self).load_state(state)
+            super().load_state(state)
             self.need_reload_state = None
 
     @property
@@ -392,7 +392,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         return self.session.cookies.get("marche", None)
 
     def deinit(self):
-        super(CreditAgricoleBrowser, self).deinit()
+        super().deinit()
         self.netfinca.deinit()
 
     @retry(BrowserUnavailable)
@@ -1567,7 +1567,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             "promoteurs": "paiements-encaissements",
         }
 
-        referer = self.absurl("/%s/operations/%s/virement.html.html" % (self.space, operations[self.space]))
+        referer = self.absurl(f"/{self.space}/operations/{operations[self.space]}/virement.html.html")
 
         return operations[self.space], referer
 
@@ -1703,7 +1703,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.transfer_recap.go(
             space=space,
             op=operation,
-            headers={"Referer": self.absurl("/%s/operations/%s/virement.postredirect.html" % (space, operation))},
+            headers={"Referer": self.absurl(f"/{space}/operations/{operation}/virement.postredirect.html")},
         )
         # information needed to exec transfer
         transfer._space = space
@@ -1719,7 +1719,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             op=transfer._operation,
             headers={
                 "Referer": self.absurl(
-                    "/%s/operations/%s/virement.postredirect.html" % (transfer._space, transfer._operation)
+                    f"/{transfer._space}/operations/{transfer._operation}/virement.postredirect.html"
                 ),
                 "CSRF-Token": transfer._token,
             },
@@ -1903,8 +1903,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         for _ in self.iter_spaces():
             operation, referer = self.get_space_info()
             self.recipients.go(space=self.space, op=operation, headers={"Referer": referer})
-            for emitter in self.page.iter_emitters():
-                yield emitter
+            yield from self.page.iter_emitters()
 
     @need_login
     def iter_subscription(self):
@@ -1947,8 +1946,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         for url in document_page_urls:
             self.location(url)
-            for doc in self.page.iter_documents(sub_id=subscription.id):
-                yield doc
+            yield from self.page.iter_documents(sub_id=subscription.id)
 
     @need_login
     def download_document(self, document):

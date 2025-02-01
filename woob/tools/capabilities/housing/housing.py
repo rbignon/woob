@@ -27,7 +27,7 @@ class PricePerMeterFilter(_Filter):
     """
 
     def __init__(self):
-        super(PricePerMeterFilter, self).__init__()
+        super().__init__()
 
     @debug()
     def __call__(self, item):

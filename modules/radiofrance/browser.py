@@ -1,5 +1,3 @@
-# * -*- coding: utf-8 -*-
-
 # Copyright(C) 2011-2021  Johann Broudin
 #
 # This file is part of a woob module.
@@ -93,7 +91,7 @@ class RadioFranceBrowser(PagesBrowser):
         if split_path[0] == "franceinter":
             return self.radio_page.go(page=podcast_url).get_france_inter_podcast_emissions(split_path=split_path)
         elif split_path[0] == "franceculture":
-            self.location("%s%s" % (self.BASEURL, podcast_url))
+            self.location(f"{self.BASEURL}{podcast_url}")
             return self.page.get_france_culture_podcast_emissions(split_path=split_path)
         elif split_path[0] == "francetvinfo":
             return self.radio_page.go(page=podcast_url).get_france_info_podcast_emissions(split_path=split_path)

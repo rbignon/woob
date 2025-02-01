@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -157,23 +155,19 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
                 if collection.basename == "acshow":
                     emissions = self.browser.get_emissions(collection.basename)
                     if emissions:
-                        for emission in emissions:
-                            yield emission
+                        yield from emissions
                 elif collection.basename == "interview":
                     videos = self.browser.get_categories_videos(collection.basename)
                     if videos:
-                        for video in videos:
-                            yield video
+                        yield from videos
                 else:
                     videos = self.browser.get_categories_movies(collection.basename)
                     if videos:
-                        for video in videos:
-                            yield video
+                        yield from videos
             if collection.path_level == 2:
                 videos = self.browser.get_categories_videos(":".join(collection.split_path))
                 if videos:
-                    for video in videos:
-                        yield video
+                    yield from videos
 
     def validate_collection(self, objs, collection):
         if collection.path_level == 0:

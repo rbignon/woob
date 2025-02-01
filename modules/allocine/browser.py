@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -51,7 +49,7 @@ class AllocineBrowser(APIBrowser):
             )
         )
 
-        return self.request("http://api.allocine.fr/rest/v3/{}".format(method), params=params)
+        return self.request(f"http://api.allocine.fr/rest/v3/{method}", params=params)
 
     def iter_movies(self, pattern):
         params = [("partner", self.PARTNER_KEY), ("q", pattern), ("format", "json"), ("filter", "movie")]
@@ -180,7 +178,7 @@ class AllocineBrowser(APIBrowser):
         if "synopsis" in jres:
             pitch = str(jres["synopsis"])
         if "statistics" in jres and "userRating" in jres["statistics"]:
-            note = "%s/5 (%s votes)" % (jres["statistics"]["userRating"], jres["statistics"]["userReviewCount"])
+            note = "{}/5 ({} votes)".format(jres["statistics"]["userRating"], jres["statistics"]["userReviewCount"])
         if "castMember" in jres:
             for cast in jres["castMember"]:
                 if cast["activity"]["$"] not in roles:
@@ -274,7 +272,7 @@ class AllocineBrowser(APIBrowser):
                 pyear = "????"
                 if "productionYear" in m["movie"]:
                     pyear = m["movie"]["productionYear"]
-                movie_to_append = ("%s" % (m["movie"]["code"]), "(%s) %s" % (pyear, m["movie"]["originalTitle"]))
+                movie_to_append = ("%s" % (m["movie"]["code"]), "({}) {}".format(pyear, m["movie"]["originalTitle"]))
                 roles[m["activity"]["$"]].append(movie_to_append)
 
         person = Person(id, name)
@@ -360,7 +358,7 @@ class AllocineBrowser(APIBrowser):
                 prod_year = "????"
                 if "productionYear" in m["movie"]:
                     prod_year = m["movie"]["productionYear"]
-                short_description = "(%s) %s" % (prod_year, m["activity"]["$"])
+                short_description = "({}) {}".format(prod_year, m["activity"]["$"])
                 if "role" in m:
                     short_description += ", %s" % m["role"]
                 movie = Movie(m["movie"]["code"], str(m["movie"]["originalTitle"]))
@@ -470,7 +468,7 @@ class AllocineBrowser(APIBrowser):
                     yield self.parse_video(episode, category)
 
     def parse_video(self, _video, category):
-        video = BaseVideo("%s#%s" % (_video["code"], category))
+        video = BaseVideo("{}#{}".format(_video["code"], category))
         video.title = str(_video["title"])
         video._video_code = str(_video["code"])
         video.ext = "mp4"
@@ -485,7 +483,7 @@ class AllocineBrowser(APIBrowser):
         return video
 
     def parse_movie(self, movie):
-        video = BaseVideo("%s#%s" % (movie["code"], "movie"))
+        video = BaseVideo("{}#{}".format(movie["code"], "movie"))
         video.title = str(movie["trailer"]["name"])
         video._video_code = str(movie["trailer"]["code"])
         video.ext = "mp4"
@@ -532,7 +530,7 @@ class AllocineBrowser(APIBrowser):
         return self.parse_movie(result["movie"])
 
     def get_video_from_id(self, _id, category):
-        return find_object(self.get_categories_videos(category), id="%s#%s" % (_id, category))
+        return find_object(self.get_categories_videos(category), id=f"{_id}#{category}")
 
     def get_video_url(self, code):
         params = [
@@ -608,7 +606,7 @@ class AllocineBrowser(APIBrowser):
         for items in data["feed"]["theaterShowtimes"]:
             cinema = items["place"]["theater"]
             city = str(cinema["city"])
-            location = "%s, %s" % (cinema["name"], cinema["address"])
+            location = "{}, {}".format(cinema["name"], cinema["address"])
             postalCode = cinema["postalCode"]
             cinemaCode = cinema["code"]
             for show in items["movieShowtimes"]:
@@ -626,7 +624,7 @@ class AllocineBrowser(APIBrowser):
                         start_date = datetime(year=year, month=month, day=day, hour=heure, minute=minute)
 
                         seanceCode = seance["code"]
-                        _id = "%s#%s#%s#%s" % (cinemaCode, postalCode, movieCode, seanceCode)
+                        _id = f"{cinemaCode}#{postalCode}#{movieCode}#{seanceCode}"
                         event = BaseCalendarEvent()
                         event.id = _id
                         event.sequence = sequence

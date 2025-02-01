@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -85,8 +83,7 @@ class BibliothequesparisBrowser(LoginBrowser):
                 }
             }
             self.location("/Default/Portal/Recherche/Search.svc/Search", json=d, headers=self.json_headers)
-            for book in self.page.iter_books():
-                yield book
+            yield from self.page.iter_books()
 
             max_page = self.page.get_max_page()
             page += 1

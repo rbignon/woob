@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function
-
 import urllib
 
 
@@ -40,11 +37,11 @@ def get_settings(key):
 
 
 def display_error(error):
-    print("%s: %s" % ("ERROR", error))
+    print("{}: {}".format("ERROR", error))
 
 
 def display_info(msg):
-    print("%s: %s" % ("INFO", msg))
+    print("{}: {}".format("INFO", msg))
 
 
 def parse_params(paramStr):
@@ -90,7 +87,7 @@ def create_param_url(paramsDic, quote_plus=False):
             if quote_plus:
                 url = url + sep + urllib.quote_plus(param) + "=" + urllib.quote_plus(paramsDic[param])
             else:
-                url = "%s%s%s=%s" % (url, sep, param, paramsDic[param])
+                url = f"{url}{sep}{param}={paramsDic[param]}"
 
             sep = "&"
     except Exception as msg:
@@ -100,11 +97,11 @@ def create_param_url(paramsDic, quote_plus=False):
 
 
 def add_menu_item(params={}):
-    print('%s => "%s"' % (params.get("name"), create_param_url(params)))
+    print('{} => "{}"'.format(params.get("name"), create_param_url(params)))
 
 
 def add_menu_link(params={}):
-    print("[%s] %s (%s)" % (params.get("id"), params.get("name"), params.get("url")))
+    print("[{}] {} ({})".format(params.get("id"), params.get("name"), params.get("url")))
     # print params.get('itemInfoLabels')
     # print params.get('c_items')
 
@@ -114,4 +111,4 @@ def end_of_directory(update=False):
 
 
 def download_video(url, name, dir="./"):
-    print("Downlaod a video %s from %s" % (name, url))
+    print(f"Downlaod a video {name} from {url}")

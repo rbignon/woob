@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Bezleputh
 #
 # This file is part of a woob module.
@@ -37,10 +35,10 @@ class PoleEmploiTest(BackendTest):
         l = list(self.backend.search_job("infographiste"))
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, l[0])
-        self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))
+        self.assertTrue(advert.url, f'URL for announce "{advert.id}" not found: {advert.url}')
 
     def test_poleemploi_advanced_search(self):
         l = list(self.backend.advanced_search_job())
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, l[0])
-        self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))
+        self.assertTrue(advert.url, f'URL for announce "{advert.id}" not found: {advert.url}')

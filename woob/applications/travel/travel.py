@@ -32,19 +32,19 @@ class DeparturesFormatter(PrettyFormatter):
     def get_title(self, obj):
         s = obj.type
         if hasattr(obj, "price") and not empty(obj.price):
-            s += " %s %s" % (
+            s += " {} {}".format(
                 self.colored("—", "cyan"),
-                self.colored("%6.2f %s" % (obj.price, Currency.currency2txt(obj.currency)), "green"),
+                self.colored(f"{obj.price:6.2f} {Currency.currency2txt(obj.currency)}", "green"),
             )
         if hasattr(obj, "late") and not empty(obj.late) and obj.late > datetime.time():
-            s += " %s %s" % (self.colored("—", "cyan"), self.colored("Late: %s" % obj.late, "red", "bold"))
+            s += " {} {}".format(self.colored("—", "cyan"), self.colored("Late: %s" % obj.late, "red", "bold"))
         if hasattr(obj, "information") and not empty(obj.information) and obj.information.strip() != "":
-            s += " %s %s" % (self.colored("—", "cyan"), self.colored(obj.information, "red"))
+            s += " {} {}".format(self.colored("—", "cyan"), self.colored(obj.information, "red"))
         return s
 
     def get_description(self, obj):
         if hasattr(obj, "arrival_time") and not empty(obj.arrival_time):
-            s = "(%s)  %s%s\n\t(%s)  %s" % (
+            s = "({})  {}{}\n\t({})  {}".format(
                 self.colored(obj.time.strftime("%H:%M") if obj.time else "??:??", "cyan"),
                 obj.departure_station,
                 (

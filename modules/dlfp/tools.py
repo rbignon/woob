@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -53,9 +51,9 @@ def rssid(entry):
             mm = re.match(f2re(url_re), entry.link)
             if not mm:
                 return
-            return "%s%s.%s" % (ind, mm.group(1), m.group(2))
+            return f"{ind}{mm.group(1)}.{m.group(2)}"
         else:
-            return "%s.%s" % (ind, m.group(2))
+            return f"{ind}.{m.group(2)}"
 
 
 def id2url(id):

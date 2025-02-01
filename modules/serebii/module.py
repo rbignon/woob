@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019-2020 Célande Adrien
 #
 # This file is part of a woob module.

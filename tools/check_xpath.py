@@ -29,7 +29,7 @@ from woob.browser.filters import standard
 
 class Error(SyntaxError):
     def __init__(self, file, line, message):
-        super(Error, self).__init__("%s:%s: %s" % (file, line, message))
+        super().__init__(f"{file}:{line}: {message}")
         self.file = file
         self.line = line
 
@@ -46,7 +46,7 @@ def do_visits(*funcs):
 class Visitor(ast.NodeVisitor):
     def __init__(self, file, *args, **kwargs):
         self.warnings = kwargs.pop("warnings", False)
-        super(Visitor, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.file = file
 
         self.filters = []
@@ -71,7 +71,7 @@ class Visitor(ast.NodeVisitor):
                     "TableElement",
                     "ListElement",
                 ):
-                    print('%s:%s: probable missing "." at start of XPath' % (self.file, lineno))
+                    print(f'{self.file}:{lineno}: probable missing "." at start of XPath')
 
     def _item_xpath(self, node):
         try:

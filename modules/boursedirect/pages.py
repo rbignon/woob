@@ -131,7 +131,7 @@ class HomePage(BasePage):
         So, we can detect if we are logged in based on the existence of the log out link.
         """
 
-        if not super(HomePage, self).logged:
+        if not super().logged:
             return False
 
         if not self.doc.xpath('//a[@href="/fr/deconnexion"][has-class("btn-logout")]'):

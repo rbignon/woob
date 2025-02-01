@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015 Budget Insight
 #
 # This file is part of a woob module.
@@ -56,13 +54,13 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
         kwargs["preferences"] = {
             "download.default_directory": self.dl_folder,
         }
-        super(SogecarteEntrepriseBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # This is to avoid errors if the day changes while parsing.
         self.today = date.today()
         self.selected_account = None
 
     def deinit(self):
-        super(SogecarteEntrepriseBrowser, self).deinit()
+        super().deinit()
         shutil.rmtree(self.dl_folder)
 
     def do_login(self):
@@ -137,8 +135,7 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
             ),
         )
 
-        for acc in page.iter_accounts():
-            yield acc
+        yield from page.iter_accounts()
 
         os.remove(file_path)
 

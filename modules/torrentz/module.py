@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from woob.capabilities.torrent import CapTorrent
 from woob.tools.backend import Module
 

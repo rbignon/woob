@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent Ardisson
 #
 # This file is part of a woob module.
@@ -43,7 +41,7 @@ class AsanaTest(BackendTest):
 
         for issue in issues:
             self.assertTrue(issue.project)
-            self.assertEquals(issue.project.id, projects[0].id)
+            self.assertEqual(issue.project.id, projects[0].id)
             self.assertTrue(issue.title)
             self.assertFalse(empty(issue.body))
             self.assertTrue(issue.creation)
@@ -54,7 +52,7 @@ class AsanaTest(BackendTest):
         if matcher_cb is None:
 
             def matcher_cb(expected, actual):
-                self.assertEquals(expected.id, actual.id, "different id on: %s != %s" % (expected, actual))
+                self.assertEqual(expected.id, actual.id, f"different id on: {expected} != {actual}")
 
         if first_cb is None:
 
@@ -117,11 +115,11 @@ class AsanaTest(BackendTest):
         q.status = "open"
 
         for issue, _ in zip(self.backend.iter_issues(q), range(30)):
-            self.assertEquals(issue.status.name.lower(), "open", issue.title)
+            self.assertEqual(issue.status.name.lower(), "open", issue.title)
 
         q.status = "closed"
         for issue, _ in zip(self.backend.iter_issues(q), range(30)):
-            self.assertEquals(issue.status.name.lower(), "closed", issue.title)
+            self.assertEqual(issue.status.name.lower(), "closed", issue.title)
 
     def test_read_comments(self):
         projects = list(self.backend.iter_projects())

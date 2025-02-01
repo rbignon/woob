@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright(C) 2021 woob project
 #
 # This file is part of woob.
@@ -90,6 +89,6 @@ class TestDistinctValues(TestCase):
         assert self.identity.xpath('distinct-values(//a[@class="book-4"]/text())') == []
 
     def test_that_different_values_are_successfully_returns_as_is(self):
-        assert set(self.identity.xpath('distinct-values(//a[@class="book-3"]/text())')) == set(
-            ["Foundation's Edge", "Second Foundation"]
-        )
+        assert set(self.identity.xpath('distinct-values(//a[@class="book-3"]/text())')) == {
+            "Foundation's Edge", "Second Foundation"
+        }

@@ -28,11 +28,11 @@ class LyricsGetFormatter(IFormatter):
     MANDATORY_FIELDS = ("id", "title", "artist", "content")
 
     def format_obj(self, obj, alias):
-        result = "%s%s%s\n" % (self.BOLD, obj.title, self.NC)
+        result = f"{self.BOLD}{obj.title}{self.NC}\n"
         result += "ID: %s\n" % obj.fullid
         result += "Title: %s\n" % obj.title
         result += "Artist: %s\n" % obj.artist
-        result += "\n%sContent%s\n" % (self.BOLD, self.NC)
+        result += f"\n{self.BOLD}Content{self.NC}\n"
         result += "%s" % obj.content
         return result
 

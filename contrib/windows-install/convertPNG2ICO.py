@@ -1,5 +1,4 @@
 #!C:\Python27\python.exe
-# -*- coding: utf-8 -*-
 #
 # windows icon file(.ico) and cursor file(.cur) generator/writer from RGB(a) array
 #

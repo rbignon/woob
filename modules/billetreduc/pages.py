@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Vincent A
 #
 # This file is part of a woob module.
@@ -72,7 +70,7 @@ class SearchPage(HTMLPage):
         form.submit()
 
 
-class TimeParser(object):
+class TimeParser:
     # phrasing can be: "du lundi au samedi à 16h et le lundi et le dimanche à 15h30, dimanche, mardi à 12h, 13h et 14h"
     def __init__(self, txt, weekday):
         self.weekday = weekday
@@ -224,7 +222,7 @@ class EventDatesPage(HTMLPage):
         for a in self.doc.xpath("//a[starts-with(@href, $pfx)]", pfx=prefix):
             bookurl = self.browser.absurl(a.attrib["href"], base=True)
             d = self.browser.book.match(bookurl).groupdict()
-            s = "%sT%s" % (d["ymd"], d["hm"])
+            s = "{}T{}".format(d["ymd"], d["hm"])
             event.start_date = datetime.strptime(s, "%Y-%m-%dT%H:%M")
             event.price = self.parse_price(a)
             return

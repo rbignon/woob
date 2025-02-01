@@ -81,7 +81,7 @@ class INIConfig(IConfig):
                     save_section(v, new_section)
 
         save_section(self.values)
-        with io.open(self.path, "w", encoding="utf-8") as f:
+        with open(self.path, "w", encoding="utf-8") as f:
             self.config.write(f)
 
     def get(self, *args, **kwargs):

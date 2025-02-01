@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Bezleputh
 #
 # This file is part of a woob module.
@@ -223,21 +221,19 @@ class AdeccoModule(Module, CapJob):
     )
 
     def search_job(self, pattern=None):
-        for advert in self.browser.search_job(pattern):
-            yield advert
+        yield from self.browser.search_job(pattern)
 
     def advanced_search_job(self):
         activity_domain = self.config["activity_domain"].get() if self.config["activity_domain"].get() != "Z" else None
 
-        for advert in self.browser.advanced_search_job(
+        yield from self.browser.advanced_search_job(
             publication_date=int(self.config["publication_date"].get()),
             contract_type=self.config["contract"].get(),
             conty=self.config["place"].get(),
             activity_domain=activity_domain,
             job=self.config["job"].get(),
             town=self.config["town"].get(),
-        ):
-            yield advert
+        )
 
     def get_job_advert(self, _id, advert=None):
         return self.browser.get_job_advert(_id, advert)

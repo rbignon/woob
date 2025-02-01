@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2021 Damien Ramelet.
 #
 # This file is part of a woob module.

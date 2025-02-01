@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # flake8: compatible
 
 # Copyright(C) 2012-2020  Budget Insight
@@ -52,7 +50,7 @@ class ErrorPage(HTMLPage):
 
 class FormatDate(Filter):
     def __init__(self, pattern, selector):
-        super(FormatDate, self).__init__(selector)
+        super().__init__(selector)
         self.pattern = pattern
 
     def filter(self, _date):
@@ -95,7 +93,7 @@ class MainPage(LoggedPage, HTMLPage):
             n = 1
             while _id in self.objects:
                 n += 1
-                _id = "%s-%s" % (obj.id, n)
+                _id = f"{obj.id}-{n}"
             obj.id = _id
             self.objects[obj.id] = obj
             return obj
@@ -186,7 +184,7 @@ class OfferPage(LoggedPage, HTMLPage):
         subscription._real_id = subscription.id
         offer_name = CleanText('//div[@class="title"]')(self.doc)
         if offer_name:
-            subscription.label = "%s - %s" % (subscription._phone_number, offer_name)
+            subscription.label = f"{subscription._phone_number} - {offer_name}"
 
     def get_first_subscription_id(self):
         """Return the first subscription id if available."""

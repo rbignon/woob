@@ -176,7 +176,7 @@ class VirtKeyboard:
                 if dirname is None:
                     dirname = tempfile.mkdtemp(prefix="woob_session_")
                 self.generate_MD5(dirname)
-                raise VirtKeyboardError("Symbol '%s' not found; all symbol hashes are available in %s" % (s, dirname))
+                raise VirtKeyboardError(f"Symbol '{s}' not found; all symbol hashes are available in {dirname}")
 
     def generate_MD5(self, dir):
         for i in self.coords:
@@ -206,7 +206,7 @@ class MappedVirtKeyboard(VirtKeyboard):
                 area_coords.append(int(coord))
             coords[code] = tuple(area_coords)
 
-        super(MappedVirtKeyboard, self).__init__(file, coords, color, convert)
+        super().__init__(file, coords, color, convert)
 
 
 class GridVirtKeyboard(VirtKeyboard):
@@ -238,9 +238,9 @@ class GridVirtKeyboard(VirtKeyboard):
         tileW = self.width / cols
         tileH = self.height / rows
         positions = ((s, i * tileW % self.width, i // cols * tileH) for i, s in enumerate(symbols))
-        coords = dict((s, tuple(map(int, (x, y, x + tileW, y + tileH)))) for (s, x, y) in positions)
+        coords = {s: tuple(map(int, (x, y, x + tileW, y + tileH))) for (s, x, y) in positions}
 
-        super(GridVirtKeyboard, self).__init__()
+        super().__init__()
 
         self.load_symbols(coords)
 
@@ -275,7 +275,7 @@ class SplitKeyboard:
             else:
                 path = tempfile.mkdtemp(prefix="woob_session_")
                 self.dump(code_to_filedata.values(), path)
-                raise VirtKeyboardError("Symbol '%s' not found; all symbol hashes are available in %s" % (char, path))
+                raise VirtKeyboardError(f"Symbol '{char}' not found; all symbol hashes are available in {path}")
 
     def checksum(self, buffer):
         return hashlib.md5(self.convert(buffer)).hexdigest()
@@ -283,7 +283,7 @@ class SplitKeyboard:
     def dump(self, files, path):
         for dat in files:
             md5 = hashlib.md5(dat).hexdigest()
-            with open("%s/%s.png" % (path, md5), "wb") as fd:
+            with open(f"{path}/{md5}.png", "wb") as fd:
                 fd.write(dat)
 
     def get_string_code(self, password):
@@ -482,7 +482,7 @@ class SimpleVirtualKeyboard:
 
     def dump_tiles(self, path):
         for tile in self.tiles:
-            tile.image.save("{}/{}.png".format(path, tile.md5))
+            tile.image.save(f"{path}/{tile.md5}.png")
 
     def get_string_code(self, password):
         word = []
@@ -496,6 +496,6 @@ class SimpleVirtualKeyboard:
                 # Dump file only if the symbol is not found
                 self.dump_tiles(self.path)
                 raise VirtKeyboardError(
-                    "Symbol '%s' not found; all symbol hashes are available in %s" % (digit, self.path)
+                    f"Symbol '{digit}' not found; all symbol hashes are available in {self.path}"
                 )
         return self.codesep.join(word)

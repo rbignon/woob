@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2022      Guillaume Thomas
 #
 # This file is part of a woob module.

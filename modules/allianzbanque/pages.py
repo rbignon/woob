@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2022  Budget Insight
 #
 # This file is part of a woob module.
@@ -224,7 +222,7 @@ class LoansPage(LoggedPage, JsonPage):
             # empty json if no content
             self.logger.warning("JSON has no content")
             return list()
-        return super(LoansPage, self).build_doc(content)
+        return super().build_doc(content)
 
     @method
     class iter_loans(DictElement):
@@ -262,7 +260,7 @@ class InvestmentsPage(LoggedPage, HTMLPage):
     def get_vdate(self):
         return CleanText('//th[contains(text(), "Valorisation au ")]')(self.doc).split()[-1]
 
-    class GenericPagination(object):
+    class GenericPagination:
         def next_page(self):
             select_js_handler = Attr('//div[@id="turn_next"]//a', "onclick")
             params = Regexp(select_js_handler, r'href: ".*\?(.*)"')(self.page.doc)

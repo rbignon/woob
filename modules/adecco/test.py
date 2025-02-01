@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Bezleputh
 #
 # This file is part of a woob module.
@@ -39,10 +37,10 @@ class AdeccoTest(BackendTest):
         l = list(itertools.islice(self.backend.search_job("manutentionnaire"), 0, 20))
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, None)
-        self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))
+        self.assertTrue(advert.url, f'URL for announce "{advert.id}" not found: {advert.url}')
 
     def test_adecco_advanced_search(self):
         l = list(itertools.islice(self.backend.advanced_search_job(), 0, 20))
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, None)
-        self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))
+        self.assertTrue(advert.url, f'URL for announce "{advert.id}" not found: {advert.url}')

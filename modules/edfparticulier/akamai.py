@@ -30,10 +30,10 @@ except ModuleNotFoundError:
         def get_akamai_url(self):
             return ""
 
-    class FakeAkamaiSolver(object):
+    class FakeAkamaiSolver:
         html_doc = None
 
-    class FakeAkamaiMixin(object):
+    class FakeAkamaiMixin:
         def get_akamai_solver(self, *args, **kwargs):
             return FakeAkamaiSolver()
 

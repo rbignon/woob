@@ -76,4 +76,4 @@ class BnppereModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
         website = self.config["website"].get()
         if website == "visiogo":
             raise NotImplementedError()
-        return super(BnppereModule, self).iter_subscription()
+        return super().iter_subscription()

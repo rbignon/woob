@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015 Budget Insight
 #
 # This file is part of a woob module.
@@ -83,7 +81,7 @@ class XLSPage(Page):
 
     def __init__(self, browser, file_path, response):
         self.file_path = file_path
-        super(XLSPage, self).__init__(browser, response)
+        super().__init__(browser, response)
 
     def build_doc(self, content):
         wb = xlrd.open_workbook(self.file_path)
@@ -128,7 +126,7 @@ class AccountsXlsPage(LoggedPage, XLSPage):
             def obj_label(self):
                 card_number = Field("_card_number")(self)
                 last_card_digits = card_number[card_number.rfind("X") + 1 :]
-                return "%s %s %s" % (
+                return "{} {} {}".format(
                     Dict("nom titulaire")(self),
                     Dict("prénom titulaire")(self),
                     last_card_digits,

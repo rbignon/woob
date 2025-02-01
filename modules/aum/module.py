@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2014 Romain Bignon
 #
 # This file is part of a woob module.
@@ -407,7 +405,7 @@ class AuMModule(Module, CapMessages, CapMessagesPost, CapDating, CapChat, CapCon
         c = Contact(contact["id"], to_unicode(contact["pseudo"]), s)
         c.url = self.browser.id2url(contact["id"])
         if "age" in contact:
-            c.status_msg = "%s old, %s" % (contact["age"], contact["city"])
+            c.status_msg = "{} old, {}".format(contact["age"], contact["city"])
         if contact["cover"] is not None:
             url = contact["cover"] + "/%(type)s"
         else:

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2015      Matthieu Weber
 #
 # This file is part of a woob module.
@@ -79,7 +77,7 @@ class DeutschePostDHLSearchPage(HTMLPage):
             raise ParcelNotFound("No such ID: %s" % _id)
         result_id = result_id[0].text.split(" ")[-1]
         if result_id != _id:
-            raise ParcelNotFound("ID mismatch: expecting %s, got %s" % (_id, result_id))
+            raise ParcelNotFound(f"ID mismatch: expecting {_id}, got {result_id}")
 
         p = Parcel(_id)
         events = self.doc.xpath('//div[@id="events-content-0"]//dl/div/*')
@@ -101,7 +99,7 @@ class DeutschePostDHLSearchPage(HTMLPage):
         if not result_id:
             raise ParcelNotFound("No such ID: %s" % _id)
         if result_id != _id:
-            raise ParcelNotFound("ID mismatch: expecting %s, got %s" % (_id, result_id))
+            raise ParcelNotFound(f"ID mismatch: expecting {_id}, got {result_id}")
 
         p = Parcel(_id)
         events = data["sendungen"][0]["sendungsdetails"]["sendungsverlauf"]["events"]

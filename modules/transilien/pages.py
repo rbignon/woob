@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Julien Hébert, Romain Bignon
 # Copyright(C) 2014 Benjamin Carton
 #
@@ -184,7 +182,7 @@ class DeparturesPage2(HTMLPage):
         form["arrive"] = arrival
         if date:
             form["jourHoraire"] = date.day
-            form["moiHoraire"] = "%s|%s" % (date.month, date.year)
+            form["moiHoraire"] = f"{date.month}|{date.year}"
             form["heureHoraire"] = date.hour
             form["minuteHoraire"] = date.minute
         self.logger.debug(form)

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013      Bezleputh
 #
 # This file is part of a woob module.
@@ -40,7 +38,7 @@ class MonsterBrowser(PagesBrowser):
     def advanced_search_job(self, job_name, place, contract, limit_date):
         search = "" if not contract else contract
         query = {"q": quote_plus(job_name), "where": place, "tm": limit_date}
-        return self.adv_search.go(search="%s?%s" % (search, urlencode(query)), page=1).iter_job_adverts()
+        return self.adv_search.go(search=f"{search}?{urlencode(query)}", page=1).iter_job_adverts()
 
     def get_job_advert(self, _id, advert):
         return self.advert.go(_id=_id).get_job_advert(obj=advert)

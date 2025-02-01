@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Roger Philibert
 #
 # This file is part of a woob module.
@@ -36,11 +34,11 @@ class XHamsterTest(BackendTest):
         old = vids[0][1]
         new = self.backend.get_video(old.id)
         assert new
-        self.assertEquals(old.title, new.title)
-        self.assertEquals(old.duration, new.duration)
-        self.assertEquals(old.id, new.id)
+        self.assertEqual(old.title, new.title)
+        self.assertEqual(old.duration, new.duration)
+        self.assertEqual(old.id, new.id)
         assert new.url
 
         self.backend.fillobj(old, ["url", "thumbnail"])
         assert old.thumbnail.data
-        self.assertEquals(old.url, new.url)
+        self.assertEqual(old.url, new.url)

@@ -53,7 +53,7 @@ class CacheMixin:
     """
 
     def __init__(self, *args, **kwargs):
-        super(CacheMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.cache = {}
 
@@ -82,7 +82,7 @@ class CacheMixin:
             else:
                 self.cache[key].update_request(request)
 
-        response = super(CacheMixin, self).open(request, **kwargs)
+        response = super().open(request, **kwargs)
         if response.status_code == 304:
             self.logger.debug("cache HIT for %r", request.url)
             return self.cache[key].response

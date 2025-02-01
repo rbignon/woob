@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -45,7 +43,7 @@ class TwitterJsonHTMLPage(JsonPage):
     scroll_cursor = None
 
     def __init__(self, browser, response, *args, **kwargs):
-        super(TwitterJsonHTMLPage, self).__init__(browser, response, *args, **kwargs)
+        super().__init__(browser, response, *args, **kwargs)
         self.encoding = self.ENCODING or response.encoding
         parser = html.HTMLParser(encoding=self.encoding)
         if "module_html" in self.doc:
@@ -204,7 +202,7 @@ class TimelinePage(TwitterJsonHTMLPage):
 
         def next_page(self):
             if self.page.has_next:
-                return "%s?max_position=%s" % (self.page.url.split("?")[0], self.get_last_id())
+                return "{}?max_position={}".format(self.page.url.split("?")[0], self.get_last_id())
 
 
 class HomeTimelinePage(TwitterJsonHTMLPage, LoggedPage):
@@ -214,7 +212,7 @@ class HomeTimelinePage(TwitterJsonHTMLPage, LoggedPage):
 
         def next_page(self):
             if self.page.has_next:
-                return "%s?max_id=%s" % (self.page.url.split("?")[0], self.get_last_id())
+                return "{}?max_id={}".format(self.page.url.split("?")[0], self.get_last_id())
 
 
 class SearchTimelinePage(TwitterJsonHTMLPage):
@@ -229,7 +227,7 @@ class SearchTimelinePage(TwitterJsonHTMLPage):
                 params["max_position"] = self.env["min_position"]
 
             if self.page.has_next:
-                return "%s?%s" % (self.page.url.split("?")[0], urlencode(params))
+                return "{}?{}".format(self.page.url.split("?")[0], urlencode(params))
 
 
 class LoginErrorPage(HTMLPage):

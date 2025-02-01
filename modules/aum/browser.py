@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2008-2011  Romain Bignon, Christophe Benz
 #
 # This file is part of a woob module.
@@ -126,7 +124,7 @@ class AuMBrowser(DomainBrowser):
         self.username = username
         self.password = password
         self.search_query = search_query
-        super(AuMBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.login()
 
@@ -163,7 +161,7 @@ class AuMBrowser(DomainBrowser):
             headers["X-Client-Version"] = self.APIVERSION
             headers["X-AUM-Token"] = token
 
-        return super(AuMBrowser, self).build_request(url, *args, **kwargs)
+        return super().build_request(url, *args, **kwargs)
 
     def home(self):
         r = self.request("home/")

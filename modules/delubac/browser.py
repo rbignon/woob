@@ -67,13 +67,12 @@ class DelubacBrowser(LoginBrowser):
                     message="Vous devez réaliser la double authentification sur le portail internet.",
                     action_type=ActionType.PERFORM_MFA,
                 )
-            raise AssertionError("Unhandled error at login: {}".format(error_msg))
+            raise AssertionError(f"Unhandled error at login: {error_msg}")
 
     @need_login
     def iter_accounts(self):
         self.accounts.go()
-        for account in self.page.iter_accounts():
-            yield account
+        yield from self.page.iter_accounts()
 
     @need_login
     def iter_history(self, account):
@@ -81,5 +80,4 @@ class DelubacBrowser(LoginBrowser):
         self.page.search_transactions_form(account)
         if self.page.has_no_transaction():
             return
-        for tr in sorted_transactions(self.page.iter_history()):
-            yield tr
+        yield from sorted_transactions(self.page.iter_history())

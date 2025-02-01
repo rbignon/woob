@@ -1,6 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
-from __future__ import print_function
 
 import os
 import re
@@ -68,7 +66,7 @@ class Woobmc(Application):
             args = ("mimms", "-r", obj.url, dest)
         elif "m3u8" == obj.ext:
             _dest, _ = os.path.splitext(dest)
-            dest = "%s.%s" % (_dest, "mp4")
+            dest = "{}.{}".format(_dest, "mp4")
             args = ("wget",) + tuple(line for line in self.read_url(obj.url) if not line.startswith("#")) + ("-O", dest)
         else:
             if check_exec("wget"):

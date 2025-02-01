@@ -243,7 +243,7 @@ class AccountHistory(LoggedPage, MyHTMLPage):
             Regexp(CleanText("."), r"cours prélevé au \d+/\d+/\d+ : ([\d\s,-]+) [euros|€]"), replace_dots=True
         )(div)
         ret.number = Regexp(CleanText("."), r"sur votre carte [nN]°([\d*]+)")(div)
-        ret.id = "%s.%s" % (parent_id, ret.number)
+        ret.id = f"{parent_id}.{ret.number}"
         ret.currency = "EUR"
         ret.label = "CARTE %s" % ret.number
         ret.url = self.url
@@ -460,7 +460,7 @@ class CardsJsonDetails(LoggedPage, JsonPage):
             obj__account_holder = NotAvailable
 
             def obj_id(self):
-                return "%s.%s" % (Env("parent_id")(self), self.obj.number)
+                return "{}.{}".format(Env("parent_id")(self), self.obj.number)
 
             def obj_label(self):
                 return "CARTE %s" % self.obj.number

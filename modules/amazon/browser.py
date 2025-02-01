@@ -152,7 +152,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         self.config = config
         kwargs["username"] = self.config["email"].get()
         kwargs["password"] = self.config["password"].get()
-        super(AmazonBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.previous_url = None
         self.captcha_form = None
         self.captcha_url = None

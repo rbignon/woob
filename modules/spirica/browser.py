@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -42,7 +40,7 @@ class SpiricaBrowser(LoginBrowser):
     maintenance = URL("/maintenance.html", MaintenancePage)
 
     def __init__(self, website, *args, **kwargs):
-        super(SpiricaBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.BASEURL = website
         self.cache = {}
         self.cache["invs"] = {}
@@ -181,8 +179,7 @@ class SpiricaBrowser(LoginBrowser):
                 if not self.transaction_page.go_historyall(page_number):
                     self.logger.warning("The go_historyall() failed twice, these transactions will be skipped.")
                     continue
-            for transaction in self.page.iter_history():
-                yield transaction
+            yield from self.page.iter_history()
 
     def fill_from_list(self, invs, objects_list):
         matching_fields = ["code", "unitvalue", "label", "_gestion_type"]

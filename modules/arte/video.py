@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Christophe Benz
 #
 # This file is part of a woob module.
@@ -22,7 +20,7 @@ def enum(**enums):
     _values = list(enums.values())
     _keys = list(enums.keys())
     _items = list(enums.items())
-    _types = list((type(value) for value in enums.values()))
+    _types = list(type(value) for value in enums.values())
     _index = {
         (value if not isinstance(value, dict) else next(iter(value.values()))): i
         for i, value in enumerate(enums.values())

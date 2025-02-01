@@ -49,10 +49,10 @@ class IssueFormatter(IFormatter):
         return self.format_key(attr.capitalize(), value)
 
     def format_key(self, key, value):
-        return "%s %s\n" % (self.colored("%s:" % key, "green"), value)
+        return "{} {}\n".format(self.colored("%s:" % key, "green"), value)
 
     def format_obj(self, obj, alias):
-        result = "%s %s %s %s %s\n" % (
+        result = "{} {} {} {} {}\n".format(
             self.colored(obj.project.name, "blue", "bold"),
             self.colored("—", "cyan", "bold"),
             self.colored(obj.fullid, "red", "bold"),
@@ -60,7 +60,7 @@ class IssueFormatter(IFormatter):
             self.colored(obj.title, "yellow", "bold"),
         )
         result += "\n%s\n\n" % obj.body
-        result += self.format_key("Author", "%s (%s)" % (obj.author.name, obj.creation))
+        result += self.format_key("Author", f"{obj.author.name} ({obj.creation})")
         result += self.format_attr(obj, "status")
         result += self.format_attr(obj, "priority")
         result += self.format_attr(obj, "version")
@@ -73,18 +73,18 @@ class IssueFormatter(IFormatter):
         if hasattr(obj, "attachments") and obj.attachments:
             result += "\n%s\n" % self.colored("Attachments:", "green")
             for a in obj.attachments:
-                result += "* %s%s%s <%s>\n" % (self.BOLD, a.filename, self.NC, a.url)
+                result += f"* {self.BOLD}{a.filename}{self.NC} <{a.url}>\n"
         if hasattr(obj, "history") and obj.history:
             result += "\n%s\n" % self.colored("History:", "green")
             for u in obj.history:
-                result += "%s %s %s %s\n" % (
+                result += "{} {} {} {}\n".format(
                     self.colored("*", "red", "bold"),
                     self.colored(u.date, "yellow", "bold"),
                     self.colored("—", "cyan", "bold"),
                     self.colored(u.author.name, "blue", "bold"),
                 )
                 for change in u.changes:
-                    result += "  - %s %s %s %s\n" % (
+                    result += "  - {} {} {} {}\n".format(
                         self.colored(change.field, "green"),
                         change.last,
                         self.colored("->", "magenta"),
@@ -99,7 +99,7 @@ class IssuesListFormatter(PrettyFormatter):
     MANDATORY_FIELDS = ("id", "project", "status", "title", "category")
 
     def get_title(self, obj):
-        return "%s - [%s] %s" % (obj.project.name, obj.status.name, obj.title)
+        return f"{obj.project.name} - [{obj.status.name}] {obj.title}"
 
     def get_description(self, obj):
         return obj.category
@@ -311,13 +311,13 @@ class AppBugTracker(ReplApplication):
                 if len(objects_list) == 0:
                     continue
 
-            output += "%s: %s\n" % (self.sanitize_key(key), value)
+            output += f"{self.sanitize_key(key)}: {value}\n"
             if list_name is not None:
                 availables = ", ".join("<%s>" % (o if isinstance(o, str) else o.name) for o in objects_list)
-                output += "X-Available-%s: %s\n" % (self.sanitize_key(key), availables)
+                output += f"X-Available-{self.sanitize_key(key)}: {availables}\n"
 
         for key, value in issue.fields.items():
-            output += "%s: %s\n" % (self.sanitize_key(key), value or "")
+            output += "{}: {}\n".format(self.sanitize_key(key), value or "")
             # TODO: Add X-Available-* for lists
 
         output += "\n%s" % (issue.body or "Please write your bug report here.")
@@ -425,16 +425,16 @@ class AppBugTracker(ReplApplication):
 
 You have successfuly created this ticket on the Woob tracker:
 
-%s
+{}
 
 You can follow your bug report on this page:
 
-https://symlink.me/issues/%s
+https://symlink.me/issues/{}
 
 Regards,
 
 Woob Team
-""" % (
+""".format(
             issue.title,
             issue.id,
         )

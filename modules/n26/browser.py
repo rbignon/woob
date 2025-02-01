@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Benjamin Bouvier
 #
 # This file is part of a woob module.
@@ -62,7 +60,7 @@ class Number26Browser(TwoFactorBrowser):
     def __init__(self, config, *args, **kwargs):
         kwargs["username"] = config["login"].get()
         kwargs["password"] = config["password"].get()
-        super(Number26Browser, self).__init__(config, *args, **kwargs)
+        super().__init__(config, *args, **kwargs)
         self.mfa_token = None  # Token associated with a 2FA session.
         self.refresh_token = None
         self.access_token = None
@@ -99,7 +97,7 @@ class Number26Browser(TwoFactorBrowser):
         headers["Accept"] = "application/json"
         headers["device-token"] = self.device_token
 
-        req = super(Number26Browser, self).build_request(*args, **kwargs)
+        req = super().build_request(*args, **kwargs)
         return req
 
     def locate_browser(self, state):
@@ -109,7 +107,7 @@ class Number26Browser(TwoFactorBrowser):
         if response.status_code == 401:
             self.access_token = None
 
-        return super(Number26Browser, self).raise_for_status(response)
+        return super().raise_for_status(response)
 
     @property
     def logged(self):

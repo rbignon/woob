@@ -934,8 +934,7 @@ class BPBrowser(LoginBrowser, StatesMixin):
             self.par_account_checking_coming.go(accountId=account.id)
 
             if self.par_account_checking_coming.is_here() and self.page.has_transactions():
-                for tr in self.page.iter_transactions(coming=True):
-                    yield tr
+                yield from self.page.iter_transactions(coming=True)
 
     @need_login
     def get_coming(self, account):
@@ -969,12 +968,10 @@ class BPBrowser(LoginBrowser, StatesMixin):
                     break
 
                 if urlobj.is_here():
-                    for tr in self.page.get_history(deferred=True):
-                        yield tr
+                    yield from self.page.get_history(deferred=True)
 
         assert account.type == Account.TYPE_CARD
-        for tr in iter_transactions(account.url, self.deferred_card_history_multi):
-            yield tr
+        yield from iter_transactions(account.url, self.deferred_card_history_multi)
 
     @need_login
     def iter_investment(self, account):
@@ -1451,8 +1448,7 @@ class BProBrowser(BPBrowser):
                 self.subscription.go()
                 continue
 
-            for doc in self.page.iter_documents(sub_id=subscription.id):
-                yield doc
+            yield from self.page.iter_documents(sub_id=subscription.id)
 
             self.subscription.go()
 

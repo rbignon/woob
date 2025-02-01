@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011 Clément Schreiner
 #
 # This file is part of a woob module.

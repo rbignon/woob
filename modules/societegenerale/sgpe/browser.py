@@ -193,12 +193,10 @@ class SGPEBrowser(SocieteGeneraleLogin):
         value = self.history.go(data={"cl500_compte": account._id, "cl200_typeReleve": "valeur"}).get_value()
 
         self.history.go(data={"cl500_compte": account._id, "cl200_typeReleve": value})
-        for tr in self.page.iter_history(value=value):
-            yield tr
+        yield from self.page.iter_history(value=value)
 
         self.location("/icd/syd-front/data/syd-intraday-chargerDetail.json", data={"cl500_compte": account._id})
-        for tr in self.page.iter_history():
-            yield tr
+        yield from self.page.iter_history()
 
     def encode_b64(self, string):
         return b64encode(string.encode("utf8")).decode("utf8")
@@ -292,7 +290,7 @@ class SGEnterpriseBrowser(SGPEBrowser):
         if not self.is_interactive:
             # user not present: start up at login to raise NeedInteractiveFor2FA since 2FA is systematic
             state.pop("url", None)
-        super(SGEnterpriseBrowser, self).load_state(state)
+        super().load_state(state)
 
     @need_login
     def iter_market_accounts(self):
@@ -353,8 +351,7 @@ class SGEnterpriseBrowser(SGPEBrowser):
             }
             self.subscription_search.go(data=data)
 
-            for doc in self.page.iter_documents():
-                yield doc
+            yield from self.page.iter_documents()
 
             search_date_max = search_date_min - relativedelta(days=1)
             counter += 1
@@ -631,8 +628,7 @@ class SGProfessionalBrowser(SGPEBrowser):
         self.internal_recipients.go(
             method="POST", params=params, headers={"Content-Type": "application/json;charset=UTF-8"}
         )
-        for internal_rcpt in self.page.iter_internal_recipients():
-            yield internal_rcpt
+        yield from self.page.iter_internal_recipients()
 
         data = {
             "an_filtreIban": "true",
@@ -650,8 +646,7 @@ class SGProfessionalBrowser(SGPEBrowser):
 
         if self.page.is_external_recipients():
             assert self.page.is_all_external_recipient(), "Some recipients are missing"
-            for external_rcpt in self.page.iter_external_recipients():
-                yield external_rcpt
+            yield from self.page.iter_external_recipients()
 
     @need_login
     def init_transfer(self, account, recipient, transfer):
@@ -776,8 +771,7 @@ class SGProfessionalBrowser(SGPEBrowser):
             }
             self.bank_statement_search.go(data=data)
 
-            for d in self.page.iter_documents():
-                yield d
+            yield from self.page.iter_documents()
 
             search_date_max = search_date_min - relativedelta(days=1)
             counter += 1

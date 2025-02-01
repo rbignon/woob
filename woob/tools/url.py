@@ -93,7 +93,7 @@ def get_url_fragment_param(
     return params[name]
 
 
-def get_url_params(url: str) -> Dict[str, str]:
+def get_url_params(url: str) -> dict[str, str]:
     """Get query parameters from an URL.
 
     :param url: The URL to get the parameters from.
@@ -102,7 +102,7 @@ def get_url_params(url: str) -> Dict[str, str]:
     return dict(parse_qsl(parsed_url.query, keep_blank_values=True))
 
 
-def get_url_fragment_params(url: str) -> Dict[str, str]:
+def get_url_fragment_params(url: str) -> dict[str, str]:
     """Get fragment parameters from an URL.
 
     Note that this function is only for cases where the fragment is encoded

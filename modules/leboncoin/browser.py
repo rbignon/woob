@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -49,7 +47,7 @@ class LeboncoinBrowser(PagesBrowser):
     }
 
     def __init__(self, *args, **kwargs):
-        super(LeboncoinBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_cities(self, pattern):
         city = ""

@@ -73,7 +73,7 @@ class AccountsPage(LoggedPage, JsonPage):
                 else:
                     raise AssertionError("Unexpected civility %s" % civility_id)
 
-                return "%s %s %s" % (
+                return "{} {} {}".format(
                     civility,
                     CleanText(Dict("contract/personne/firstName"))(self),
                     CleanText(Dict("contract/personne/lastName"))(self),

@@ -1,5 +1,4 @@
 "NewspaperLibeModule init"
-# -*- coding: utf-8 -*-
 
 # Copyright(C) 2013  Florent Fourcot
 #

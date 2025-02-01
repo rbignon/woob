@@ -38,14 +38,14 @@ class LCLParcCardsBrowser(LoginBrowser):
     historypage = URL(r"/services/porteur/operationscarteporteur", HistoryPage)
 
     def __init__(self, config, *args, **kwargs):
-        super(LCLParcCardsBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.entreprise_id = None
 
     def deinit(self):
         pass
 
     def prepare_request(self, req):
-        preq = super(LCLParcCardsBrowser, self).prepare_request(req)
+        preq = super().prepare_request(req)
 
         conn = self.session.adapters["https://"].get_connection(preq.url)
         conn.ssl_version = ssl.PROTOCOL_TLSv1
@@ -121,8 +121,7 @@ class LCLParcCardsBrowser(LoginBrowser):
                 "login": self.username,
             }
             self.historypage.go(json=json)
-            for tr in self.page.iter_history():
-                yield tr
+            yield from self.page.iter_history()
 
     @need_login
     def iter_coming(self, account):

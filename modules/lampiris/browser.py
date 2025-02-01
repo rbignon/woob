@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2017      Phyks (Lucas Verney)
 #
 # This file is part of a woob module.
@@ -34,7 +32,7 @@ class LampirisBrowser(LoginBrowser):
 
     def __init__(self, *args, **kwargs):
         self.logged = False
-        super(LampirisBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def do_login(self):
         if self.logged:
@@ -58,5 +56,5 @@ class LampirisBrowser(LoginBrowser):
 
         # Then, fetch documents
         for doc in self.billspage.go().get_documents():
-            doc.id = "{}#{}".format(subscription.id, doc.id)
+            doc.id = f"{subscription.id}#{doc.id}"
             yield doc

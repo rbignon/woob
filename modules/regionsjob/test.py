@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2014      Bezleputh
 #
 # This file is part of a woob module.
@@ -45,7 +43,7 @@ class RegionsjobTest(BackendTest):
         assert l[0].title
 
         advert = self.backend.get_job_advert(l[0].id, None)
-        self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))
+        self.assertTrue(advert.url, f'URL for announce "{advert.id}" not found: {advert.url}')
         assert advert.id
         assert advert.publication_date
         assert advert.society_name
@@ -61,7 +59,7 @@ class RegionsjobTest(BackendTest):
         assert l[0].title
 
         advert = self.backend.get_job_advert(l[0].id, None)
-        self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))
+        self.assertTrue(advert.url, f'URL for announce "{advert.id}" not found: {advert.url}')
         assert advert.id
         assert advert.publication_date
         assert advert.society_name

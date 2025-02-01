@@ -234,8 +234,7 @@ class BoursedirectBrowser(TwoFactorBrowser):
         self.pre_invests.go(nc=account._select)
         self.invests.go()
 
-        for inv in self.page.iter_investment():
-            yield inv
+        yield from self.page.iter_investment()
         yield self.page.get_liquidity()
 
     @need_login

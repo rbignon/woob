@@ -42,7 +42,7 @@ class ChatMessage(BaseObject):
     date = DateField("Date when the message has been sent")
 
     def __init__(self, id_from, id_to, message, date=None, url=None):
-        super(ChatMessage, self).__init__("%s.%s" % (id_from, id_to), url)
+        super().__init__(f"{id_from}.{id_to}", url)
         self.id_from = id_from
         self.id_to = id_to
         self.message = message

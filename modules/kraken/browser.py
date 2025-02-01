@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2022  Budget Insight
 #
 # This file is part of a woob module.
@@ -46,7 +44,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
     __states__ = ("otp_expire", "otp")
 
     def __init__(self, config, *args, **kwargs):
-        super(KrakenBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.config = config
 
         self.api_key = self.config["api_key"].get()
@@ -116,7 +114,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
 
     def open(self, *args, **kwargs):
         self.sleep_for_rate_limit()
-        resp = super(KrakenBrowser, self).open(*args, **kwargs)
+        resp = super().open(*args, **kwargs)
         error = resp.page.get_error() or ""
         if not error:
             return resp

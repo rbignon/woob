@@ -28,7 +28,7 @@ class AppDebug(Application):
     SHORT_DESCRIPTION = "debug backends"
 
     def __init__(self, option_parser=None):
-        super(AppDebug, self).__init__(option_parser)
+        super().__init__(option_parser)
         options = OptionGroup(self._parser, "Debug options")
         options.add_option("-B", "--bpython", action="store_true", help="Prefer bpython over ipython")
         self._parser.add_option_group(options)
@@ -60,7 +60,7 @@ class AppDebug(Application):
             woob=self.woob,
         )
         banner = 'Woob debug shell\nBackend "%s" loaded.\nAvailable variables:\n' % backend_name + "\n".join(
-            ["  %s: %s" % (k, v) for k, v in locs.items()]
+            [f"  {k}: {v}" for k, v in locs.items()]
         )
 
         if self.options.bpython:

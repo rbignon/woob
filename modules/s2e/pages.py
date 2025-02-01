@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2016      Edouard Lambert
 #
 # This file is part of a woob module.
@@ -181,9 +179,9 @@ class LoginPage(HTMLPage):
         vkid = Attr('//input[@id="identifiantClavierVirtuel"]', "value")(self.doc)
         code = S2eVirtKeyboard(self, vkid).get_string_code(password)
         tcc = Attr('//input[@id="codeTCC"]', "value")(self.doc)
-        password = "%s|%s|#%s#" % (code, vkid, tcc)
+        password = f"{code}|{vkid}|#{tcc}#"
         if secret:
-            password = "%s%s" % (password, secret)
+            password = f"{password}{secret}"
         return password
 
     def login(self, login, password, secret):
@@ -300,7 +298,7 @@ class HsbcInvestmentPage(LoggedPage, HTMLPage):
         return json.loads(raw_params)
 
 
-class CodePage(object):
+class CodePage:
     """
     This class is used as a parent class to include
     all classes that contain a get_code() method.
@@ -384,7 +382,7 @@ class AMFSGPage(LoggedPage, HTMLPage, CodePage):
         if not data.strip():
             # sometimes the page is totally blank... prevent an XMLSyntaxError
             data = b"<html></html>"
-        return super(AMFSGPage, self).build_doc(data)
+        return super().build_doc(data)
 
     def get_code(self):
         return Regexp(CleanText('//div[@id="header_code"]'), r"(\d+)", default=NotAvailable)(self.doc)
@@ -743,7 +741,7 @@ ACCOUNT_TYPES = {
 
 class AccountsPage(LoggedPage, MultiPage):
     def on_load(self):
-        super(AccountsPage, self).on_load()
+        super().on_load()
         if CleanText('//a//span[contains(text(), "CONDITIONS GENERALES") or contains(text(), "GENERAL CONDITIONS")]')(
             self.doc
         ):
@@ -884,7 +882,7 @@ class AccountsPage(LoggedPage, MultiPage):
             type_index = "1"
         else:
             type_index = "2"
-        input_onglet_type = "%s%s%s" % (onglet_id_base, onglet_type_switch, type_index)
+        input_onglet_type = f"{onglet_id_base}{onglet_type_switch}{type_index}"
         form[input_onglet_type] = input_onglet_type
 
         # Prevent redirection to the stock options page

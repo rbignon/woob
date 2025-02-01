@@ -73,7 +73,7 @@ class ContactPhoto(BaseObject):
     hidden = BoolField("True if the photo is hidden on website")
 
     def __init__(self, name, url=None):
-        super(ContactPhoto, self).__init__(name, url)
+        super().__init__(name, url)
         self.name = name
 
     def __iscomplete__(self):
@@ -132,7 +132,7 @@ class Contact(BaseContact):
     profile = Field("Contact profile", dict, default=OrderedDict())
 
     def __init__(self, id, name, status, url=None):
-        super(Contact, self).__init__(id, url)
+        super().__init__(id, url)
         self.name = name
         self.status = status
 
@@ -177,11 +177,11 @@ class Contact(BaseContact):
             s = "away"
         else:
             s = "unknown"
-        result += "Status: %s (%s)\n" % (s, self.status_msg)
+        result += f"Status: {s} ({self.status_msg})\n"
         result += "URL: %s\n" % self.url
         result += "Photos:\n"
         for name, photo in self.photos.items():
-            result += "\t%s%s\n" % (photo, " (hidden)" if photo.hidden else "")
+            result += "\t{}{}\n".format(photo, " (hidden)" if photo.hidden else "")
         result += "\nProfile:\n"
         for head in self.profile.values():
             result += print_node(head)
@@ -205,7 +205,7 @@ class Query(BaseObject):
     message = StringField("Message received")
 
     def __init__(self, id, message, url=None):
-        super(Query, self).__init__(id, url)
+        super().__init__(id, url)
         self.message = message
 
 
@@ -316,7 +316,7 @@ class OpeningHours(BaseObject):
 
 class RRuleField(Field):
     def __init__(self, doc, **kargs):
-        super(RRuleField, self).__init__(doc, rrule.rrulebase)
+        super().__init__(doc, rrule.rrulebase)
 
     def convert(self, v):
         if isinstance(v, str):

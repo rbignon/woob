@@ -23,7 +23,8 @@ import os
 import warnings
 from copy import copy
 from threading import RLock
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Tuple, Type
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Tuple, Type
+from collections.abc import Iterator
 from urllib.request import getproxies
 
 from packaging.version import Version
@@ -111,7 +112,7 @@ class BackendStorage:
 
         return kwargs.get("default", None)
 
-    def load(self, default: Dict):
+    def load(self, default: dict):
         """
         Load storage.
 
@@ -147,7 +148,7 @@ class BackendConfig(ValuesDict):
     instname: str
     woob: WoobBase
 
-    def load(self, woob: WoobBase, modname: str, instname: str, config: Dict, nofail: bool = False) -> BackendConfig:
+    def load(self, woob: WoobBase, modname: str, instname: str, config: dict, nofail: bool = False) -> BackendConfig:
         """
         Load configuration from dict to create an instance.
 
@@ -202,7 +203,7 @@ class BackendConfig(ValuesDict):
                 settings[name] = value.dump()
         return settings
 
-    def save(self, edit: bool = True, params: Dict | None = None):
+    def save(self, edit: bool = True, params: dict | None = None):
         """
         Save backend config.
 
@@ -264,7 +265,7 @@ class Module:
     Values must be :class:`woob.tools.value.Value` objects.
     """
 
-    STORAGE: ClassVar[Dict] = {}
+    STORAGE: ClassVar[dict] = {}
     """Storage"""
 
     BROWSER: Browser | None = None
@@ -277,7 +278,7 @@ class Module:
     the module's directory, and keep the ICON value to None.
     """
 
-    OBJECTS: ClassVar[Dict] = {}
+    OBJECTS: ClassVar[dict] = {}
     """Supported objects to fill
 
     The key is the class and the value the method to call to fill
@@ -286,7 +287,7 @@ class Module:
     NOT yet filled.
     """
 
-    DEPENDENCIES: ClassVar[Tuple[str]] = ()
+    DEPENDENCIES: ClassVar[tuple[str]] = ()
     """Tuple of module names on which this module depends."""
 
     class ConfigError(Exception):
@@ -335,7 +336,7 @@ class Module:
         self,
         woob: WoobBase,
         name: str,
-        config: Dict | None = None,
+        config: dict | None = None,
         storage: IStorage | None = None,
         logger: logging.Logger | None = None,
         nofail: bool = False,
@@ -357,7 +358,7 @@ class Module:
             config = {}
 
         # Private fields (which start with '_')
-        self._private_config = dict((key, value) for key, value in config.items() if key.startswith("_"))
+        self._private_config = {key: value for key, value in config.items() if key.startswith("_")}
 
         # Load configuration of backend.
         self.config = self.CONFIG.load(woob, self.NAME, self.name, config, nofail)
@@ -480,7 +481,7 @@ class Module:
 
         return browser
 
-    def get_proxy(self) -> Dict[str, str]:
+    def get_proxy(self) -> dict[str, str]:
         """
         Get proxy to use.
 
@@ -505,7 +506,7 @@ class Module:
         return proxies
 
     @classmethod
-    def iter_caps(cls) -> Iterator[Type[Capability]]:
+    def iter_caps(cls) -> Iterator[type[Capability]]:
         """
         Iter capabilities implemented by this backend.
 
@@ -524,7 +525,7 @@ class Module:
         available_cap_names = [cap.__name__ for cap in self.iter_caps()]
         return any((isinstance(c, str) and c in available_cap_names) or isinstance(self, c) for c in caps)
 
-    def fillobj(self, obj: BaseObject, fields: List[str] | None = None):
+    def fillobj(self, obj: BaseObject, fields: list[str] | None = None):
         """
         Fill an object with the wanted fields.
 

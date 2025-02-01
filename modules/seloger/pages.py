@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012 Romain Bignon
 #
 # This file is part of a woob module.
@@ -136,7 +134,7 @@ class SearchResultsPage(HTMLPage):
                 ville = ville if ville else ""
                 cp = Dict("zipCode")(self)
                 cp = f"({cp})" if cp else ""
-                return "%s %s %s" % (quartier, ville, cp)
+                return f"{quartier} {ville} {cp}"
 
             obj_url = Dict("classifiedURL")
 

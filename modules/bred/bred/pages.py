@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018 Célande Adrien
 #
 # This file is part of a woob module.
@@ -259,7 +257,7 @@ class AccountsPage(LoggedPage, MyJsonPage):
                 a._consultable = poste["consultable"]
                 a._univers = current_univers
                 a._parent_number = None
-                a.id = "%s.%s" % (a._number, a._nature)
+                a.id = f"{a._number}.{a._nature}"
 
                 if content["comptePEA"]:
                     a.type = Account.TYPE_PEA
@@ -360,7 +358,7 @@ class LifeInsurancesPage(LoggedPage, JsonPage):
                     return Eval(str, Dict("numero"))(self)
 
                 def obj_label(self):
-                    return "%s - %s" % (CleanText(Dict("libelleProduit"))(self), self.parent.get_owner())
+                    return "{} - {}".format(CleanText(Dict("libelleProduit"))(self), self.parent.get_owner())
 
                 def obj__parent_number(self):
                     return CleanText(Dict("cptRattachement"))(self).rstrip("0")

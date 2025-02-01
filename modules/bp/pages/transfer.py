@@ -45,7 +45,7 @@ from .base import MyHTMLPage
 
 class CheckTransferError(MyHTMLPage):
     def on_load(self):
-        super(CheckTransferError, self).on_load()
+        super().on_load()
         error = CleanText(
             """
             //span[@class="app_erreur"]
@@ -133,7 +133,7 @@ class TransferChooseAccounts(LoggedPage, MyHTMLPage):
                             else:
                                 holder = label[-2]
 
-                            self.env["label"] = "%s %s" % (label[0].strip(), holder.strip())
+                            self.env["label"] = f"{label[0].strip()} {holder.strip()}"
                         else:
                             self.env["label"] = raw_label
                     self.env["bank_name"] = "La Banque Postale"
@@ -199,7 +199,7 @@ class TransferChooseAccounts(LoggedPage, MyHTMLPage):
                 """
                 item_parts = list(map(str.strip, CleanText(".")(self).split("-")))
                 if len(item_parts) > 2:
-                    return "%s - %s" % (item_parts[0], item_parts[2])
+                    return f"{item_parts[0]} - {item_parts[2]}"
                 else:
                     return item_parts[0]
 
@@ -390,7 +390,7 @@ class TransferSummary(LoggedPage, CheckTransferError):
 
 class CreateRecipient(LoggedPage, MyHTMLPage):
     def on_load(self):
-        super(CreateRecipient, self).on_load()
+        super().on_load()
         if self.doc.xpath('//h1[contains(text(), "Service Désactivé")]'):
             raise BrowserUnavailable(CleanText('//p[img[@title="attention"]]/text()')(self.doc))
 
@@ -456,7 +456,7 @@ class ConfirmPage(CheckErrorsPage):
 
     def set_browser_form(self):
         form = self.get_form(name="SaisieOTP")
-        self.browser.sms_form = dict((k, v) for k, v in form.items() if v)
+        self.browser.sms_form = {k: v for k, v in form.items() if v}
         # Confirmation url is relative to the current page. We need to
         # build it now or the relative path will fail when reloading state
         # because we do not reload the url in it.

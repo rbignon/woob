@@ -44,7 +44,7 @@ except ImportError:
             and attrs is not None
             and "bold" in attrs
         ):
-            return "%s%s%s" % (BOLD, s, NC)
+            return f"{BOLD}{s}{NC}"
         else:
             return s
 

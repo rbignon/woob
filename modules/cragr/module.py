@@ -86,7 +86,7 @@ class CreditAgricoleModule(Module, CapBankWealth, CapDocument, CapBankTransferAd
         "www.ca-pyrenees-gascogne.fr": "Pyrénées Gascogne",
     }
     region_choices = OrderedDict(
-        [(website, "%s (%s)" % (region, website)) for website, region in sorted(region_choices.items())]
+        [(website, f"{region} ({website})") for website, region in sorted(region_choices.items())]
     )
 
     region_aliases = {

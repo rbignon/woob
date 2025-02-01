@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2018      Vincent A
 # Copyright(C) 2018-2023 Budget Insight
 #
@@ -47,7 +45,7 @@ class AnticaptchaBrowser(APIBrowser):
     BASEURL = "https://api.anti-captcha.com/"
 
     def __init__(self, apikey, captcha_proxy, *args, **kwargs):
-        super(AnticaptchaBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.apikey = apikey
         self.captcha_proxy = captcha_proxy
 

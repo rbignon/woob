@@ -51,7 +51,7 @@ class JSPayload(Filter):
     _single_line_comment = r"[ \t\v\f]*//.*\r?(?:\n|$)"
     _multi_line_comment = r"/\*(?:.|[\r\n])*?\*/"
     _splitter = re.compile(
-        "(?:(%s|%s)|%s|%s)" % (_quoted('"'), _quoted("'"), _single_line_comment, _multi_line_comment)
+        "(?:({}|{})|{}|{})".format(_quoted('"'), _quoted("'"), _single_line_comment, _multi_line_comment)
     )
 
     @classmethod
@@ -84,10 +84,10 @@ class JSValue(Regexp):
                                  |0[oO][0-7]+
                                  |0[xX][0-9a-fA-F]+
                                  |\d+))
-          |(?:(?:(?:new\s+)?String\()?(?P<str>(?:%s|%s)))  # str ?
+          |(?:(?:(?:new\s+)?String\()?(?P<str>(?:{}|{})))  # str ?
           |(?P<bool>true|false)                       # bool ?
           |(?P<None>null))                            # None ?
-    )""" % (
+    )""".format(
         _quoted('"'),
         _quoted("'"),
     )
@@ -118,7 +118,7 @@ class JSValue(Regexp):
         ), "It would be meaningless to define a pattern and/or flags, use Regexp"
         assert "template" not in kwargs, "Can't use a template, use Regexp if you have to"
         self.need_type = need_type.__name__ if type(need_type) == type else need_type
-        super(JSValue, self).__init__(selector, pattern=self.pattern, template=self.to_python, **kwargs)
+        super().__init__(selector, pattern=self.pattern, template=self.to_python, **kwargs)
 
 
 class JSVar(JSValue):
@@ -155,10 +155,10 @@ class JSVar(JSValue):
         assert var is not None, "Please give a var parameter"
         self.var = var
         self.pattern = self.pattern_template % re.escape(var)
-        super(JSVar, self).__init__(selector, need_type=need_type, **kwargs)
+        super().__init__(selector, need_type=need_type, **kwargs)
 
     def filter(self, txt):
         try:
-            return super(JSVar, self).filter(txt)
+            return super().filter(txt)
         except RegexpError:
             raise ItemNotFound("Variable %r not found" % self.var)

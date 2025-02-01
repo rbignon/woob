@@ -42,7 +42,7 @@ class BrokenPageError(Exception):
     pass
 
 
-class BasePage(object):
+class BasePage:
     ENCODING = "iso-8859-15"
 
     def is_error(self):
@@ -70,7 +70,7 @@ class MyHTMLPage(BasePage, HTMLPage):
         # XXX FUCKING HACK BECAUSE BANQUE POPULAIRE ARE NASTY AND INCLUDE NULL
         # BYTES IN DOCUMENTS.
         data = data.replace(b"\x00", b"")
-        return super(MyHTMLPage, self).build_doc(data, *args, **kwargs)
+        return super().build_doc(data, *args, **kwargs)
 
 
 class RedirectErrorPage(HTMLPage):
@@ -94,7 +94,7 @@ class ErrorPage(LoggedPage, MyHTMLPage):
             raise BrowserUnavailable("Le service est momentanément indisponible")
         elif CleanText('//h1[contains(text(), "Cette page est indisponible")]')(self.doc):
             raise BrowserUnavailable("Cette page est indisponible")
-        return super(ErrorPage, self).on_load()
+        return super().on_load()
 
     def get_token(self):
         try:
@@ -161,7 +161,7 @@ class AuthorizePage(JsonPage):
         # response body is given, so we get a decode error.
         # handle this page can assure the continuity of the login
         try:
-            return super(AuthorizePage, self).build_doc(content)
+            return super().build_doc(content)
         except ValueError:
             return {}
 
@@ -313,7 +313,7 @@ class BPOVirtKeyboard(SplitKeyboard):
             b = BytesIO()
             img.save(b, format="PNG")
             code_to_filedata[img_item["value"]] = b.getvalue()
-        super(BPOVirtKeyboard, self).__init__(code_to_filedata)
+        super().__init__(code_to_filedata)
 
 
 class HomePage(LoggedPage, MyHTMLPage):

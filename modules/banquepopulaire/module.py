@@ -55,7 +55,7 @@ class BanquePopulaireModule(Module, CapBankWealth):
     }
 
     cdetab_choices = OrderedDict(
-        [(k, "%s ( %s )" % (v, k)) for k, v in sorted(cdetab_choices.items(), key=lambda k_v: (k_v[1], k_v[0]))]
+        [(k, f"{v} ( {k} )") for k, v in sorted(cdetab_choices.items(), key=lambda k_v: (k_v[1], k_v[0]))]
     )
 
     CONFIG = BackendConfig(

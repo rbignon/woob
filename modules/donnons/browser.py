@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2020      Vincent A
 #
 # This file is part of a woob module.
@@ -93,8 +91,7 @@ class DonnonsBrowser(LoginBrowser):
 
     def iter_threads(self):
         for ad in self.iter_ads_threads():
-            for thread in self.iter_ad_threads(ad):
-                yield thread
+            yield from self.iter_ad_threads(ad)
 
     def fill_thread(self, thread):
         # this will build the tree

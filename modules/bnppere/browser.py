@@ -61,7 +61,7 @@ class VisiogoBrowser(LoginBrowser):
         self.multi_accounts = False
         kwargs["username"] = self.config["login"].get()
         kwargs["password"] = self.config["password"].get()
-        super(VisiogoBrowser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def do_login(self):
         self.go_home()

@@ -28,7 +28,7 @@ class JobAdvertFormatter(IFormatter):
     MANDATORY_FIELDS = ("id", "url", "publication_date", "title")
 
     def format_obj(self, obj, alias):
-        result = "%s%s%s\n" % (self.BOLD, obj.title, self.NC)
+        result = f"{self.BOLD}{obj.title}{self.NC}\n"
         result += "url: %s\n" % obj.url
         if hasattr(obj, "publication_date") and obj.publication_date:
             result += "Publication date : %s\n" % obj.publication_date.strftime("%Y-%m-%d")

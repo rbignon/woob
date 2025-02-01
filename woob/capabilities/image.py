@@ -42,7 +42,7 @@ class Thumbnail(_BaseImage):
     data = BytesField("Data")
 
     def __init__(self, url=""):
-        super(Thumbnail, self).__init__(url)
+        super().__init__(url)
         self.url = url.replace(" ", "%20")
 
     def __str__(self):

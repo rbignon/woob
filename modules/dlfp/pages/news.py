@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2010-2011  Romain Bignon
 #
 # This file is part of a woob module.
@@ -32,7 +30,7 @@ class RSSComment(DLFPPage):
         pass
 
 
-class Content(object):
+class Content:
     TAGGABLE = False
 
     def __init__(self, browser):
@@ -55,7 +53,7 @@ class Content(object):
 
 class Comment(Content):
     def __init__(self, article, div, reply_id):
-        super(Comment, self).__init__(article.browser)
+        super().__init__(article.browser)
         self.reply_id = reply_id
         self.signature = ""
         self.preurl = article.url
@@ -68,7 +66,7 @@ class Comment(Content):
                 self.comments.append(comment)
 
     def parse(self):
-        self.url = "%s#%s" % (self.preurl, self.div.attrib["id"])
+        self.url = "{}#{}".format(self.preurl, self.div.attrib["id"])
         self.title = self.div.find("h2").xpath('.//a[has-class("title")]')[0].text
         try:
             a = self.div.find("p").xpath('.//a[@rel="author"]')[0]
@@ -103,18 +101,17 @@ class Comment(Content):
     def iter_all_comments(self):
         for comment in self.comments:
             yield comment
-            for c in comment.iter_all_comments():
-                yield c
+            yield from comment.iter_all_comments()
 
     def __repr__(self):
-        return "<Comment id=%r author=%r title=%r>" % (self.id, self.author, self.title)
+        return f"<Comment id={self.id!r} author={self.author!r} title={self.title!r}>"
 
 
 class Article(Content):
     TAGGABLE = True
 
     def __init__(self, browser, url, tree):
-        super(Article, self).__init__(browser)
+        super().__init__(browser)
         self.url = url
         self.id = url2id(self.url)
 
@@ -152,8 +149,7 @@ class Article(Content):
     def iter_all_comments(self):
         for comment in self.comments:
             yield comment
-            for c in comment.iter_all_comments():
-                yield c
+            yield from comment.iter_all_comments()
 
 
 class CommentPage(DLFPPage):

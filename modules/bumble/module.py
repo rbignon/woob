@@ -68,7 +68,7 @@ class ProfilesWalker(Optimization):
                     self._logger.info("Like %s" % user["name"])
                 else:
                     like = False
-                    self._logger.info("Unlike %s (%s)" % (user["name"], user["distance_long"]))
+                    self._logger.info("Unlike {} ({})".format(user["name"], user["distance_long"]))
 
                 if self._browser.like_user(user, like):
                     self._logger.info("Match with %s" % user["name"])

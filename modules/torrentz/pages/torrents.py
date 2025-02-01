@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from datetime import datetime
 from urllib.parse import quote_plus
 
@@ -92,7 +90,7 @@ class TorrentPage(HTMLPage):
                             size = li.xpath("span")[0].text
                         except IndexError:
                             size = ""
-                        result.append(("| " * depth) + ("%s [%s]" % (li.text, size)))
+                        result.append(("| " * depth) + (f"{li.text} [{size}]"))
 
             result = []
             traverse_nested_lists(self.xpath('//div[@class="files"]/ul')[0], result)

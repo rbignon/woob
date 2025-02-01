@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2019      Sylvie Ye
 #
 # This file is part of a woob module.
@@ -35,7 +33,7 @@ def get_recipient_id_hash(label, name, iban):
     # between the request in iter_accounts and the requests
     # listing recipients. Sorting the owner name is a way to
     # have the same md5 hash in both of those cases.
-    to_hash = "%s %s %s" % (
+    to_hash = "{} {} {}".format(
         label.upper(),
         "".join(sorted(CleanText().filter(name).split())).upper(),
         iban.upper(),

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2012-2021  Budget Insight
 #
 # This file is part of a woob module.
@@ -245,8 +243,7 @@ class IterInvestment(ListElement):
             return date_from_timestamp(Dict("dateValeur", default=NotAvailable)(self))
 
     def find_elements(self):
-        for el in self.el:
-            yield el
+        yield from self.el
 
 
 class BankAccountDetailPage(LoggedPage, JsonPage):
@@ -262,8 +259,7 @@ class BankAccountDetailPage(LoggedPage, JsonPage):
                 if Dict("actions", default=None)(obj) is None:
                     yield obj
                 else:
-                    for sub_obj in Dict("actions")(obj):
-                        yield sub_obj
+                    yield from Dict("actions")(obj)
 
         class item(ItemElement):
             klass = Investment
@@ -465,8 +461,7 @@ class AccountDetailPage(LoggedPage, JsonPage):
 
         def find_elements(self):
             if "mouvements" in self.el:
-                for el in self.el.get("mouvements", ()):
-                    yield el
+                yield from self.el.get("mouvements", ())
 
 
 class AccountVieEuroPage(AccountDetailPage):
@@ -494,8 +489,7 @@ class AccountVieEuroPage(AccountDetailPage):
                 return obj.date.year > 1969
 
         def find_elements(self):
-            for el in self.el:
-                yield el
+            yield from self.el
 
 
 class AccountVieUCCOPage(AccountDetailPage):
@@ -515,8 +509,7 @@ class AccountVieUCCOPage(AccountDetailPage):
     @method
     class iter_investment(IterInvestment):
         def find_elements(self):
-            for el in self.el.get("encoursListe", ()):
-                yield el
+            yield from self.el.get("encoursListe", ())
 
 
 class AccountVieUCPage(AccountDetailPage):
@@ -585,8 +578,7 @@ class AccountVieUCCODetailPage(LoggedPage, JsonPage):
                 return date_from_timestamp(Dict("dateEffet", default=NotAvailable)(self))
 
         def find_elements(self):
-            for el in self.el:
-                yield el
+            yield from self.el
 
 
 class InvestmentPage(LoggedPage, JsonPage):

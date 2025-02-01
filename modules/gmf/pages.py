@@ -110,7 +110,7 @@ class InvestmentsParser(TableElement):
         obj_quantity = CleanDecimal(TableCell("quantity"), default=NotAvailable)
 
 
-class TransactionsParser(object):
+class TransactionsParser:
     @method
     class iter_history(ListElement):
         item_xpath = '//div[contains(@id, "listeMouvements")]/table//tr[position()>1]'
@@ -129,7 +129,7 @@ class TransactionsParser(object):
                 detail_id = Field("_detail_id")(self)
                 if empty(detail_id):
                     return NotAvailable
-                investment_details = self.page.doc.xpath('//div[@id="popin{}"]'.format(detail_id))
+                investment_details = self.page.doc.xpath(f'//div[@id="popin{detail_id}"]')
                 assert len(investment_details) == 1
                 return list(self.get_investments(self.page, el=investment_details[0]))
 

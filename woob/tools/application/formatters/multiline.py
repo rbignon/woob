@@ -26,7 +26,7 @@ __all__ = ["MultilineFormatter"]
 
 class MultilineFormatter(IFormatter):
     def __init__(self, key_value_separator=": ", after_item="\n"):
-        super(MultilineFormatter, self).__init__()
+        super().__init__()
         self.key_value_separator = key_value_separator
         self.after_item = after_item
 
@@ -35,7 +35,7 @@ class MultilineFormatter(IFormatter):
 
     def format_dict(self, item):
         result = "\n".join(
-            "%s%s" % (("%s%s" % (k, self.key_value_separator) if self.display_keys else ""), v)
+            "{}{}".format((f"{k}{self.key_value_separator}" if self.display_keys else ""), v)
             for k, v in item.items()
             if (v is not NotLoaded and v is not NotAvailable)
         )

@@ -20,7 +20,7 @@ from __future__ import annotations
 import enum
 import re
 from datetime import date, datetime
-from typing import Iterable, Iterator
+from collections.abc import Iterable, Iterator
 
 from deprecated.sphinx import deprecated
 from unidecode import unidecode
@@ -237,7 +237,7 @@ class Recipient(BaseAccount):
     origin_account_iban = StringField("Account iban which recipient belong to")
 
     def __repr__(self):
-        return "<%s id=%r label=%r>" % (type(self).__name__, self.id, self.label)
+        return f"<{type(self).__name__} id={self.id!r} label={self.label!r}>"
 
 
 class TransferStep(BrowserQuestion):
@@ -443,7 +443,7 @@ class CapTransfer(Capability):
 
     accepted_beneficiary_types = (BeneficiaryType.RECIPIENT,)
     accepted_execution_date_types = (TransferDateType.FIRST_OPEN_DAY, TransferDateType.DEFERRED)
-    accepted_execution_frequencies = set(TransferFrequency) - set([TransferFrequency.UNKNOWN])
+    accepted_execution_frequencies = set(TransferFrequency) - {TransferFrequency.UNKNOWN}
     maximum_number_of_instructions = 1
     transfer_with_debtor_account = DebtorAccountRequirement.NOT_USED
 
@@ -616,7 +616,7 @@ class CapTransfer(Capability):
 
         assert (
             nb_instructions == nb_new_instructions
-        ), 'Number of instructions changed during transfer processing (from "%s" to "%s")' % (
+        ), 'Number of instructions changed during transfer processing (from "{}" to "{}")'.format(
             nb_instructions,
             nb_new_instructions,
         )

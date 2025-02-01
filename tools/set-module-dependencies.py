@@ -51,8 +51,8 @@ for module_name in dependencies:
 
     deps_tuple = tuple(sorted(dependencies[module_name]))
     if deps_regex.search(source):
-        source = deps_regex.sub(r"\1DEPENDENCIES = {!r}".format(deps_tuple), source)
+        source = deps_regex.sub(fr"\1DEPENDENCIES = {deps_tuple!r}", source)
     else:
-        source = version_regex.sub(r"\1\2\n\1DEPENDENCIES = {!r}".format(deps_tuple), source)
+        source = version_regex.sub(fr"\1\2\n\1DEPENDENCIES = {deps_tuple!r}", source)
 
     module_path.write_text(source)

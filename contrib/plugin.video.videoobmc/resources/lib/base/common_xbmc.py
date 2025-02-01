@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function
-
 import sys
 import urllib
 from traceback import print_exc
@@ -40,7 +37,7 @@ def get_addon_dir():
 
 
 def display_error(msg):
-    xbmc.executebuiltin("XBMC.Notification(%s, %s)" % (get_translation("30200").decode("utf-8"), msg))
+    xbmc.executebuiltin("XBMC.Notification({}, {})".format(get_translation("30200").decode("utf-8"), msg))
     print(msg)
     print_exc(msg)
 
@@ -103,7 +100,7 @@ def create_param_url(param_dic, quote_plus=False):
             if quote_plus:
                 url = url + sep + urllib.quote_plus(param) + "=" + urllib.quote_plus(param_dic[param])
             else:
-                url = "%s%s%s=%s" % (url, sep, param, param_dic[param])
+                url = f"{url}{sep}{param}={param_dic[param]}"
 
             sep = "&"
     except Exception as msg:

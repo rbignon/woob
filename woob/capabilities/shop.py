@@ -30,7 +30,7 @@ class OrderNotFound(UserError):
     """
 
     def __init__(self, msg="Order not found"):
-        super(OrderNotFound, self).__init__(msg)
+        super().__init__(msg)
 
 
 class Order(BaseObject):
@@ -45,7 +45,7 @@ class Order(BaseObject):
     total = DecimalField("Total")
 
     def __repr__(self):
-        return "<Order id=%r date=%r>" % (self.id, self.date)
+        return f"<Order id={self.id!r} date={self.date!r}>"
 
 
 class Payment(BaseObject):
@@ -58,7 +58,7 @@ class Payment(BaseObject):
     amount = DecimalField("Payment amount")
 
     def __repr__(self):
-        return "<Payment date=%r method=%r amount=%r>" % (self.date, self.method, self.amount)
+        return f"<Payment date={self.date!r} method={self.method!r} amount={self.amount!r}>"
 
 
 class Item(BaseObject):
@@ -70,7 +70,7 @@ class Item(BaseObject):
     price = DecimalField("Item price")
 
     def __repr__(self):
-        return "<Item label=%r price=%r>" % (self.label, self.price)
+        return f"<Item label={self.label!r} price={self.price!r}>"
 
 
 class CapShop(CapCollection):

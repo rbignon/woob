@@ -379,7 +379,7 @@ class OperationPage(LoggedPage, HTMLPage):
             tr_id = obj.id
             n = 1
             while tr_id in self.objects:
-                tr_id = "%s-%s" % (obj.id, n)
+                tr_id = f"{obj.id}-{n}"
                 n += 1
             obj.id = tr_id
             self.objects[obj.id] = obj
@@ -398,7 +398,7 @@ class OperationPage(LoggedPage, HTMLPage):
 class OperationsListPage(LoggedPage, HTMLPage):
     def __init__(self, *a, **kw):
         self._cache = []
-        super(OperationsListPage, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
 
     def get_operations_idx(self, entreprise_or_epargnants):
         if entreprise_or_epargnants == "entreprise":

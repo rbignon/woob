@@ -39,8 +39,7 @@ class SubXPath(XPath):
             ret = (ret,)
 
         for element in ret:
-            for subelement in element.xpath(self.sub_xpath):
-                yield subelement
+            yield from element.xpath(self.sub_xpath)
 
     def select(self, *args, **kwargs):
         return list(

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2013 Julien Veyssier
 #
 # This file is part of a woob module.
@@ -36,8 +34,7 @@ class SearchPage(HTMLPage):
         for el in results:
             url = Link('.//a[has-class("bnone")]')(el)
             self.browser.location(url)
-            for sub in self.browser.page.iter_subtitles():
-                yield sub
+            yield from self.browser.page.iter_subtitles()
 
 
 class SubtitlesPage(HTMLPage):
@@ -86,7 +83,7 @@ class SeriesSubtitlePage(HTMLPage):
             else:
                 subtitle = Subtitle()
                 episode = CleanText(".//td[1]")(sub)
-                subtitle.name = "%s - %s - Episode %s" % (series_name, season, episode)
+                subtitle.name = f"{series_name} - {season} - Episode {episode}"
                 url = Link(".//td[3]//a")(sub)
                 subtitle.url = self.browser.absurl(url)
                 result = regexp.match(url)
