@@ -1,3 +1,4 @@
+exclude: ^tools/(boilerplate/.*\.pyt|cookiecutter/)
 repos:
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v4.0.0
@@ -16,7 +17,6 @@ repos:
       - id: trailing-whitespace
       - id: check-merge-conflict
       - id: check-ast
-        exclude: ^tools/(boilerplate/.*\.pyt|cookiecutter/)
       - id: check-json
       - id: check-toml
       - id: check-yaml
