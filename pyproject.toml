@@ -130,3 +130,6 @@ testpaths = [
 
 [tool.setuptools.packages.find]
 include = ["woob", "woob.*", "weboob"]
+
+[tool.black]
+line-length = 120
