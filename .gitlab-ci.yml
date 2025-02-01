@@ -50,12 +50,11 @@ pre-commit strict:
   stage: lint
   extends: .pre-commit
   variables:
-    # black: waiting for project to apply consistently
     # commitizen: waiting confirmation from project this is the expected standard
     # flake8: handled by custom scripts for now
     # mypy: run in another stage
     # pyupgrade: waiting for a commit applying the changes
-    SKIP: black,commitizen,flake8,mypy,pyupgrade
+    SKIP: commitizen,flake8,mypy,pyupgrade
   script:
     - python -m pre_commit run --all-files --verbose --hook-stage manual
 
