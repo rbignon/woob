@@ -57,7 +57,8 @@ class LinebourseAPIBrowser(LoginBrowser):
 
     def __init__(self, baseurl, *args, **kwargs):
         self.BASEURL = baseurl
-        super().__init__(username="", password="", *args, **kwargs)
+        # Pass placeholder values for username / password
+        super().__init__("", "", *args, **kwargs)
 
     def get_account_code(self, account_id):
         # 'account_codes' is a JSON containing the id_contracts
