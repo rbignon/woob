@@ -17,8 +17,8 @@
 
 from __future__ import annotations
 
-from typing import List
 from collections.abc import Iterable
+from typing import List
 
 from woob.capabilities.bank import Account
 from woob.capabilities.base import BaseObject, find_object

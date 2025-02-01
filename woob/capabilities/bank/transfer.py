@@ -19,8 +19,8 @@ from __future__ import annotations
 
 import enum
 import re
-from datetime import date, datetime
 from collections.abc import Iterable, Iterator
+from datetime import date, datetime
 
 from deprecated.sphinx import deprecated
 from unidecode import unidecode

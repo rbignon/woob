@@ -17,7 +17,6 @@
 
 from datetime import date
 
-
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import CleanText, Filter

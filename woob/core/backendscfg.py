@@ -21,12 +21,11 @@ import codecs
 import os
 import stat
 import sys
-from collections.abc import MutableMapping
+from collections.abc import Iterator, MutableMapping
 from configparser import DuplicateSectionError, RawConfigParser
 from logging import warning
 from subprocess import CalledProcessError, check_output
 from typing import Tuple
-from collections.abc import Iterator
 
 
 __all__ = ["BackendsConfig", "BackendAlreadyExists"]

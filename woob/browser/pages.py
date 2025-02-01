@@ -24,11 +24,11 @@ import re
 import warnings
 from ast import literal_eval
 from collections import OrderedDict
+from collections.abc import Iterator
 from datetime import datetime
 from functools import wraps
 from io import BytesIO, StringIO
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Type
-from collections.abc import Iterator
 from urllib.parse import urljoin
 
 import lxml

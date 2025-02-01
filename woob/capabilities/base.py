@@ -20,10 +20,10 @@ from __future__ import annotations
 import re
 import warnings
 from collections import OrderedDict, deque
+from collections.abc import Iterable
 from copy import copy, deepcopy
 from decimal import Decimal
 from typing import Any, Dict, Tuple, Type, TypeVar, overload
-from collections.abc import Iterable
 
 from woob.tools.misc import to_unicode
 

@@ -21,10 +21,10 @@ import importlib
 import logging
 import os
 import warnings
+from collections.abc import Iterator
 from copy import copy
 from threading import RLock
 from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Tuple, Type
-from collections.abc import Iterator
 from urllib.request import getproxies
 
 from packaging.version import Version
