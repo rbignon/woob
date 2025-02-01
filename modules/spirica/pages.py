@@ -231,7 +231,6 @@ class DetailsPage(LoggedPage, HTMLPage):
 
         class item(ItemInvestment):
             obj_diff = MyDecimal(TableCell("diff"), default=NotAvailable)
-            obj_diff_ratio = Eval(lambda x: x / 100, MyDecimal(TableCell("diff_percent")))
             obj_unitprice = MyDecimal(TableCell("unitprice"))
 
             def obj_diff_ratio(self):
