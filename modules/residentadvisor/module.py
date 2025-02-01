@@ -27,23 +27,25 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import ResidentadvisorBrowser
 
 
-__all__ = ['ResidentadvisorModule']
+__all__ = ["ResidentadvisorModule"]
 
 
 class ResidentadvisorModule(Module, CapCalendarEvent):
-    NAME = 'residentadvisor'
-    DESCRIPTION = u'residentadvisor website'
-    MAINTAINER = u'Alexandre Morignot'
-    EMAIL = 'erdnaxeli@cervoi.se'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "residentadvisor"
+    DESCRIPTION = "residentadvisor website"
+    MAINTAINER = "Alexandre Morignot"
+    EMAIL = "erdnaxeli@cervoi.se"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = ResidentadvisorBrowser
 
-    CONFIG = BackendConfig(Value('username', label='Username or email', default=''),
-                           ValueBackendPassword('password', label='Password', default=''),
-                           Value('country', required=True),
-                           Value('city', required=True))
+    CONFIG = BackendConfig(
+        Value("username", label="Username or email", default=""),
+        ValueBackendPassword("password", label="Password", default=""),
+        Value("country", required=True),
+        Value("city", required=True),
+    )
 
     ASSOCIATED_CATEGORIES = [CATEGORIES.CONCERT]
 
@@ -53,17 +55,17 @@ class ResidentadvisorModule(Module, CapCalendarEvent):
     def city_id(self):
         if not self._city_id:
             self._city_id = self.browser.get_country_city_id(
-                    country = self.config['country'].get(),
-                    city = self.config['city'].get())
+                country=self.config["country"].get(), city=self.config["city"].get()
+            )
 
         return self._city_id
 
     def create_default_browser(self):
         password = None
-        username = self.config['username'].get()
+        username = self.config["username"].get()
 
         if len(username) > 0:
-            password = self.config['password'].get()
+            password = self.config["password"].get()
 
         return self.create_browser(username, password)
 
@@ -100,24 +102,24 @@ class ResidentadvisorModule(Module, CapCalendarEvent):
         # we check if date_to is defined
         if not hasattr(date_to, "date"):
             # default is week
-            date_to = date_from + timedelta(days = 7)
+            date_to = date_from + timedelta(days=7)
 
         delta = date_to - date_from
 
-        while delta.days >= 0 :
-            v = 'week'
+        while delta.days >= 0:
+            v = "week"
 
             if delta.days > 7:
-                v = 'month'
+                v = "month"
 
-            for event in self.browser.get_events(v = v, date = date_from, city = self.city_id):
+            for event in self.browser.get_events(v=v, date=date_from, city=self.city_id):
                 if event.start_date <= date_to:
                     yield event
 
-            if v == 'week':
-                date_from += timedelta(days = 7)
+            if v == "week":
+                date_from += timedelta(days=7)
             else:
-                date_from += timedelta(days = 30)
+                date_from += timedelta(days=30)
 
             delta = date_to - date_from
 
@@ -139,19 +141,19 @@ class ResidentadvisorModule(Module, CapCalendarEvent):
             # we need the country to search the city_id in an efficient way
             city_id = self.browser.get_city_id(query.city)
 
-            events = self.browser.get_events(city = city_id)
+            events = self.browser.get_events(city=city_id)
         elif query.summary:
             events = self.browser.search_events_by_summary(query.summary)
         else:
             events = self.list_events(query.start_date, query.end_date)
 
         for event in events:
-            event = self.fillobj(event, ['ticket'])
+            event = self.fillobj(event, ["ticket"])
             if event.ticket in query.ticket:
                 yield event
 
     def fill_event(self, event, fields):
-        if set(fields) & set(('end_date', 'price', 'description', 'ticket')):
+        if set(fields) & set(("end_date", "price", "description", "ticket")):
             return self.get_event(event.id)
 
         return event

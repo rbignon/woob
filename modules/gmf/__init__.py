@@ -21,4 +21,4 @@
 from .module import GmfModule
 
 
-__all__ = ['GmfModule']
+__all__ = ["GmfModule"]

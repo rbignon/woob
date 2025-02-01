@@ -24,22 +24,22 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import NaloBrowser
 
 
-__all__ = ['NaloModule']
+__all__ = ["NaloModule"]
 
 
 class NaloModule(Module, CapBankWealth):
-    NAME = 'nalo'
-    DESCRIPTION = 'Nalo'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'LGPLv3+'
+    NAME = "nalo"
+    DESCRIPTION = "Nalo"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "LGPLv3+"
 
     BROWSER = NaloBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='E-mail', masked=False, regexp='.+@.+'),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('captcha_response', label='Captcha Response'),
+        ValueBackendPassword("login", label="E-mail", masked=False, regexp=".+@.+"),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("captcha_response", label="Captcha Response"),
     )
 
     def create_default_browser(self):

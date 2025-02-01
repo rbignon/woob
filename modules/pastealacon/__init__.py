@@ -20,4 +20,4 @@
 from .module import PastealaconModule
 
 
-__all__ = ['PastealaconModule']
+__all__ = ["PastealaconModule"]

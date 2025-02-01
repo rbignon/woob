@@ -22,12 +22,13 @@ from woob.tools.test import BackendTest
 
 
 class FortuneoTest(BackendTest):
-    MODULE = 'fortuneo'
+    MODULE = "fortuneo"
 
     def test_fortuneo(self):
         l = list(self.backend.iter_accounts())
         self.assertTrue(len(l) > 0)
         a = l[0]
         list(self.backend.iter_history(a))
+
 
 # vim:ts=4:sw=4

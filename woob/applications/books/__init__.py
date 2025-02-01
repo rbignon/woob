@@ -19,4 +19,4 @@
 from .books import AppBooks
 
 
-__all__ = ['AppBooks']
+__all__ = ["AppBooks"]

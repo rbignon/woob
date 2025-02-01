@@ -27,13 +27,13 @@ from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 
 TYPE_BY_LABEL = {
-    'Relevé': DocumentTypes.STATEMENT,
+    "Relevé": DocumentTypes.STATEMENT,
 }
 
 
 class SubscriptionPage(LoggedPage, HTMLPage):
     # because of freaking JS from hell
-    STATEMENT_TYPES = ('RCE', 'RPT', 'CRO')
+    STATEMENT_TYPES = ("RCE", "RPT", "CRO")
 
     @method
     class iter_subscriptions(ListElement):
@@ -42,10 +42,10 @@ class SubscriptionPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Subscription
 
-            obj_id = Regexp(Attr('.', 'value'), r'\w-(\w+)')
-            obj__full_id = CleanText('./@value')
-            obj_label = CleanText('.')
-            obj_subscriber = Env('subscriber')
+            obj_id = Regexp(Attr(".", "value"), r"\w-(\w+)")
+            obj__full_id = CleanText("./@value")
+            obj_label = CleanText(".")
+            obj_subscriber = Env("subscriber")
 
     @method
     class iter_documents(ListElement):
@@ -63,28 +63,24 @@ class SubscriptionPage(LoggedPage, HTMLPage):
             klass = Document
 
             obj_id = Format(
-                '%s_%s%s',
-                Env('sub_id'),
-                Regexp(CleanText('.//a/@title'), r' (\d{2}) '),
-                CleanText('.//span[contains(@class, "date")]', symbols='/')
+                "%s_%s%s",
+                Env("sub_id"),
+                Regexp(CleanText(".//a/@title"), r" (\d{2}) "),
+                CleanText('.//span[contains(@class, "date")]', symbols="/"),
             )
 
             type_label = CleanText('.//span[contains(@class, "lib")]')
 
-            obj_label = Format(
-                '%s - %s',
-                type_label,
-                CleanText('.//span[contains(@class, "date")]')
-            )
-            obj_url = AbsoluteLink('./a')
-            obj_format = 'pdf'
+            obj_label = Format("%s - %s", type_label, CleanText('.//span[contains(@class, "date")]'))
+            obj_url = AbsoluteLink("./a")
+            obj_format = "pdf"
 
             obj_type = MapIn(type_label, TYPE_BY_LABEL, default=DocumentTypes.OTHER)
 
             def obj_date(self):
                 datefilter = CleanText('.//span[has-class("date")]')
                 date = datefilter(self)
-                m = re.search(r'(\d{2}/\d{2}/\d{4})', date)
+                m = re.search(r"(\d{2}/\d{2}/\d{4})", date)
                 if m:
                     return Date(datefilter, dayfirst=True)(self)
                 else:
@@ -93,39 +89,33 @@ class SubscriptionPage(LoggedPage, HTMLPage):
                     # TODO just parse the title?
 
                     return Date(
-                        Format(
-                            '%s/%s',
-                            Regexp(CleanText('.//a/@title'), r' (\d{2}) '),
-                            datefilter
-                        ),
-                        dayfirst=True
+                        Format("%s/%s", Regexp(CleanText(".//a/@title"), r" (\d{2}) "), datefilter), dayfirst=True
                     )(self)
 
     def get_params(self, sub_full_id):
         # the id is in the label
-        sub_value = Attr('//select[@id="compte"]/option[contains(@value, "%s")]' % sub_full_id, 'value')(self.doc)
+        sub_value = Attr('//select[@id="compte"]/option[contains(@value, "%s")]' % sub_full_id, "value")(self.doc)
 
-        form = self.get_form(name='formulaireHistorique')
-        form['formulaire.numeroCompteRecherche'] = sub_value
+        form = self.get_form(name="formulaireHistorique")
+        form["formulaire.numeroCompteRecherche"] = sub_value
         return form
 
     def get_years(self):
         return self.doc.xpath('//select[@id="annee"]/option/@value')
 
     def has_error(self):
-        return (
-            CleanText('//p[contains(text(), "est actuellement indisponible")]')(self.doc)
-            or CleanText('//p[contains(text(), "Aucun e-Relevé n\'est disponible")]')(self.doc)
-        )
+        return CleanText('//p[contains(text(), "est actuellement indisponible")]')(self.doc) or CleanText(
+            '//p[contains(text(), "Aucun e-Relevé n\'est disponible")]'
+        )(self.doc)
 
 
 class DownloadPage(LoggedPage, HTMLPage):
     def get_content(self):
-        if self.doc.xpath('//iframe'):
+        if self.doc.xpath("//iframe"):
             # the url has the form
             # ../relevePdf_telechargement/affichagePDF-telechargementPDF.ea?date=XXX
-            part_link = Attr('//iframe', 'src')(self.doc).replace('..', '')
-            return self.browser.open('/voscomptes/canalXHTML/relevePdf%s' % part_link).content
+            part_link = Attr("//iframe", "src")(self.doc).replace("..", "")
+            return self.browser.open("/voscomptes/canalXHTML/relevePdf%s" % part_link).content
         return self.content
 
 
@@ -137,10 +127,10 @@ class ProSubscriptionPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Subscription
 
-            obj_label = CleanText('.')
-            obj_id = Regexp(Field('label'), r'\w? ?- (\w+)')
-            obj_subscriber = Env('subscriber')
-            obj__number = Attr('.', 'value')
+            obj_label = CleanText(".")
+            obj_id = Regexp(Field("label"), r"\w? ?- (\w+)")
+            obj_subscriber = Env("subscriber")
+            obj__number = Attr(".", "value")
 
     @method
     class iter_documents(TableElement):
@@ -149,29 +139,29 @@ class ProSubscriptionPage(LoggedPage, HTMLPage):
         # may have twice the same statement for a given month
         ignore_duplicate = True
 
-        col_date = re.compile('Date du relevé')
-        col_label = re.compile('Type de document')
+        col_date = re.compile("Date du relevé")
+        col_label = re.compile("Type de document")
 
         class item(ItemElement):
             klass = Document
 
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_label = Format('%s %s', CleanText(TableCell('label')), CleanText(TableCell('date')))
-            obj_id = Format('%s_%s', Env('sub_id'), CleanText(TableCell('date'), symbols='/'))
+            obj_date = Date(CleanText(TableCell("date")), dayfirst=True)
+            obj_label = Format("%s %s", CleanText(TableCell("label")), CleanText(TableCell("date")))
+            obj_id = Format("%s_%s", Env("sub_id"), CleanText(TableCell("date"), symbols="/"))
             # the url uses an id depending on the page where the document is
             # by example, if the id is 0,
             # it means that it is the first document that you can find
             # on the page of the year XXX for the subscription YYYY
-            obj_url = AbsoluteLink('.//a')
-            obj_format = 'pdf'
+            obj_url = AbsoluteLink(".//a")
+            obj_format = "pdf"
             obj_type = DocumentTypes.OTHER
 
     def submit_form(self, sub_number, year):
-        form = self.get_form(name='formRechHisto')
+        form = self.get_form(name="formRechHisto")
 
-        form['historiqueReleveParametre.numeroCompteRecherche'] = sub_number
-        form['typeRecherche'] = 'annee'
-        form['anneeRechercheDefaut'] = year
+        form["historiqueReleveParametre.numeroCompteRecherche"] = sub_number
+        form["typeRecherche"] = "annee"
+        form["anneeRechercheDefaut"] = year
 
         form.submit()
 
@@ -182,8 +172,8 @@ class ProSubscriptionPage(LoggedPage, HTMLPage):
         return self.doc.xpath('//p[has-class("noresult")]')
 
     def has_document(self, date):
-        return self.doc.xpath('//td[@headers="dateReleve" and contains(text(), "%s")]' % date.strftime('%d/%m/%Y'))
+        return self.doc.xpath('//td[@headers="dateReleve" and contains(text(), "%s")]' % date.strftime("%d/%m/%Y"))
 
     def get_sub_number(self, doc_id):
-        sub_id = doc_id.split('_')[0]
-        return Attr('//select[@id="numeroCompteRechercher"]/option[contains(text(), "%s")]' % sub_id, 'value')(self.doc)
+        sub_id = doc_id.split("_")[0]
+        return Attr('//select[@id="numeroCompteRechercher"]/option[contains(text(), "%s")]' % sub_id, "value")(self.doc)

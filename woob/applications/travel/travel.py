@@ -23,63 +23,75 @@ from woob.tools.application.formatters.iformatter import PrettyFormatter
 from woob.tools.application.repl import ReplApplication, defaultcount
 
 
-__all__ = ['AppTravel']
+__all__ = ["AppTravel"]
 
 
 class DeparturesFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'type', 'departure_station', 'arrival_station', 'time')
+    MANDATORY_FIELDS = ("id", "type", "departure_station", "arrival_station", "time")
 
     def get_title(self, obj):
         s = obj.type
-        if hasattr(obj, 'price') and not empty(obj.price):
-            s += ' %s %s' % (self.colored('—', 'cyan'), self.colored('%6.2f %s' % (obj.price, Currency.currency2txt(obj.currency)), 'green'))
-        if hasattr(obj, 'late') and not empty(obj.late) and obj.late > datetime.time():
-            s += ' %s %s' % (self.colored('—', 'cyan'), self.colored('Late: %s' % obj.late, 'red', 'bold'))
-        if hasattr(obj, 'information') and not empty(obj.information) and obj.information.strip() != '':
-            s += ' %s %s' % (self.colored('—', 'cyan'), self.colored(obj.information, 'red'))
+        if hasattr(obj, "price") and not empty(obj.price):
+            s += " %s %s" % (
+                self.colored("—", "cyan"),
+                self.colored("%6.2f %s" % (obj.price, Currency.currency2txt(obj.currency)), "green"),
+            )
+        if hasattr(obj, "late") and not empty(obj.late) and obj.late > datetime.time():
+            s += " %s %s" % (self.colored("—", "cyan"), self.colored("Late: %s" % obj.late, "red", "bold"))
+        if hasattr(obj, "information") and not empty(obj.information) and obj.information.strip() != "":
+            s += " %s %s" % (self.colored("—", "cyan"), self.colored(obj.information, "red"))
         return s
 
     def get_description(self, obj):
-        if hasattr(obj, 'arrival_time') and not empty(obj.arrival_time):
-            s = '(%s)  %s%s\n\t(%s)  %s' % (self.colored(obj.time.strftime('%H:%M') if obj.time else '??:??', 'cyan'),
-                                            obj.departure_station,
-                                            self.colored(' [Platform: %s]' % obj.platform, 'yellow') if (hasattr(obj, 'platform') and not empty(obj.platform)) else '',
-                                            self.colored(obj.arrival_time.strftime('%H:%M'), 'cyan'),
-                                            obj.arrival_station)
+        if hasattr(obj, "arrival_time") and not empty(obj.arrival_time):
+            s = "(%s)  %s%s\n\t(%s)  %s" % (
+                self.colored(obj.time.strftime("%H:%M") if obj.time else "??:??", "cyan"),
+                obj.departure_station,
+                (
+                    self.colored(" [Platform: %s]" % obj.platform, "yellow")
+                    if (hasattr(obj, "platform") and not empty(obj.platform))
+                    else ""
+                ),
+                self.colored(obj.arrival_time.strftime("%H:%M"), "cyan"),
+                obj.arrival_station,
+            )
         else:
-            s = '(%s)  %20s -> %s' % (self.colored(obj.time.strftime('%H:%M') if obj.time else '??:??', 'cyan'),
-                                      obj.departure_station, obj.arrival_station)
+            s = "(%s)  %20s -> %s" % (
+                self.colored(obj.time.strftime("%H:%M") if obj.time else "??:??", "cyan"),
+                obj.departure_station,
+                obj.arrival_station,
+            )
 
         return s
 
 
 class StationsFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'name')
+    MANDATORY_FIELDS = ("id", "name")
 
     def get_title(self, obj):
         return obj.name
 
 
 class AppTravel(ReplApplication):
-    APPNAME = 'travel'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
+    APPNAME = "travel"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2010-YEAR Romain Bignon"
     DESCRIPTION = "Console application allowing to search for train stations and get departure times."
     SHORT_DESCRIPTION = "search for train stations and departures"
     CAPS = CapTravel
-    DEFAULT_FORMATTER = 'table'
+    DEFAULT_FORMATTER = "table"
     EXTRA_FORMATTERS = {
-        'stations': StationsFormatter,
-        'departures': DeparturesFormatter,
+        "stations": StationsFormatter,
+        "departures": DeparturesFormatter,
     }
     COMMANDS_FORMATTERS = {
-        'stations':     'stations',
-        'departures':   'departures',
+        "stations": "stations",
+        "departures": "departures",
     }
 
     def add_application_options(self, group):
-        group.add_option('--departure-time')
-        group.add_option('--arrival-time')
+        group.add_option("--departure-time")
+        group.add_option("--arrival-time")
 
     @defaultcount(10)
     def do_stations(self, pattern):
@@ -88,7 +100,7 @@ class AppTravel(ReplApplication):
 
         Search stations.
         """
-        for station in self.do('iter_station_search', pattern):
+        for station in self.do("iter_station_search", pattern):
             self.format(station)
 
     @defaultcount(10)
@@ -105,7 +117,7 @@ class AppTravel(ReplApplication):
         if arrival:
             arrival_id, backend_name2 = self.parse_id(arrival)
             if backend_name and backend_name2 and backend_name != backend_name2:
-                print('Departure and arrival aren\'t on the same backend', file=self.stderr)
+                print("Departure and arrival aren't on the same backend", file=self.stderr)
                 return 1
         else:
             arrival_id = backend_name2 = None
@@ -121,11 +133,11 @@ class AppTravel(ReplApplication):
             try:
                 date = self.parse_datetime(date)
             except ValueError as e:
-                print('Invalid datetime value: %s' % e, file=self.stderr)
+                print("Invalid datetime value: %s" % e, file=self.stderr)
                 print('Please enter a datetime in form "yyyy-mm-dd HH:MM" or "HH:MM".', file=self.stderr)
                 return 1
 
-        for departure in self.do('iter_station_departures', station_id, arrival_id, date, backends=backends):
+        for departure in self.do("iter_station_departures", station_id, arrival_id, date, backends=backends):
             self.format(departure)
 
     def do_roadmap(self, line):
@@ -150,11 +162,11 @@ class AppTravel(ReplApplication):
             filters.departure_time = self.parse_datetime(self.options.departure_time)
             filters.arrival_time = self.parse_datetime(self.options.arrival_time)
         except ValueError as e:
-            print('Invalid datetime value: %s' % e, file=self.stderr)
+            print("Invalid datetime value: %s" % e, file=self.stderr)
             print('Please enter a datetime in form "yyyy-mm-dd HH:MM" or "HH:MM".', file=self.stderr)
             return 1
 
-        for route in self.do('iter_roadmap', departure, arrival, filters):
+        for route in self.do("iter_roadmap", departure, arrival, filters):
             self.format(route)
 
     def parse_datetime(self, text):
@@ -162,10 +174,10 @@ class AppTravel(ReplApplication):
             return None
 
         try:
-            date = datetime.datetime.strptime(text, '%Y-%m-%d %H:%M')
+            date = datetime.datetime.strptime(text, "%Y-%m-%d %H:%M")
         except ValueError:
             try:
-                date = datetime.datetime.strptime(text, '%H:%M')
+                date = datetime.datetime.strptime(text, "%H:%M")
             except ValueError:
                 raise ValueError(text)
             date = datetime.datetime.now().replace(hour=date.hour, minute=date.minute)

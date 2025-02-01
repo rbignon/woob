@@ -23,15 +23,21 @@ from woob.tools.capabilities.bill.documents import sorted_documents
 from woob_modules.franceconnect.browser import FranceConnectBrowser
 
 from .pages import (
-    DocumentsPage, ErrorDocumentPage, FCAuthorizePage, HomePage, NoDocumentPage, ProfilePage, ThirdPartyDocPage,
+    DocumentsPage,
+    ErrorDocumentPage,
+    FCAuthorizePage,
+    HomePage,
+    NoDocumentPage,
+    ProfilePage,
+    ThirdPartyDocPage,
 )
 
 
 class ImpotsParBrowser(FranceConnectBrowser):
-    BASEURL = 'https://cfspart.impots.gouv.fr'
-    PARENT = 'franceconnect'
+    BASEURL = "https://cfspart.impots.gouv.fr"
+    PARENT = "franceconnect"
 
-    authorize = URL(r'https://app.franceconnect.gouv.fr/api/v1/authorize', FCAuthorizePage)
+    authorize = URL(r"https://app.franceconnect.gouv.fr/api/v1/authorize", FCAuthorizePage)
     home = URL(
         r"/monprofil-webapp/connexion",
         r"/enp/accueilensupres.do",
@@ -39,49 +45,44 @@ class ImpotsParBrowser(FranceConnectBrowser):
         r"/enp/j_appelportail",
         r"/enp/j_accueil;jsessionid=(?P<jsessionid>.*)",
         r"/enp/\?urlDest=(?P<url>.*)",
-        HomePage
+        HomePage,
     )
-    third_party_doc_page = URL(r'/enp/dpr.do', ThirdPartyDocPage)
-    no_document_page = URL(r'/enp/documentabsent.do', NoDocumentPage)
-    error_document_page = URL(r'/enp/drpabsent.do', ErrorDocumentPage)
+    third_party_doc_page = URL(r"/enp/dpr.do", ThirdPartyDocPage)
+    no_document_page = URL(r"/enp/documentabsent.do", NoDocumentPage)
+    error_document_page = URL(r"/enp/drpabsent.do", ErrorDocumentPage)
 
-    profile = URL(
-        r'/enp/chargementprofil.do',
-        r'/enp/?$',
-        ProfilePage
-    )
-    documents = URL(r'/enp/documents.do', DocumentsPage)
+    profile = URL(r"/enp/chargementprofil.do", r"/enp/?$", ProfilePage)
+    documents = URL(r"/enp/documents.do", DocumentsPage)
 
     def __init__(self, login_source, *args, **kwargs):
         super(ImpotsParBrowser, self).__init__(*args, **kwargs)
         self.login_source = login_source
 
     def france_connect_do_login(self):
-        self.location('https://cfsfc.impots.gouv.fr/', data={'lmAuth': 'FranceConnect'})
+        self.location("https://cfsfc.impots.gouv.fr/", data={"lmAuth": "FranceConnect"})
         self.login_impots()
         # Needed to set cookies to be able to access profile page
         # without being disconnected
         self.home.go()
 
     def france_connect_ameli_do_login(self):
-        self.location('https://cfsfc.impots.gouv.fr/', data={'lmAuth': 'FranceConnect'})
+        self.location("https://cfsfc.impots.gouv.fr/", data={"lmAuth": "FranceConnect"})
         if self.page.is_ameli_disabled():
             # Message on the website "Non disponible sur ce service"
             raise BrowserIncorrectPassword(
-                "La connection via Ameli n'est plus disponible.",
-                bad_fields=['login', 'password', 'login_source']
+                "La connection via Ameli n'est plus disponible.", bad_fields=["login", "password", "login_source"]
             )
         self.login_ameli()
         # Needed to set cookies to be able to access profile page
         # without being disconnected
-        self.location('https://cfsfc.impots.gouv.fr/enp/')
+        self.location("https://cfsfc.impots.gouv.fr/enp/")
 
     def do_login(self):
-        if self.login_source == 'fc':
+        if self.login_source == "fc":
             self.france_connect_do_login()
             return
 
-        if self.login_source == 'fc_ameli':
+        if self.login_source == "fc_ameli":
             self.france_connect_ameli_do_login()
             return
 
@@ -92,7 +93,7 @@ class ImpotsParBrowser(FranceConnectBrowser):
         self.home.go()
 
         if not self.page.logged:
-            raise BrowserIncorrectPassword(bad_fields=['password'])
+            raise BrowserIncorrectPassword(bad_fields=["password"])
 
     @need_login
     def iter_subscription(self):
@@ -105,12 +106,12 @@ class ImpotsParBrowser(FranceConnectBrowser):
 
         third_party_doc = None
         if self.error_document_page.is_here():
-            self.logger.warning('Third party declaration is unavailable')
+            self.logger.warning("Third party declaration is unavailable")
         elif self.third_party_doc_page.is_here():
             third_party_doc = self.page.get_third_party_doc()
 
         # put ?n=0, else website return an error page
-        self.documents.go(params={'n': 0})
+        self.documents.go(params={"n": 0})
         doc_list = sorted_documents(self.page.iter_documents(subid=subscription.id))
         if third_party_doc:
             doc_list.insert(0, third_party_doc)

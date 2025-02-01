@@ -26,29 +26,28 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import FunmoocBrowser
 
 
-__all__ = ['FunmoocModule']
+__all__ = ["FunmoocModule"]
 
 
 class FunmoocModule(Module, CapVideo, CapCollection):
-    NAME = 'funmooc'
-    DESCRIPTION = u'France-Université-Numérique MOOC website'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "funmooc"
+    DESCRIPTION = "France-Université-Numérique MOOC website"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
-    CONFIG = BackendConfig(Value('email', label='Email'),
-                           ValueBackendPassword('password', label='Password'),
-                           Value('quality', label='Quality', default='HD',
-                                 choices=['HD', 'SD', 'LD']))
+    CONFIG = BackendConfig(
+        Value("email", label="Email"),
+        ValueBackendPassword("password", label="Password"),
+        Value("quality", label="Quality", default="HD", choices=["HD", "SD", "LD"]),
+    )
 
     BROWSER = FunmoocBrowser
 
     def create_default_browser(self):
-        quality = self.config['quality'].get().upper()
-        return self.create_browser(self.config['email'].get(),
-                                   self.config['password'].get(),
-                                   quality=quality)
+        quality = self.config["quality"].get().upper()
+        return self.create_browser(self.config["email"].get(), self.config["password"].get(), quality=quality)
 
     def get_video(self, _id):
         return self.browser.get_video(_id)
@@ -76,11 +75,10 @@ class FunmoocModule(Module, CapVideo, CapCollection):
                 if isinstance(item, BaseVideo):
                     if self._matches(item.title, pattern):
                         yield item
-                else: # collection
+                else:  # collection
                     newpath = item.split_path
                     if self._matches(item.title, pattern):
-                        self.logger.debug('%s matches, returning content',
-                                          item.title)
+                        self.logger.debug("%s matches, returning content", item.title)
                         for item in self.iter_resources_flat(BaseVideo, newpath):
                             yield item
                         return

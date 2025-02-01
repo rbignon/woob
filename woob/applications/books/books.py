@@ -20,39 +20,42 @@ from woob.tools.application.formatters.iformatter import PrettyFormatter
 from woob.tools.application.repl import ReplApplication
 
 
-__all__ = ['AppBooks']
+__all__ = ["AppBooks"]
 
 
 class RentedListFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'date', 'author', 'name', 'late')
+    MANDATORY_FIELDS = ("id", "date", "author", "name", "late")
 
-    RED = '[1;31m'
+    RED = "[1;31m"
 
     def get_title(self, obj):
-        s = '%s — %s (%s)' % (obj.author, obj.name, obj.date)
+        s = "%s — %s (%s)" % (obj.author, obj.name, obj.date)
         if obj.late:
-            s += ' %sLATE!%s' % (self.RED, self.NC)
+            s += " %sLATE!%s" % (self.RED, self.NC)
         return s
 
 
 class AppBooks(ReplApplication):
-    APPNAME = 'books'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2012-YEAR Jeremy Monnet'
+    APPNAME = "books"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2012-YEAR Jeremy Monnet"
     CAPS = CapBook
-    DESCRIPTION = "Console application allowing to list your books rented or booked at the library, " \
-                  "book and search new ones, get your booking history (if available)."
+    DESCRIPTION = (
+        "Console application allowing to list your books rented or booked at the library, "
+        "book and search new ones, get your booking history (if available)."
+    )
     SHORT_DESCRIPTION = "manage rented books"
-    EXTRA_FORMATTERS = {'rented_list':   RentedListFormatter,
-                        }
-    DEFAULT_FORMATTER = 'table'
+    EXTRA_FORMATTERS = {
+        "rented_list": RentedListFormatter,
+    }
+    DEFAULT_FORMATTER = "table"
     COMMANDS_FORMATTERS = {
-        'ls':          'rented_list',
-        'list':        'rented_list',
-        'rented':      'rented_list',
+        "ls": "rented_list",
+        "list": "rented_list",
+        "rented": "rented_list",
     }
 
-    COLLECTION_OBJECTS = (Book, )
+    COLLECTION_OBJECTS = (Book,)
 
     def do_renew(self, id):
         """
@@ -63,11 +66,11 @@ class AppBooks(ReplApplication):
 
         id, backend_name = self.parse_id(id)
         if not id:
-            print('Error: please give a book ID (hint: use ls command)', file=self.stderr)
+            print("Error: please give a book ID (hint: use ls command)", file=self.stderr)
             return 2
         names = (backend_name,) if backend_name is not None else None
 
-        for renew in self.do('renew_book', id, backends=names):
+        for renew in self.do("renew_book", id, backends=names):
             self.format(renew)
 
     def do_rented(self, args):
@@ -77,7 +80,7 @@ class AppBooks(ReplApplication):
         List rented books
         """
 
-        for book in self.do('iter_rented', backends=None):
+        for book in self.do("iter_rented", backends=None):
             self.format(book)
 
     def do_search(self, pattern):
@@ -86,5 +89,5 @@ class AppBooks(ReplApplication):
 
         Search books
         """
-        for book in self.do('search_books', pattern):
+        for book in self.do("search_books", pattern):
             self.format(book)

@@ -23,16 +23,18 @@ from woob.browser import URL, PagesBrowser
 from .pages import CommentsPage, RecipePage, ResultsPage
 
 
-__all__ = ['MarmitonBrowser']
+__all__ = ["MarmitonBrowser"]
 
 
 class MarmitonBrowser(PagesBrowser):
-    BASEURL = 'https://www.marmiton.org'
-    search = URL(r'/recettes/recherche.aspx\?aqt=(?P<pattern>.*)&start=(?P<start>\d*)&page=(?P<page>\d*)',
-                 r'/recettes/recherche.aspx\?aqt=.*',
-                 ResultsPage)
-    recipe = URL(r'/recettes/recette_(?P<id>.*).aspx', RecipePage)
-    comment = URL(r'https://api-uno.marmiton.org/origin/(?P<_id>\d*)/top-reviews\?originType=RECIPE', CommentsPage)
+    BASEURL = "https://www.marmiton.org"
+    search = URL(
+        r"/recettes/recherche.aspx\?aqt=(?P<pattern>.*)&start=(?P<start>\d*)&page=(?P<page>\d*)",
+        r"/recettes/recherche.aspx\?aqt=.*",
+        ResultsPage,
+    )
+    recipe = URL(r"/recettes/recette_(?P<id>.*).aspx", RecipePage)
+    comment = URL(r"https://api-uno.marmiton.org/origin/(?P<_id>\d*)/top-reviews\?originType=RECIPE", CommentsPage)
 
     def iter_recipes(self, pattern):
         return self.search.go(pattern=pattern, start=0, page=0).iter_recipes(pattern=pattern)
@@ -43,10 +45,10 @@ class MarmitonBrowser(PagesBrowser):
         assert self.recipe.is_here()
         recipe = self.page.get_recipe(obj=recipe)
 
-        m = re.match(r'.*_(\d*)$', recipe.id, re.DOTALL)
+        m = re.match(r".*_(\d*)$", recipe.id, re.DOTALL)
         if m:
             _id = m.group(1)
-            self.session.headers['x-site-id'] = '13'
+            self.session.headers["x-site-id"] = "13"
             comments = list(self.comment.go(_id=_id).get_comments())
             if comments:
                 recipe.comments = comments

@@ -42,27 +42,14 @@ def main(xunit, origin):
             # Always set to bad on failed test
             modules[module] = "bad"
     # Aggregate results by test result rather than module
-    results = {
-        "good": [],
-        "bad": [],
-        "skipped": []
-    }
+    results = {"good": [], "bad": [], "skipped": []}
     for module in modules:
         results[modules[module]].append(module)
-    return {
-        "origin": origin,
-        "modules": results,
-        "others": other_testcases
-    }
+    return {"origin": origin, "modules": results, "others": other_testcases}
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         sys.exit("Usage: %s XUNIT_FILE ORIGIN" % (sys.argv[0]))
 
-    print(
-        json.dumps(
-            main(sys.argv[1], sys.argv[2]),
-            sort_keys=True, indent=4, separators=(',', ': ')
-        )
-    )
+    print(json.dumps(main(sys.argv[1], sys.argv[2]), sort_keys=True, indent=4, separators=(",", ": ")))

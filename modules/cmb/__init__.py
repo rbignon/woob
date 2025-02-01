@@ -20,4 +20,4 @@
 from .module import CmbModule
 
 
-__all__ = ['CmbModule']
+__all__ = ["CmbModule"]

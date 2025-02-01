@@ -28,16 +28,16 @@ from .captcha import CaptchaPage
 
 class LoginPage(CaptchaPage):
     def has_captcha(self):
-        return Attr('//img[contains(@alt, "captcha")]', 'alt', default=None)(self.doc)
+        return Attr('//img[contains(@alt, "captcha")]', "alt", default=None)(self.doc)
 
 
 class PasswordPage(JsonPage):
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
 
     def get_change_password_message(self):
-        if self.doc.get('step') == 'mandatory':
+        if self.doc.get("step") == "mandatory":
             # The password expired message on the website is fetched from a javascript file.
-            return 'Votre mot de passe actuel n’est pas suffisamment sécurisé et doit être renforcé.'
+            return "Votre mot de passe actuel n’est pas suffisamment sécurisé et doit être renforcé."
 
 
 class ManageCGI(HTMLPage):
@@ -47,9 +47,9 @@ class ManageCGI(HTMLPage):
 class HomePage(LoggedPage, HTMLPage):
     def get_error_message(self):
         return Format(
-            '%s %s',
+            "%s %s",
             CleanText('//div[has-class("modal-dialog")]//h3'),
-            CleanText('//div[has-class("modal-dialog")]//p[1]')
+            CleanText('//div[has-class("modal-dialog")]//p[1]'),
         )(self.doc)
 
 

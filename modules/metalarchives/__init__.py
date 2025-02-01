@@ -20,4 +20,4 @@
 from .module import MetalarchivesModule
 
 
-__all__ = ['MetalarchivesModule']
+__all__ = ["MetalarchivesModule"]

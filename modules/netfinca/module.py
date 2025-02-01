@@ -24,15 +24,15 @@ from woob.tools.backend import Module
 from .browser import NetfincaBrowser
 
 
-__all__ = ['NetfincaModule']
+__all__ = ["NetfincaModule"]
 
 
 class NetfincaModule(Module, CapBankWealth):
-    NAME = 'netfinca'
-    DESCRIPTION = 'netfinca website'
-    MAINTAINER = 'Martin Sicot'
-    EMAIL = 'martin.sicot@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "netfinca"
+    DESCRIPTION = "netfinca website"
+    MAINTAINER = "Martin Sicot"
+    EMAIL = "martin.sicot@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = NetfincaBrowser

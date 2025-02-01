@@ -48,30 +48,30 @@ class TwitterJsonHTMLPage(JsonPage):
         super(TwitterJsonHTMLPage, self).__init__(browser, response, *args, **kwargs)
         self.encoding = self.ENCODING or response.encoding
         parser = html.HTMLParser(encoding=self.encoding)
-        if 'module_html' in self.doc:
-            self.doc = html.parse(StringIO(self.doc['module_html']), parser)
+        if "module_html" in self.doc:
+            self.doc = html.parse(StringIO(self.doc["module_html"]), parser)
         else:
-            self.has_next = self.doc['has_more_items']
+            self.has_next = self.doc["has_more_items"]
 
             self.min_position = None
-            if 'min_position' in self.doc:
-                self.min_position = self.doc['min_position']
+            if "min_position" in self.doc:
+                self.min_position = self.doc["min_position"]
 
-            if self.doc['items_html']:
-                el = html.parse(StringIO(self.doc['items_html']), parser)
-                self.doc = el if el.getroot() is not None else html.Element('brinbrin')
+            if self.doc["items_html"]:
+                el = html.parse(StringIO(self.doc["items_html"]), parser)
+                self.doc = el if el.getroot() is not None else html.Element("brinbrin")
             else:
-                self.doc = html.Element('brinbrin')
+                self.doc = html.Element("brinbrin")
 
 
 class LoginPage(HTMLPage):
     def login(self, login, passwd):
         try:
             form = self.get_form(xpath='//form[@action="https://twitter.com/sessions"]')
-            form['session[username_or_email]'] = login
-            form['session[password]'] = passwd
+            form["session[username_or_email]"] = login
+            form["session[password]"] = passwd
             form.submit()
-            return form['authenticity_token']
+            return form["authenticity_token"]
         except FormNotFound:
             return CleanText('(//input[@id="authenticity_token"])[1]/@value')(self.doc)
 
@@ -84,7 +84,7 @@ class LoginPage(HTMLPage):
             return True
 
     def get_me(self):
-        return Regexp(Link('//a[@data-nav="view_profile"]'), '/(.+)')(self.doc)
+        return Regexp(Link('//a[@data-nav="view_profile"]'), "/(.+)")(self.doc)
 
 
 class ThreadPage(HTMLPage):
@@ -93,15 +93,28 @@ class ThreadPage(HTMLPage):
     class get_thread(ItemElement):
         klass = Thread
 
-        obj_id = Format('%s#%s', Env('user'), Env('_id'))
-        obj_title = Format('%s \n\t %s',
-                           CleanText('//div[has-class("permalink-inner permalink-tweet-container")]/div/div/div/a',
-                                     replace=[('@ ', '@'), ('# ', '#'), ('http:// ', 'http://')]),
-                           CleanText('//div[has-class("permalink-inner permalink-tweet-container")]/div/div/p',
-                                     replace=[('@ ', '@'), ('# ', '#'), ('http:// ', 'http://')]))
-        obj_date = DateTime(Regexp(CleanText('//div[has-class("permalink-inner permalink-tweet-container")]/div/div/div[@class="client-and-actions"]/span/span'),
-                                   r'(\d+:\d+).+- (.+\d{4})',
-                                   '\\2 \\1'), translations=DATE_TRANSLATE_FR)
+        obj_id = Format("%s#%s", Env("user"), Env("_id"))
+        obj_title = Format(
+            "%s \n\t %s",
+            CleanText(
+                '//div[has-class("permalink-inner permalink-tweet-container")]/div/div/div/a',
+                replace=[("@ ", "@"), ("# ", "#"), ("http:// ", "http://")],
+            ),
+            CleanText(
+                '//div[has-class("permalink-inner permalink-tweet-container")]/div/div/p',
+                replace=[("@ ", "@"), ("# ", "#"), ("http:// ", "http://")],
+            ),
+        )
+        obj_date = DateTime(
+            Regexp(
+                CleanText(
+                    '//div[has-class("permalink-inner permalink-tweet-container")]/div/div/div[@class="client-and-actions"]/span/span'
+                ),
+                r"(\d+:\d+).+- (.+\d{4})",
+                "\\2 \\1",
+            ),
+            translations=DATE_TRANSLATE_FR,
+        )
 
     @method
     class iter_comments(ListElement):
@@ -110,15 +123,26 @@ class ThreadPage(HTMLPage):
         class item(ItemElement):
             klass = Message
 
-            obj_id = Regexp(Link('./div/div/small/a', default=''), '/.+/status/(.+)', default=None)
+            obj_id = Regexp(Link("./div/div/small/a", default=""), "/.+/status/(.+)", default=None)
 
-            obj_title = Regexp(CleanText('./div[@class="content"]/div/p[has-class("tweet-text")]',
-                                         replace=[('@ ', '@'), ('# ', '#'), ('http:// ', 'http://')]),
-                               '(.{50}|.+).+')
-            obj_content = CleanText('./div[@class="content"]/div/p[has-class("tweet-text")]',
-                                    replace=[('@ ', '@'), ('# ', '#'), ('http:// ', 'http://')])
-            obj_sender = Regexp(Link('./div/div/small/a', default=''), '/(.+)/status/.+', default=None)
-            obj_date = DatetimeFromTimestamp(Attr('./div/div[@class="stream-item-header"]/small/a/span | ./div/div[@class="ProfileTweet-authorDetails"]/span/a/span', 'data-time'))
+            obj_title = Regexp(
+                CleanText(
+                    './div[@class="content"]/div/p[has-class("tweet-text")]',
+                    replace=[("@ ", "@"), ("# ", "#"), ("http:// ", "http://")],
+                ),
+                "(.{50}|.+).+",
+            )
+            obj_content = CleanText(
+                './div[@class="content"]/div/p[has-class("tweet-text")]',
+                replace=[("@ ", "@"), ("# ", "#"), ("http:// ", "http://")],
+            )
+            obj_sender = Regexp(Link("./div/div/small/a", default=""), "/(.+)/status/.+", default=None)
+            obj_date = DatetimeFromTimestamp(
+                Attr(
+                    './div/div[@class="stream-item-header"]/small/a/span | ./div/div[@class="ProfileTweet-authorDetails"]/span/a/span',
+                    "data-time",
+                )
+            )
 
             def validate(self, obj):
                 return obj.id is not None
@@ -127,7 +151,7 @@ class ThreadPage(HTMLPage):
 class SearchPage(HTMLPage):
     def get_trends_token(self):
         json_data = CleanText('//input[@id="init-data"]/@value')(self.doc)
-        return json.loads(json_data)['trendsCacheKey']
+        return json.loads(json_data)["trendsCacheKey"]
 
     def get_min_position(self):
         return CleanText('//div[@class="stream-container "]/@data-min-position')(self.doc)
@@ -142,7 +166,7 @@ class TrendsPage(TwitterJsonHTMLPage):
         class item(ItemElement):
             klass = BaseObject
 
-            obj_id = Attr('.', 'data-trend-name')
+            obj_id = Attr(".", "data-trend-name")
 
 
 class TimelineListElement(ListElement):
@@ -151,18 +175,26 @@ class TimelineListElement(ListElement):
 
     def get_last_id(self):
         _el = self.page.doc.xpath('//*[@data-item-type="tweet"]/div')[-1]
-        return CleanText('./@data-tweet-id')(_el)
+        return CleanText("./@data-tweet-id")(_el)
 
     class item(ItemElement):
         klass = Thread
 
-        obj_id = Format('%s#%s', CleanText('./@data-screen-name'), CleanText('./@data-tweet-id'))
-        obj_title = Format('%s \n\t %s',
-                           CleanText('./div/div[@class="stream-item-header"]/a|./div/div[@class="ProfileTweet-authorDetails"]/a',
-                                     replace=[('@ ', '@'), ('# ', '#'), ('http:// ', 'http://')]),
-                           CleanText('./div/div/p',
-                                     replace=[('@ ', '@'), ('# ', '#'), ('http:// ', 'http://')]))
-        obj_date = DatetimeFromTimestamp(Attr('./div/div[@class="stream-item-header"]/small/a/span | ./div/div[@class="ProfileTweet-authorDetails"]/span/a/span', 'data-time'))
+        obj_id = Format("%s#%s", CleanText("./@data-screen-name"), CleanText("./@data-tweet-id"))
+        obj_title = Format(
+            "%s \n\t %s",
+            CleanText(
+                './div/div[@class="stream-item-header"]/a|./div/div[@class="ProfileTweet-authorDetails"]/a',
+                replace=[("@ ", "@"), ("# ", "#"), ("http:// ", "http://")],
+            ),
+            CleanText("./div/div/p", replace=[("@ ", "@"), ("# ", "#"), ("http:// ", "http://")]),
+        )
+        obj_date = DatetimeFromTimestamp(
+            Attr(
+                './div/div[@class="stream-item-header"]/small/a/span | ./div/div[@class="ProfileTweet-authorDetails"]/span/a/span',
+                "data-time",
+            )
+        )
 
 
 class TimelinePage(TwitterJsonHTMLPage):
@@ -172,7 +204,7 @@ class TimelinePage(TwitterJsonHTMLPage):
 
         def next_page(self):
             if self.page.has_next:
-                return u'%s?max_position=%s' % (self.page.url.split('?')[0], self.get_last_id())
+                return "%s?max_position=%s" % (self.page.url.split("?")[0], self.get_last_id())
 
 
 class HomeTimelinePage(TwitterJsonHTMLPage, LoggedPage):
@@ -182,7 +214,7 @@ class HomeTimelinePage(TwitterJsonHTMLPage, LoggedPage):
 
         def next_page(self):
             if self.page.has_next:
-                return u'%s?max_id=%s' % (self.page.url.split('?')[0], self.get_last_id())
+                return "%s?max_id=%s" % (self.page.url.split("?")[0], self.get_last_id())
 
 
 class SearchTimelinePage(TwitterJsonHTMLPage):
@@ -191,13 +223,13 @@ class SearchTimelinePage(TwitterJsonHTMLPage):
     class iter_threads(TimelineListElement):
 
         def next_page(self):
-            params = self.env['params']
-            params['max_position'] = self.page.min_position
-            if 'min_position' in self.env and not params['max_position']:
-                params['max_position'] = self.env['min_position']
+            params = self.env["params"]
+            params["max_position"] = self.page.min_position
+            if "min_position" in self.env and not params["max_position"]:
+                params["max_position"] = self.env["min_position"]
 
             if self.page.has_next:
-                return u'%s?%s' % (self.page.url.split('?')[0], urlencode(params))
+                return "%s?%s" % (self.page.url.split("?")[0], urlencode(params))
 
 
 class LoginErrorPage(HTMLPage):

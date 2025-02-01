@@ -26,16 +26,16 @@ from woob.tools.backend import Module
 from .browser import VirginBrowser
 
 
-__all__ = ['VirginRadioModule']
+__all__ = ["VirginRadioModule"]
 
 
 class VirginRadioModule(Module, CapRadio, CapCollection):
-    NAME = 'virginradio'
-    MAINTAINER = u'Johann Broudin'
-    EMAIL = 'Johann.Broudin@6-8.fr'
-    VERSION = '3.7'
-    DESCRIPTION = u'VirginRadio french radio'
-    LICENSE = 'AGPLv3+'
+    NAME = "virginradio"
+    MAINTAINER = "Johann Broudin"
+    EMAIL = "Johann.Broudin@6-8.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "VirginRadio french radio"
+    LICENSE = "AGPLv3+"
     BROWSER = VirginBrowser
 
     def get_radio(self, radio):
@@ -47,21 +47,21 @@ class VirginRadioModule(Module, CapRadio, CapCollection):
         if r is None:
             return None
 
-        radio.title = r['title']
+        radio.title = r["title"]
 
         radio.description = self.browser.description(r)
 
         stream_hls = BaseAudioStream(0)
-        stream_hls.url = r['hls_source']
+        stream_hls.url = r["hls_source"]
         stream_hls.bitrate = 135
-        stream_hls.format = u'aac'
-        stream_hls.title = u'%s %skbits/s' % (stream_hls.format, stream_hls.bitrate)
+        stream_hls.format = "aac"
+        stream_hls.title = "%s %skbits/s" % (stream_hls.format, stream_hls.bitrate)
 
         stream = BaseAudioStream(0)
-        stream.url = r['source']
+        stream.url = r["source"]
         stream.bitrate = 128
-        stream.format = u'mp3'
-        stream.title = u'%s %skbits/s' % (stream.format, stream.bitrate)
+        stream.format = "mp3"
+        stream.title = "%s %skbits/s" % (stream.format, stream.bitrate)
 
         radio.streams = [stream_hls, stream]
         radio.current = self.browser.current(r)
@@ -78,12 +78,12 @@ class VirginRadioModule(Module, CapRadio, CapCollection):
                 yield self.get_radio(id)
 
     def iter_radios_search(self, pattern):
-        for radio in self.iter_resources((Radio, ), []):
+        for radio in self.iter_resources((Radio,), []):
             if pattern.lower() in radio.title.lower() or pattern.lower() in radio.description.lower():
                 yield radio
 
     def fill_radio(self, radio, fields):
-        if 'current' in fields:
+        if "current" in fields:
             if not radio.current:
                 radio = self.get_radio(radio.id)
         return radio

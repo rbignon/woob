@@ -54,9 +54,7 @@ class CesuModule(Module, CapDocument):
     )
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config["username"].get(), self.config["password"].get()
-        )
+        return self.create_browser(self.config["username"].get(), self.config["password"].get())
 
     def download_document(self, document):
         if not isinstance(document, Document):
@@ -69,9 +67,7 @@ class CesuModule(Module, CapDocument):
     def get_document(self, _id):
         subscription_id = _id.split("_")[0]
         subscription = self.get_subscription(subscription_id)
-        return find_object(
-            self.iter_documents(subscription), id=_id, error=DocumentNotFound
-        )
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):

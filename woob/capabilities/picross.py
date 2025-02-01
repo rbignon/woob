@@ -21,8 +21,11 @@ from woob.capabilities.base import BaseObject, Capability, Enum, EnumField, Fiel
 
 
 __all__ = [
-    'CapPicross', 'Picross', 'PicrossNotFound', 'PicrossSolution',
-    'PicrossSolvedStatus',
+    "CapPicross",
+    "Picross",
+    "PicrossNotFound",
+    "PicrossSolution",
+    "PicrossSolvedStatus",
 ]
 
 
@@ -31,7 +34,7 @@ class PicrossNotFound(UserError):
     Raised when a picross puzzle is not found.
     """
 
-    def __init__(self, msg='Picross not found'):
+    def __init__(self, msg="Picross not found"):
         super().__init__(msg)
 
 
@@ -46,14 +49,14 @@ class PicrossVariant(Enum):
     sets color_lines and color_columns.
     """
 
-    BASIC = 'basic'
-    COLORED = 'colored'
+    BASIC = "basic"
+    COLORED = "colored"
 
 
 class PicrossSolvedStatus(Enum):
-    UNKNOWN = 'unknown'
-    SOLVED = 'solved'
-    UNSOLVED = 'unsolved'
+    UNKNOWN = "unknown"
+    SOLVED = "solved"
+    UNSOLVED = "unsolved"
 
 
 class PicrossSolutionKind(Enum):
@@ -64,7 +67,7 @@ class PicrossSolutionKind(Enum):
     PicrossSolution for more information.
     """
 
-    PLACEMENTS = 'placements'
+    PLACEMENTS = "placements"
 
 
 class Picross(BaseObject):
@@ -136,22 +139,22 @@ class Picross(BaseObject):
     color components are integers representing sRGB colors.
     """
 
-    name = StringField('The friendly name of the picross puzzle, if available')
+    name = StringField("The friendly name of the picross puzzle, if available")
     variant = EnumField(
-        'The rules variant for the picross',
+        "The rules variant for the picross",
         enum=PicrossVariant,
         default=PicrossVariant.BASIC,
     )
     solved_status = EnumField(
-        'Whether the picross has been solved or not',
+        "Whether the picross has been solved or not",
         enum=PicrossSolvedStatus,
         default=PicrossSolvedStatus.UNKNOWN,
     )
-    lines = Field('List of line tuples', list)
-    columns = Field('List of column tuples', list)
+    lines = Field("List of line tuples", list)
+    columns = Field("List of column tuples", list)
 
-    color_lines = Field('List of colors given to groups on rows', list)
-    color_columns = Field('List of colors given to groups on columns', list)
+    color_lines = Field("List of colors given to groups on rows", list)
+    color_columns = Field("List of colors given to groups on columns", list)
 
 
 class PicrossSolution(BaseObject):
@@ -179,12 +182,12 @@ class PicrossSolution(BaseObject):
     """
 
     kind = EnumField(
-        'The solution kind to the picross solution.',
+        "The solution kind to the picross solution.",
         enum=PicrossSolutionKind,
         default=PicrossSolutionKind.PLACEMENTS,
     )
 
-    lines = Field('List of lines with x-es and spaces', list)
+    lines = Field("List of lines with x-es and spaces", list)
 
 
 class CapPicross(Capability):

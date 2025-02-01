@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class PradoepargneTest(BackendTest):
-    MODULE = 'pradoepargne'
+    MODULE = "pradoepargne"
 
     def test_pradoepargne(self):
         raise NotImplementedError()

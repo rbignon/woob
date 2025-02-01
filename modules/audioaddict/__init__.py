@@ -21,4 +21,4 @@
 from .module import AudioAddictModule
 
 
-__all__ = ['AudioAddictModule']
+__all__ = ["AudioAddictModule"]

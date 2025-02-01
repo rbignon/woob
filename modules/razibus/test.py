@@ -24,7 +24,7 @@ from woob.tools.test import BackendTest
 
 
 class RazibusTest(BackendTest):
-    MODULE = 'razibus'
+    MODULE = "razibus"
 
     def test_razibus(self):
         l = list(self.backend.list_events(datetime.now()))

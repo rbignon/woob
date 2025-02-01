@@ -24,17 +24,17 @@ from woob.tools.test import BackendTest
 
 
 class JirafeauTest(BackendTest):
-    MODULE = 'jirafeau'
+    MODULE = "jirafeau"
 
     def test_jirafeau(self):
         data = os.urandom(1 << 10)
 
-        assert self.backend.can_post(bin_to_b64(data), title='yeah.random', max_age=60)
-        assert self.backend.can_post(bin_to_b64(data), title='yeah.random', max_age=60, public=False)
-        assert not self.backend.can_post(bin_to_b64(data), title='yeah.random', max_age=60, public=True)
-        assert not self.backend.can_post(bin_to_b64(data), title='yeah.random', max_age=False)
+        assert self.backend.can_post(bin_to_b64(data), title="yeah.random", max_age=60)
+        assert self.backend.can_post(bin_to_b64(data), title="yeah.random", max_age=60, public=False)
+        assert not self.backend.can_post(bin_to_b64(data), title="yeah.random", max_age=60, public=True)
+        assert not self.backend.can_post(bin_to_b64(data), title="yeah.random", max_age=False)
 
-        paste = self.backend.new_paste(None, contents=bin_to_b64(data), title='yeah.random')
+        paste = self.backend.new_paste(None, contents=bin_to_b64(data), title="yeah.random")
         self.backend.post_paste(paste, max_age=60)
         self.assertTrue(paste.id)
         self.assertTrue(paste.page_url)
@@ -45,6 +45,6 @@ class JirafeauTest(BackendTest):
 
         fetched = self.backend.get_paste(paste.id)
         self.assertTrue(fetched)
-        self.backend.fillobj(fetched, 'contents')
+        self.backend.fillobj(fetched, "contents")
         self.assertTrue(fetched.contents)
         assert fetched.contents == bin_to_b64(data)

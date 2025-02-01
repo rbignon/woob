@@ -25,29 +25,27 @@ from woob.tools.value import ValueBackendPassword
 from .browser import EnsapBrowser
 
 
-__all__ = ['EnsapModule']
+__all__ = ["EnsapModule"]
 
 
 class EnsapModule(Module, CapDocument):
-    NAME = 'ensap'
-    DESCRIPTION = u'ENSAP'
-    MAINTAINER = u'Juliette Fourcot'
-    EMAIL = 'juliette@fourcot.fr'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "ensap"
+    DESCRIPTION = "ENSAP"
+    MAINTAINER = "Juliette Fourcot"
+    EMAIL = "juliette@fourcot.fr"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = EnsapBrowser
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', regexp=r'[0-9]{15}', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
+        ValueBackendPassword("login", label="Identifiant", regexp=r"[0-9]{15}", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
     )
     accepted_document_types = (DocumentTypes.PAYSLIP,)
     document_categories = {DocumentCategory.SAFE_DEPOSIT_BOX}
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config['login'].get(), self.config['password'].get()
-        )
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def iter_subscription(self):
         return self.browser.iter_subscription()

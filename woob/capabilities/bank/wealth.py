@@ -24,21 +24,28 @@ from .base import Account, CapBank
 
 
 __all__ = [
-    'PerVersion', 'PerProviderType', 'Per', 'Investment', 'Pocket',
-    'MarketOrderType', 'MarketOrderDirection', 'MarketOrderPayment',
-    'MarketOrder', 'CapBankWealth',
+    "PerVersion",
+    "PerProviderType",
+    "Per",
+    "Investment",
+    "Pocket",
+    "MarketOrderType",
+    "MarketOrderDirection",
+    "MarketOrderPayment",
+    "MarketOrder",
+    "CapBankWealth",
 ]
 
 
 class PerVersion(Enum):
-    PERIN = 'perin'  # "PER individuel", subscribed by the account holder
-    PERCOL = 'percol'  # "PER collectif", subscribed by the employer for all employees
-    PERCAT = 'percat'  # "PER catégoriel", subscribed by the employer for a category of employees (for example managers)
+    PERIN = "perin"  # "PER individuel", subscribed by the account holder
+    PERCOL = "percol"  # "PER collectif", subscribed by the employer for all employees
+    PERCAT = "percat"  # "PER catégoriel", subscribed by the employer for a category of employees (for example managers)
 
 
 class PerProviderType(Enum):
-    BANK = 'bank'
-    INSURER = 'insurer'
+    BANK = "bank"
+    INSURER = "insurer"
 
 
 class Per(Account):
@@ -46,45 +53,46 @@ class Per(Account):
     Account type dedicated to PER retirement savings plans.
     """
 
-    version = EnumField('Version of PER', PerVersion)
-    provider_type = EnumField('Type of account provider', PerProviderType)
+    version = EnumField("Version of PER", PerVersion)
+    provider_type = EnumField("Type of account provider", PerProviderType)
 
 
 class Investment(BaseObject):
     """
     Investment in a financial market.
     """
-    CODE_TYPE_ISIN = 'ISIN'
-    CODE_TYPE_AMF = 'AMF'
 
-    label = StringField('Label of stocks')
-    code = StringField('Identifier of the stock')
-    code_type = StringField('Type of stock code (ISIN or AMF)')
-    stock_symbol = StringField('Alternative identifier of the stock (different from ISIN)')
-    stock_market = StringField('Stock market related to the stock')
-    description = StringField('Short description of the stock')
-    quantity = DecimalField('Quantity of stocks')
-    unitprice = DecimalField('Buy price of one stock')
-    unitvalue = DecimalField('Current value of one stock')
-    valuation = DecimalField('Total current valuation of the Investment')
-    vdate = DateField('Value date of the valuation amount')
-    diff = DecimalField('Difference between the buy cost and the current valuation')
-    diff_ratio = DecimalField('Difference in ratio (1 meaning 100%) between the buy cost and the current valuation')
-    portfolio_share = DecimalField('Ratio (1 meaning 100%) of the current amount relative to the total')
-    performance_history = Field('History of the performances of the stock (key=years, value=diff_ratio)', dict)
-    srri = IntField('Synthetic Risk and Reward Indicator of the stock (from 1 to 7)')
-    asset_category = StringField('Category of the stock')
-    recommended_period = StringField('Recommended investment period of the stock')
+    CODE_TYPE_ISIN = "ISIN"
+    CODE_TYPE_AMF = "AMF"
+
+    label = StringField("Label of stocks")
+    code = StringField("Identifier of the stock")
+    code_type = StringField("Type of stock code (ISIN or AMF)")
+    stock_symbol = StringField("Alternative identifier of the stock (different from ISIN)")
+    stock_market = StringField("Stock market related to the stock")
+    description = StringField("Short description of the stock")
+    quantity = DecimalField("Quantity of stocks")
+    unitprice = DecimalField("Buy price of one stock")
+    unitvalue = DecimalField("Current value of one stock")
+    valuation = DecimalField("Total current valuation of the Investment")
+    vdate = DateField("Value date of the valuation amount")
+    diff = DecimalField("Difference between the buy cost and the current valuation")
+    diff_ratio = DecimalField("Difference in ratio (1 meaning 100%) between the buy cost and the current valuation")
+    portfolio_share = DecimalField("Ratio (1 meaning 100%) of the current amount relative to the total")
+    performance_history = Field("History of the performances of the stock (key=years, value=diff_ratio)", dict)
+    srri = IntField("Synthetic Risk and Reward Indicator of the stock (from 1 to 7)")
+    asset_category = StringField("Category of the stock")
+    recommended_period = StringField("Recommended investment period of the stock")
 
     # International
-    original_currency = StringField('Currency of the original amount')
-    original_valuation = DecimalField('Original valuation (in another currency)')
-    original_unitvalue = DecimalField('Original unitvalue (in another currency)')
-    original_unitprice = DecimalField('Original unitprice (in another currency)')
-    original_diff = DecimalField('Original diff (in another currency)')
+    original_currency = StringField("Currency of the original amount")
+    original_valuation = DecimalField("Original valuation (in another currency)")
+    original_unitvalue = DecimalField("Original unitvalue (in another currency)")
+    original_unitprice = DecimalField("Original unitprice (in another currency)")
+    original_diff = DecimalField("Original diff (in another currency)")
 
     def __repr__(self):
-        return '<Investment label=%r code=%r valuation=%r>' % (self.label, self.code, self.valuation)
+        return "<Investment label=%r code=%r valuation=%r>" % (self.label, self.code, self.valuation)
 
     # compatibility alias
     @property
@@ -128,6 +136,7 @@ class Pocket(BaseObject):
     """
     Pocket
     """
+
     CONDITION_UNKNOWN = PocketCondition.UNKNOWN
     CONDITION_DATE = PocketCondition.DATE
     CONDITION_DATE_WHEN_ACQUIRED = PocketCondition.DATE_WHEN_ACQUIRED
@@ -148,12 +157,12 @@ class Pocket(BaseObject):
     CONDITION_EXPIRATION_UNEMPLOYMENT = PocketCondition.EXPIRATION_UNEMPLOYMENT
     CONDITION_PURCHASE_APARTMENT = PocketCondition.PURCHASE_APARTMENT
 
-    label = StringField('Label of pocket')
-    amount = DecimalField('Amount of the pocket')
-    quantity = DecimalField('Quantity of stocks')
-    availability_date = DateField('Availability date of the pocket')
-    condition = EnumField('Withdrawal condition of the pocket', PocketCondition, default=CONDITION_UNKNOWN)
-    investment = Field('Reference to the investment of the pocket', Investment)
+    label = StringField("Label of pocket")
+    amount = DecimalField("Amount of the pocket")
+    quantity = DecimalField("Quantity of stocks")
+    availability_date = DateField("Availability date of the pocket")
+    condition = EnumField("Withdrawal condition of the pocket", PocketCondition, default=CONDITION_UNKNOWN)
+    investment = Field("Reference to the investment of the pocket", Investment)
 
 
 class MarketOrderType(Enum):
@@ -184,31 +193,31 @@ class MarketOrder(BaseObject):
     """
 
     # Important: a Market Order always corresponds to one (and only one) investment
-    label = StringField('Label of the market order')
+    label = StringField("Label of the market order")
 
     # MarketOrder values
-    unitprice = DecimalField('Value of the stock at the moment of the market order')
-    unitvalue = DecimalField('Current value of the stock associated with the market order')
-    ordervalue = DecimalField('Limit value or trigger value, only relevant if the order type is LIMIT or TRIGGER')
-    currency = StringField('Currency of the market order - not always the same as account currency')
-    quantity = DecimalField('Quantity of stocks in the market order')
-    amount = DecimalField('Total amount that has been bought or sold')
+    unitprice = DecimalField("Value of the stock at the moment of the market order")
+    unitvalue = DecimalField("Current value of the stock associated with the market order")
+    ordervalue = DecimalField("Limit value or trigger value, only relevant if the order type is LIMIT or TRIGGER")
+    currency = StringField("Currency of the market order - not always the same as account currency")
+    quantity = DecimalField("Quantity of stocks in the market order")
+    amount = DecimalField("Total amount that has been bought or sold")
 
     # MarketOrder additional information
-    order_type = EnumField('Type of market order', MarketOrderType, default=MarketOrderType.UNKNOWN)
+    order_type = EnumField("Type of market order", MarketOrderType, default=MarketOrderType.UNKNOWN)
     direction = EnumField(
-        'Direction of the market order (buy or sale)', MarketOrderDirection, default=MarketOrderDirection.UNKNOWN
+        "Direction of the market order (buy or sale)", MarketOrderDirection, default=MarketOrderDirection.UNKNOWN
     )
     payment_method = EnumField(
-        'Payment method of the market order', MarketOrderPayment, default=MarketOrderPayment.UNKNOWN
+        "Payment method of the market order", MarketOrderPayment, default=MarketOrderPayment.UNKNOWN
     )
-    date = DateField('Creation date of the market order')
-    validity_date = DateField('Validity date of the market order')
-    execution_date = DateField('Execution date of the market order (only for market orders that are completed)')
-    state = StringField('Current state of the market order (e.g. executed)')
-    code = StringField('Identifier of the stock related to the order')
-    stock_symbol = StringField('Alternative identifier of the stock related to the order (different from ISIN)')
-    stock_market = StringField('Stock market on which the order was executed')
+    date = DateField("Creation date of the market order")
+    validity_date = DateField("Validity date of the market order")
+    execution_date = DateField("Execution date of the market order (only for market orders that are completed)")
+    state = StringField("Current state of the market order (e.g. executed)")
+    code = StringField("Identifier of the stock related to the order")
+    stock_symbol = StringField("Alternative identifier of the stock related to the order (different from ISIN)")
+    stock_market = StringField("Stock market on which the order was executed")
 
 
 class CapBankWealth(CapBank):

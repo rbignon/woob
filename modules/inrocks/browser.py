@@ -22,12 +22,8 @@ from .pages import ArticlePage
 
 
 class NewspaperInrocksBrowser(GenericNewspaperBrowser):
-    BASEURL = 'http://www.lesinrocks.com'
+    BASEURL = "http://www.lesinrocks.com"
 
     article = URL(
-        r'/\?p=.+',
-        r'/\d{4}/\d{2}/\d{2}/actualite/.*',
-        r'http://blogs.lesinrocks.com/.*',
-        r'/.*',
-        ArticlePage
+        r"/\?p=.+", r"/\d{4}/\d{2}/\d{2}/actualite/.*", r"http://blogs.lesinrocks.com/.*", r"/.*", ArticlePage
     )

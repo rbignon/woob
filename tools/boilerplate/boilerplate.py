@@ -25,8 +25,8 @@ from importlib import import_module
 
 
 BOILERPLATE_PATH = os.getenv(
-    'BOILERPLATE_PATH',
-    os.path.realpath(os.path.join(os.path.dirname(__file__), 'boilerplate_data')))
+    "BOILERPLATE_PATH", os.path.realpath(os.path.join(os.path.dirname(__file__), "boilerplate_data"))
+)
 
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(BOILERPLATE_PATH)
@@ -36,34 +36,30 @@ from recipe import Recipe  # NOQA
 
 def u8(s):
     if isinstance(s, bytes):
-        return s.decode('utf-8')
+        return s.decode("utf-8")
     return s
 
 
 def gitconfig(entry):
-    return u8(subprocess.check_output(f'git config -z --get {entry}', shell=True)[:-1])
+    return u8(subprocess.check_output(f"git config -z --get {entry}", shell=True)[:-1])
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '-a', '--author',
-        default=gitconfig('user.name'), type=u8)
-    parser.add_argument(
-        '-e', '--email',
-        default=gitconfig('user.email'), type=u8)
-    subparsers = parser.add_subparsers(dest='recipe')
+    parser.add_argument("-a", "--author", default=gitconfig("user.name"), type=u8)
+    parser.add_argument("-e", "--email", default=gitconfig("user.email"), type=u8)
+    subparsers = parser.add_subparsers(dest="recipe")
     subparsers.required = True
 
-    recipes_module = import_module('recipes', package='boilerplate_data')
+    recipes_module = import_module("recipes", package="boilerplate_data")
 
-    if hasattr(recipes_module, '__all__'):
+    if hasattr(recipes_module, "__all__"):
         for k in recipes_module.__all__:
             getattr(recipes_module, k).configure_subparser(subparsers)
     else:
         for k in dir(recipes_module):
             print(k)
-            if issubclass(getattr(recipes_module, k), Recipe) and not k.startswith('_'):
+            if issubclass(getattr(recipes_module, k), Recipe) and not k.startswith("_"):
                 getattr(recipes_module, k).configure_subparser(subparsers)
 
     args = parser.parse_args()
@@ -72,5 +68,5 @@ def main():
     recipe.generate()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

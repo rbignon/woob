@@ -37,10 +37,7 @@ class IncludedUnavailablePage(HTMLPage):
     such as JSON or images.
     """
 
-    UNAVAILABLE_XPATH = (
-        '//main/h1[contains(text(), '
-        + '"Le service est momentanément indisponible.")]'
-    )
+    UNAVAILABLE_XPATH = "//main/h1[contains(text(), " + '"Le service est momentanément indisponible.")]'
 
     def build_doc(self, content):
         try:
@@ -60,7 +57,9 @@ class IncludedUnavailablePage(HTMLPage):
 
 class MyHTMLPage(HTMLPage):
     def on_load(self):
-        deconnexion = self.doc.xpath('//iframe[contains(@id, "deconnexion")] | //p[@class="txt" and contains(text(), "Session expir")]')
+        deconnexion = self.doc.xpath(
+            '//iframe[contains(@id, "deconnexion")] | //p[@class="txt" and contains(text(), "Session expir")]'
+        )
         if deconnexion:
             self.browser.do_login()
 

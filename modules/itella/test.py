@@ -23,7 +23,7 @@ from woob.tools.test import BackendTest
 
 
 class ItellaTest(BackendTest):
-    MODULE = 'itella'
+    MODULE = "itella"
 
     def test_itella(self):
         self.assertRaises(ParcelNotFound, self.backend.get_parcel_tracking, "foo")

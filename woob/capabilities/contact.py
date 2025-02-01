@@ -25,9 +25,20 @@ from .base import BaseObject, BoolField, BytesField, Capability, Field, IntField
 
 
 __all__ = [
-    'ProfileNode', 'ContactPhoto', 'Contact', 'QueryError', 'Query', 'CapContact',
-    'BaseContact', 'PhysicalEntity', 'Person', 'Place', 'OpeningHours',
-    'OpeningRule', 'RRuleField', 'CapDirectory',
+    "ProfileNode",
+    "ContactPhoto",
+    "Contact",
+    "QueryError",
+    "Query",
+    "CapContact",
+    "BaseContact",
+    "PhysicalEntity",
+    "Person",
+    "Place",
+    "OpeningHours",
+    "OpeningRule",
+    "RRuleField",
+    "CapDirectory",
 ]
 
 
@@ -35,7 +46,8 @@ class ProfileNode:
     """
     Node of a :class:`Contact` profile.
     """
-    HEAD =    0x01
+
+    HEAD = 0x01
     SECTION = 0x02
 
     def __init__(self, name, label, value, sufix=None, flags=0):
@@ -53,65 +65,71 @@ class ContactPhoto(BaseObject):
     """
     Photo of a contact.
     """
-    name =              StringField('Name of the photo')
-    data =              BytesField('Data of photo')
-    thumbnail_url =     StringField('Direct URL to thumbnail')
-    thumbnail_data =    BytesField('Data of thumbnail')
-    hidden =            BoolField('True if the photo is hidden on website')
+
+    name = StringField("Name of the photo")
+    data = BytesField("Data of photo")
+    thumbnail_url = StringField("Direct URL to thumbnail")
+    thumbnail_data = BytesField("Data of thumbnail")
+    hidden = BoolField("True if the photo is hidden on website")
 
     def __init__(self, name, url=None):
         super(ContactPhoto, self).__init__(name, url)
         self.name = name
 
     def __iscomplete__(self):
-        return (self.data and (not self.thumbnail_url or self.thumbnail_data))
+        return self.data and (not self.thumbnail_url or self.thumbnail_data)
 
     def __str__(self):
         return self.url
 
     def __repr__(self):
-        return '<ContactPhoto %r data=%do tndata=%do>' % (self.id,
-                                                          len(self.data) if self.data else 0,
-                                                          len(self.thumbnail_data) if self.thumbnail_data else 0)
+        return "<ContactPhoto %r data=%do tndata=%do>" % (
+            self.id,
+            len(self.data) if self.data else 0,
+            len(self.thumbnail_data) if self.thumbnail_data else 0,
+        )
 
 
 class BaseContact(BaseObject):
     """
     This is the blase class for a contact.
     """
-    name =      StringField('Name of contact')
-    phone =     StringField('Phone number')
-    email =     StringField('Contact email')
-    website =   StringField('Website URL of the contact')
+
+    name = StringField("Name of contact")
+    phone = StringField("Phone number")
+    email = StringField("Contact email")
+    website = StringField("Website URL of the contact")
 
 
 class Advisor(BaseContact):
     """
     An advisor.
     """
-    email =     StringField('Mail of advisor')
-    phone =     StringField('Phone number of advisor')
-    mobile =    StringField('Mobile number of advisor')
-    fax =       StringField('Fax number of advisor')
-    agency =    StringField('Name of agency')
-    address =   StringField('Address of agency')
-    role =      StringField('Role of advisor', default="bank")
+
+    email = StringField("Mail of advisor")
+    phone = StringField("Phone number of advisor")
+    mobile = StringField("Mobile number of advisor")
+    fax = StringField("Fax number of advisor")
+    agency = StringField("Name of agency")
+    address = StringField("Address of agency")
+    role = StringField("Role of advisor", default="bank")
 
 
 class Contact(BaseContact):
     """
     A contact.
     """
-    STATUS_ONLINE =  0x001
-    STATUS_AWAY =    0x002
-    STATUS_OFFLINE = 0x004
-    STATUS_ALL =     0xfff
 
-    status =        IntField('Status of contact (STATUS_* constants)')
-    status_msg =    StringField('Message of status')
-    summary =       StringField('Description of contact')
-    photos =        Field('List of photos', dict, default=OrderedDict())
-    profile =       Field('Contact profile', dict, default=OrderedDict())
+    STATUS_ONLINE = 0x001
+    STATUS_AWAY = 0x002
+    STATUS_OFFLINE = 0x004
+    STATUS_ALL = 0xFFF
+
+    status = IntField("Status of contact (STATUS_* constants)")
+    status_msg = StringField("Message of status")
+    summary = StringField("Description of contact")
+    photos = Field("List of photos", dict, default=OrderedDict())
+    profile = Field("Contact profile", dict, default=OrderedDict())
 
     def __init__(self, id, name, status, url=None):
         super(Contact, self).__init__(id, url)
@@ -135,41 +153,41 @@ class Contact(BaseContact):
 
     def get_text(self):
         def print_node(node, level=1):
-            result = ''
+            result = ""
             if node.flags & node.SECTION:
-                result += '\t' * level + node.label + '\n'
+                result += "\t" * level + node.label + "\n"
                 for sub in node.value.values():
                     result += print_node(sub, level + 1)
             else:
                 if isinstance(node.value, (tuple, list)):
-                    value = ', '.join(str(v) for v in node.value)
+                    value = ", ".join(str(v) for v in node.value)
                 elif isinstance(node.value, float):
-                    value = '%.2f' % node.value
+                    value = "%.2f" % node.value
                 else:
                     value = node.value
-                result += '\t' * level + '%-20s %s\n' % (node.label + ':', value)
+                result += "\t" * level + "%-20s %s\n" % (node.label + ":", value)
             return result
 
-        result = 'Nickname: %s\n' % self.name
+        result = "Nickname: %s\n" % self.name
         if self.status & Contact.STATUS_ONLINE:
-            s = 'online'
+            s = "online"
         elif self.status & Contact.STATUS_OFFLINE:
-            s = 'offline'
+            s = "offline"
         elif self.status & Contact.STATUS_AWAY:
-            s = 'away'
+            s = "away"
         else:
-            s = 'unknown'
-        result += 'Status: %s (%s)\n' % (s, self.status_msg)
-        result += 'URL: %s\n' % self.url
-        result += 'Photos:\n'
+            s = "unknown"
+        result += "Status: %s (%s)\n" % (s, self.status_msg)
+        result += "URL: %s\n" % self.url
+        result += "Photos:\n"
         for name, photo in self.photos.items():
-            result += '\t%s%s\n' % (photo, ' (hidden)' if photo.hidden else '')
-        result += '\nProfile:\n'
+            result += "\t%s%s\n" % (photo, " (hidden)" if photo.hidden else "")
+        result += "\nProfile:\n"
         for head in self.profile.values():
             result += print_node(head)
-        result += 'Description:\n'
-        for s in self.summary.split('\n'):
-            result += '\t%s\n' % s
+        result += "Description:\n"
+        for s in self.summary.split("\n"):
+            result += "\t%s\n" % s
         return result
 
 
@@ -183,7 +201,8 @@ class Query(BaseObject):
     """
     Query to send to a contact.
     """
-    message =   StringField('Message received')
+
+    message = StringField("Message received")
 
     def __init__(self, id, message, url=None):
         super(Query, self).__init__(id, url)
@@ -258,13 +277,14 @@ class PhysicalEntity(BaseContact):
     """
     Contact which has a physical address.
     """
-    postal_address = Field('Postal address', PostalAddress)
-    address_notes = StringField('Extra address info')
 
-    country = compat_field('postal_address', 'country')
-    postcode = compat_field('postal_address', 'postal_code')
-    city = compat_field('postal_address', 'city')
-    address = compat_field('postal_address', 'street')
+    postal_address = Field("Postal address", PostalAddress)
+    address_notes = StringField("Extra address info")
+
+    country = compat_field("postal_address", "country")
+    postcode = compat_field("postal_address", "postal_code")
+    city = compat_field("postal_address", "city")
+    address = compat_field("postal_address", "street")
 
 
 class Person(PhysicalEntity):
@@ -280,7 +300,7 @@ class OpeningHours(BaseObject):
     If no rule matches the given date, it is considered closed by default.
     """
 
-    rules = Field('Rules of opening/closing', list)
+    rules = Field("Rules of opening/closing", list)
 
     def is_open_at(self, query):
         for rule in self.rules:
@@ -308,9 +328,10 @@ class OpeningRule(BaseObject):
     """
     Single rule defining a (recurrent) time interval when a place is open or closed.
     """
-    dates = RRuleField('Dates on which this rule applies')
-    times = Field('Times of the day this rule applies', list)
-    is_open = BoolField('Is it an opening rule or closing rule?')
+
+    dates = RRuleField("Dates on which this rule applies")
+    times = Field("Times of the day this rule applies", list)
+    is_open = BoolField("Is it an opening rule or closing rule?")
 
     def __contains__(self, dt):
         date = dt.date()
@@ -335,18 +356,19 @@ class OpeningRule(BaseObject):
 
 
 class Place(PhysicalEntity):
-    opening = Field('Opening hours', OpeningHours)
+    opening = Field("Opening hours", OpeningHours)
 
 
 class SearchQuery(BaseObject):
     """
     Parameters to search for contacts.
     """
-    name = StringField('Name to search for')
-    location = Field('Address where to look', PostalAddress)
 
-    address = compat_field('location', 'street')
-    city = compat_field('location', 'city')
+    name = StringField("Name to search for")
+    location = Field("Address where to look", PostalAddress)
+
+    address = compat_field("location", "street")
+    city = compat_field("location", "city")
 
 
 class CapDirectory(Capability):

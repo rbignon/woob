@@ -30,21 +30,23 @@ class ProfilePage(LoggedPage, JsonPage):
     class get_profile(ItemElement):
         klass = Profile
 
-        obj_name = Format('%s %s', Dict('name/firstName'), Dict('name/lastName'))
-        obj_country = Dict('mailingAddress/country')
-        obj_phone = Dict('phones/0/number', default=NotAvailable)
-        obj_email = Dict('emailAddress')
+        obj_name = Format("%s %s", Dict("name/firstName"), Dict("name/lastName"))
+        obj_country = Dict("mailingAddress/country")
+        obj_phone = Dict("phones/0/number", default=NotAvailable)
+        obj_email = Dict("emailAddress")
 
-        obj_address = CleanText(Format(
-            '%s %s %s %s %s %s %s',
-            Dict('mailingAddress/address1'),
-            Dict('mailingAddress/address2'),
-            Dict('mailingAddress/address3'),
-            Dict('mailingAddress/address4'),
-            Dict('mailingAddress/city'),
-            Dict('mailingAddress/postCode'),
-            Dict('mailingAddress/country')
-        ))
+        obj_address = CleanText(
+            Format(
+                "%s %s %s %s %s %s %s",
+                Dict("mailingAddress/address1"),
+                Dict("mailingAddress/address2"),
+                Dict("mailingAddress/address3"),
+                Dict("mailingAddress/address4"),
+                Dict("mailingAddress/city"),
+                Dict("mailingAddress/postCode"),
+                Dict("mailingAddress/country"),
+            )
+        )
 
 
 class UselessProfilePage(LoggedPage, HTMLPage):

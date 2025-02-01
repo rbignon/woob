@@ -23,4 +23,4 @@
 from .module import FederalFinanceESModule
 
 
-__all__ = ['FederalFinanceESModule']
+__all__ = ["FederalFinanceESModule"]

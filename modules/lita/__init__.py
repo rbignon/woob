@@ -21,4 +21,4 @@
 from .module import LitaModule
 
 
-__all__ = ['LitaModule']
+__all__ = ["LitaModule"]

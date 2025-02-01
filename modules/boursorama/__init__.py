@@ -22,4 +22,4 @@
 from .module import BoursoramaModule
 
 
-__all__ = ['BoursoramaModule']
+__all__ = ["BoursoramaModule"]

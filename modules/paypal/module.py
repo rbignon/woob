@@ -25,23 +25,23 @@ from woob.tools.value import ValueBackendPassword
 from .browser import Paypal
 
 
-__all__ = ['PaypalModule']
+__all__ = ["PaypalModule"]
 
 
 class PaypalModule(Module, CapBank):
-    NAME = 'paypal'
-    MAINTAINER = u'Laurent Bachelier'
-    EMAIL = 'laurent@bachelier.name'
-    VERSION = '3.7'
-    LICENSE = 'LGPLv3+'
-    DESCRIPTION = u'PayPal'
-    CONFIG = BackendConfig(ValueBackendPassword('login',      label='E-mail', masked=False),
-                           ValueBackendPassword('password',   label='Password'))
+    NAME = "paypal"
+    MAINTAINER = "Laurent Bachelier"
+    EMAIL = "laurent@bachelier.name"
+    VERSION = "3.7"
+    LICENSE = "LGPLv3+"
+    DESCRIPTION = "PayPal"
+    CONFIG = BackendConfig(
+        ValueBackendPassword("login", label="E-mail", masked=False), ValueBackendPassword("password", label="Password")
+    )
     BROWSER = Paypal
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def iter_accounts(self):
         return self.browser.get_accounts().values()

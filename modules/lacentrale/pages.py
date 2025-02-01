@@ -38,21 +38,23 @@ class ListingAutoPage(HTMLPage):
         class item(ItemElement):
             klass = Price
 
-            obj_id = CleanText('./p/a/@data-annid')
+            obj_id = CleanText("./p/a/@data-annid")
             obj_cost = CleanDecimal('./a/div/div/div/div[@class="fieldPrice"]')
-            obj_currency = Regexp(CleanText('./a/div/div/div/div[@class="fieldPrice"]'),
-                                  '.*([%s%s%s])' % (u'€', u'$', u'£'), default=u'€')
-            obj_message = Format('%s / %s / %s',
-                                 CleanText('./a/div/div/h3'),
-                                 CleanText('./a/div/div/div/div[@class="fieldYear"]'),
-                                 CleanText('./a/div/div/div/div[@class="fieldMileage"]'))
-            obj_url = Format('http://www.lacentrale.fr%s',
-                             CleanText('./a/@href'))
+            obj_currency = Regexp(
+                CleanText('./a/div/div/div/div[@class="fieldPrice"]'), ".*([%s%s%s])" % ("€", "$", "£"), default="€"
+            )
+            obj_message = Format(
+                "%s / %s / %s",
+                CleanText("./a/div/div/h3"),
+                CleanText('./a/div/div/div/div[@class="fieldYear"]'),
+                CleanText('./a/div/div/div/div[@class="fieldMileage"]'),
+            )
+            obj_url = Format("http://www.lacentrale.fr%s", CleanText("./a/@href"))
 
             obj_product = LaCentraleProduct()
 
             def obj_shop(self):
-                shop = Shop(CleanText('./p/a/@data-annid')(self))
+                shop = Shop(CleanText("./p/a/@data-annid")(self))
                 return shop
 
 
@@ -62,21 +64,21 @@ class AdvertPage(HTMLPage):
     class get_price(ItemElement):
         klass = Price
 
-        obj_id = Env('_id')
+        obj_id = Env("_id")
 
         obj_cost = CleanDecimal('//div[@class="mainInfos"]/div/p[@class="gpfzj"]')
-        obj_currency = Regexp(CleanText('//div[@class="mainInfos"]/div/p[@class="gpfzj"]'),
-                              '.*([%s%s%s])' % (u'€', u'$', u'£'), default=u'€')
-        obj_message = Format('%s %s',
-                             CleanText('//div[@class="mainInfos"]/div/div/h1'),
-                             CleanText('//div[@class="mainInfos"]/div/div/p'))
-        obj_url = BrowserURL('advert_page', _id=Env('_id'))
+        obj_currency = Regexp(
+            CleanText('//div[@class="mainInfos"]/div/p[@class="gpfzj"]'), ".*([%s%s%s])" % ("€", "$", "£"), default="€"
+        )
+        obj_message = Format(
+            "%s %s", CleanText('//div[@class="mainInfos"]/div/div/h1'), CleanText('//div[@class="mainInfos"]/div/div/p')
+        )
+        obj_url = BrowserURL("advert_page", _id=Env("_id"))
 
         def obj_shop(self):
-            shop = Shop(Env('_id')(self))
-            shop.name = Regexp(CleanText('(//div[@xtcz="contacter_le_vendeur"]/div/ul/li)[1]'),
-                               'Nom : (.*)')(self)
-            shop.location = JSVar(CleanText('//script'), var='tooltip')(self)
+            shop = Shop(Env("_id")(self))
+            shop.name = Regexp(CleanText('(//div[@xtcz="contacter_le_vendeur"]/div/ul/li)[1]'), "Nom : (.*)")(self)
+            shop.location = JSVar(CleanText("//script"), var="tooltip")(self)
             shop.info = CleanText('//div[@xtcz="contacter_le_vendeur"]/div/ul/li[has-class("printPhone")]')(self)
             return shop
 

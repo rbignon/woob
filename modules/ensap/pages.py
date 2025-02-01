@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 # Copyright(C) 2017      Juliette Fourcot
@@ -28,10 +27,10 @@ from woob.capabilities.bill import Document, DocumentTypes, Subscription
 class LandingPage(JsonPage):
     @property
     def logged(self):
-        return self.doc['code'] == 60
+        return self.doc["code"] == 60
 
     def get_message(self):
-        return self.doc['message']
+        return self.doc["message"]
 
 
 class SubscriptionPage(LoggedPage, JsonPage):
@@ -39,9 +38,9 @@ class SubscriptionPage(LoggedPage, JsonPage):
     class get_subscription(ItemElement):
         klass = Subscription
 
-        obj_id = Env('username')
-        obj_subscriber = CleanText(Dict('identification/identite'))
-        obj_label = Format('Account of %s', Field('subscriber'))
+        obj_id = Env("username")
+        obj_subscriber = CleanText(Dict("identification/identite"))
+        obj_label = Format("Account of %s", Field("subscriber"))
 
 
 class YearsPage(LoggedPage, JsonPage):
@@ -56,9 +55,9 @@ class DocumentsPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Document
 
-            obj_id = Format('%s-%s', Regexp(Dict('libelle2'), r'(^[\w]*)'), Dict('documentUuid'))
-            obj_date = Date(Dict('dateDocument'))
-            obj_format = 'pdf'
-            obj_label = CleanText(Dict('libelle2'))
-            obj_url = BrowserURL('document_download', doc_uuid=Dict('documentUuid'))
+            obj_id = Format("%s-%s", Regexp(Dict("libelle2"), r"(^[\w]*)"), Dict("documentUuid"))
+            obj_date = Date(Dict("dateDocument"))
+            obj_format = "pdf"
+            obj_label = CleanText(Dict("libelle2"))
+            obj_url = BrowserURL("document_download", doc_uuid=Dict("documentUuid"))
             obj_type = DocumentTypes.PAYSLIP

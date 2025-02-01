@@ -25,11 +25,11 @@ from woob.tools.value import Value
 
 
 class InstagramTest(BackendTest):
-    MODULE = 'instagram'
+    MODULE = "instagram"
 
     def setUp(self):
         if not self.is_backend_configured():
-            self.backend.config['user'] = Value(value='allanbarte')
+            self.backend.config["user"] = Value(value="allanbarte")
 
     def test_iter(self):
         it = self.backend.iter_resources([BaseImage], [])
@@ -40,7 +40,7 @@ class InstagramTest(BackendTest):
             assert img.date
 
             assert img.title
-            assert img.ext == 'jpg'
+            assert img.ext == "jpg"
 
             assert img.author
             assert img.license

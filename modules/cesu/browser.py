@@ -28,61 +28,70 @@ from woob.capabilities.bill import Subscription
 from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
-    CurrentFiscalAdvantagePage, DirectDebitDownloadPage, DirectDebitsDetailPage, DirectDebitsHeaderPage,
-    DirectDebitSummaryPage, EmployeesDashboardPage, EmployeesPage, EmployerPage, HomePage, LastDayMonthPage, LoginPage,
-    PayslipDownloadPage, RegistrationDashboardPage, RegistrationPage, StatusPage, TaxCertificateDownloadPage,
+    CurrentFiscalAdvantagePage,
+    DirectDebitDownloadPage,
+    DirectDebitsDetailPage,
+    DirectDebitsHeaderPage,
+    DirectDebitSummaryPage,
+    EmployeesDashboardPage,
+    EmployeesPage,
+    EmployerPage,
+    HomePage,
+    LastDayMonthPage,
+    LoginPage,
+    PayslipDownloadPage,
+    RegistrationDashboardPage,
+    RegistrationPage,
+    StatusPage,
+    TaxCertificateDownloadPage,
     TaxCertificatesPage,
 )
 
 
 class CesuBrowser(LoginBrowser):
-    BASEURL = 'https://www.cesu.urssaf.fr'
+    BASEURL = "https://www.cesu.urssaf.fr"
 
-    login = URL(r'/cesuwebdec/authentication$', LoginPage)
-    homepage = URL(r'/info/accueil\.login\.do$', HomePage)
-    logout = URL(r'/cesuwebdec/deconnexion$')
-    status = URL(r'/cesuwebdec/status', StatusPage)
+    login = URL(r"/cesuwebdec/authentication$", LoginPage)
+    homepage = URL(r"/info/accueil\.login\.do$", HomePage)
+    logout = URL(r"/cesuwebdec/deconnexion$")
+    status = URL(r"/cesuwebdec/status", StatusPage)
 
-    employer = URL(r'/cesuwebdec/employeursIdentite/(?P<employer>.*)', EmployerPage)
-    employees = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/salaries', EmployeesPage)
+    employer = URL(r"/cesuwebdec/employeursIdentite/(?P<employer>.*)", EmployerPage)
+    employees = URL(r"/cesuwebdec/employeurs/(?P<employer>.*)/salaries", EmployeesPage)
     employees_dashboard = URL(
-        r'/cesuwebdec/salariesTdb?pseudoSiret=(?P<employer>.*)&maxResult=8',
-        EmployeesDashboardPage
+        r"/cesuwebdec/salariesTdb?pseudoSiret=(?P<employer>.*)&maxResult=8", EmployeesDashboardPage
     )
 
-    registrations = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/declarationsby\?.*', RegistrationPage)
+    registrations = URL(r"/cesuwebdec/employeurs/(?P<employer>.*)/declarationsby\?.*", RegistrationPage)
     registrations_dashboard = URL(
-        r'/cesuwebdec/employeurs/(?P<employer>.*)/declarationsTdBby\?.*',
-        RegistrationDashboardPage
+        r"/cesuwebdec/employeurs/(?P<employer>.*)/declarationsTdBby\?.*", RegistrationDashboardPage
     )
 
-    direct_debits_summary = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/recapprelevements', DirectDebitSummaryPage)
+    direct_debits_summary = URL(r"/cesuwebdec/employeurs/(?P<employer>.*)/recapprelevements", DirectDebitSummaryPage)
     direct_debits_header = URL(
-        r'/cesuwebdec/employeurs/(?P<employer>.*)/entetePrelevements\?.*',
-        DirectDebitsHeaderPage
+        r"/cesuwebdec/employeurs/(?P<employer>.*)/entetePrelevements\?.*", DirectDebitsHeaderPage
     )
     direct_debits_detail = URL(
-        r'/cesuwebdec/employeurs/(?P<employer>.*)/detailPrelevements\?periode=202001&type=IPVT&reference=0634675&idPrelevement=0',
-        DirectDebitsDetailPage
+        r"/cesuwebdec/employeurs/(?P<employer>.*)/detailPrelevements\?periode=202001&type=IPVT&reference=0634675&idPrelevement=0",
+        DirectDebitsDetailPage,
     )
     direct_debit_download = URL(
-        r'/cesuwebdec/employeurs/(?P<employer>.*)/editions/avisPrelevement\?reference=(?P<reference>.*)&periode=(?P<period>.*)&type=(?P<type>.*)',
-        DirectDebitDownloadPage
+        r"/cesuwebdec/employeurs/(?P<employer>.*)/editions/avisPrelevement\?reference=(?P<reference>.*)&periode=(?P<period>.*)&type=(?P<type>.*)",
+        DirectDebitDownloadPage,
     )
 
     current_fiscal_advantage = URL(
-        r'/cesuwebdec/employeurs/(?P<employer>.*)/avantagefiscalencours',
-        CurrentFiscalAdvantagePage
+        r"/cesuwebdec/employeurs/(?P<employer>.*)/avantagefiscalencours", CurrentFiscalAdvantagePage
     )
-    last_day_month = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/dernierJourOuvreMois', LastDayMonthPage)
+    last_day_month = URL(r"/cesuwebdec/employeurs/(?P<employer>.*)/dernierJourOuvreMois", LastDayMonthPage)
     payslip_download = URL(
-        r'/cesuwebdec/employeurs/(?P<employer>.*)/editions/bulletinSalairePE\?refDoc=(?P<ref_doc>.*)',
-        PayslipDownloadPage
+        r"/cesuwebdec/employeurs/(?P<employer>.*)/editions/bulletinSalairePE\?refDoc=(?P<ref_doc>.*)",
+        PayslipDownloadPage,
     )
-    tax_certificates = URL(r'/cesuwebdec/employeurs/(?P<employer>.*)/attestationsfiscales', TaxCertificatesPage)
+    tax_certificates = URL(r"/cesuwebdec/employeurs/(?P<employer>.*)/attestationsfiscales", TaxCertificatesPage)
     tax_certificate_download = URL(
-        r'/cesuwebdec/employeurs/(?P<employer>.*)/editions/attestation_fiscale_annee\?periode=(?P<year>.*)',
-        TaxCertificateDownloadPage
+        r"/cesuwebdec/employeurs/(?P<employer>.*)/editions/attestation_fiscale_annee\?periode=(?P<year>.*)",
+        TaxCertificateDownloadPage,
     )
 
     employer = None
@@ -90,25 +99,29 @@ class CesuBrowser(LoginBrowser):
 
     def do_login(self):
         self.session.cookies.clear()
-        self.session.headers.update({
-            "Accept": "*/*",
-            "Content-Type": "application/json; charset=utf-8",
-            "X-Requested-With": "XMLHttpRequest",
-        })
+        self.session.headers.update(
+            {
+                "Accept": "*/*",
+                "Content-Type": "application/json; charset=utf-8",
+                "X-Requested-With": "XMLHttpRequest",
+            }
+        )
 
         try:
-            self.login.go(json={
-                'username': self.username,
-                'password': self.password,
-            })
+            self.login.go(
+                json={
+                    "username": self.username,
+                    "password": self.password,
+                }
+            )
         except ClientError as error:
             response = error.response.json()
 
-            error_messages_list = response.get('listeMessages', [])
+            error_messages_list = response.get("listeMessages", [])
 
             for error_message in error_messages_list:
-                if error_message.get('contenu', '') == 'Identifiant / mot de passe non reconnus':
-                    raise BrowserIncorrectPassword(error_message['contenu'])
+                if error_message.get("contenu", "") == "Identifiant / mot de passe non reconnus":
+                    raise BrowserIncorrectPassword(error_message["contenu"])
 
             raise
 
@@ -138,9 +151,7 @@ class CesuBrowser(LoginBrowser):
         s._type = s.id
         yield s
 
-    def _search_registrations(
-        self, subscription, begin_date, end_date, num_start, step
-    ):
+    def _search_registrations(self, subscription, begin_date, end_date, num_start, step):
         self.registrations.go(
             employer=self.employer,
             params={
@@ -180,17 +191,13 @@ class CesuBrowser(LoginBrowser):
             step = 24
 
             while has_results:
-                self._search_registrations(
-                    subscription, begin_date, end_date, num_start, step
-                )
+                self._search_registrations(subscription, begin_date, end_date, num_start, step)
 
                 num_start += step
 
                 has_results = len(self.page.get_objects()) > 0
 
-                for doc in self.page.iter_documents(
-                    subscription=subscription.id, employer=self.employer
-                ):
+                for doc in self.page.iter_documents(subscription=subscription.id, employer=self.employer):
                     yield doc
 
         elif subscription._type == "prelevements":
@@ -210,14 +217,10 @@ class CesuBrowser(LoginBrowser):
 
             has_results = len(self.page.get_objects()) > 0
 
-            for doc in self.page.iter_documents(
-                subscription=subscription.id, employer=self.employer
-            ):
+            for doc in self.page.iter_documents(subscription=subscription.id, employer=self.employer):
                 yield doc
 
         elif subscription._type == "taxcertificates":
             self.tax_certificates.go(employer=self.employer)
-            for doc in self.page.iter_documents(
-                subscription=subscription.id, employer=self.employer
-            ):
+            for doc in self.page.iter_documents(subscription=subscription.id, employer=self.employer):
                 yield doc

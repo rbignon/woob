@@ -26,7 +26,7 @@ from .contact import Contact
 from .date import DateField
 
 
-__all__ = ['OptimizationNotFound', 'Optimization', 'Event', 'CapDating']
+__all__ = ["OptimizationNotFound", "Optimization", "Event", "CapDating"]
 
 
 class OptimizationNotFound(UserError):
@@ -43,6 +43,7 @@ class Optimization(BaseObject):
                  :class:`woob.tools.value.Value` objects
                  in this dict.
     """
+
     CONFIG: Dict[str, Value] = {}
 
     def start(self):
@@ -87,10 +88,11 @@ class Event(BaseObject):
     """
     A dating event (for example a visite, a query received, etc.)
     """
-    date =      DateField('Date of event')
-    contact =   Field('Contact related to this event', Contact)
-    type =      StringField('Type of event')
-    message =   StringField('Message of the event')
+
+    date = DateField("Date of event")
+    contact = Field("Contact related to this event", Contact)
+    type = StringField("Type of event")
+    message = StringField("Message of the event")
 
 
 class CapDating(Capability):
@@ -114,7 +116,7 @@ class CapDating(Capability):
         :type optim: :class:`Optimization`
         """
         optim.id = name
-        setattr(self, 'OPTIM_%s' % name, optim)
+        setattr(self, "OPTIM_%s" % name, optim)
 
     def iter_optimizations(self):
         """
@@ -123,7 +125,7 @@ class CapDating(Capability):
         :rtype: iter[:class:`Optimization`]
         """
         for attr_name in dir(self):
-            if not attr_name.startswith('OPTIM_'):
+            if not attr_name.startswith("OPTIM_"):
                 continue
             attr = getattr(self, attr_name)
             if attr is None:
@@ -140,10 +142,10 @@ class CapDating(Capability):
         :rtype: :class:`Optimization`
         """
         optim = optim.upper()
-        if not hasattr(self, 'OPTIM_%s' % optim):
+        if not hasattr(self, "OPTIM_%s" % optim):
             raise OptimizationNotFound()
 
-        return getattr(self, 'OPTIM_%s' % optim)
+        return getattr(self, "OPTIM_%s" % optim)
 
     def iter_events(self):
         """

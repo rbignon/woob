@@ -19,7 +19,12 @@
 
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, SubscriptionNotFound,
+    CapDocument,
+    Document,
+    DocumentCategory,
+    DocumentNotFound,
+    DocumentTypes,
+    SubscriptionNotFound,
 )
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
@@ -27,28 +32,28 @@ from woob.tools.value import ValueBackendPassword
 from .browser import PayFitBrowser
 
 
-__all__ = ['PayFitModule']
+__all__ = ["PayFitModule"]
 
 
 class PayFitModule(Module, CapDocument):
-    NAME = 'payfit'
-    DESCRIPTION = 'payfit'
-    MAINTAINER = 'Florent Fourcot'
-    EMAIL = 'woob@flo.fourcot.fr'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "payfit"
+    DESCRIPTION = "payfit"
+    MAINTAINER = "Florent Fourcot"
+    EMAIL = "woob@flo.fourcot.fr"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = PayFitBrowser
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Your Email address', masked=False, regexp='.+@.+'),
-        ValueBackendPassword('password', label='Password')
+        ValueBackendPassword("login", label="Your Email address", masked=False, regexp=".+@.+"),
+        ValueBackendPassword("password", label="Password"),
     )
 
     document_types = (DocumentTypes.PAYSLIP,)
     document_categories = {DocumentCategory.SAFE_DEPOSIT_BOX}
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def iter_subscription(self):
         return self.browser.iter_subscription()

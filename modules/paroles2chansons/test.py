@@ -22,10 +22,10 @@ from woob.tools.test import BackendTest
 
 
 class Paroles2chansonsTest(BackendTest):
-    MODULE = 'paroles2chansons'
+    MODULE = "paroles2chansons"
 
     def test_search_song_n_get(self):
-        l_lyrics = list(self.backend.iter_lyrics('song', 'chien'))
+        l_lyrics = list(self.backend.iter_lyrics("song", "chien"))
         for songlyrics in l_lyrics:
             assert songlyrics.id
             assert songlyrics.title
@@ -38,7 +38,7 @@ class Paroles2chansonsTest(BackendTest):
             assert full_lyr.content is not NotLoaded
 
     def test_search_artist(self):
-        l_lyrics = list(self.backend.iter_lyrics('artist', 'boris'))
+        l_lyrics = list(self.backend.iter_lyrics("artist", "boris"))
         for songlyrics in l_lyrics:
             assert songlyrics.id
             assert songlyrics.title

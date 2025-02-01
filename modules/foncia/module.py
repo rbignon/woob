@@ -23,16 +23,16 @@ from woob.tools.backend import Module
 from .browser import FonciaBrowser
 
 
-__all__ = ['FonciaModule']
+__all__ = ["FonciaModule"]
 
 
 class FonciaModule(Module, CapHousing):
-    NAME = 'foncia'
-    DESCRIPTION = u'Foncia housing website.'
-    MAINTAINER = u'Phyks (Lucas Verney)'
-    EMAIL = 'phyks@phyks.me'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "foncia"
+    DESCRIPTION = "Foncia housing website."
+    MAINTAINER = "Phyks (Lucas Verney)"
+    EMAIL = "phyks@phyks.me"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = FonciaBrowser
 
@@ -43,14 +43,11 @@ class FonciaModule(Module, CapHousing):
         return self.browser.get_cities(pattern)
 
     def search_housings(self, query):
-        if (
-                len(query.advert_types) == 1 and
-                query.advert_types[0] == ADVERT_TYPES.PERSONAL
-        ):
+        if len(query.advert_types) == 1 and query.advert_types[0] == ADVERT_TYPES.PERSONAL:
             # Foncia is pro only
             return list()
 
-        cities = ['%s' % c.id for c in query.cities if c.backend == self.name]
+        cities = ["%s" % c.id for c in query.cities if c.backend == self.name]
 
         if len(cities) == 0:
             return []
@@ -61,12 +58,12 @@ class FonciaModule(Module, CapHousing):
         if len(fields) > 0:
             housing = self.browser.get_housing(housing.id, housing)
 
-        if 'phone' in fields:
+        if "phone" in fields:
             housing.phone = self.browser.get_phone(housing.id)
         return housing
 
     def fill_photo(self, photo, fields):
-        if 'data' in fields and photo.url and not photo.data:
+        if "data" in fields and photo.url and not photo.data:
             photo.data = self.browser.open(photo.url).content
         return photo
 

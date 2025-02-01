@@ -33,17 +33,17 @@ class IndexPage(HTMLPage):
     class iter_videos(ListElement):
         item_xpath = '//span[@id="miniatura"]'
 
-        next_page = Link(u'//a[text()="Next »"]')
+        next_page = Link('//a[text()="Next »"]')
 
         class item(ItemElement):
             klass = BaseVideo
 
-            obj_id = CSS('a') & Link & Regexp(pattern=r'/videos/(.+)\.html')
-            obj_title = CSS('span#title1') & CleanText
-            obj_duration = CSS('span.thumbtime span') & CleanText & Duration | NotAvailable
+            obj_id = CSS("a") & Link & Regexp(pattern=r"/videos/(.+)\.html")
+            obj_title = CSS("span#title1") & CleanText
+            obj_duration = CSS("span.thumbtime span") & CleanText & Duration | NotAvailable
             obj_nsfw = True
 
             def obj_thumbnail(self):
-                thumbnail = Thumbnail(self.xpath('.//img')[0].attrib['data-original'])
-                thumbnail.url = thumbnail.id.replace('http://', 'https://')
+                thumbnail = Thumbnail(self.xpath(".//img")[0].attrib["data-original"])
+                thumbnail.url = thumbnail.id.replace("http://", "https://")
                 return thumbnail

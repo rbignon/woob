@@ -49,11 +49,11 @@ class PastePage(HTMLPage):
     class fill_paste(ItemElement):
         klass = PastealaconPaste
 
-        obj_id = Env('id')
-        obj_title = Regexp(CleanText('id("content")/h3'), r'Posted by (.+) on .+ \(')
-        obj__date = DateTime(Regexp(CleanText('id("content")/h3'), r'Posted by .+ on (.+) \('))
+        obj_id = Env("id")
+        obj_title = Regexp(CleanText('id("content")/h3'), r"Posted by (.+) on .+ \(")
+        obj__date = DateTime(Regexp(CleanText('id("content")/h3'), r"Posted by .+ on (.+) \("))
         obj_contents = RawText('//textarea[@id="code"]')
-        obj_url = BrowserURL('paste', id=Field('id'))
+        obj_url = BrowserURL("paste", id=Field("id"))
 
         def parse(self, el):
             # there is no 404, try to detect if there really is a content
@@ -67,28 +67,28 @@ class CaptchaPage(HTMLPage):
 
 class PostPage(HTMLPage):
     def post(self, paste, expiration=None):
-        form = self.get_form(name='editor')
-        form['code2'] = paste.contents
-        form['poster'] = paste.title
+        form = self.get_form(name="editor")
+        form["code2"] = paste.contents
+        form["poster"] = paste.title
         if expiration:
-            form['expiry'] = expiration
+            form["expiry"] = expiration
         form.submit()
 
 
 class PastealaconBrowser(PagesBrowser):
-    BASEURL = 'http://paste.alacon.org/'
+    BASEURL = "http://paste.alacon.org/"
 
-    paste = URL(r'(?P<id>\d+)', PastePage)
-    captcha = URL(r'%s' % re.escape('pastebin.php?captcha=1'), CaptchaPage)
-    raw = URL(r'%s(?P<id>\d+)' % re.escape('pastebin.php?dl='))
-    post = URL(r'$', PostPage)
+    paste = URL(r"(?P<id>\d+)", PastePage)
+    captcha = URL(r"%s" % re.escape("pastebin.php?captcha=1"), CaptchaPage)
+    raw = URL(r"%s(?P<id>\d+)" % re.escape("pastebin.php?dl="))
+    post = URL(r"$", PostPage)
 
     @paste.id2url
     def get_paste(self, url):
         url = self.absurl(url, base=True)
         m = self.paste.match(url)
         if m:
-            return PastealaconPaste(m.groupdict()['id'])
+            return PastealaconPaste(m.groupdict()["id"])
 
     def fill_paste(self, paste):
         """
@@ -105,7 +105,7 @@ class PastealaconBrowser(PagesBrowser):
         """
         try:
             # despite what the HTTP header says, it is iso8859
-            return self.raw.open(id=_id).content.decode('iso8859-15')
+            return self.raw.open(id=_id).content.decode("iso8859-15")
         except BrowserHTTPNotFound:
             raise PasteNotFound()
 

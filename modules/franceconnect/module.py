@@ -23,15 +23,15 @@ from woob.tools.backend import Module
 from .browser import FranceConnectBrowser
 
 
-__all__ = ['FranceConnectModule']
+__all__ = ["FranceConnectModule"]
 
 
 class FranceConnectModule(Module, CapDocument):
-    NAME = 'franceconnect'
-    DESCRIPTION = 'France Connect website'
-    MAINTAINER = 'Florian Duguet'
-    EMAIL = 'florian.duguet@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "franceconnect"
+    DESCRIPTION = "France Connect website"
+    MAINTAINER = "Florian Duguet"
+    EMAIL = "florian.duguet@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = FranceConnectBrowser

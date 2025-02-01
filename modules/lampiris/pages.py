@@ -30,8 +30,8 @@ from woob.capabilities.bill import Bill, Subscription
 class LoginPage(HTMLPage):
     def do_login(self, email, password):
         form = self.get_form(xpath='//form[@id="user-login"]')
-        form['name'] = email
-        form['pass'] = password
+        form["name"] = email
+        form["pass"] = password
         form.submit()
 
 
@@ -44,8 +44,8 @@ class BillsPage(HTMLPage):
             klass = Subscription
 
             # TODO: Handle energy type
-            obj_label = CleanText(CleanHTML('.'))
-            obj_id = Attr('./input', 'value')
+            obj_label = CleanText(CleanHTML("."))
+            obj_id = Attr("./input", "value")
 
     @method
     class get_documents(ListElement):
@@ -55,27 +55,22 @@ class BillsPage(HTMLPage):
             klass = Bill
 
             def condition(self):
-                return len(self.el.xpath('./td')) > 3
+                return len(self.el.xpath("./td")) > 3
 
-            obj_id = Attr('./td[3]/span', 'title')
-            obj_type = Format(
-                '%s - %s',
-                CleanText('./td[2]'),
-                Attr('./td[1]//img', 'title', default="")
-            )
+            obj_id = Attr("./td[3]/span", "title")
+            obj_type = Format("%s - %s", CleanText("./td[2]"), Attr("./td[1]//img", "title", default=""))
             obj_label = obj_type
-            obj_format = 'pdf'
-            obj_date = Date(CleanText('./td[4]'))
-            obj_price = CleanDecimal('./td[5]', replace_dots=(' ', ','))
+            obj_format = "pdf"
+            obj_date = Date(CleanText("./td[4]"))
+            obj_price = CleanDecimal("./td[5]", replace_dots=(" ", ","))
+
             def obj_currency(self):
-                return Currency.get_currency(CleanText('./td[5]')(self))
-            obj_duedate = Date(CleanText('./td[6]'))
+                return Currency.get_currency(CleanText("./td[5]")(self))
+
+            obj_duedate = Date(CleanText("./td[6]"))
 
             def obj_url(self):
                 try:
-                    return urljoin(
-                        self.page.browser.BASEURL,
-                        Link('./td[8]/a[1]')(self)
-                    )
+                    return urljoin(self.page.browser.BASEURL, Link("./td[8]/a[1]")(self))
                 except XPathNotFound:
                     return NotAvailable

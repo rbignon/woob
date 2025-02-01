@@ -32,30 +32,24 @@ from .transaction import Transaction
 
 class LoginHomePage(HTMLPage):
     def get_login_token(self):
-        return Attr('//input[@name="logonToken"]', 'value')(self.doc)
+        return Attr('//input[@name="logonToken"]', "value")(self.doc)
 
 
 class LoginPage(JsonPage):
     def is_wrongpass(self):
-        return (
-            Dict('0')(self.doc) == 'error'
-            and 'invalide' in Dict('1')(self.doc)
-        )
+        return Dict("0")(self.doc) == "error" and "invalide" in Dict("1")(self.doc)
 
     def is_code_expired(self):
-        return (
-            Dict('0')(self.doc) == 'error'
-            and 'Expired_One_Time_Password' in Dict('1')(self.doc)
-        )
+        return Dict("0")(self.doc) == "error" and "Expired_One_Time_Password" in Dict("1")(self.doc)
 
     def is_otp(self):
-        return Dict('0')(self.doc) == 'OTPSMS'
+        return Dict("0")(self.doc) == "OTPSMS"
 
     def is_login_only_password(self):
-        return Dict('0')(self.doc) == 'LOGPAS'
+        return Dict("0")(self.doc) == "LOGPAS"
 
     def get_wrongpass_message(self):
-        return Dict('1')(self.doc)
+        return Dict("1")(self.doc)
 
 
 class FinalizeLoginPage(JsonPage):
@@ -68,8 +62,8 @@ class HomePage(LoggedPage, HTMLPage):
 
 class AccountsPage(LoggedPage, PartialHTMLPage):
     ACCOUNT_TYPES = {
-        re.compile(r'livret'): Account.TYPE_SAVINGS,
-        re.compile(r'parts sociales'): Account.TYPE_MARKET,
+        re.compile(r"livret"): Account.TYPE_SAVINGS,
+        re.compile(r"parts sociales"): Account.TYPE_MARKET,
     }
 
     @method
@@ -79,16 +73,18 @@ class AccountsPage(LoggedPage, PartialHTMLPage):
         class item(ItemElement):
             klass = Account
 
-            obj_id = CleanText('.//div/div/div[(position()=3) and (has-class("pc-content-text"))]/span') & Regexp(pattern=r'(\d+) ')
+            obj_id = CleanText('.//div/div/div[(position()=3) and (has-class("pc-content-text"))]/span') & Regexp(
+                pattern=r"(\d+) "
+            )
             obj_label = CleanText('.//div/div/div[(position()=2) and (has-class("pc-content-text-wrap"))]')
-            obj_balance = CleanDecimal('./div[position()=3]/span', replace_dots=True)
-            obj_currency = u'EUR'
+            obj_balance = CleanDecimal("./div[position()=3]/span", replace_dots=True)
+            obj_currency = "EUR"
 
             def obj_type(self):
-                label = Field('label')(self).lower()
+                label = Field("label")(self).lower()
 
                 for regex, account_type in self.page.ACCOUNT_TYPES.items():
-                    if (regex.match(label)):
+                    if regex.match(label):
                         return account_type
 
                 return Account.TYPE_UNKNOWN
@@ -100,20 +96,20 @@ class RecipientsPage(LoggedPage, PartialHTMLPage):
         head_xpath = '//table[@id="tblBeneficiaryList"]/thead//td'
         item_xpath = '//table[@id="tblBeneficiaryList"]//tr[has-class("beneficiary-data-rows")]'
 
-        col_label = re.compile('Nom.*')
-        col_iban = re.compile('IBAN.*')
+        col_label = re.compile("Nom.*")
+        col_iban = re.compile("IBAN.*")
 
         class item(ItemElement):
             klass = Recipient
 
-            obj_id = Attr('.', 'beneficiaryid')
-            obj_label = CleanText(TableCell('label'))
-            obj_iban = CleanText(TableCell('iban'))
+            obj_id = Attr(".", "beneficiaryid")
+            obj_label = CleanText(TableCell("label"))
+            obj_iban = CleanText(TableCell("iban"))
 
 
 class TransactionsPage(LoggedPage, CsvPage):
-    ENCODING = 'latin-1'
-    DIALECT = 'excel'
+    ENCODING = "latin-1"
+    DIALECT = "excel"
 
     # lines 1 to 5 are meta-data
     # line 6 is empty
@@ -128,7 +124,7 @@ class TransactionsPage(LoggedPage, CsvPage):
             # The CSV contains these columns:
             #
             # "Date opération","Date Valeur","Référence","Montant","Solde","Libellé"
-            obj_raw = Transaction.Raw(Dict(u'Libellé'))
-            obj_amount = CleanDecimal(Dict('Montant'), replace_dots=True)
-            obj_date = Date(Dict('Date opération'), parse_func=parse_french_date, dayfirst=True)
-            obj_vdate = Date(Dict('Date Valeur'), parse_func=parse_french_date, dayfirst=True)
+            obj_raw = Transaction.Raw(Dict("Libellé"))
+            obj_amount = CleanDecimal(Dict("Montant"), replace_dots=True)
+            obj_date = Date(Dict("Date opération"), parse_func=parse_french_date, dayfirst=True)
+            obj_vdate = Date(Dict("Date Valeur"), parse_func=parse_french_date, dayfirst=True)

@@ -21,4 +21,4 @@
 from .module import CitibankModule
 
 
-__all__ = ['CitibankModule']
+__all__ = ["CitibankModule"]

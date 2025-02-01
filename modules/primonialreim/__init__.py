@@ -21,4 +21,4 @@
 from .module import PrimonialreimModule
 
 
-__all__ = ['PrimonialreimModule']
+__all__ = ["PrimonialreimModule"]

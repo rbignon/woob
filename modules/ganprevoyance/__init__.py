@@ -19,4 +19,4 @@
 from .module import GanPrevoyanceModule
 
 
-__all__ = ['GanPrevoyanceModule']
+__all__ = ["GanPrevoyanceModule"]

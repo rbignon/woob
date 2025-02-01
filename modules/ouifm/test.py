@@ -23,8 +23,8 @@ from woob.tools.test import BackendTest
 
 
 class OuiFMTest(BackendTest):
-    MODULE = 'ouifm'
+    MODULE = "ouifm"
 
     def test_ouifm(self):
-        l = list(self.backend.iter_resources((Radio, ), []))
+        l = list(self.backend.iter_resources((Radio,), []))
         self.assertTrue(len(l) > 0)

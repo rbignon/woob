@@ -25,48 +25,44 @@ from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 from .browser import CAAmundi, EEAmundi, ESAmundi, TCAmundi
 
 
-__all__ = ['AmundiModule']
+__all__ = ["AmundiModule"]
 
 
 class AmundiModule(Module, CapBankWealth):
-    NAME = 'amundi'
-    DESCRIPTION = u'Amundi'
-    MAINTAINER = u'James GALT'
-    EMAIL = 'james.galt.bi@gmail.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "amundi"
+    DESCRIPTION = "Amundi"
+    MAINTAINER = "James GALT"
+    EMAIL = "james.galt.bi@gmail.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', regexp=r'\d+', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('captcha_response'),
-        ValueTransient('request_information'),
-        ValueTransient('resume'),
+        ValueBackendPassword("login", label="Identifiant", regexp=r"\d+", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("captcha_response"),
+        ValueTransient("request_information"),
+        ValueTransient("resume"),
         Value(
-            'website',
-            label='Type de compte',
-            default='ee',
+            "website",
+            label="Type de compte",
+            default="ee",
             choices={
-                'ee': 'Amundi Epargne Entreprise',
-                'tc': 'Amundi Tenue de Compte',
-                'ca': 'Amundi Crédit Agricole Assurances',
-                'es': 'Amundi Employee Shareholdings',
-            }
+                "ee": "Amundi Epargne Entreprise",
+                "tc": "Amundi Tenue de Compte",
+                "ca": "Amundi Crédit Agricole Assurances",
+                "es": "Amundi Employee Shareholdings",
+            },
         ),
     )
 
     def create_default_browser(self):
         browsers = {
-            'ee': EEAmundi,
-            'tc': TCAmundi,
-            'ca': CAAmundi,
-            'es': ESAmundi,
+            "ee": EEAmundi,
+            "tc": TCAmundi,
+            "ca": CAAmundi,
+            "es": ESAmundi,
         }
-        self.BROWSER = browsers[self.config['website'].get()]
-        return self.create_browser(
-            self.config,
-            self.config['login'].get(),
-            self.config['password'].get()
-        )
+        self.BROWSER = browsers[self.config["website"].get()]
+        return self.create_browser(self.config, self.config["login"].get(), self.config["password"].get())
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

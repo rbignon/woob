@@ -26,65 +26,79 @@ from .base import BaseObject, BoolField, BytesField, Capability, Field, FloatFie
 
 
 __all__ = [
-    'CapCaptchaSolver',
-    'SolverJob', 'RecaptchaJob', 'RecaptchaV2Job', 'RecaptchaV3Job',
-    'ImageCaptchaJob', 'HcaptchaJob', 'GeetestV4Job', 'TurnstileQuestion',
-    'CaptchaError', 'UnsolvableCaptcha', 'InvalidCaptcha', 'InsufficientFunds',
-    'ImageCaptchaQuestion', 'RecaptchaV2Question', 'RecaptchaQuestion',
-    'GeetestV4Question', 'RecaptchaV3Question', 'FuncaptchaQuestion',
-    'HcaptchaQuestion', 'TurnstileQuestion',
-    'exception_to_job',
+    "CapCaptchaSolver",
+    "SolverJob",
+    "RecaptchaJob",
+    "RecaptchaV2Job",
+    "RecaptchaV3Job",
+    "ImageCaptchaJob",
+    "HcaptchaJob",
+    "GeetestV4Job",
+    "TurnstileQuestion",
+    "CaptchaError",
+    "UnsolvableCaptcha",
+    "InvalidCaptcha",
+    "InsufficientFunds",
+    "ImageCaptchaQuestion",
+    "RecaptchaV2Question",
+    "RecaptchaQuestion",
+    "GeetestV4Question",
+    "RecaptchaV3Question",
+    "FuncaptchaQuestion",
+    "HcaptchaQuestion",
+    "TurnstileQuestion",
+    "exception_to_job",
 ]
 
 
 class SolverJob(BaseObject):
-    solution = StringField('CAPTCHA solution')
+    solution = StringField("CAPTCHA solution")
 
 
 class RecaptchaJob(SolverJob):
-    site_url = StringField('Site URL for ReCaptcha service')
-    site_key = StringField('Site key for ReCaptcha service')
+    site_url = StringField("Site URL for ReCaptcha service")
+    site_key = StringField("Site key for ReCaptcha service")
 
-    solution_challenge = StringField('Challenge ID of the solution (output value)')
+    solution_challenge = StringField("Challenge ID of the solution (output value)")
 
 
 class RecaptchaV3Job(SolverJob):
-    site_url = StringField('Site URL for ReCaptcha service')
-    site_key = StringField('Site key for ReCaptcha service')
-    action = StringField('Website owner defines what user is doing on the page through this parameter.')
-    min_score = FloatField('Minimum score the reCaptcha response is required to have to be valid.')
-    is_enterprise = BoolField('If it is a reCaptcha enterprise')
+    site_url = StringField("Site URL for ReCaptcha service")
+    site_key = StringField("Site key for ReCaptcha service")
+    action = StringField("Website owner defines what user is doing on the page through this parameter.")
+    min_score = FloatField("Minimum score the reCaptcha response is required to have to be valid.")
+    is_enterprise = BoolField("If it is a reCaptcha enterprise")
 
 
 class RecaptchaV2Job(SolverJob):
-    site_url = StringField('Site URL for NoCaptcha service')
-    site_key = StringField('Site key for NoCaptcha service')
+    site_url = StringField("Site URL for NoCaptcha service")
+    site_key = StringField("Site key for NoCaptcha service")
 
 
 class FuncaptchaJob(SolverJob):
-    site_url = StringField('Site URL for FunCaptcha service')
-    site_key = StringField('Site key for FunCaptcha service')
-    sub_domain = StringField('Required for some complex cases, but Funcaptcha integrations run without it')
-    data = Field('Required for some complex cases', dict)
+    site_url = StringField("Site URL for FunCaptcha service")
+    site_key = StringField("Site key for FunCaptcha service")
+    sub_domain = StringField("Required for some complex cases, but Funcaptcha integrations run without it")
+    data = Field("Required for some complex cases", dict)
 
 
 class HcaptchaJob(SolverJob):
-    site_url = StringField('Site URL for HCaptcha service')
-    site_key = StringField('Site key for HCaptcha service')
+    site_url = StringField("Site URL for HCaptcha service")
+    site_key = StringField("Site key for HCaptcha service")
 
 
 class GeetestV4Job(SolverJob):
-    site_url = StringField('Site URL for Geetest service')
-    gt = StringField('Site domain public key')
+    site_url = StringField("Site URL for Geetest service")
+    gt = StringField("Site domain public key")
 
 
 class TurnstileJob(SolverJob):
-    site_url = StringField('Site URL for Turnstile service')
-    site_key = StringField('Site key for Turnstile service')
+    site_url = StringField("Site URL for Turnstile service")
+    site_key = StringField("Site key for Turnstile service")
 
 
 class ImageCaptchaJob(SolverJob):
-    image = BytesField('data of the image to solve')
+    image = BytesField("data of the image to solve")
 
 
 class CaptchaError(UserError):
@@ -106,69 +120,54 @@ class InsufficientFunds(CaptchaError):
 class ImageCaptchaQuestion(CaptchaQuestion):
     """The site signals to us that an image captcha should be solved."""
 
-    type = 'image_captcha'
+    type = "image_captcha"
 
     image_data = None
 
-    def __init__(
-        self,
-        image_data: bytes
-    ):
+    def __init__(self, image_data: bytes):
         super().__init__(self.type, image_data=image_data)
 
 
 class RecaptchaV2Question(CaptchaQuestion):
     """The site signals to us that a recaptchav2 challenge should be solved."""
 
-    type = 'g_recaptcha'
+    type = "g_recaptcha"
 
     website_key = None
     website_url = None
 
-    def __init__(
-        self,
-        website_key: str,
-        website_url: str
-    ):
+    def __init__(self, website_key: str, website_url: str):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
 
 
 class RecaptchaQuestion(CaptchaQuestion):
     """The site signals to us that a recaptcha challenge should be solved."""
 
-    type = 'g_recaptcha'
+    type = "g_recaptcha"
 
     website_key = None
     website_url = None
 
-    def __init__(
-        self,
-        website_key: str,
-        website_url: str
-    ):
+    def __init__(self, website_key: str, website_url: str):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
 
 
 class GeetestV4Question(CaptchaQuestion):
     """The site signals to us that a geetestv4 challenge should be solved."""
 
-    type = 'GeeTestTaskProxyless'
+    type = "GeeTestTaskProxyless"
 
     website_url = None
     gt = None
 
-    def __init__(
-        self,
-        website_url: str,
-        gt: Any
-    ):
+    def __init__(self, website_url: str, gt: Any):
         super().__init__(self.type, website_url=website_url, gt=gt)
 
 
 class RecaptchaV3Question(CaptchaQuestion):
     """The site signals to us that a recaptchav3 challenge should be solved."""
 
-    type = 'g_recaptcha'
+    type = "g_recaptcha"
 
     website_key = None
     website_url = None
@@ -182,7 +181,7 @@ class RecaptchaV3Question(CaptchaQuestion):
         website_url: str,
         action: str | None = None,
         min_score: float | None = None,
-        is_enterprise: bool = False
+        is_enterprise: bool = False,
     ):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
         self.action = action
@@ -193,7 +192,7 @@ class RecaptchaV3Question(CaptchaQuestion):
 class FuncaptchaQuestion(CaptchaQuestion):
     """The site signals to us that a Funcaptcha challenge should be solved."""
 
-    type = 'funcaptcha'
+    type = "funcaptcha"
 
     website_key = None
     website_url = None
@@ -206,13 +205,7 @@ class FuncaptchaQuestion(CaptchaQuestion):
     get, and transmit as {'blob': your_blob_value} through this property.
     """
 
-    def __init__(
-        self,
-        website_key: str,
-        website_url: str,
-        sub_domain: str | None = None,
-        data: bytes | None = None
-    ):
+    def __init__(self, website_key: str, website_url: str, sub_domain: str | None = None, data: bytes | None = None):
         super().__init__(
             self.type,
             website_key=website_key,
@@ -225,32 +218,24 @@ class FuncaptchaQuestion(CaptchaQuestion):
 class HcaptchaQuestion(CaptchaQuestion):
     """The site signals to us that an HCaptcha challenge should be solved."""
 
-    type = 'hcaptcha'
+    type = "hcaptcha"
 
     website_key = None
     website_url = None
 
-    def __init__(
-        self,
-        website_key: str,
-        website_url: str
-    ):
+    def __init__(self, website_key: str, website_url: str):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
 
 
 class TurnstileQuestion(CaptchaQuestion):
     """A Cloudflare Turnstile captcha has been encountered and requires resolution."""
 
-    type = 'TurnstileTaskProxyless'
+    type = "TurnstileTaskProxyless"
 
     website_key = None
     website_url = None
 
-    def __init__(
-        self,
-        website_key: str,
-        website_url: str
-    ):
+    def __init__(self, website_key: str, website_url: str):
         super().__init__(self.type, website_key=website_key, website_url=website_url)
 
 

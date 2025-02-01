@@ -25,24 +25,24 @@ from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 from .browser import SwisslifeBrowser
 
 
-__all__ = ['SwisslifeModule']
+__all__ = ["SwisslifeModule"]
 
 
 class SwisslifeModule(Module, CapBankWealth, CapProfile):
-    MODULE = 'swisslife'
-    NAME = 'swisslife'
-    DESCRIPTION = 'SwissLife'
-    MAINTAINER = 'Christophe François'
-    EMAIL = 'christophe.francois@budget-insight.com'
-    LICENSE = 'LGPLv3+'
+    MODULE = "swisslife"
+    NAME = "swisslife"
+    DESCRIPTION = "SwissLife"
+    MAINTAINER = "Christophe François"
+    EMAIL = "christophe.francois@budget-insight.com"
+    LICENSE = "LGPLv3+"
     VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant personnel', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        Value('domain', label='Domain', default='myswisslife.fr'),
-        ValueTransient('captcha_response'),
-        ValueTransient('sms'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Identifiant personnel", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        Value("domain", label="Domain", default="myswisslife.fr"),
+        ValueTransient("captcha_response"),
+        ValueTransient("sms"),
+        ValueTransient("request_information"),
     )
 
     BROWSER = SwisslifeBrowser
@@ -50,9 +50,9 @@ class SwisslifeModule(Module, CapBankWealth, CapProfile):
     def create_default_browser(self):
         return self.create_browser(
             self.config,
-            self.config['domain'].get(),
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["domain"].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_accounts(self):

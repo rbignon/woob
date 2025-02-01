@@ -22,11 +22,11 @@ from woob.tools.test import BackendTest
 
 
 class LutimTest(BackendTest):
-    MODULE = 'lutim'
+    MODULE = "lutim"
 
     # small gif file
-    DATA = u'R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==\n'
-    TITLE = u'foo.gif'
+    DATA = "R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==\n"
+    TITLE = "foo.gif"
 
     def test_lutim(self):
         post = self.backend.new_paste(None)
@@ -42,12 +42,12 @@ class LutimTest(BackendTest):
         self.assertEqual(got.contents.strip(), self.DATA.strip())
 
         # test with an empty name
-        post.title = u''
+        post.title = ""
         self.backend.post_paste(post, max_age=86400)
 
     def test_invalid(self):
         post = self.backend.new_paste(None)
-        post.contents = u'FAIL'
+        post.contents = "FAIL"
         post.title = self.TITLE
 
         assert not self.backend.can_post(post.contents, post.title)

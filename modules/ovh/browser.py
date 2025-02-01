@@ -32,24 +32,22 @@ from .pages import BillsPage, LoginPage, ProfilePage, RefundsPage
 
 
 class OvhBrowser(LoginBrowser, StatesMixin):
-    BASEURL = 'https://www.ovh.com'
+    BASEURL = "https://www.ovh.com"
 
     login = URL(
-        r'/auth/',
-        r'/manager/',
+        r"/auth/",
+        r"/manager/",
         LoginPage,
     )
-    profile = URL(r'/engine/api/me', ProfilePage)
+    profile = URL(r"/engine/api/me", ProfilePage)
     documents = URL(
-        r'/engine/2api/sws/billing/bills\?count=0&date=(?P<fromDate>.*)&dateTo=(?P<toDate>.*)&offset=0',
-        BillsPage
+        r"/engine/2api/sws/billing/bills\?count=0&date=(?P<fromDate>.*)&dateTo=(?P<toDate>.*)&offset=0", BillsPage
     )
     refunds_documents = URL(
-        r'/engine/2api/sws/billing/refunds\?count=0&date=(?P<fromDate>.*)&dateTo=(?P<toDate>.*)&offset=0',
-        RefundsPage
+        r"/engine/2api/sws/billing/refunds\?count=0&date=(?P<fromDate>.*)&dateTo=(?P<toDate>.*)&offset=0", RefundsPage
     )
 
-    __states__ = ('otp_form', 'otp_url')
+    __states__ = ("otp_form", "otp_url")
     STATE_DURATION = 10
 
     otp_form = None
@@ -57,26 +55,26 @@ class OvhBrowser(LoginBrowser, StatesMixin):
 
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
-        kwargs['username'] = self.config['login'].get()
-        kwargs['password'] = self.config['password'].get()
+        kwargs["username"] = self.config["login"].get()
+        kwargs["password"] = self.config["password"].get()
         super(OvhBrowser, self).__init__(*args, **kwargs)
 
     def locate_browser(self, state):
         # Add Referer to avoid 401 response code when call url for the second time
         try:
-            self.location(state['url'], headers={'Referer': self.absurl('/manager/dedicated/index.html')})
+            self.location(state["url"], headers={"Referer": self.absurl("/manager/dedicated/index.html")})
         except (HTTPError, TooManyRedirects):
             pass
 
     def validate_security_form(self):
         res_form = self.otp_form
-        res_form['emailCode'] = self.config['pin_code'].get()
+        res_form["emailCode"] = self.config["pin_code"].get()
 
         self.location(self.url, data=res_form)
 
     @retry(BrowserUnavailable)
     def do_login(self):
-        if self.config['pin_code'].get():
+        if self.config["pin_code"].get():
             self.validate_security_form()
 
             if not self.page.is_logged():
@@ -97,17 +95,29 @@ class OvhBrowser(LoginBrowser, StatesMixin):
             self.otp_form = self.page.get_security_form()
             self.otp_url = self.url
 
-            raise BrowserQuestion(Value('pin_code', label=self.page.get_otp_message() or 'Please type the OTP you received'))
+            raise BrowserQuestion(
+                Value("pin_code", label=self.page.get_otp_message() or "Please type the OTP you received")
+            )
 
         if self.page.check_user_double_auth():
-            _2fa_type = self.config['2fa_type'].get()
+            _2fa_type = self.config["2fa_type"].get()
             if _2fa_type is None:
-                raise BrowserQuestion(Value('2fa_type', label="Double factor authentication is active. Please choose the mechanism ('totp', 'sms', 'u2f', 'staticOTP'). (You may need to configure '2fa_type' in the config file to skip this question)."))
+                raise BrowserQuestion(
+                    Value(
+                        "2fa_type",
+                        label="Double factor authentication is active. Please choose the mechanism ('totp', 'sms', 'u2f', 'staticOTP'). (You may need to configure '2fa_type' in the config file to skip this question).",
+                    )
+                )
             self.page.maybe_switch_user_double_auth(_2fa_type)
 
-            _2fa_value = self.config['2fa_value'].get()
+            _2fa_value = self.config["2fa_value"].get()
             if _2fa_value is None:
-                raise BrowserQuestion(Value('2fa_value', label="Double factor authentication is active. Please enter the value (You may configure '2fa_value'  in the config file if you want to skip this question."))
+                raise BrowserQuestion(
+                    Value(
+                        "2fa_value",
+                        label="Double factor authentication is active. Please enter the value (You may configure '2fa_value'  in the config file if you want to skip this question.",
+                    )
+                )
             self.page.submit_user_double_auth(_2fa_type, _2fa_value)
 
         self.login.go()

@@ -32,7 +32,9 @@ class LoginPage(_LoginPage):
         return (
             CleanText('//div[@id="labelQuestion"]')(self.doc)
             or CleanText('//h1[contains(@class, "Notification-caption")]')(self.doc)
-            or CleanText('//div[@class="popupContent"]//div[contains(text(), "renseigner votre email professionnel")]')(self.doc)
+            or CleanText('//div[@class="popupContent"]//div[contains(text(), "renseigner votre email professionnel")]')(
+                self.doc
+            )
         )
 
 
@@ -57,13 +59,15 @@ class AccountsPage(LoggedPage, SeleniumPage):
             klass = Account
 
             obj_id = obj_number = Format(
-                '%s_%s',
-                Attr('//div[span[contains(text(), "Identifiant prestation")]]/following-sibling::input', 'value'),
-                Attr('//div[span[contains(text(), "Numéro de la carte")]]/following-sibling::input', 'value'),
+                "%s_%s",
+                Attr('//div[span[contains(text(), "Identifiant prestation")]]/following-sibling::input', "value"),
+                Attr('//div[span[contains(text(), "Numéro de la carte")]]/following-sibling::input', "value"),
             )
             obj_label = CleanText('//div[@class="v-slot"]/div[contains(@class, "v-label-undef-w")]')
 
-            obj_iban = CleanText(Attr('//div[span[contains(text(), "IBAN")]]/following-sibling::input', 'value'), replace=[(' ', '')])
+            obj_iban = CleanText(
+                Attr('//div[span[contains(text(), "IBAN")]]/following-sibling::input', "value"), replace=[(" ", "")]
+            )
 
             obj_balance = 0
             obj_type = Account.TYPE_CARD
@@ -83,10 +87,12 @@ class HistoryPage(LoggedPage, SeleniumPage):
             # There might be multiple coming values (if the transactions are differed
             # for more than 1 month). So we take the sum of all the coming values available
             # in the table.
-            return sum(map(
-                CleanDecimal.SI().filter,
-                self.page.doc.xpath('//tbody[@role="rowgroup"]/tr/td[contains(@class, "montant")]')
-            ))
+            return sum(
+                map(
+                    CleanDecimal.SI().filter,
+                    self.page.doc.xpath('//tbody[@role="rowgroup"]/tr/td[contains(@class, "montant")]'),
+                )
+            )
 
     def go_coming_tab(self):
         el = self.driver.find_element_by_xpath('//div[contains(text(), "Prélèvements à venir")]')
@@ -101,22 +107,30 @@ class HistoryPage(LoggedPage, SeleniumPage):
         self.browser.wait_xpath_visible('//tbody[@role="rowgroup"]/tr')
 
     def get_currency(self):
-        return Currency('//div[div[contains(text(), "Montant des opérations")]]/following-sibling::div[contains(@class, "v-slot")]/div')(self.doc)
+        return Currency(
+            '//div[div[contains(text(), "Montant des opérations")]]/following-sibling::div[contains(@class, "v-slot")]/div'
+        )(self.doc)
 
     def wait_history_xpaths_visible(self):
-        self.browser.wait_until(AllCondition(
-            VisibleXPath('//div[contains(@class, "debitDate")]'),
-            VisibleXPath('//div[div[contains(text(), "Montant des opérations")]]/following-sibling::div[@class="v-slot"]'),
-            VisibleXPath('//thead[@role="rowgroup"]'),
-            VisibleXPath('//tbody[@role="rowgroup"]'),
-        ))
+        self.browser.wait_until(
+            AllCondition(
+                VisibleXPath('//div[contains(@class, "debitDate")]'),
+                VisibleXPath(
+                    '//div[div[contains(text(), "Montant des opérations")]]/following-sibling::div[@class="v-slot"]'
+                ),
+                VisibleXPath('//thead[@role="rowgroup"]'),
+                VisibleXPath('//tbody[@role="rowgroup"]'),
+            )
+        )
 
     def select_first_date_history(self, coming):
         if coming:
             # need to go first here in case iter_history was done before
             self.go_coming_tab()
         self.go_history_tab()
-        el = self.driver.find_element_by_xpath('//div[div[contains(text(), "Arrêté du")]]/following-sibling::div//input')
+        el = self.driver.find_element_by_xpath(
+            '//div[div[contains(text(), "Arrêté du")]]/following-sibling::div//input'
+        )
         el.click()
 
         self.browser.wait_xpath_visible('//div[contains(@class, "suggestmenu")]//td')
@@ -129,14 +143,20 @@ class HistoryPage(LoggedPage, SeleniumPage):
         self.wait_history_xpaths_visible()
 
     def go_next_page(self):
-        el = self.driver.find_element_by_xpath('//div[div[contains(text(), "Arrêté du")]]/following-sibling::div//input')
+        el = self.driver.find_element_by_xpath(
+            '//div[div[contains(text(), "Arrêté du")]]/following-sibling::div//input'
+        )
         el.click()
 
         self.browser.wait_xpath_visible('//div[contains(@class, "suggestmenu")]//td')
         # If we are not on the last item of the list already, there is still another page
-        if self.doc.xpath('//div[contains(@class, "suggestmenu")]//tr[td[contains(@class, "selected")]]/following-sibling::tr/td'):
+        if self.doc.xpath(
+            '//div[contains(@class, "suggestmenu")]//tr[td[contains(@class, "selected")]]/following-sibling::tr/td'
+        ):
 
-            el = self.driver.find_element_by_xpath('//div[contains(@class, "suggestmenu")]//tr[td[contains(@class, "selected")]]/following-sibling::tr/td[1]')
+            el = self.driver.find_element_by_xpath(
+                '//div[contains(@class, "suggestmenu")]//tr[td[contains(@class, "selected")]]/following-sibling::tr/td[1]'
+            )
             el.click()
 
             self.browser.wait_xpath_invisible('//div[@id="VAADIN_COMBOBOX_OPTIONLIST"]')
@@ -150,15 +170,18 @@ class HistoryPage(LoggedPage, SeleniumPage):
         head_xpath = '//thead[@role="rowgroup"]/tr/th'
         item_xpath = '//tbody[@role="rowgroup"]/tr'
 
-        col_label = 'Libellé'
-        col_amount = 'Montant transaction'
-        col_rdate = 'Date achat'
+        col_label = "Libellé"
+        col_amount = "Montant transaction"
+        col_rdate = "Date achat"
 
         class item(ItemElement):
             klass = Transaction
 
-            obj_date = Date(CleanText('//div[div[contains(text(), "Date de prélèvement")]]/following-sibling::div/div'), dayfirst=True)
-            obj_rdate = Date(CleanText(TableCell('rdate')), dayfirst=True)
-            obj_label = CleanText(TableCell('label'))
-            obj_amount = CleanDecimal.SI(TableCell('amount'))
+            obj_date = Date(
+                CleanText('//div[div[contains(text(), "Date de prélèvement")]]/following-sibling::div/div'),
+                dayfirst=True,
+            )
+            obj_rdate = Date(CleanText(TableCell("rdate")), dayfirst=True)
+            obj_label = CleanText(TableCell("label"))
+            obj_amount = CleanDecimal.SI(TableCell("amount"))
             obj_type = Transaction.TYPE_CARD

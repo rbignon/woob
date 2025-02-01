@@ -23,7 +23,11 @@ import re
 from decimal import Decimal
 
 from woob.capabilities.bank import (
-    Account, AccountNotFound, CapBankTransferAddRecipient, RecipientNotFound, TransferInvalidLabel,
+    Account,
+    AccountNotFound,
+    CapBankTransferAddRecipient,
+    RecipientNotFound,
+    TransferInvalidLabel,
 )
 from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.bank.wealth import CapBankWealth
@@ -37,26 +41,31 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import CreditMutuelBrowser
 
 
-__all__ = ['CreditMutuelModule']
+__all__ = ["CreditMutuelModule"]
 
 
 class CreditMutuelModule(
-    Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
-    CapContact, CapProfile, CapBankMatching,
+    Module,
+    CapBankWealth,
+    CapBankTransferAddRecipient,
+    CapDocument,
+    CapContact,
+    CapProfile,
+    CapBankMatching,
 ):
 
-    NAME = 'creditmutuel'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = u'Crédit Mutuel'
-    LICENSE = 'LGPLv3+'
+    NAME = "creditmutuel"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "julien.veyssier@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Crédit Mutuel"
+    LICENSE = "LGPLv3+"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('resume'),
-        ValueTransient('request_information'),
-        ValueTransient('code', regexp=r'^\d{6}$'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("resume"),
+        ValueTransient("request_information"),
+        ValueTransient("code", regexp=r"^\d{6}$"),
     )
     BROWSER = CreditMutuelBrowser
 
@@ -106,7 +115,7 @@ class CreditMutuelModule(
 
     def iter_transfer_recipients(self, origin_account):
         if not self.browser.is_new_website:
-            self.logger.info('On old creditmutuel website')
+            self.logger.info("On old creditmutuel website")
             raise NotImplementedError()
 
         if not isinstance(origin_account, Account):
@@ -116,13 +125,13 @@ class CreditMutuelModule(
     def new_recipient(self, recipient, **params):
         # second step of the new_recipient
         # there should be a parameter
-        if any(p in params for p in ('Bic', 'code', 'Clé', 'resume')):
+        if any(p in params for p in ("Bic", "code", "Clé", "resume")):
             return self.browser.set_new_recipient(recipient, **params)
 
         return self.browser.new_recipient(recipient, **params)
 
     def init_transfer(self, transfer, **params):
-        if {'Clé', 'resume', 'code'} & set(params.keys()):
+        if {"Clé", "resume", "code"} & set(params.keys()):
             return self.browser.continue_transfer(transfer, **params)
 
         # There is a check on the website, transfer can't be done with too long reason.
@@ -133,13 +142,12 @@ class CreditMutuelModule(
             # re.UNICODE is needed to match letters with accents in python 2 only.
             regex = r"[-\w'/=:€?!.,() ]+"
             if not re.match(r"(?:%s)\Z" % regex, transfer.label, re.UNICODE):
-                invalid_chars = re.sub(regex, '', transfer.label, flags=re.UNICODE)
+                invalid_chars = re.sub(regex, "", transfer.label, flags=re.UNICODE)
                 raise TransferInvalidLabel(
-                    message="Le libellé de votre virement contient des caractères non autorisés : "
-                    + invalid_chars
+                    message="Le libellé de votre virement contient des caractères non autorisés : " + invalid_chars
                 )
 
-        self.logger.info('Going to do a new transfer')
+        self.logger.info("Going to do a new transfer")
 
         account = None
         acc_list = list(self.iter_accounts())
@@ -155,13 +163,13 @@ class CreditMutuelModule(
         if not recipient:
             recipient = find_object(rcpt_list, id=transfer.recipient_id, error=RecipientNotFound)
 
-        assert account.id.isdigit(), 'Account id is invalid'
+        assert account.id.isdigit(), "Account id is invalid"
 
         # quantize to show 2 decimals.
         transfer.amount = Decimal(transfer.amount).quantize(Decimal(10) ** -2)
 
         # drop characters that can crash website
-        transfer.label = transfer.label.encode('cp1252', errors="ignore").decode('cp1252')
+        transfer.label = transfer.label.encode("cp1252", errors="ignore").decode("cp1252")
 
         return self.browser.init_transfer(transfer, account, recipient)
 
@@ -172,12 +180,12 @@ class CreditMutuelModule(
         return self.browser.get_advisor()
 
     def get_profile(self):
-        if not hasattr(self.browser, 'get_profile'):
+        if not hasattr(self.browser, "get_profile"):
             raise NotImplementedError()
         return self.browser.get_profile()
 
     def get_document(self, _id):
-        subscription_id = _id.split('_')[0]
+        subscription_id = _id.split("_")[0]
         subscription = self.get_subscription(subscription_id)
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 

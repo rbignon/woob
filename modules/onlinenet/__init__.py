@@ -21,4 +21,4 @@
 from .module import OnlinenetModule
 
 
-__all__ = ['OnlinenetModule']
+__all__ = ["OnlinenetModule"]

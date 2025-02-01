@@ -28,36 +28,36 @@ from .browser import CanalplusBrowser
 from .video import CanalplusVideo
 
 
-__all__ = ['CanalplusModule']
+__all__ = ["CanalplusModule"]
 
 
 class CanalplusModule(Module, CapVideo, CapCollection):
-    NAME = 'canalplus'
-    MAINTAINER = u'Nicolas Duhamel'
-    EMAIL = 'nicolas@jombi.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'Canal Plus French TV'
-    LICENSE = 'AGPLv3+'
-    CONFIG = BackendConfig(Value('quality', label='Quality of videos', choices=['hd', 'sd'], default='hd'))
+    NAME = "canalplus"
+    MAINTAINER = "Nicolas Duhamel"
+    EMAIL = "nicolas@jombi.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Canal Plus French TV"
+    LICENSE = "AGPLv3+"
+    CONFIG = BackendConfig(Value("quality", label="Quality of videos", choices=["hd", "sd"], default="hd"))
     BROWSER = CanalplusBrowser
 
     def create_default_browser(self):
-        return self.create_browser(quality=self.config['quality'].get())
+        return self.create_browser(quality=self.config["quality"].get())
 
     def search_videos(self, pattern, sortby=CapVideo.SEARCH_RELEVANCE, nsfw=False):
         return self.browser.search_videos(pattern)
 
     def get_video(self, _id):
-        m = re.match(r'https?://www\.canal-?plus\.fr/.*\?vid=(\d+)', _id)
+        m = re.match(r"https?://www\.canal-?plus\.fr/.*\?vid=(\d+)", _id)
         if m:
             _id = m.group(1)
         return self.browser.get_video(_id)
 
     def fill_video(self, video, fields):
-        if fields != ['thumbnail']:
+        if fields != ["thumbnail"]:
             # if we don't want only the thumbnail, we probably want also every fields
             video = self.browser.get_video(CanalplusVideo.id2url(video.id), video)
-        if 'thumbnail' in fields and video.thumbnail:
+        if "thumbnail" in fields and video.thumbnail:
             video.thumbnail.data = self.browser.open(video.thumbnail.url).content
         return video
 

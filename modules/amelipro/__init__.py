@@ -21,4 +21,4 @@
 from .module import AmeliProModule
 
 
-__all__ = ['AmeliProModule']
+__all__ = ["AmeliProModule"]

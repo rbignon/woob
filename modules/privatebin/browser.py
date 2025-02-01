@@ -28,8 +28,8 @@ from .pages import IndexPage, ReadPage, WritePage, encrypt
 
 
 class PrivatePaste(BasePaste):
-    expire = DateField('Expire date')
-    delete_url = StringField('URL for deleting paste')
+    expire = DateField("Expire date")
+    delete_url = StringField("URL for deleting paste")
 
     @property
     def page_url(self):
@@ -38,17 +38,17 @@ class PrivatePaste(BasePaste):
 
 class JsonURL(URL):
     def handle(self, response):
-        if not response.headers.get('content-type').startswith('application/json'):
+        if not response.headers.get("content-type").startswith("application/json"):
             return
         return super(JsonURL, self).handle(response)
 
 
 class PrivatebinBrowser(PagesBrowser):
-    BASEURL = 'https://privatebin.net/'
+    BASEURL = "https://privatebin.net/"
 
-    read_page = JsonURL(r'/\?(?P<id>[\w+-]+)$', ReadPage)
-    write_page = JsonURL('/', WritePage)
-    index_page = URL('/$', IndexPage)
+    read_page = JsonURL(r"/\?(?P<id>[\w+-]+)$", ReadPage)
+    write_page = JsonURL("/", WritePage)
+    index_page = URL("/$", IndexPage)
 
     def __init__(self, baseurl, opendiscussion, *args, **kwargs):
         super(PrivatebinBrowser, self).__init__(*args, **kwargs)
@@ -61,14 +61,14 @@ class PrivatebinBrowser(PagesBrowser):
             return self.url
 
     def get_paste(self, id):
-        if id.startswith('http://') or id.startswith('https://'):
+        if id.startswith("http://") or id.startswith("https://"):
             url = id
-            server_url, key = url.split('#')
+            server_url, key = url.split("#")
             m = self.read_page.match(server_url)
             if not m:
                 return
-            subid = m.group('id')
-            id = '%s#%s' % (subid, key)
+            subid = m.group("id")
+            id = "%s#%s" % (subid, key)
 
             self.location(server_url, headers={"Accept": "application/json"})
             if not self.read_page.is_here():
@@ -76,18 +76,18 @@ class PrivatebinBrowser(PagesBrowser):
             elif not self.page.has_paste():
                 return
         else:
-            subid, key = id.split('#')
+            subid, key = id.split("#")
             server_url = self._find_page(subid)
             if not server_url:
                 return
-            url = '%s#%s' % (server_url, key)
+            url = "%s#%s" % (server_url, key)
 
         ret = PrivatePaste(id)
         ret.url = url
         ret.contents = self.page.decode_paste(key)
         ret.public = False
-        ret.title = self.page.params['id']
-        if hasattr(self.page, 'get_expire'):
+        ret.title = self.page.params["id"]
+        if hasattr(self.page, "get_expire"):
             ret.expire = self.page.get_expire()
         return ret
 
@@ -107,7 +107,7 @@ class PrivatebinBrowser(PagesBrowser):
 
         to_post, url_key = encrypt(p.contents, expire_string=duration_s)
 
-        self.location(self.BASEURL, json=to_post, headers={'Accept': 'application/json'})
+        self.location(self.BASEURL, json=to_post, headers={"Accept": "application/json"})
         self.page.fill_paste(p)
         p.title = p._serverid
         p.id = f"{p._serverid}#{url_key}"

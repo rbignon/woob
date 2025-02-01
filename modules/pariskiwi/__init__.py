@@ -21,4 +21,4 @@
 from .module import ParisKiwiModule
 
 
-__all__ = ['ParisKiwiModule']
+__all__ = ["ParisKiwiModule"]

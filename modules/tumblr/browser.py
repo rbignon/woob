@@ -38,7 +38,7 @@ class TumblrBrowser(APIBrowser):
         token = re.search(r'name="tumblr-form-key".*?content="([^"]*)"', html).group(1)
 
         data = {
-            "eu_resident": False, # i don't want to live on this planet anymore
+            "eu_resident": False,  # i don't want to live on this planet anymore
             "gdpr_is_acceptable_age": True,
             "gdpr_consent_core": True,
             "gdpr_consent_first_party_ads": True,
@@ -47,16 +47,16 @@ class TumblrBrowser(APIBrowser):
             "redirect_to": self.BASEURL,
         }
         headers = {
-            'X-tumblr-form-key': token,
-            'Referer': response.url,
+            "X-tumblr-form-key": token,
+            "Referer": response.url,
         }
-        super(TumblrBrowser, self).request('https://www.tumblr.com/svc/privacy/consent', data=data, headers=headers)
+        super(TumblrBrowser, self).request("https://www.tumblr.com/svc/privacy/consent", data=data, headers=headers)
 
     def request(self, *args, **kwargs):
         def perform():
             # JSONP
             r = super(TumblrBrowser, self).open(*args, **kwargs).text
-            r = re.sub(r'^var tumblr_api_read = (.*);$', r'\1', r)
+            r = re.sub(r"^var tumblr_api_read = (.*);$", r"\1", r)
             return json.loads(r)
 
         try:
@@ -66,11 +66,11 @@ class TumblrBrowser(APIBrowser):
             return perform()
 
     def get_title_icon(self):
-        r = self.request('/api/read/json?type=photo&num=1&start=0&filter=text')
+        r = self.request("/api/read/json?type=photo&num=1&start=0&filter=text")
         icon = None
-        if r['posts']:
-            icon = r['posts'][0]['tumblelog']['avatar_url_512']
-        return (r['tumblelog']['title'], icon)
+        if r["posts"]:
+            icon = r["posts"][0]["tumblelog"]["avatar_url_512"]
+        return (r["tumblelog"]["title"], icon)
 
     def iter_images(self, gallery):
         index = 0
@@ -78,24 +78,24 @@ class TumblrBrowser(APIBrowser):
         step = 50
 
         while True:
-            r = self.request('/api/read/json?type=photo&filter=text', params={'start': offset, 'num': step})
-            for post in r['posts']:
+            r = self.request("/api/read/json?type=photo&filter=text", params={"start": offset, "num": step})
+            for post in r["posts"]:
                 for img in self._images_from_post(post, index, gallery):
                     yield img
                     index += 1
 
             offset += step
-            if not r['posts'] or offset >= r['posts-total']:
+            if not r["posts"] or offset >= r["posts-total"]:
                 break
 
     def _images_from_post(self, post, index, gallery):
-        if post['type'] == 'regular':
+        if post["type"] == "regular":
             try:
-                r = self.request('/api/read/json?type=photo', params={'id': post['id']})
+                r = self.request("/api/read/json?type=photo", params={"id": post["id"]})
             except ValueError:
-                self.logger.warning('uh oh, no json for %r', post['id'])
+                self.logger.warning("uh oh, no json for %r", post["id"])
                 return
-            match = re.search(r'(https://\d+\.media\.tumblr.com([^\\"]+))', r['posts'][0]['regular-body'])
+            match = re.search(r'(https://\d+\.media\.tumblr.com([^\\"]+))', r["posts"][0]["regular-body"])
             if not match:
                 return
             img = BaseImage(
@@ -110,33 +110,33 @@ class TumblrBrowser(APIBrowser):
             return
 
         # main photo only if single
-        if not post['photos']:
+        if not post["photos"]:
             img = BaseImage(
                 index=index,
                 gallery=gallery,
-                url=post['photo-url-1280'],
-                thumbnail=Thumbnail(post['photo-url-250']),
+                url=post["photo-url-1280"],
+                thumbnail=Thumbnail(post["photo-url-250"]),
             )
-            img.id = post['id']
-            img.title = CleanText().filter(post['photo-caption'])
-            img.date = datetime.strptime(post['date-gmt'], '%Y-%m-%d %H:%M:%S %Z')
+            img.id = post["id"]
+            img.title = CleanText().filter(post["photo-caption"])
+            img.date = datetime.strptime(post["date-gmt"], "%Y-%m-%d %H:%M:%S %Z")
             img._page_url = post["url"]
             yield img
 
         # if multiple
-        for photo in post['photos']:
+        for photo in post["photos"]:
             img = BaseImage(
                 index=index,
                 gallery=gallery,
-                url=photo['photo-url-1280'],
-                thumbnail=Thumbnail(photo['photo-url-250']),
+                url=photo["photo-url-1280"],
+                thumbnail=Thumbnail(photo["photo-url-250"]),
             )
-            img.id = '%s.%s' % (post['id'], photo['offset'])
+            img.id = "%s.%s" % (post["id"], photo["offset"])
             index += 1
-            img.title = CleanText().filter(photo['caption'] or post['photo-caption'])
-            img.date = datetime.strptime(post['date-gmt'], '%Y-%m-%d %H:%M:%S %Z')
+            img.title = CleanText().filter(photo["caption"] or post["photo-caption"])
+            img.date = datetime.strptime(post["date-gmt"], "%Y-%m-%d %H:%M:%S %Z")
             img._page_url = post["url"]
             yield img
 
     def open_img(self, url):
-        return self.open(url, headers={'Accept': '*/*'})
+        return self.open(url, headers={"Accept": "*/*"})

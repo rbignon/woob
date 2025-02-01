@@ -22,10 +22,10 @@ from woob.tools.test import BackendTest
 
 
 class WeatherTest(BackendTest):
-    MODULE = 'weather'
+    MODULE = "weather"
 
     def test_cities(self):
-        paris = list(self.backend.iter_city_search('paris'))
+        paris = list(self.backend.iter_city_search("paris"))
         self.assertTrue(len(list(paris)) >= 1)
 
         current = self.backend.get_current(paris[0].id)

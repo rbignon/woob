@@ -23,10 +23,10 @@ from woob.tools.test import BackendTest
 
 
 class LimetorrentsTest(BackendTest):
-    MODULE = 'limetorrents'
+    MODULE = "limetorrents"
 
     def test_torrent(self):
-        torrents = list(self.backend.iter_torrents('spiderman'))
+        torrents = list(self.backend.iter_torrents("spiderman"))
         assert len(torrents) > 0
         for torrent in torrents:
             assert torrent.id

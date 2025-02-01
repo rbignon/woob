@@ -26,16 +26,16 @@ from woob.tools.backend import Module
 from .browser import PodnapisiBrowser
 
 
-__all__ = ['PodnapisiModule']
+__all__ = ["PodnapisiModule"]
 
 
 class PodnapisiModule(Module, CapSubtitle):
-    NAME = 'podnapisi'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'Podnapisi movies and tv series subtitle website'
-    LICENSE = 'AGPLv3+'
+    NAME = "podnapisi"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "julien.veyssier@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Podnapisi movies and tv series subtitle website"
+    LICENSE = "AGPLv3+"
     BROWSER = PodnapisiBrowser
 
     def get_subtitle_file(self, id):
@@ -47,4 +47,4 @@ class PodnapisiModule(Module, CapSubtitle):
     def iter_subtitles(self, language, pattern):
         if language not in list(LANGUAGE_CONV.keys()):
             raise LanguageNotSupported()
-        return self.browser.iter_subtitles(language, quote_plus(pattern.encode('utf-8')))
+        return self.browser.iter_subtitles(language, quote_plus(pattern.encode("utf-8")))

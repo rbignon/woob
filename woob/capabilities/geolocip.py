@@ -20,7 +20,7 @@ from .address import GeoCoordinates, PostalAddress, compat_field
 from .base import BaseObject, Capability, Field, StringField
 
 
-__all__ = ['IpLocation', 'CapGeolocIp']
+__all__ = ["IpLocation", "CapGeolocIp"]
 
 
 class IpLocation(BaseObject):
@@ -28,21 +28,21 @@ class IpLocation(BaseObject):
     Represents the location of an IP address.
     """
 
-    address = Field('Address', PostalAddress)
-    geo = Field('Geolocation', GeoCoordinates)
+    address = Field("Address", PostalAddress)
+    geo = Field("Geolocation", GeoCoordinates)
 
-    osmlink =   StringField('Link to OpenStreetMap location page')
-    host =      StringField('Hostname')
-    tld =       StringField('Top Level Domain')
-    isp =       StringField('Internet Service Provider')
+    osmlink = StringField("Link to OpenStreetMap location page")
+    host = StringField("Hostname")
+    tld = StringField("Top Level Domain")
+    isp = StringField("Internet Service Provider")
 
-    lt = compat_field('geo', 'latitude')
-    lg = compat_field('geo', 'longitude')
+    lt = compat_field("geo", "latitude")
+    lg = compat_field("geo", "longitude")
 
-    city = compat_field('address', 'city')
-    region = compat_field('address', 'region')
-    zipcode = compat_field('address', 'postal_code')
-    country = compat_field('address', 'country')
+    city = compat_field("address", "city")
+    region = compat_field("address", "region")
+    zipcode = compat_field("address", "postal_code")
+    country = compat_field("address", "country")
 
 
 class CapGeolocIp(Capability):

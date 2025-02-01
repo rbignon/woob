@@ -24,28 +24,26 @@ from woob.tools.value import ValueBackendPassword
 from .browser import HeliosBrowser
 
 
-__all__ = ['HeliosModule']
+__all__ = ["HeliosModule"]
 
 
 class HeliosModule(Module, CapBankTransferAddRecipient):
-    NAME = 'helios'
-    DESCRIPTION = 'Helios is a neobank which excludes fossil fuels from its investments.'
-    MAINTAINER = 'Damien Ramelet'
-    EMAIL = 'damien.ramelet@protonmail.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "helios"
+    DESCRIPTION = "Helios is a neobank which excludes fossil fuels from its investments."
+    MAINTAINER = "Damien Ramelet"
+    EMAIL = "damien.ramelet@protonmail.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = HeliosBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Adresse e-mail', masked=False, regexp=r'.+@.+'),
-        ValueBackendPassword('password', label='Code secret', regexp=r'\d{6}'),
+        ValueBackendPassword("login", label="Adresse e-mail", masked=False, regexp=r".+@.+"),
+        ValueBackendPassword("password", label="Code secret", regexp=r"\d{6}"),
     )
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config['login'].get(), self.config['password'].get()
-        )
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

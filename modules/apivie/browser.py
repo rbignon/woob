@@ -32,40 +32,37 @@ from woob.tools.decorators import retry
 from .pages import AccountsPage, HistoryPage, HomePage, InfoPage, InvestmentPage, LoginPage
 
 
-__all__ = ['ApivieBrowser']
+__all__ = ["ApivieBrowser"]
 
 
 class ApivieBrowser(TwoFactorBrowser):
-    login = URL(r'/auth', LoginPage)
-    info = URL(r'/(coordonnees|accueil-connect)', InfoPage)
-    home = URL(r'/contrats-cosy3', HomePage)
-    accounts = URL(r'https://(?P<api_url>.*)/interne/contrats/', AccountsPage)
-    investments = URL(r'https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)$', InvestmentPage)
-    history = URL(r'https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)/mouvements', HistoryPage)
+    login = URL(r"/auth", LoginPage)
+    info = URL(r"/(coordonnees|accueil-connect)", InfoPage)
+    home = URL(r"/contrats-cosy3", HomePage)
+    accounts = URL(r"https://(?P<api_url>.*)/interne/contrats/", AccountsPage)
+    investments = URL(r"https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)$", InvestmentPage)
+    history = URL(r"https://(?P<api_url>.*)/contrat/(?P<account_id>\d+)/mouvements", HistoryPage)
 
-    __states__ = ('access_token',)
+    __states__ = ("access_token",)
 
     TIMEOUT = 40
 
     def __init__(self, config, website, *args, **kwargs):
         self.config = config
         super().__init__(self.config, *args, **kwargs)
-        self.BASEURL = 'https://%s' % website
-        self.APIURL = 'hub.apivie.fr'
-        self.client_number = ''
+        self.BASEURL = "https://%s" % website
+        self.APIURL = "hub.apivie.fr"
+        self.client_number = ""
         self.access_token = None
         self.AUTHENTICATION_METHODS = {
-            'otp_sms': self.handle_sms,
+            "otp_sms": self.handle_sms,
         }
 
     def generate_jwt(self):
         # We can find this key in the js. As this js url is not
         # consistent in time, it's easier to hardcode the key
-        signature_key = '742484ee0f879d89ebb57a96c898d53006833bbf7043d64f2b090b3a90eb28efff841f00aeeb2991ac3f125448b7f73dce4923071aff9b31c0026891256ce416'
-        jwt_token = jwt.encode(
-            {'iat': time(), 'sub': self.username},
-            signature_key
-        )
+        signature_key = "742484ee0f879d89ebb57a96c898d53006833bbf7043d64f2b090b3a90eb28efff841f00aeeb2991ac3f125448b7f73dce4923071aff9b31c0026891256ce416"
+        jwt_token = jwt.encode({"iat": time(), "sub": self.username}, signature_key)
         # If the version of pyjwt is >2.0.0, jwt.encode returns a bytes string otherwise a simple string.
         if isinstance(jwt_token, bytes):
             return jwt_token.decode()
@@ -80,9 +77,9 @@ class ApivieBrowser(TwoFactorBrowser):
         # and allows to be compatible with pyjwt versions above 2.0.0 and below
         if (
             self.access_token
-            and jwt.decode(self.access_token, options={'verify_signature': False}, verify=False)['exp'] > time()
+            and jwt.decode(self.access_token, options={"verify_signature": False}, verify=False)["exp"] > time()
         ):
-            self.session.headers['Authorization'] = f'Bearer {self.access_token}'
+            self.session.headers["Authorization"] = f"Bearer {self.access_token}"
             return True
         return False
 
@@ -90,49 +87,49 @@ class ApivieBrowser(TwoFactorBrowser):
         # according to APICIL support sms validation is now systematic, so if there are no
         # access_token or if the access_token is not valid we check if we are interactive
         data = {
-            'jeton': self.generate_jwt(),
-            'username': self.username,
-            'password': self.password,
+            "jeton": self.generate_jwt(),
+            "username": self.username,
+            "password": self.password,
         }
         try:
             self.login.go(json=data)
         except ClientError as e:
             if e.response.status_code == 400:
                 error_message = LoginPage(self, e.response).get_error_message()
-                if 'Jeton CSRF invalide' in error_message:
-                    self.logger.warning('The actual signature key is probably no longer valid')
+                if "Jeton CSRF invalide" in error_message:
+                    self.logger.warning("The actual signature key is probably no longer valid")
                     raise
-                if 'incorrect' in error_message:
+                if "incorrect" in error_message:
                     raise BrowserIncorrectPassword()
-                if 'Code de sécurité à saisir' in error_message:
+                if "Code de sécurité à saisir" in error_message:
                     # If we are here, the SMS has already been sent to the user.
                     raise SentOTPQuestion(
-                        'otp_sms',
+                        "otp_sms",
                         medium_type=OTPSentType.SMS,
                         message=error_message,
                     )
             raise
         self.access_token = self.page.get_access_token()
-        self.session.headers['Authorization'] = f'Bearer {self.access_token}'
+        self.session.headers["Authorization"] = f"Bearer {self.access_token}"
         # Accounts, Investments & Transactions are scraped on the Apivie API (https://hub.apivie.fr).
         # The API is unstable and we get various errors, hence the @retry decorators.
 
     def handle_sms(self):
         data = {
-            'jeton': self.generate_jwt(),
-            'username': self.username,
-            'password': self.password,
-            'otp': self.otp_sms,
+            "jeton": self.generate_jwt(),
+            "username": self.username,
+            "password": self.password,
+            "otp": self.otp_sms,
         }
         try:
             self.login.go(json=data)
         except ClientError as e:
             error_message = LoginPage(self, e.response).get_error_message()
-            if 'veuillez vérifier votre saisie.' in error_message:
+            if "veuillez vérifier votre saisie." in error_message:
                 raise BrowserIncorrectPassword(error_message)
             raise
         self.access_token = self.page.get_access_token()
-        self.session.headers['Authorization'] = f'Bearer {self.access_token}'
+        self.session.headers["Authorization"] = f"Bearer {self.access_token}"
 
     @need_login
     @retry(BrowserUnavailable, tries=3)
@@ -142,7 +139,7 @@ class ApivieBrowser(TwoFactorBrowser):
             try:
                 self.investments.go(api_url=self.APIURL, account_id=account.id)
             except (ReadTimeoutError, ClientError) as e:
-                self.logger.warning('Error when trying to access account details: %s', e)
+                self.logger.warning("Error when trying to access account details: %s", e)
                 pass
             else:
                 account.opening_date = self.page.get_opening_date()
@@ -154,7 +151,7 @@ class ApivieBrowser(TwoFactorBrowser):
         try:
             self.investments.go(api_url=self.APIURL, account_id=account.id)
         except (ReadTimeoutError, ClientError) as e:
-            self.logger.warning('Error when trying to access account investments: %s', e)
+            self.logger.warning("Error when trying to access account investments: %s", e)
             raise BrowserUnavailable()
 
         return self.page.iter_investments()
@@ -165,7 +162,7 @@ class ApivieBrowser(TwoFactorBrowser):
         try:
             self.history.go(api_url=self.APIURL, account_id=account.id)
         except (ReadTimeoutError, ClientError) as e:
-            self.logger.warning('Error when trying to access account history: %s', e)
+            self.logger.warning("Error when trying to access account history: %s", e)
             raise BrowserUnavailable()
 
         return self.page.iter_history()

@@ -38,11 +38,8 @@ class ResultsPage(HTMLPage):
 
         def next_page(self):
             if XPath('//div/@class="pagination"', default=False)(self):
-                next_page = int(Env('page')(self)) + 1
-                return BrowserURL('search',
-                                  city=Env('city'),
-                                  pattern=Env('pattern'),
-                                  page=next_page)(self)
+                next_page = int(Env("page")(self)) + 1
+                return BrowserURL("search", city=Env("city"), pattern=Env("pattern"), page=next_page)(self)
 
         class item(ItemElement):
             klass = Place
@@ -52,14 +49,15 @@ class ResultsPage(HTMLPage):
 
             def obj_phone(self):
                 tel = []
-                for _ in XPath(
-                        './/div[has-class("tel-zone")][span[contains(text(),"Tél")]]//strong[@class="num"]')(self):
-                    tel.append(Regexp(CleanText('.', replace=[(' ', '')]), r'^0(\d{9})$', r'+33\1')(_))
+                for _ in XPath('.//div[has-class("tel-zone")][span[contains(text(),"Tél")]]//strong[@class="num"]')(
+                    self
+                ):
+                    tel.append(Regexp(CleanText(".", replace=[(" ", "")]), r"^0(\d{9})$", r"+33\1")(_))
 
                 return " / ".join(tel)
 
             def obj_url(self):
-                if CleanText('.//a[has-class("denomination-links")]/@href', replace=[('#', '')])(self):
+                if CleanText('.//a[has-class("denomination-links")]/@href', replace=[("#", "")])(self):
                     return AbsoluteLink('.//a[has-class("denomination-links")]')(self)
                 return NotAvailable
 
@@ -75,20 +73,20 @@ class PlacePage(HTMLPage):
             klass = OpeningRule
 
             def obj_dates(self):
-                wday = CleanText('./p')(self)
-                wday = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].index(wday.lower())
+                wday = CleanText("./p")(self)
+                wday = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"].index(wday.lower())
                 assert wday >= 0
                 return rrule.rrule(rrule.DAILY, byweekday=wday, count=1)
 
             def obj_times(self):
                 times = []
-                for sub in XPath('.//li')(self):
-                    t = CleanText('.')(sub)
-                    m = re.match(r'(\d{2})h(\d{2}) - (\d{2})h(\d{2})$', t)
+                for sub in XPath(".//li")(self):
+                    t = CleanText(".")(sub)
+                    m = re.match(r"(\d{2})h(\d{2}) - (\d{2})h(\d{2})$", t)
                     if m:
                         m = [int(x) for x in m.groups()]
                         times.append((time(m[0], m[1]), time(m[2], m[3])))
                 return times
 
             def obj_is_open(self):
-                return len(Field('times')(self)) > 0
+                return len(Field("times")(self)) > 0

@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 try:
     from PIL import Image
 except ImportError:
-    raise ImportError('Please install python-imaging')
+    raise ImportError("Please install python-imaging")
 
 
 class VirtKeyboardError(Exception):
@@ -49,7 +49,7 @@ class VirtKeyboard:
     ``margin`` property (top, right, bottom, right), in pixels.
     """
 
-    codesep = ''
+    codesep = ""
     """
     Output separator between code strings.
 
@@ -64,7 +64,7 @@ class VirtKeyboard:
         # convert: if not None, convert image to this target type (for example 'RGB')
 
         if file is not None:
-            assert color, 'No color provided !'
+            assert color, "No color provided !"
             self.load_image(file, color, convert)
 
         if type(self.margin) in (int, float):
@@ -87,11 +87,9 @@ class VirtKeyboard:
 
         self.bands = self.image.getbands()
         if isinstance(color, int) and not isinstance(self.bands, str) and len(self.bands) != 1:
-            raise VirtKeyboardError("Color requires %i component but only 1 is provided"
-                                    % len(self.bands))
+            raise VirtKeyboardError("Color requires %i component but only 1 is provided" % len(self.bands))
         if not isinstance(color, int) and len(color) != len(self.bands):
-            raise VirtKeyboardError("Color requires %i components but %i are provided"
-                                    % (len(self.bands), len(color)))
+            raise VirtKeyboardError("Color requires %i components but %i are provided" % (len(self.bands), len(color)))
         self.color = color
 
         self.width, self.height = self.image.size
@@ -145,7 +143,7 @@ class VirtKeyboard:
 
     def checksum(self, coords):
         (x1, y1, x2, y2) = coords
-        s = b''
+        s = b""
         for y in range(y1, min(y2 + 1, self.height)):
             for x in range(x1, min(x2 + 1, self.width)):
                 if self.check_color(self.pixar[x, y]):
@@ -164,9 +162,7 @@ class VirtKeyboard:
             for code, cur_md5 in current_md5_in_keyboard.items():
                 if known_md5 == cur_md5:
                     return code
-        raise VirtKeyboardError(
-                'Code not found for these hashes "%s".'
-                % all_known_md5_for_symbol)
+        raise VirtKeyboardError('Code not found for these hashes "%s".' % all_known_md5_for_symbol)
 
     def get_string_code(self, string):
         return self.codesep.join(self.get_symbol_code(self.symbols[c]) for c in string)
@@ -178,16 +174,15 @@ class VirtKeyboard:
                 self.get_symbol_code(symbols[s])
             except VirtKeyboardError:
                 if dirname is None:
-                    dirname = tempfile.mkdtemp(prefix='woob_session_')
+                    dirname = tempfile.mkdtemp(prefix="woob_session_")
                 self.generate_MD5(dirname)
-                raise VirtKeyboardError("Symbol '%s' not found; all symbol hashes are available in %s"
-                                        % (s, dirname))
+                raise VirtKeyboardError("Symbol '%s' not found; all symbol hashes are available in %s" % (s, dirname))
 
     def generate_MD5(self, dir):
         for i in self.coords:
             width = self.coords[i][2] - self.coords[i][0] + 1
             height = self.coords[i][3] - self.coords[i][1] + 1
-            img = Image.new(''.join(self.bands), (width, height))
+            img = Image.new("".join(self.bands), (width, height))
             matrix = img.load()
             for y in range(height):
                 for x in range(width):
@@ -207,7 +202,7 @@ class MappedVirtKeyboard(VirtKeyboard):
         for area in map.iter("area"):
             code = area.attrib.get(map_attr)
             area_coords = []
-            for coord in area.attrib.get("coords").split(' ')[0].split(','):
+            for coord in area.attrib.get("coords").split(" ")[0].split(","):
                 area_coords.append(int(coord))
             coords[code] = tuple(area_coords)
 
@@ -233,6 +228,7 @@ class GridVirtKeyboard(VirtKeyboard):
     :param convert: Mode to which convert color of pixels, see
         :meth:`Image.Image.convert` for more information
     """
+
     symbols = {}
     """Assocation table between symbols and md5s"""
 
@@ -241,10 +237,8 @@ class GridVirtKeyboard(VirtKeyboard):
 
         tileW = self.width / cols
         tileH = self.height / rows
-        positions = ((s, i * tileW % self.width, i // cols * tileH)
-                     for i, s in enumerate(symbols))
-        coords = dict((s, tuple(map(int, (x, y, x + tileW, y + tileH))))
-                      for (s, x, y) in positions)
+        positions = ((s, i * tileW % self.width, i // cols * tileH) for i, s in enumerate(symbols))
+        coords = dict((s, tuple(map(int, (x, y, x + tileW, y + tileH)))) for (s, x, y) in positions)
 
         super(GridVirtKeyboard, self).__init__()
 
@@ -257,7 +251,7 @@ class SplitKeyboard:
     char_to_hash = None
     """dict mapping password characters to image hashes"""
 
-    codesep = ''
+    codesep = ""
     """Output separator between symbols"""
 
     def __init__(self, code_to_filedata):
@@ -267,9 +261,7 @@ class SplitKeyboard:
         :type code_to_filedata: dict[str, str]
         """
 
-        hash_to_code = {
-            self.checksum(data): code for code, data in code_to_filedata.items()
-        }
+        hash_to_code = {self.checksum(data): code for code, data in code_to_filedata.items()}
 
         self.char_to_code = {}
         for char, hashes in self.char_to_hash.items():
@@ -281,7 +273,7 @@ class SplitKeyboard:
                     self.char_to_code[char] = hash_to_code.pop(hash)
                     break
             else:
-                path = tempfile.mkdtemp(prefix='woob_session_')
+                path = tempfile.mkdtemp(prefix="woob_session_")
                 self.dump(code_to_filedata.values(), path)
                 raise VirtKeyboardError("Symbol '%s' not found; all symbol hashes are available in %s" % (char, path))
 
@@ -291,7 +283,7 @@ class SplitKeyboard:
     def dump(self, files, path):
         for dat in files:
             md5 = hashlib.md5(dat).hexdigest()
-            with open('%s/%s.png' % (path, md5), 'wb') as fd:
+            with open("%s/%s.png" % (path, md5), "wb") as fd:
                 fd.write(dat)
 
     def get_string_code(self, password):
@@ -305,14 +297,13 @@ class SplitKeyboard:
 
     @classmethod
     def create_from_url(cls, browser, code_to_url):
-        code_to_file = {
-            code: browser.open(url).content for code, url in code_to_url
-        }
+        code_to_file = {code: browser.open(url).content for code, url in code_to_url}
         return cls(code_to_file)
 
 
 class Tile:
     """Tile of a image grid for SimpleVirtualKeyboard"""
+
     def __init__(self, matching_symbol, coords, image=None, md5=None):
         self.matching_symbol = matching_symbol
         self.coords = coords
@@ -337,7 +328,7 @@ class SimpleVirtualKeyboard:
         Allow to dump tiles files in same directory than session folder
     """
 
-    codesep: ClassVar[str] = ''
+    codesep: ClassVar[str] = ""
     """Output separator between matching symbols"""
 
     margin: ClassVar[tuple[int, int, int, int] | tuple[int, int] | int | None] = None
@@ -374,7 +365,7 @@ class SimpleVirtualKeyboard:
         rows: int,
         matching_symbols: list[str] | None = None,
         matching_symbols_coords: dict[str, tuple[int, int, int, int]] | None = None,
-        browser: Browser | None = None
+        browser: Browser | None = None,
     ):
         self.cols = cols
         self.rows = rows
@@ -386,10 +377,7 @@ class SimpleVirtualKeyboard:
         self.load_image(file, self.margin, self.convert)
 
         # Get self.tiles
-        self.get_tiles(
-            matching_symbols=matching_symbols,
-            matching_symbols_coords=matching_symbols_coords
-        )
+        self.get_tiles(matching_symbols=matching_symbols, matching_symbols_coords=matching_symbols_coords)
 
         # Tiles processing
         self.cut_tiles(self.tile_margin)
@@ -399,7 +387,7 @@ class SimpleVirtualKeyboard:
         if browser and browser.responses_dirname:
             return browser.responses_dirname
         else:
-            return tempfile.mkdtemp(prefix='woob_session_')
+            return tempfile.mkdtemp(prefix="woob_session_")
 
     def load_image(self, file, margin=None, convert=None):
         self.image = Image.open(file)
@@ -426,18 +414,13 @@ class SimpleVirtualKeyboard:
         elif len(margin) == 4:
             margin = margin
         else:
-            assert (len(margin) == 3) & (len(margin) > 4), \
-                "Margin format is wrong."
+            assert (len(margin) == 3) & (len(margin) > 4), "Margin format is wrong."
 
-        assert ((margin[0] + margin[2]) < height) & ((margin[1] + margin[3]) < width), \
-            "Margin is too high, there is not enough pixel to cut."
+        assert ((margin[0] + margin[2]) < height) & (
+            (margin[1] + margin[3]) < width
+        ), "Margin is too high, there is not enough pixel to cut."
 
-        image = image.crop((
-            0 + margin[3],
-            0 + margin[0],
-            width - margin[1],
-            height - margin[2]
-        ))
+        image = image.crop((0 + margin[3], 0 + margin[0], width - margin[1], height - margin[2]))
         return image
 
     def get_tiles(self, matching_symbols=None, matching_symbols_coords=None):
@@ -447,15 +430,13 @@ class SimpleVirtualKeyboard:
         if matching_symbols_coords:
             for matching_symbol in matching_symbols_coords:
                 self.tiles.append(
-                    self.tile_klass(
-                        matching_symbol=matching_symbol,
-                        coords=matching_symbols_coords[matching_symbol]
-                    )
+                    self.tile_klass(matching_symbol=matching_symbol, coords=matching_symbols_coords[matching_symbol])
                 )
             return
 
-        assert (not self.width % self.cols) & (not self.height % self.rows), \
-            "Image width and height are not multiple of cols and rows. Please resize image with attribute `margin`."
+        assert (not self.width % self.cols) & (
+            not self.height % self.rows
+        ), "Image width and height are not multiple of cols and rows. Please resize image with attribute `margin`."
 
         # Tiles coords aren't given, calculate them
         self.tileW = self.width // self.cols
@@ -463,10 +444,11 @@ class SimpleVirtualKeyboard:
 
         # Matching symbols aren't given, default value is range(columns*rows)
         if not matching_symbols:
-            matching_symbols = ['%s' % i for i in range(self.cols*self.rows)]
+            matching_symbols = ["%s" % i for i in range(self.cols * self.rows)]
 
-        assert len(matching_symbols) == (self.cols*self.rows), \
-            "Number of website matching symbols is not equal to the number of cases on the image."
+        assert len(matching_symbols) == (
+            self.cols * self.rows
+        ), "Number of website matching symbols is not equal to the number of cases on the image."
 
         # Calculate tiles coords for each matching symbol from 1-dimension to 2-dimensions
         for index, matching_symbol in enumerate(matching_symbols):
@@ -500,7 +482,7 @@ class SimpleVirtualKeyboard:
 
     def dump_tiles(self, path):
         for tile in self.tiles:
-            tile.image.save('{}/{}.png'.format(path, tile.md5))
+            tile.image.save("{}/{}.png".format(path, tile.md5))
 
     def get_string_code(self, password):
         word = []

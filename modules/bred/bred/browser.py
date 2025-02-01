@@ -29,79 +29,119 @@ from woob.capabilities import NotAvailable
 from woob.capabilities.bank import Account, AccountOwnerType, AddRecipientBankError, AddRecipientStep, TransferBankError
 from woob.capabilities.base import find_object
 from woob.exceptions import (
-    ActionNeeded, AppValidation, AppValidationCancelled, AppValidationExpired, AuthMethodNotImplemented,
-    BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable,
+    ActionNeeded,
+    AppValidation,
+    AppValidationCancelled,
+    AppValidationExpired,
+    AuthMethodNotImplemented,
+    BrowserIncorrectPassword,
+    BrowserQuestion,
+    BrowserUnavailable,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.value import Value
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from .pages import (
-    AccountsPage, AccountsTwoFAPage, AuthentResultPage, CheckOtpPage, ErrorCodePage, ErrorMsgPage, ErrorPage, HomePage,
-    IbanPage, InitAuthentPage, LifeInsurancesPage, LinebourseLoginPage, LoansPage, LoginPage, MoveUniversePage,
-    ProfilePage, SearchPage, SendSmsPage, SwitchPage, TokenPage, TrustedDevicesPage, UnavailablePage, UniversePage,
+    AccountsPage,
+    AccountsTwoFAPage,
+    AuthentResultPage,
+    CheckOtpPage,
+    ErrorCodePage,
+    ErrorMsgPage,
+    ErrorPage,
+    HomePage,
+    IbanPage,
+    InitAuthentPage,
+    LifeInsurancesPage,
+    LinebourseLoginPage,
+    LoansPage,
+    LoginPage,
+    MoveUniversePage,
+    ProfilePage,
+    SearchPage,
+    SendSmsPage,
+    SwitchPage,
+    TokenPage,
+    TrustedDevicesPage,
+    UnavailablePage,
+    UniversePage,
 )
 from .transfer_pages import AddRecipientPage, EmittersListPage, ListAuthentPage, RecipientListPage, TransferPage
 
 
-__all__ = ['BredBrowser']
+__all__ = ["BredBrowser"]
 
 
 class BredBrowser(TwoFactorBrowser):
-    BASEURL = 'https://www.bred.fr'
+    BASEURL = "https://www.bred.fr"
     HAS_CREDENTIALS_ONLY = True
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
 
-    home = URL(r'/$', HomePage)
-    login = URL(r'/transactionnel/Authentication', LoginPage)
-    error = URL(r'.*gestion-des-erreurs/erreur-pwd',
-                r'.*gestion-des-erreurs/opposition',
-                r'/pages-gestion-des-erreurs/erreur-technique',
-                r'/pages-gestion-des-erreurs/message-tiers-oppose', ErrorPage)
-    universe = URL(r'/transactionnel/services/applications/menu/getMenuUnivers', UniversePage)
-    token = URL(r'/transactionnel/services/rest/User/nonce\?random=(?P<timestamp>.*)', TokenPage)
-    move_universe = URL(r'/transactionnel/services/applications/listes/(?P<key>.*)/default', MoveUniversePage)
-    switch = URL(r'/transactionnel/services/rest/User/switch', SwitchPage)
-    loans = URL(r'/transactionnel/services/applications/prets/liste', LoansPage)
-    accounts = URL(r'/transactionnel/services/rest/Account/accounts', AccountsPage)
-    iban = URL(r'/transactionnel/services/rest/Account/account/(?P<number>.*)/iban', IbanPage)
-    linebourse_login = URL(r'/transactionnel/v2/services/applications/SSO/linebourse', LinebourseLoginPage)
-    life_insurances = URL(r'/transactionnel/services/applications/avoirsPrepar/getAvoirs', LifeInsurancesPage)
-    search = URL(r'/transactionnel/services/applications/operations/getSearch/', SearchPage)
-    profile = URL(r'/transactionnel/services/rest/User/user', ProfilePage)
-    error_code = URL(r'/.*\?errorCode=.*', ErrorCodePage)
-    error_msg_page = URL ( r'/authentification\?source=no&errorCode=(?P<errorcode>\d)', ErrorMsgPage)
-    unavailable_page = URL(r'/ERREUR/', UnavailablePage)
+    home = URL(r"/$", HomePage)
+    login = URL(r"/transactionnel/Authentication", LoginPage)
+    error = URL(
+        r".*gestion-des-erreurs/erreur-pwd",
+        r".*gestion-des-erreurs/opposition",
+        r"/pages-gestion-des-erreurs/erreur-technique",
+        r"/pages-gestion-des-erreurs/message-tiers-oppose",
+        ErrorPage,
+    )
+    universe = URL(r"/transactionnel/services/applications/menu/getMenuUnivers", UniversePage)
+    token = URL(r"/transactionnel/services/rest/User/nonce\?random=(?P<timestamp>.*)", TokenPage)
+    move_universe = URL(r"/transactionnel/services/applications/listes/(?P<key>.*)/default", MoveUniversePage)
+    switch = URL(r"/transactionnel/services/rest/User/switch", SwitchPage)
+    loans = URL(r"/transactionnel/services/applications/prets/liste", LoansPage)
+    accounts = URL(r"/transactionnel/services/rest/Account/accounts", AccountsPage)
+    iban = URL(r"/transactionnel/services/rest/Account/account/(?P<number>.*)/iban", IbanPage)
+    linebourse_login = URL(r"/transactionnel/v2/services/applications/SSO/linebourse", LinebourseLoginPage)
+    life_insurances = URL(r"/transactionnel/services/applications/avoirsPrepar/getAvoirs", LifeInsurancesPage)
+    search = URL(r"/transactionnel/services/applications/operations/getSearch/", SearchPage)
+    profile = URL(r"/transactionnel/services/rest/User/user", ProfilePage)
+    error_code = URL(r"/.*\?errorCode=.*", ErrorCodePage)
+    error_msg_page = URL(r"/authentification\?source=no&errorCode=(?P<errorcode>\d)", ErrorMsgPage)
+    unavailable_page = URL(r"/ERREUR/", UnavailablePage)
 
-    accounts_twofa = URL(r'/transactionnel/v2/services/rest/Account/accounts', AccountsTwoFAPage)
-    list_authent = URL(r'/transactionnel/services/applications/authenticationstrong/listeAuthent/(?P<context>\w+)', ListAuthentPage)
-    init_authent = URL(r'/transactionnel/services/applications/authenticationstrong/init', InitAuthentPage)
-    authent_result = URL(r'/transactionnel/services/applications/authenticationstrong/result/(?P<authent_id>[^/]+)/(?P<context>\w+)', AuthentResultPage)
-    trusted_devices = URL(r'/transactionnel/services/applications/trustedDevices', TrustedDevicesPage)
-    check_otp = URL(r'/transactionnel/services/applications/authenticationstrong/(?P<auth_method>\w+)/check', CheckOtpPage)
-    send_sms = URL(r'/transactionnel/services/applications/authenticationstrong/sms/send', SendSmsPage)
+    accounts_twofa = URL(r"/transactionnel/v2/services/rest/Account/accounts", AccountsTwoFAPage)
+    list_authent = URL(
+        r"/transactionnel/services/applications/authenticationstrong/listeAuthent/(?P<context>\w+)", ListAuthentPage
+    )
+    init_authent = URL(r"/transactionnel/services/applications/authenticationstrong/init", InitAuthentPage)
+    authent_result = URL(
+        r"/transactionnel/services/applications/authenticationstrong/result/(?P<authent_id>[^/]+)/(?P<context>\w+)",
+        AuthentResultPage,
+    )
+    trusted_devices = URL(r"/transactionnel/services/applications/trustedDevices", TrustedDevicesPage)
+    check_otp = URL(
+        r"/transactionnel/services/applications/authenticationstrong/(?P<auth_method>\w+)/check", CheckOtpPage
+    )
+    send_sms = URL(r"/transactionnel/services/applications/authenticationstrong/sms/send", SendSmsPage)
 
-    recipient_list = URL(r'/transactionnel/v2/services/applications/virement/getComptesCrediteurs', RecipientListPage)
-    emitters_list = URL(r'/transactionnel/v2/services/applications/virement/getComptesDebiteurs', EmittersListPage)
+    recipient_list = URL(r"/transactionnel/v2/services/applications/virement/getComptesCrediteurs", RecipientListPage)
+    emitters_list = URL(r"/transactionnel/v2/services/applications/virement/getComptesDebiteurs", EmittersListPage)
 
-    add_recipient = URL(r'/transactionnel/v2/services/applications/beneficiaires/updateBeneficiaire', AddRecipientPage)
+    add_recipient = URL(r"/transactionnel/v2/services/applications/beneficiaires/updateBeneficiaire", AddRecipientPage)
 
-    create_transfer = URL(r'/transactionnel/v2/services/applications/virement/confirmVirement', TransferPage)
-    validate_transfer = URL(r'/transactionnel/v2/services/applications/virement/validVirement', TransferPage)
+    create_transfer = URL(r"/transactionnel/v2/services/applications/virement/confirmVirement", TransferPage)
+    validate_transfer = URL(r"/transactionnel/v2/services/applications/virement/validVirement", TransferPage)
 
     __states__ = (
-        'auth_method', 'need_reload_state', 'authent_id', 'device_id',
-        'context', 'recipient_transfer_limit',
+        "auth_method",
+        "need_reload_state",
+        "authent_id",
+        "device_id",
+        "context",
+        "recipient_transfer_limit",
     )
 
     def __init__(self, accnum, config, *args, **kwargs):
         self.config = config
-        kwargs['username'] = self.config['login'].get()
+        kwargs["username"] = self.config["login"].get()
 
         # Bred only use first 8 char (even if the password is set to be bigger)
         # The js login form remove after 8th char. No comment.
-        kwargs['password'] = self.config['password'].get()[:8]
+        kwargs["password"] = self.config["password"].get()[:8]
 
         super(BredBrowser, self).__init__(config, *args, **kwargs)
 
@@ -121,42 +161,42 @@ class BredBrowser(TwoFactorBrowser):
         self.linebourse_tokens = {}
         dirname = self.responses_dirname
         if dirname:
-            dirname += '/bourse'
+            dirname += "/bourse"
         self.linebourse = self.LINEBOURSE_BROWSER(
-            'https://www.linebourse.fr',
+            "https://www.linebourse.fr",
             logger=self.logger,
             responses_dirname=dirname,
             proxy=self.PROXIES,
         )
 
         self.AUTHENTICATION_METHODS = {
-            'resume': self.handle_polling,  # validation in mobile app
-            'otp_sms': self.handle_otp_sms,  # OTP in SMS
-            'otp_app': self.handle_otp_app,  # OTP in mobile app
+            "resume": self.handle_polling,  # validation in mobile app
+            "otp_sms": self.handle_otp_sms,  # OTP in SMS
+            "otp_app": self.handle_otp_app,  # OTP in mobile app
         }
 
     def load_state(self, state):
         # Is the browser being reloaded for 2FA?
-        is_2fa = state.get('resume') or state.get('otp_sms') or state.get('otp_app')
+        is_2fa = state.get("resume") or state.get("otp_sms") or state.get("otp_app")
 
-        if state.get('need_reload_state') or state.get('device_id') or is_2fa:
-            state.pop('url', None)
+        if state.get("need_reload_state") or state.get("device_id") or is_2fa:
+            state.pop("url", None)
             super(BredBrowser, self).load_state(state)
             self.need_reload_state = None
 
     def init_login(self):
         if self.device_id:
             # will not raise 2FA if the one realized with this id is still valid
-            self.session.headers['x-trusted-device-id'] = self.device_id
+            self.session.headers["x-trusted-device-id"] = self.device_id
 
-        if 'hsess' not in self.session.cookies:
+        if "hsess" not in self.session.cookies:
             self.home.go()  # set session token
-            assert 'hsess' in self.session.cookies, "Session token not correctly set"
+            assert "hsess" in self.session.cookies, "Session token not correctly set"
 
         # hard-coded authentication payload
         data = {
-            'identifiant': self.username,
-            'password': self.password,
+            "identifiant": self.username,
+            "password": self.password,
         }
         self.login.go(data=data)
 
@@ -166,15 +206,15 @@ class BredBrowser(TwoFactorBrowser):
             msg = self.page.get_msg()
 
             # 20100: invalid login/password
-            if code == '20100':
+            if code == "20100":
                 raise BrowserIncorrectPassword(msg)
-            elif code == '20109':
+            elif code == "20109":
                 raise ActionNeeded(msg)
             # 20104 & 1000: unknown error during login
-            elif code in ('20104', '1000'):
+            elif code in ("20104", "1000"):
                 raise BrowserUnavailable(msg)
 
-            raise AssertionError('Error %s is not handled yet.' % code)
+            raise AssertionError("Error %s is not handled yet." % code)
 
         try:
             # It's an accounts page if SCA already done
@@ -183,65 +223,63 @@ class BredBrowser(TwoFactorBrowser):
         except ClientError as e:
             if e.response.status_code == 449:
                 self.check_interactive()
-                self.context = e.response.json()['content']
+                self.context = e.response.json()["content"]
                 self.trigger_connection_twofa()
             raise
 
     def trigger_connection_twofa(self):
         # Needed to record the device doing the SCA and keep it valid.
-        self.device_id = ''.join([str(random.randint(0, 9)) for _ in range(50)])  # Python2 compatible
+        self.device_id = "".join([str(random.randint(0, 9)) for _ in range(50)])  # Python2 compatible
         # self.device_id = ''.join(random.choices(string.digits, k=50))  # better but needs Python3
 
         self.auth_method = self.get_connection_twofa_method()
 
-        if self.auth_method == 'notification':
+        if self.auth_method == "notification":
             self.update_headers()
             data = {
-                'context': self.context['contextAppli'],  # 'accounts_access'
-                'type_auth': 'NOTIFICATION',
-                'type_phone': 'P',
+                "context": self.context["contextAppli"],  # 'accounts_access'
+                "type_auth": "NOTIFICATION",
+                "type_phone": "P",
             }
             self.init_authent.go(json=data)
             self.authent_id = self.page.get_authent_id()
-            if self.context.get('message'):
-                raise AppValidation(self.context['message'])
+            if self.context.get("message"):
+                raise AppValidation(self.context["message"])
 
             raise AppValidation("Veuillez valider l'accès sur votre application.")
 
-        elif self.auth_method == 'sms':
+        elif self.auth_method == "sms":
             self.update_headers()
             data = {
-                'context': self.context['context'],
-                'contextAppli': self.context['contextAppli'],
+                "context": self.context["context"],
+                "contextAppli": self.context["contextAppli"],
             }
             self.send_sms.go(json=data)
 
-            if self.context.get('message'):
+            if self.context.get("message"):
                 raise BrowserQuestion(
-                    Value('otp_sms', label=self.context['message']),
+                    Value("otp_sms", label=self.context["message"]),
                 )
 
             raise BrowserQuestion(
-                Value('otp_sms', label="Veuillez entrer le code reçu au %s" % self.context['liste']['numTel'])
+                Value("otp_sms", label="Veuillez entrer le code reçu au %s" % self.context["liste"]["numTel"])
             )
 
-        elif self.auth_method == 'otp':
-            if self.context.get('message'):
-                raise BrowserQuestion(
-                    Value('otp_app', label=self.context['message'])
-                )
+        elif self.auth_method == "otp":
+            if self.context.get("message"):
+                raise BrowserQuestion(Value("otp_app", label=self.context["message"]))
 
             raise BrowserQuestion(
-                Value('otp_app', label="Veuillez entrer le code reçu sur votre application."),
+                Value("otp_app", label="Veuillez entrer le code reçu sur votre application."),
             )
 
     def get_connection_twofa_method(self):
         # The order and tests are taken from the bred website code.
         # Keywords in scripts.js: showSMS showEasyOTP showOTP
-        methods = self.context['liste']
+        methods = self.context["liste"]
 
         # Overriding default order of tests with 'preferred_sca' configuration item
-        preferred_sca_value = self.config.get('preferred_sca')
+        preferred_sca_value = self.config.get("preferred_sca")
 
         # Some children don't have this mechanism
         if preferred_sca_value:
@@ -250,29 +288,29 @@ class BredBrowser(TwoFactorBrowser):
                 if methods.get(auth_method):
                     return auth_method
 
-        if methods.get('sms'):
-            return 'sms'
-        elif methods.get('notification') and methods.get('otp'):
-            return 'notification'
-        elif methods.get('otp'):
-            return 'otp'
+        if methods.get("sms"):
+            return "sms"
+        elif methods.get("notification") and methods.get("otp"):
+            return "notification"
+        elif methods.get("otp"):
+            return "otp"
 
-        message = self.context['message']
-        raise AuthMethodNotImplemented('Unhandled strong authentification method: %s' % message)
+        message = self.context["message"]
+        raise AuthMethodNotImplemented("Unhandled strong authentification method: %s" % message)
 
     def update_headers(self):
         timestamp = int(time.time() * 1000)
         if self.device_id:
-            self.session.headers['x-trusted-device-id'] = self.device_id
+            self.session.headers["x-trusted-device-id"] = self.device_id
         self.token.go(timestamp=timestamp)
-        self.session.headers['x-token-bred'] = self.page.get_content()
+        self.session.headers["x-token-bred"] = self.page.get_content()
 
     def handle_polling(self, enrol=True):
         for _ in range(60):  # 5' timeout duration on website
             self.update_headers()
             self.authent_result.go(
                 authent_id=self.authent_id,
-                context=self.context['contextAppli'],
+                context=self.context["contextAppli"],
                 json={},  # yes, needed
             )
 
@@ -281,23 +319,23 @@ class BredBrowser(TwoFactorBrowser):
                 # When the notification expires, we get a generic error message
                 # instead of a status like 'PENDING'
                 self.context = None
-                raise AppValidationExpired('La validation par application mobile a expiré.')
+                raise AppValidationExpired("La validation par application mobile a expiré.")
 
-            elif status == 'ABORTED':
+            elif status == "ABORTED":
                 self.context = None
                 raise AppValidationCancelled("La validation par application a été annulée par l'utilisateur.")
 
-            elif status == 'AUTHORISED':
+            elif status == "AUTHORISED":
                 self.context = None
                 if enrol:
                     self.enrol_device()
                 return
 
-            assert status == 'PENDING', "Unhandled app validation status : '%s'" % status
+            assert status == "PENDING", "Unhandled app validation status : '%s'" % status
             time.sleep(5)
 
         self.context = None
-        raise AppValidationExpired('La validation par application mobile a expiré.')
+        raise AppValidationExpired("La validation par application mobile a expiré.")
 
     def handle_otp_sms(self):
         self.validate_connection_otp_auth(self.otp_sms)
@@ -308,9 +346,9 @@ class BredBrowser(TwoFactorBrowser):
     def validate_connection_otp_auth(self, auth_value):
         self.update_headers()
         data = {
-            'context': self.context['context'],
-            'contextAppli': self.context['contextAppli'],
-            'otp': auth_value,
+            "context": self.context["context"],
+            "contextAppli": self.context["contextAppli"],
+            "otp": auth_value,
         }
         self.check_otp.go(
             auth_method=self.auth_method,
@@ -319,7 +357,7 @@ class BredBrowser(TwoFactorBrowser):
 
         error = self.page.get_error()
         if error:
-            raise BrowserIncorrectPassword('Error when validating OTP: %s' % error)
+            raise BrowserIncorrectPassword("Error when validating OTP: %s" % error)
 
         self.context = None
         self.enrol_device()
@@ -329,29 +367,29 @@ class BredBrowser(TwoFactorBrowser):
         # User will see a 'BI' entry on this list and can delete it on demand.
         self.update_headers()
 
-        device_name = 'Accès Budget-Insight pour agrégation'
-        device_name_value = self.config.get('device_name')
+        device_name = "Accès Budget-Insight pour agrégation"
+        device_name_value = self.config.get("device_name")
         if device_name_value:
             device_name = device_name_value.get()
 
         data = {
-            'uuid': self.device_id,  # Called an uuid but it's just a 50 digits long string.
-            'deviceName': device_name,  # clear message for user
-            'biometricEnabled': False,
-            'securedBiometricEnabled': False,
-            'notificationEnabled': False,
+            "uuid": self.device_id,  # Called an uuid but it's just a 50 digits long string.
+            "deviceName": device_name,  # clear message for user
+            "biometricEnabled": False,
+            "securedBiometricEnabled": False,
+            "notificationEnabled": False,
         }
         self.trusted_devices.go(json=data)
 
         error = self.page.get_error()
         if error:
-            raise BrowserIncorrectPassword('Error when enroling trusted device: %s' % error)
+            raise BrowserIncorrectPassword("Error when enroling trusted device: %s" % error)
 
     @need_login
     def get_universes(self):
         """Get universes (particulier, pro, etc)"""
         self.update_headers()
-        self.universe.go(headers={'Accept': 'application/json'})
+        self.universe.go(headers={"Accept": "application/json"})
 
         return self.page.get_universes()
 
@@ -360,12 +398,9 @@ class BredBrowser(TwoFactorBrowser):
             return
         self.move_universe.go(key=univers)
         self.update_headers()
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
         self.switch.go(
-            data=json.dumps({'all': 'false', 'univers': univers}),
+            data=json.dumps({"all": "false", "univers": univers}),
             headers=headers,
         )
         self.current_univers = univers
@@ -384,9 +419,9 @@ class BredBrowser(TwoFactorBrowser):
         # E entreprise
         # R pro
         # S pro+
-        if universe_key in ['P', 'M']:
+        if universe_key in ["P", "M"]:
             return AccountOwnerType.PRIVATE
-        elif universe_key in ['E', 'R', 'S']:
+        elif universe_key in ["E", "R", "S"]:
             return AccountOwnerType.ORGANIZATION
         else:
             self.logger.error("New universe to convert to owner_type: %s", universe_key)
@@ -409,7 +444,7 @@ class BredBrowser(TwoFactorBrowser):
                 account.owner_type = owner_type
                 # Accound id looks like 'bred_account_id.folder_id'
                 # We only want bred_account_id and we need to clean it to match it to linebourse IDs.
-                account_id = account.id.strip('0').split('.')[0]
+                account_id = account.id.strip("0").split(".")[0]
                 for linebourse_account in linebourse_accounts:
                     if account_id in linebourse_account:
                         account._is_in_linebourse = True
@@ -422,11 +457,9 @@ class BredBrowser(TwoFactorBrowser):
         for account in unique_accounts:
             if account.type not in [Account.TYPE_CARD, Account.TYPE_LIFE_INSURANCE]:
                 continue
-            account.parent = find_object(
-                unique_accounts, _number=account._parent_number, type=Account.TYPE_CHECKING
-            )
+            account.parent = find_object(unique_accounts, _number=account._parent_number, type=Account.TYPE_CHECKING)
 
-        return sorted(unique_accounts, key=operator.attrgetter('_univers'))
+        return sorted(unique_accounts, key=operator.attrgetter("_univers"))
 
     @need_login
     def get_linebourse_accounts(self, universe_key):
@@ -435,11 +468,10 @@ class BredBrowser(TwoFactorBrowser):
             self.linebourse_login_for_universe(universe_key)
         if universe_key in self.linebourse_urls:
             self.linebourse.location(
-                self.linebourse_urls[universe_key],
-                data={'SJRToken': self.linebourse_tokens[universe_key]}
+                self.linebourse_urls[universe_key], data={"SJRToken": self.linebourse_tokens[universe_key]}
             )
-            self.linebourse.session.headers['X-XSRF-TOKEN'] = self.linebourse.session.cookies.get('XSRF-TOKEN')
-            params = {'_': '{}'.format(int(time.time() * 1000))}
+            self.linebourse.session.headers["X-XSRF-TOKEN"] = self.linebourse.session.cookies.get("XSRF-TOKEN")
+            params = {"_": "{}".format(int(time.time() * 1000))}
             try:
                 self.linebourse.go_account_codes(params=params)
             except self.LINEBOURSE_BROWSER.LinebourseNoSpace:
@@ -470,10 +502,10 @@ class BredBrowser(TwoFactorBrowser):
         call_payload = {
             "account": account._number,
             "poste": account._nature,
-            "sousPoste": account._codeSousPoste or '00',
+            "sousPoste": account._codeSousPoste or "00",
             "devise": account.currency,
-            "fromDate": start_date.strftime('%Y-%m-%d'),
-            "toDate": end_date.strftime('%Y-%m-%d'),
+            "fromDate": start_date.strftime("%Y-%m-%d"),
+            "toDate": end_date.strftime("%Y-%m-%d"),
             "from": offset,
             "size": max_length,  # max length of transactions
             "search": "",
@@ -497,16 +529,23 @@ class BredBrowser(TwoFactorBrowser):
         successive_hist_transaction_counter = 0
 
         self._make_api_call(
-            account=account, start_date=start_date,
-            end_date=end_date, offset=0, max_length=max_length,
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            offset=0,
+            max_length=max_length,
         )
 
         max_transactions = self.page.get_max_transactions()
 
         for transaction in self.page.iter_history(
-            account=account, account_type=account.type,
-            today=today, start_date=start_date, end_date=end_date,
-            max_length=max_length, max_transactions=max_transactions,
+            account=account,
+            account_type=account.type,
+            today=today,
+            start_date=start_date,
+            end_date=end_date,
+            max_length=max_length,
+            max_transactions=max_transactions,
         ):
             if coming == transaction.coming:
                 successive_hist_transaction_counter = 0
@@ -519,7 +558,7 @@ class BredBrowser(TwoFactorBrowser):
                 # If we encounter more than 10 successive history transactions, we stop the iteration.
                 successive_hist_transaction_counter += 1
                 if successive_hist_transaction_counter > 10:
-                    self.logger.debug('stopping coming after %s', transaction)
+                    self.logger.debug("stopping coming after %s", transaction)
                     return
 
     @need_login
@@ -529,16 +568,16 @@ class BredBrowser(TwoFactorBrowser):
                 yield invest
 
         elif account.type in (Account.TYPE_PEA, Account.TYPE_MARKET):
-            if 'Portefeuille Titres' in account.label:
+            if "Portefeuille Titres" in account.label:
                 if account._is_in_linebourse:
                     self.move_to_universe(account._univers)
                     self.linebourse_login_for_universe(account._univers)
                     self.linebourse.location(
                         self.linebourse_urls[account._univers],
-                        data={'SJRToken': self.linebourse_tokens[account._univers]}
+                        data={"SJRToken": self.linebourse_tokens[account._univers]},
                     )
-                    self.linebourse.session.headers['X-XSRF-TOKEN'] = self.linebourse.session.cookies.get('XSRF-TOKEN')
-                    for investment in self.linebourse.iter_investments(account.id.strip('0').split('.')[0]):
+                    self.linebourse.session.headers["X-XSRF-TOKEN"] = self.linebourse.session.cookies.get("XSRF-TOKEN")
+                    for investment in self.linebourse.iter_investments(account.id.strip("0").split(".")[0]):
                         yield investment
                 else:
                     raise NotImplementedError()
@@ -554,16 +593,15 @@ class BredBrowser(TwoFactorBrowser):
         if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
             return
 
-        if 'Portefeuille Titres' in account.label:
+        if "Portefeuille Titres" in account.label:
             if account._is_in_linebourse:
                 self.move_to_universe(account._univers)
                 self.linebourse_login_for_universe(account._univers)
                 self.linebourse.location(
-                    self.linebourse_urls[account._univers],
-                    data={'SJRToken': self.linebourse_tokens[account._univers]}
+                    self.linebourse_urls[account._univers], data={"SJRToken": self.linebourse_tokens[account._univers]}
                 )
-                self.linebourse.session.headers['X-XSRF-TOKEN'] = self.linebourse.session.cookies.get('XSRF-TOKEN')
-                for order in self.linebourse.iter_market_orders(account.id.strip('0').split('.')[0]):
+                self.linebourse.session.headers["X-XSRF-TOKEN"] = self.linebourse.session.cookies.get("XSRF-TOKEN")
+                for order in self.linebourse.iter_market_orders(account.id.strip("0").split(".")[0]):
                     yield order
 
     @need_login
@@ -575,7 +613,7 @@ class BredBrowser(TwoFactorBrowser):
 
     @need_login
     def fill_account(self, account, fields):
-        if account.type == Account.TYPE_CHECKING and 'iban' in fields:
+        if account.type == Account.TYPE_CHECKING and "iban" in fields:
             self.iban.go(number=account._number)
             self.page.set_iban(account=account)
 
@@ -584,12 +622,14 @@ class BredBrowser(TwoFactorBrowser):
         self.move_to_universe(account._univers)
         self.update_headers()
         try:
-            self.emitters_list.go(json={
-                'typeVirement': 'C',
-            })
+            self.emitters_list.go(
+                json={
+                    "typeVirement": "C",
+                }
+            )
         except ClientError as e:
             if e.response.status_code == 403:
-                msg = e.response.json().get('erreur', {}).get('libelle', '')
+                msg = e.response.json().get("erreur", {}).get("libelle", "")
                 if msg == "Cette fonctionnalité n'est pas disponible avec votre compte.":
                     # Means the account cannot emit transfers
                     return
@@ -599,11 +639,13 @@ class BredBrowser(TwoFactorBrowser):
             return
 
         self.update_headers()
-        account_id = account.id.split('.')[0]
-        self.recipient_list.go(json={
-            'numeroCompteDebiteur': account_id,
-            'typeVirement': 'C',
-        })
+        account_id = account.id.split(".")[0]
+        self.recipient_list.go(
+            json={
+                "numeroCompteDebiteur": account_id,
+                "typeVirement": "C",
+            }
+        )
 
         for obj in self.page.iter_external_recipients():
             yield obj
@@ -613,45 +655,49 @@ class BredBrowser(TwoFactorBrowser):
                 yield obj
 
     def do_strong_authent_recipient(self, recipient):
-        self.list_authent.go(context=self.context['contextAppli'])
+        self.list_authent.go(context=self.context["contextAppli"])
         self.auth_method = self.page.get_handled_auth_methods()
 
         if not self.auth_method:
             raise AuthMethodNotImplemented()
 
-        self.need_reload_state = self.auth_method != 'password'
+        self.need_reload_state = self.auth_method != "password"
 
-        if self.auth_method == 'password':
+        if self.auth_method == "password":
             return self.validate_strong_authent_recipient(self.password)
-        elif self.auth_method == 'otp':
+        elif self.auth_method == "otp":
             raise AddRecipientStep(
                 recipient,
                 Value(
-                    'otp',
+                    "otp",
                     label="Veuillez générez un e-Code sur votre application BRED puis saisir cet e-Code ici",
                 ),
             )
-        elif self.auth_method == 'notification':
+        elif self.auth_method == "notification":
             self.update_headers()
-            self.init_authent.go(json={
-                'context': self.context['contextAppli'],
-                'type_auth': 'NOTIFICATION',
-                'type_phone': 'P',
-            })
+            self.init_authent.go(
+                json={
+                    "context": self.context["contextAppli"],
+                    "type_auth": "NOTIFICATION",
+                    "type_phone": "P",
+                }
+            )
             self.authent_id = self.page.get_authent_id()
             raise AppValidation(
                 resource=recipient,
-                message='Veuillez valider la notification sur votre application mobile BRED',
+                message="Veuillez valider la notification sur votre application mobile BRED",
             )
-        elif self.auth_method == 'sms':
+        elif self.auth_method == "sms":
             self.update_headers()
-            self.send_sms.go(json={
-                'contextAppli': self.context['contextAppli'],
-                'context': self.context['context'],
-            })
+            self.send_sms.go(
+                json={
+                    "contextAppli": self.context["contextAppli"],
+                    "context": self.context["context"],
+                }
+            )
             raise AddRecipientStep(
                 recipient,
-                Value('code', label='Veuillez saisir le code reçu par SMS'),
+                Value("code", label="Veuillez saisir le code reçu par SMS"),
             )
 
     def validate_strong_authent_recipient(self, auth_value):
@@ -659,9 +705,9 @@ class BredBrowser(TwoFactorBrowser):
         self.check_otp.go(
             auth_method=self.auth_method,
             json={
-                'contextAppli': self.context['contextAppli'],
-                'context': self.context['context'],
-                'otp': auth_value,
+                "contextAppli": self.context["contextAppli"],
+                "context": self.context["context"],
+                "otp": auth_value,
             },
         )
 
@@ -670,11 +716,11 @@ class BredBrowser(TwoFactorBrowser):
             raise AddRecipientBankError(message=error)
 
     def new_recipient(self, recipient, **params):
-        if 'otp' in params:
-            self.validate_strong_authent_recipient(params['otp'])
-        elif 'code' in params:
-            self.validate_strong_authent_recipient(params['code'])
-        elif 'resume' in params:
+        if "otp" in params:
+            self.validate_strong_authent_recipient(params["otp"])
+        elif "code" in params:
+            self.validate_strong_authent_recipient(params["code"])
+        elif "resume" in params:
             self.handle_polling(enrol=False)
 
         return self.init_new_recipient(recipient, **params)
@@ -691,11 +737,11 @@ class BredBrowser(TwoFactorBrowser):
             # on BRED Connect.
             # TODO: What if the transfer limit is more than 5000€?
             json_data = {
-                'nom': recipient.label,
-                'iban': recipient.iban,
-                'numCompte': '',
-                'plafond': str(int(self.recipient_transfer_limit or 5000)),
-                'typeDemande': 'A',
+                "nom": recipient.label,
+                "iban": recipient.iban,
+                "numCompte": "",
+                "plafond": str(int(self.recipient_transfer_limit or 5000)),
+                "typeDemande": "A",
             }
 
             try:
@@ -706,12 +752,12 @@ class BredBrowser(TwoFactorBrowser):
                     # Status code 449 means we need to do strong authentication
                     raise
 
-                self.context = e.response.json()['content']
+                self.context = e.response.json()["content"]
                 self.do_strong_authent_recipient(recipient)
 
                 # Password authentication do not raise error, so we need
                 # to re-execute the request here.
-                if self.auth_method == 'password':
+                if self.auth_method == "password":
                     self.update_headers()
                     self.add_recipient.go(json=json_data)
 
@@ -728,12 +774,12 @@ class BredBrowser(TwoFactorBrowser):
             break
         else:
             raise AssertionError(
-                'Could not find the recipient transfer limit!',
+                "Could not find the recipient transfer limit!",
             )
 
         error_code = self.page.get_error_code()
         # '3200' is a warning, but the recipient has been added successfully.
-        if error_code != '3200':
+        if error_code != "3200":
             error = self.page.get_error()
             if error:
                 raise AddRecipientBankError(message=error)
@@ -744,8 +790,8 @@ class BredBrowser(TwoFactorBrowser):
     def init_transfer(self, transfer, account, recipient, **params):
         self.move_to_universe(account._univers)
 
-        account_id = account.id.split('.')[0]
-        poste = account.id.split('.')[1]
+        account_id = account.id.split(".")[0]
+        poste = account.id.split(".")[1]
 
         amount = transfer.amount.quantize(Decimal(10) ** -2)
         if not amount % 1:
@@ -755,26 +801,26 @@ class BredBrowser(TwoFactorBrowser):
             amount = int(amount)
 
         json_data = {
-            'compteDebite': account_id,
-            'posteDebite': poste,
-            'deviseDebite': account.currency,
-            'deviseCredite': recipient.currency,
-            'dateEcheance': transfer.exec_date.strftime('%d/%m/%Y'),
-            'montant': str(amount),
-            'motif': transfer.label,
-            'virementListe': True,
-            'plafondBeneficiaire': '',
-            'nomBeneficiaire': recipient.label,
-            'checkBeneficiaire': False,
-            'instantPayment': False,
+            "compteDebite": account_id,
+            "posteDebite": poste,
+            "deviseDebite": account.currency,
+            "deviseCredite": recipient.currency,
+            "dateEcheance": transfer.exec_date.strftime("%d/%m/%Y"),
+            "montant": str(amount),
+            "motif": transfer.label,
+            "virementListe": True,
+            "plafondBeneficiaire": "",
+            "nomBeneficiaire": recipient.label,
+            "checkBeneficiaire": False,
+            "instantPayment": False,
         }
 
         if recipient.category == "Interne":
-            recipient_id_split = recipient.id.split('.')
-            json_data['compteCredite'] = recipient_id_split[0]
-            json_data['posteCredite'] = recipient_id_split[1]
+            recipient_id_split = recipient.id.split(".")
+            json_data["compteCredite"] = recipient_id_split[0]
+            json_data["posteCredite"] = recipient_id_split[1]
         else:
-            json_data['iban'] = recipient.iban
+            json_data["iban"] = recipient.iban
 
         self.update_headers()
         self.create_transfer.go(json=json_data)

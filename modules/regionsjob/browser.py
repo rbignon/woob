@@ -22,49 +22,58 @@ from woob.browser import URL, PagesBrowser
 from .pages import AdvertPage, LocationPage, SearchPage
 
 
-__all__ = ['RegionsjobBrowser']
+__all__ = ["RegionsjobBrowser"]
 
 
 class RegionsjobBrowser(PagesBrowser):
 
-    search_page = URL(r'emplois/recherche\.html\?.*', SearchPage)
-    advert_page = URL(r'emplois/(?P<_id>.*)\.html', AdvertPage)
-    location_page = URL(r'search/getloc\?term=(?P<place>.*)', LocationPage)
+    search_page = URL(r"emplois/recherche\.html\?.*", SearchPage)
+    advert_page = URL(r"emplois/(?P<_id>.*)\.html", AdvertPage)
+    location_page = URL(r"search/getloc\?term=(?P<place>.*)", LocationPage)
 
     def __init__(self, website, *args, **kwargs):
-        self.BASEURL = 'https://%s/' % website
+        self.BASEURL = "https://%s/" % website
         PagesBrowser.__init__(self, *args, **kwargs)
 
-    def search_job(self, pattern='', fonction='', secteur='', contract='',
-                   experience='', qualification='', enterprise_type='', place=''):
+    def search_job(
+        self,
+        pattern="",
+        fonction="",
+        secteur="",
+        contract="",
+        experience="",
+        qualification="",
+        enterprise_type="",
+        place="",
+    ):
 
-        params = {'k': pattern.encode('utf-8')}
+        params = {"k": pattern.encode("utf-8")}
 
         if fonction:
-            params['f'] = fonction
+            params["f"] = fonction
 
         if qualification:
-            params['q'] = qualification
+            params["q"] = qualification
 
         if contract:
-            params['c'] = contract
+            params["c"] = contract
 
         if experience:
-            params['e'] = experience
+            params["e"] = experience
 
         if secteur:
-            params['s'] = secteur
+            params["s"] = secteur
 
         if enterprise_type:
-            params['et'] = enterprise_type
+            params["et"] = enterprise_type
 
         if place:
             location = self.location_page.go(place=place).get_location()
-            params['l'] = location
+            params["l"] = location
 
         return self.search_page.go(params=params).iter_job_adverts(domain=self.BASEURL)
 
     def get_job_advert(self, _id, advert):
-        splitted_id = _id.split('#')
-        self.BASEURL = 'https://www.%s.com/' % splitted_id[0]
+        splitted_id = _id.split("#")
+        self.BASEURL = "https://www.%s.com/" % splitted_id[0]
         return self.advert_page.go(_id=splitted_id[1]).get_job_advert(obj=advert)

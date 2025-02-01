@@ -25,31 +25,36 @@ from .browser import SogecarteTitulaireBrowser
 from .ent_browser import SogecarteEntrepriseBrowser
 
 
-__all__ = ['SogecartenetModule']
+__all__ = ["SogecartenetModule"]
 
 
 class SogecartenetModule(Module, CapBank):
-    NAME = 'sogecartenet'
-    DESCRIPTION = 'Sogecarte Net'
-    MAINTAINER = 'Guillaume Risbourg'
-    EMAIL = 'guillaume.risbourg@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "sogecartenet"
+    DESCRIPTION = "Sogecarte Net"
+    MAINTAINER = "Guillaume Risbourg"
+    EMAIL = "guillaume.risbourg@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        Value('website', label="Type d'accès", default='titulaire', choices={
-            'titulaire': 'Accès Titulaire de carte Affaires',
-            'entreprise': 'Accès Administrateur Entreprise',
-        }),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        Value(
+            "website",
+            label="Type d'accès",
+            default="titulaire",
+            choices={
+                "titulaire": "Accès Titulaire de carte Affaires",
+                "entreprise": "Accès Administrateur Entreprise",
+            },
+        ),
     )
 
     def create_default_browser(self):
         browsers = {
-            'titulaire': SogecarteTitulaireBrowser,
-            'entreprise': SogecarteEntrepriseBrowser,
+            "titulaire": SogecarteTitulaireBrowser,
+            "entreprise": SogecarteEntrepriseBrowser,
         }
-        self.BROWSER = browsers[self.config['website'].get()]
+        self.BROWSER = browsers[self.config["website"].get()]
         return self.create_browser(self.config)
 
     def iter_accounts(self):

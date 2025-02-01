@@ -27,25 +27,34 @@ from woob.capabilities.bank.transfer import TransferStep
 from woob.tools.value import Value
 
 from .pages import (
-    AccountsPage, BankDetailsPage, BeneficiariesPage, ConfirmTransferPage, LoginPage, RefreshTokenPage,
-    TransactionsPage, TransferPage,
+    AccountsPage,
+    BankDetailsPage,
+    BeneficiariesPage,
+    ConfirmTransferPage,
+    LoginPage,
+    RefreshTokenPage,
+    TransactionsPage,
+    TransferPage,
 )
 
 
 def need_login(func):
     @wraps(func)
     def inner(browser, *args, **kwargs):
-        if (not hasattr(browser, 'logged') or (hasattr(browser, 'logged') and not browser.logged)) and \
-                (not hasattr(browser, 'page') or browser.page is None or not browser.page.logged):
+        if (not hasattr(browser, "logged") or (hasattr(browser, "logged") and not browser.logged)) and (
+            not hasattr(browser, "page") or browser.page is None or not browser.page.logged
+        ):
             try:
                 browser.do_login()
             except ClientError as err:
                 response = err.response
                 # If we've tried to use an expired refresh_token
-                if all([
-                    "invalid_token" in response.headers.get('WWW-Authenticate', ''),
-                    "expired" in response.headers.get('WWW-Authenticate', ''),
-                ]):
+                if all(
+                    [
+                        "invalid_token" in response.headers.get("WWW-Authenticate", ""),
+                        "expired" in response.headers.get("WWW-Authenticate", ""),
+                    ]
+                ):
                     browser.logger.debug("Refresh token was no longer valid. Starting login all over.")
                     browser.refresh_token = None
                     browser.access_token = None
@@ -54,39 +63,38 @@ def need_login(func):
                 else:
                     raise
         return func(browser, *args, **kwargs)
+
     return inner
 
 
 class HeliosBrowser(OAuth2Mixin, LoginBrowser):
-    BASEURL = 'https://api.heliosbank.io'
+    BASEURL = "https://api.heliosbank.io"
 
-    login = URL(r'/api/v1/login', LoginPage)
-    accounts = URL(r'/api/v1/accounts/balance', AccountsPage)
-    history = URL(r'/api/v4/accounts/transactions', TransactionsPage)  # Yep, v4
-    bank_details = URL(r'/api/v1/accounts/bank_details', BankDetailsPage)
+    login = URL(r"/api/v1/login", LoginPage)
+    accounts = URL(r"/api/v1/accounts/balance", AccountsPage)
+    history = URL(r"/api/v4/accounts/transactions", TransactionsPage)  # Yep, v4
+    bank_details = URL(r"/api/v1/accounts/bank_details", BankDetailsPage)
     # GET /beneficiaries return all recipients
     # POST /beneficiaries allow to add a recipient
-    beneficiaries = URL(r'/api/v1/beneficiaries', BeneficiariesPage)
-    transfer = URL(r'/api/v1/payments/transfer', TransferPage)
-    confirm_transfer = URL(r'/api/v1/payments/transfer/(?P<transfer_id>\w{35})/confirm', ConfirmTransferPage)
+    beneficiaries = URL(r"/api/v1/beneficiaries", BeneficiariesPage)
+    transfer = URL(r"/api/v1/payments/transfer", TransferPage)
+    confirm_transfer = URL(r"/api/v1/payments/transfer/(?P<transfer_id>\w{35})/confirm", ConfirmTransferPage)
 
-    refresh = URL(r'/api/v1/refresh', RefreshTokenPage)
+    refresh = URL(r"/api/v1/refresh", RefreshTokenPage)
 
-    token_type = 'Bearer'
+    token_type = "Bearer"
 
-    def __init__(
-        self, username, password, *args, **kwargs
-    ):
-        super(HeliosBrowser, self).__init__(
-            username, password, *args, **kwargs
-        )
-        self.session.headers['X-Type-Device'] = 'WEB'  # Mandatory
+    def __init__(self, username, password, *args, **kwargs):
+        super(HeliosBrowser, self).__init__(username, password, *args, **kwargs)
+        self.session.headers["X-Type-Device"] = "WEB"  # Mandatory
 
         self.transfer_id = None
         self.transfer_type = None
 
         self.__states__ += (
-            'access_token_expire', 'transfer_id', 'transfer_type',
+            "access_token_expire",
+            "transfer_id",
+            "transfer_type",
         )
 
     def do_login(self):
@@ -97,15 +105,15 @@ class HeliosBrowser(OAuth2Mixin, LoginBrowser):
         self.logger.debug("Don't have any refresh token. Starting a new login.")
         self.login.go(
             json={
-                'username': self.username,
-                'password': self.password,
+                "username": self.username,
+                "password": self.password,
             }
         )
         self.update_token()
 
     def use_refresh_token(self):
         self.logger.debug("Refreshing access token.")
-        self.refresh.go(json={'refreshToken': self.refresh_token})
+        self.refresh.go(json={"refreshToken": self.refresh_token})
         self.update_token()
 
     def update_token(self):
@@ -142,13 +150,15 @@ class HeliosBrowser(OAuth2Mixin, LoginBrowser):
 
     @need_login
     def new_recipient(self, recipient, **kwargs):
-        return self.beneficiaries.go(json={
-            'label': recipient.label,
-            'iban': recipient.iban,
-        })
+        return self.beneficiaries.go(
+            json={
+                "label": recipient.label,
+                "iban": recipient.iban,
+            }
+        )
 
     def has_transfer_in_progress(self, transfer, **kwargs):
-        if kwargs.get('otp_sms_transfer'):
+        if kwargs.get("otp_sms_transfer"):
             return True
 
     @need_login
@@ -165,26 +175,28 @@ class HeliosBrowser(OAuth2Mixin, LoginBrowser):
             year = transfer.exec_date.year
             month = transfer.exec_date.month
             day = transfer.exec_date.day
-            exec_date = date(year, month, day).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+            exec_date = date(year, month, day).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
 
-        self.transfer.go(json={
-            'amount': transfer.amount * 100,  # Need to multiply by 100
-            'description': transfer.label,
-            'executeAt': exec_date,
-            'recipientIban': transfer.recipient_id,
-            'recipientName': recipient.label,
-        })
+        self.transfer.go(
+            json={
+                "amount": transfer.amount * 100,  # Need to multiply by 100
+                "description": transfer.label,
+                "executeAt": exec_date,
+                "recipientIban": transfer.recipient_id,
+                "recipientName": recipient.label,
+            }
+        )
 
         status = self.page.get_status()
         self.transfer_id = self.page.get_transfer_id()
         self.transfer_type = self.page.get_transfer_type()
 
-        if status == 'CONFIRMATION_REQUIRED':
+        if status == "CONFIRMATION_REQUIRED":
             raise TransferStep(
                 transfer,
                 Value(
-                    'otp_sms_transfer',
-                    label='Veuillez entrer le code reçu par SMS',
+                    "otp_sms_transfer",
+                    label="Veuillez entrer le code reçu par SMS",
                 ),
             )
         raise AssertionError("Unhandled status after transfer: %s" % status)
@@ -196,8 +208,8 @@ class HeliosBrowser(OAuth2Mixin, LoginBrowser):
         self.confirm_transfer.go(
             transfer_id=self.transfer_id,
             json={
-                'authorizationToken': kwargs.get('otp_sms_transfer'),
-                'type': self.transfer_type,
+                "authorizationToken": kwargs.get("otp_sms_transfer"),
+                "type": self.transfer_type,
             },
         )
 

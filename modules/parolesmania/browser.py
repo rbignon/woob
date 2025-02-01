@@ -28,37 +28,32 @@ from woob.browser.url import URL
 from .pages import ArtistSongsPage, LyricsPage, SearchArtistPage, SearchSongPage
 
 
-__all__ = ['ParolesmaniaBrowser']
+__all__ = ["ParolesmaniaBrowser"]
 
 
 class ParolesmaniaBrowser(PagesBrowser):
     PROFILE = Firefox()
     TIMEOUT = 30
 
-    BASEURL = 'http://www.parolesmania.com/'
-    searchSong = URL(r'recherche\.php\?c=title&k=(?P<pattern>[^/]*).*',
-                 SearchSongPage)
-    searchArtist = URL(r'recherche\.php\?c=artist&k=(?P<pattern>[^/]*).*',
-                  SearchArtistPage)
-    songLyrics = URL(r'paroles_(?P<artistid>[^/]*)/paroles_(?P<songid>[^/]*)\.html',
-                  LyricsPage)
-    artistSongs = URL(r'paroles_(?P<artistid>[^/]*)\.html',
-                  ArtistSongsPage)
-
+    BASEURL = "http://www.parolesmania.com/"
+    searchSong = URL(r"recherche\.php\?c=title&k=(?P<pattern>[^/]*).*", SearchSongPage)
+    searchArtist = URL(r"recherche\.php\?c=artist&k=(?P<pattern>[^/]*).*", SearchArtistPage)
+    songLyrics = URL(r"paroles_(?P<artistid>[^/]*)/paroles_(?P<songid>[^/]*)\.html", LyricsPage)
+    artistSongs = URL(r"paroles_(?P<artistid>[^/]*)\.html", ArtistSongsPage)
 
     def iter_lyrics(self, criteria, pattern):
-        if criteria == 'artist':
+        if criteria == "artist":
             artist_ids = self.searchArtist.go(pattern=pattern).get_artist_ids()
             it = []
             # we just take the 3 first artists to avoid too many page loadings
             for aid in artist_ids[:3]:
                 it = itertools.chain(it, self.artistSongs.go(artistid=aid).iter_lyrics())
             return it
-        elif criteria == 'song':
+        elif criteria == "song":
             return self.searchSong.go(pattern=pattern).iter_lyrics()
 
     def get_lyrics(self, id):
-        ids = id.split('|')
+        ids = id.split("|")
         try:
             self.songLyrics.go(artistid=ids[0], songid=ids[1])
             songlyrics = self.page.get_lyrics()

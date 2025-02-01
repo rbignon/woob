@@ -23,34 +23,56 @@ from woob.tools.test import BackendTest
 
 
 class BieniciTest(BackendTest, HousingTest):
-    MODULE = 'bienici'
+    MODULE = "bienici"
 
     FIELDS_ALL_HOUSINGS_LIST = [
-        "id", "type", "advert_type", "house_type", "url", "title", "area",
-        "cost", "currency", "date", "location", "text", "utilities",
-        "rooms", "bedrooms", "photos"
+        "id",
+        "type",
+        "advert_type",
+        "house_type",
+        "url",
+        "title",
+        "area",
+        "cost",
+        "currency",
+        "date",
+        "location",
+        "text",
+        "utilities",
+        "rooms",
+        "bedrooms",
+        "photos",
     ]
 
-    FIELDS_ANY_HOUSINGS_LIST = [
-        "DPE", "GES"
-    ]
+    FIELDS_ANY_HOUSINGS_LIST = ["DPE", "GES"]
 
     FIELDS_ALL_SINGLE_HOUSING = [
-        "id", "url", "type", "advert_type", "house_type", "title", "area",
-        "cost", "currency", "date", "location", "text", "rooms", "bedrooms",
-        "photos", "utilities"
+        "id",
+        "url",
+        "type",
+        "advert_type",
+        "house_type",
+        "title",
+        "area",
+        "cost",
+        "currency",
+        "date",
+        "location",
+        "text",
+        "rooms",
+        "bedrooms",
+        "photos",
+        "utilities",
     ]
 
-    FIELDS_ANY_SINGLE_HOUSING = [
-        "DPE", "GES", "phone", "station"
-    ]
+    FIELDS_ANY_SINGLE_HOUSING = ["DPE", "GES", "phone", "station"]
 
     def test_bienici_sale(self):
         query = Query()
         query.area_min = 20
         query.type = POSTS_TYPES.SALE
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
         self.check_against_query(query)
@@ -62,7 +84,7 @@ class BieniciTest(BackendTest, HousingTest):
         query.cost_max = 1500
         query.type = POSTS_TYPES.RENT
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
         self.check_against_query(query)
@@ -75,7 +97,7 @@ class BieniciTest(BackendTest, HousingTest):
         query.type = POSTS_TYPES.FURNISHED_RENT
         query.house_types = [HOUSE_TYPES.APART]
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
         self.check_against_query(query)
@@ -84,7 +106,7 @@ class BieniciTest(BackendTest, HousingTest):
         query = Query()
         query.type = POSTS_TYPES.VIAGER
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
         self.check_against_query(query)

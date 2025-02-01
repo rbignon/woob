@@ -25,11 +25,11 @@ from woob_modules.abeilleassurances.browser import AbeilleAssurancesBrowser
 
 
 class AferBrowser(AbeilleAssurancesBrowser):
-    BASEURL = 'https://adherent.gie-afer.fr'
+    BASEURL = "https://adherent.gie-afer.fr"
 
     def __init__(self, *args, **kwargs):
         super(AferBrowser, self).__init__(*args, **kwargs)
-        self.subsite = 'espaceadherent'
+        self.subsite = "espaceadherent"
 
     def post_login_credentials(self):
         """
@@ -50,8 +50,8 @@ class AferBrowser(AbeilleAssurancesBrowser):
             if self.response.status_code != 302:
                 break
 
-            redirect_url = self.response.headers.get('location')
-            redirect_url = urlparse(redirect_url)._replace(scheme='https').geturl()
+            redirect_url = self.response.headers.get("location")
+            redirect_url = urlparse(redirect_url)._replace(scheme="https").geturl()
             try:
                 self.location(redirect_url, allow_redirects=False)
             except ClientError as e:

@@ -30,10 +30,11 @@ from woob.capabilities.contact import OpeningHours, OpeningRule, Place
 
 
 def parsetime(s):
-    return time(*map(int, s.split(':')))
+    return time(*map(int, s.split(":")))
+
 
 def parsedate(s):
-    return date(*map(int, s.split('-')))
+    return date(*map(int, s.split("-")))
 
 
 class ListPage(JsonPage):
@@ -47,25 +48,27 @@ class ListPage(JsonPage):
             return self.el
 
         def condition(self):
-            return 'ERR' not in self.el
+            return "ERR" not in self.el
 
         class item(ItemElement):
             klass = Place
 
-            obj_id = Dict('idequipement')
-            obj_name = Dict('name')
-            obj_address = Dict('details/address')
-            obj_postcode = Dict('details/zip_code')
-            obj_city = Dict('details/city')
-            obj_country = 'FR'
-            obj_phone = Regexp(CleanText(Dict('details/phone'), replace=[(' ', '')]), r'^0(.*)$', r'+33\1', default=None)
+            obj_id = Dict("idequipement")
+            obj_name = Dict("name")
+            obj_address = Dict("details/address")
+            obj_postcode = Dict("details/zip_code")
+            obj_city = Dict("details/city")
+            obj_country = "FR"
+            obj_phone = Regexp(
+                CleanText(Dict("details/phone"), replace=[(" ", "")]), r"^0(.*)$", r"+33\1", default=None
+            )
 
             def obj_opening(self):
-                if self.el['calendars'] == []:
+                if self.el["calendars"] == []:
                     # yes, sometimes it's a list
                     return NotAvailable
 
-                if self.el['calendars'].get('everyday'):
+                if self.el["calendars"].get("everyday"):
                     rule = OpeningRule()
                     rule.dates = rrule.rrule(rrule.DAILY)
                     rule.times = [(time(0, 0), time(23, 59, 59))]
@@ -76,13 +79,13 @@ class ListPage(JsonPage):
                     return res
 
                 rules = []
-                for day, hours in self.el['calendars'].items():
+                for day, hours in self.el["calendars"].items():
                     rule = OpeningRule()
                     rule.is_open = True
 
                     day = parsedate(day)
                     rule.dates = rrule.rrule(rrule.DAILY, count=1, dtstart=day)
-                    rule.times = [(parsetime(t[0]), parsetime(t[1])) for t in hours if t[0] != 'closed']
+                    rule.times = [(parsetime(t[0]), parsetime(t[1])) for t in hours if t[0] != "closed"]
                     rule.is_open = True
 
                     if rule.times:

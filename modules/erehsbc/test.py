@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class ErehsbcTest(BackendTest):
-    MODULE = 'erehsbc'
+    MODULE = "erehsbc"
 
     def test_bank(self):
         l = list(self.backend.iter_accounts())

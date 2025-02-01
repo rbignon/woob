@@ -21,4 +21,4 @@
 from .module import CmsoModule
 
 
-__all__ = ['CmsoModule']
+__all__ = ["CmsoModule"]

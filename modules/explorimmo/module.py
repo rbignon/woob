@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import ExplorimmoBrowser
 
 
-__all__ = ['ExplorimmoModule']
+__all__ = ["ExplorimmoModule"]
 
 
 class ExplorimmoModule(Module, CapHousing):
-    NAME = 'explorimmo'
-    DESCRIPTION = u'explorimmo website'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "explorimmo"
+    DESCRIPTION = "explorimmo website"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = ExplorimmoBrowser
 
@@ -50,20 +50,26 @@ class ExplorimmoModule(Module, CapHousing):
         return self.browser.get_cities(pattern)
 
     def search_housings(self, query):
-        cities = ['%s' % c.id for c in query.cities if c.backend == self.name]
+        cities = ["%s" % c.id for c in query.cities if c.backend == self.name]
         if len(cities) == 0:
             return list()
 
-        return self.browser.search_housings(query.type, cities, query.nb_rooms,
-                                            query.area_min, query.area_max,
-                                            query.cost_min, query.cost_max,
-                                            query.house_types,
-                                            query.advert_types)
+        return self.browser.search_housings(
+            query.type,
+            cities,
+            query.nb_rooms,
+            query.area_min,
+            query.area_max,
+            query.cost_min,
+            query.cost_max,
+            query.house_types,
+            query.advert_types,
+        )
 
     def fill_housing(self, housing, fields):
-        if 'phone' in fields:
+        if "phone" in fields:
             housing.phone = self.browser.get_phone(housing.id)
-            fields.remove('phone')
+            fields.remove("phone")
 
         if len(fields) > 0:
             self.browser.get_housing(housing.id, housing)
@@ -71,10 +77,11 @@ class ExplorimmoModule(Module, CapHousing):
         return housing
 
     def fill_photo(self, photo, fields):
-        if 'data' in fields and photo.url and not photo.data:
+        if "data" in fields and photo.url and not photo.data:
             photo.data = self.browser.open(photo.url).content
         return photo
 
-    OBJECTS = {Housing: fill_housing,
-               HousingPhoto: fill_photo,
-               }
+    OBJECTS = {
+        Housing: fill_housing,
+        HousingPhoto: fill_photo,
+    }

@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import PagesjaunesBrowser
 
 
-__all__ = ['PagesjaunesModule']
+__all__ = ["PagesjaunesModule"]
 
 
 class PagesjaunesModule(Module, CapDirectory):
-    NAME = 'pagesjaunes'
-    DESCRIPTION = 'Pages Jaunes'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "pagesjaunes"
+    DESCRIPTION = "Pages Jaunes"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = PagesjaunesBrowser
 
@@ -41,7 +41,7 @@ class PagesjaunesModule(Module, CapDirectory):
         return self.browser.search_contacts(query)
 
     def fill_contact(self, obj, fields):
-        if 'opening' in fields:
+        if "opening" in fields:
             self.browser.fill_hours(obj)
 
     OBJECTS = {

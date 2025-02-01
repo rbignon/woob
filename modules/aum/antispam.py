@@ -22,51 +22,63 @@ import re
 
 class AntiSpam(object):
     def check_thread(self, thread):
-        resume = thread['title']
+        resume = thread["title"]
 
         # Check if there is an email address in the offer.
-        if re.match(r'^[\w\d\.\-_]+@[\w\d\.]+ vous offre la pos', resume):
+        if re.match(r"^[\w\d\.\-_]+@[\w\d\.]+ vous offre la pos", resume):
             return False
-        if thread['who']['pseudo'] == 'Ekaterina':
+        if thread["who"]["pseudo"] == "Ekaterina":
             return False
 
         return True
 
     def check_profile(self, profile):
         # The name of profile is in form #123456789
-        if profile['pseudo'] == '':
+        if profile["pseudo"] == "":
             return False
-        if profile['announce'].startswith('salut! je te donne mon msn'):
+        if profile["announce"].startswith("salut! je te donne mon msn"):
             return False
-        if profile['shopping_list'].startswith('cam to cam'):
+        if profile["shopping_list"].startswith("cam to cam"):
             return False
-        if profile['shopping_list'].startswith('je suis une femme tres tres belle et je recherche un homme qui aime le sexe'):
+        if profile["shopping_list"].startswith(
+            "je suis une femme tres tres belle et je recherche un homme qui aime le sexe"
+        ):
             return False
-        if profile['shopping_list'].endswith('mmmmmmmmmmmmmmmm'):
+        if profile["shopping_list"].endswith("mmmmmmmmmmmmmmmm"):
             return False
         return True
 
         # ipaddr is not available anymore.
-        for ipaddr in (profile['last_ip'], profile['first_ip']):
-            if ipaddr.startswith('41.202.'):
+        for ipaddr in (profile["last_ip"], profile["first_ip"]):
+            if ipaddr.startswith("41.202."):
                 return False
-            if ipaddr.startswith('41.250.'):
+            if ipaddr.startswith("41.250."):
                 return False
-            if ipaddr.startswith('41.251.'):
+            if ipaddr.startswith("41.251."):
                 return False
-            if ipaddr.startswith('41.141.'):
+            if ipaddr.startswith("41.141."):
                 return False
-            if ipaddr.startswith('194.177.'):
+            if ipaddr.startswith("194.177."):
                 return False
-            if ipaddr.startswith('41.85.'):
+            if ipaddr.startswith("41.85."):
                 return False
-            if ipaddr.startswith('41.86.'):
+            if ipaddr.startswith("41.86."):
                 return False
-            if ipaddr.startswith('196.47.'):
+            if ipaddr.startswith("196.47."):
                 return False
-            if re.match(r'105\.13\d.*', ipaddr):
+            if re.match(r"105\.13\d.*", ipaddr):
                 return False
-            if ipaddr in ('62.157.186.18', '198.36.222.8', '212.234.67.61', '203.193.158.210', '41.189.34.180', '41.66.12.36', '196.47.137.21', '213.136.125.122', '41.191.87.188'):
+            if ipaddr in (
+                "62.157.186.18",
+                "198.36.222.8",
+                "212.234.67.61",
+                "203.193.158.210",
+                "41.189.34.180",
+                "41.66.12.36",
+                "196.47.137.21",
+                "213.136.125.122",
+                "41.191.87.188",
+            ):
                 return False
         return True
 
@@ -80,56 +92,56 @@ class AntiSpam(object):
         return True
 
         # ipaddr is not available anymore.
-        first_ip = contact.profile['info']['IPaddr'].value.split(' ')[0]
-        last_ip = contact.profile['info']['IPaddr'].value.rstrip(')')
+        first_ip = contact.profile["info"]["IPaddr"].value.split(" ")[0]
+        last_ip = contact.profile["info"]["IPaddr"].value.rstrip(")")
         for ipaddr in (first_ip, last_ip):
-            if ipaddr.endswith('.afnet.net'):
+            if ipaddr.endswith(".afnet.net"):
                 return False
-            if ipaddr.endswith('.iam.net.ma'):
+            if ipaddr.endswith(".iam.net.ma"):
                 return False
-            if ipaddr.endswith('.amsterdam.ananoos.net'):
+            if ipaddr.endswith(".amsterdam.ananoos.net"):
                 return False
-            if ipaddr.endswith('.tedata.net'):
+            if ipaddr.endswith(".tedata.net"):
                 return False
-            if ipaddr.endswith('kupo.fr'):
+            if ipaddr.endswith("kupo.fr"):
                 return False
-            if ipaddr.endswith('.static.virginmedia.com'):
+            if ipaddr.endswith(".static.virginmedia.com"):
                 return False
-            if ipaddr.endswith('frozenway.com'):
+            if ipaddr.endswith("frozenway.com"):
                 return False
-            if ipaddr.endswith('.rev.bgtn.net'):
+            if ipaddr.endswith(".rev.bgtn.net"):
                 return False
-            if ipaddr.endswith('real-vpn.com'):
+            if ipaddr.endswith("real-vpn.com"):
                 return False
-            if ipaddr.endswith('.nl.ipodah.net'):
+            if ipaddr.endswith(".nl.ipodah.net"):
                 return False
-            if ipaddr.endswith('.wanamaroc.com'):
+            if ipaddr.endswith(".wanamaroc.com"):
                 return False
-            if ipaddr.endswith('.ukservers.com'):
+            if ipaddr.endswith(".ukservers.com"):
                 return False
-            if ipaddr.endswith('.startdedicated.com'):
+            if ipaddr.endswith(".startdedicated.com"):
                 return False
-            if ipaddr.endswith('.clients.your-server.de'):
+            if ipaddr.endswith(".clients.your-server.de"):
                 return False
-            if ipaddr.endswith('.cba.embratel.net.br'):
+            if ipaddr.endswith(".cba.embratel.net.br"):
                 return False
-            if ipaddr.endswith('.idstelcom.com'):
+            if ipaddr.endswith(".idstelcom.com"):
                 return False
-            if ipaddr.endswith('proxy.chg-support.com'):
+            if ipaddr.endswith("proxy.chg-support.com"):
                 return False
-            if ipaddr.endswith('.sprintsvc.net'):
+            if ipaddr.endswith(".sprintsvc.net"):
                 return False
-            if ipaddr.endswith('.relakks.com'):
+            if ipaddr.endswith(".relakks.com"):
                 return False
         return True
 
     def check_mail(self, mail):
         # Spambot with a long first-message.
-        if mail['message'] is None:
+        if mail["message"] is None:
             return True
 
-        if mail['message'].find('Je veux que vous m\'ayez ecrit directement sur le mon e-mail') >= 0:
+        if mail["message"].find("Je veux que vous m'ayez ecrit directement sur le mon e-mail") >= 0:
             return False
-        if mail['message'].find('ilusa12010@live.fr') >= 0:
+        if mail["message"].find("ilusa12010@live.fr") >= 0:
             return False
         return True

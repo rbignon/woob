@@ -37,62 +37,50 @@ CRITICAL_AND_WORK = -5.0
 class MeteoPage(HTMLPage):
     @method
     class fetch_lines(ListElement):
-        item_xpath = u'//*[@class="lignes"]/div'
+        item_xpath = '//*[@class="lignes"]/div'
 
         class Line(ItemElement):
             klass = Gauge
 
-            obj_city = u"Paris"
-            obj_object = u"Current status"
-            obj_id = Attr(u'.', attr=u'id')
-            obj_name = Eval(
-                lambda x: (
-                    x
-                    .replace(u'ligne_', u'')
-                    .replace(u'_', u' ')
-                    .title()
-                    .replace(u'Rer', u'RER')
-                ),
-                obj_id
-            )
+            obj_city = "Paris"
+            obj_object = "Current status"
+            obj_id = Attr(".", attr="id")
+            obj_name = Eval(lambda x: (x.replace("ligne_", "").replace("_", " ").title().replace("Rer", "RER")), obj_id)
 
     @method
     class fetch_status(ListElement):
-        item_xpath = u'//div[@id="box"]'
+        item_xpath = '//div[@id="box"]'
 
         class Line(ItemElement):
             klass = GaugeMeasure
 
             def obj_level(self):
-                classes = Attr(
-                    u'//*[@class="lignes"]//div[@id="%s"]' % self.env[u'line'],
-                    attr='class'
-                )(self)
+                classes = Attr('//*[@class="lignes"]//div[@id="%s"]' % self.env["line"], attr="class")(self)
                 classes = classes.split()
-                if u"perturb_critique_trav" in classes:
+                if "perturb_critique_trav" in classes:
                     return CRITICAL_AND_WORK
-                elif u"perturb_critique" in classes:
+                elif "perturb_critique" in classes:
                     return CRITICAL
-                elif u"perturb_alerte_trav" in classes:
+                elif "perturb_alerte_trav" in classes:
                     return ALERT_AND_WORK
-                elif u"perturb_alerte" in classes:
+                elif "perturb_alerte" in classes:
                     return ALERT
-                elif u"perturb_normal_trav" in classes:
+                elif "perturb_normal_trav" in classes:
                     return NORMAL_AND_WORK
-                elif u"perturb_normal" in classes:
+                elif "perturb_normal" in classes:
                     return NORMAL
 
             def obj_alarm(self):
                 title = CleanText(
-                    u'//*[@class="lignes"]//div[@id="%s"]//div[@class="popin_hover_title"]' % self.env[u'line']
+                    '//*[@class="lignes"]//div[@id="%s"]//div[@class="popin_hover_title"]' % self.env["line"]
                 )(self)
                 details = CleanText(
-                    u'//*[@class="lignes"]//div[@id="%s"]//div[@class="popin_hover_text"]//span[1]' % self.env[u'line']
+                    '//*[@class="lignes"]//div[@id="%s"]//div[@class="popin_hover_text"]//span[1]' % self.env["line"]
                 )(self)
-                return u"%s: %s" % (title, details)
+                return "%s: %s" % (title, details)
 
             def obj_date(self):
-                time = CleanText(u'//span[@id="refresh_time"]')(self)
+                time = CleanText('//span[@id="refresh_time"]')(self)
                 time = [int(t) for t in time.split(":")]
                 now = datetime.datetime.now()
                 now.replace(hour=time[0], minute=time[1])

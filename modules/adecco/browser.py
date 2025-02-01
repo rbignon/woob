@@ -25,24 +25,25 @@ from woob.browser import URL, PagesBrowser
 from .pages import AdvertPage, AdvertsJsonPage, SearchPage
 
 
-__all__ = ['AdeccoBrowser']
+__all__ = ["AdeccoBrowser"]
 
 
 class AdeccoBrowser(PagesBrowser):
-    BASEURL = 'https://www.adecco.fr'
+    BASEURL = "https://www.adecco.fr"
     TIMEOUT = 30
 
-    search_page = URL(r'/resultats-offres-emploi/\?k=(?P<job>.*)&l=(?P<town>.*)&display=50',
-                      r'/resultats-offres-emploi/(?P<q>.*)/\?display=50',
-                      SearchPage)
-    json_page = URL('/AdeccoGroup.Global/api/Job/AsynchronousJobSearch/', AdvertsJsonPage)
-    advert_page = URL(r'/offres-d-emploi/\?ID=(?P<_id>.*)',
-                      '/offres-d-emploi/.*',
-                      AdvertPage)
+    search_page = URL(
+        r"/resultats-offres-emploi/\?k=(?P<job>.*)&l=(?P<town>.*)&display=50",
+        r"/resultats-offres-emploi/(?P<q>.*)/\?display=50",
+        SearchPage,
+    )
+    json_page = URL("/AdeccoGroup.Global/api/Job/AsynchronousJobSearch/", AdvertsJsonPage)
+    advert_page = URL(r"/offres-d-emploi/\?ID=(?P<_id>.*)", "/offres-d-emploi/.*", AdvertPage)
 
     def call_json(self, params, date_min=None):
-        self.session.headers.update({"Accept": "application/json, text/javascript, */*; q=0.01",
-                                     "X-Requested-With": "XMLHttpRequest"})
+        self.session.headers.update(
+            {"Accept": "application/json, text/javascript, */*; q=0.01", "X-Requested-With": "XMLHttpRequest"}
+        )
         return self.json_page.go(data=params).iter_job_adverts(data=params, date_min=date_min)
 
     def search_job(self, pattern=None):
@@ -50,23 +51,25 @@ class AdeccoBrowser(PagesBrowser):
             return self.advanced_search_job(job=pattern)
         return []
 
-    def advanced_search_job(self, publication_date=0, contract_type=None, conty=None, activity_domain=None,
-                            job='', town=''):
+    def advanced_search_job(
+        self, publication_date=0, contract_type=None, conty=None, activity_domain=None, job="", town=""
+    ):
 
-        params = self.search_page.go(job=quote_plus(job.encode('utf-8')),
-                                     town=quote_plus(town.encode('utf-8'))).get_post_params()
+        params = self.search_page.go(
+            job=quote_plus(job.encode("utf-8")), town=quote_plus(town.encode("utf-8"))
+        ).get_post_params()
 
         if contract_type:
-            self.page.url += '&employmenttype=%s' % contract_type
+            self.page.url += "&employmenttype=%s" % contract_type
 
         if conty:
-            self.page.url += '&countrysubdivisionfacet=%s' % conty
+            self.page.url += "&countrysubdivisionfacet=%s" % conty
 
         if activity_domain:
-            self.page.url += '&industryfacet=%s' % activity_domain
+            self.page.url += "&industryfacet=%s" % activity_domain
 
         date_min = date.today() - timedelta(days=publication_date) if publication_date > 0 else None
-        params['filterUrl'] = self.page.url
+        params["filterUrl"] = self.page.url
         return self.call_json(params, date_min=date_min)
 
     def get_job_advert(self, _id, advert):

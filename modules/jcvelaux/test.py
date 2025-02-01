@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest
 
 
 class VelibTest(BackendTest):
-    MODULE = 'jcvelaux'
+    MODULE = "jcvelaux"
 
     def test_velib(self):
         l = list(self.backend.iter_gauges())

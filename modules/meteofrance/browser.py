@@ -22,22 +22,23 @@ from woob.browser import URL, PagesBrowser
 from .pages import HomePage, SearchCitiesPage, WeatherPage
 
 
-__all__ = ['MeteofranceBrowser']
+__all__ = ["MeteofranceBrowser"]
 
 
 class MeteofranceBrowser(PagesBrowser):
-    BASEURL = 'https://meteofrance.com'
+    BASEURL = "https://meteofrance.com"
 
-    cities = URL(r'/search/all\?term=(?P<pattern>.*)',
-                 SearchCitiesPage)
-    weather = URL(r'https://rpcache-aa.meteofrance.com/internet2018client/2.0/forecast\?lat=(?P<lat>.*)&lon=(?P<lng>.*)&id=&instants=&day=2',
-                  WeatherPage)
-    home = URL('', HomePage)
+    cities = URL(r"/search/all\?term=(?P<pattern>.*)", SearchCitiesPage)
+    weather = URL(
+        r"https://rpcache-aa.meteofrance.com/internet2018client/2.0/forecast\?lat=(?P<lat>.*)&lon=(?P<lng>.*)&id=&instants=&day=2",
+        WeatherPage,
+    )
+    home = URL("", HomePage)
 
     def _fill_header(self):
         self.home.go()
-        mfessions = self.session.cookies.get('mfsession')
-        token = ''
+        mfessions = self.session.cookies.get("mfsession")
+        token = ""
         for c in mfessions:
             if c.isalpha():
                 t = 97 if c.islower() else 65
@@ -45,21 +46,21 @@ class MeteofranceBrowser(PagesBrowser):
             else:
                 token += c
 
-        self.session.headers['Authorization'] = 'Bearer %s' % token
-        self.session.headers['Sec-Fetch-Site'] = 'same-site'
-        self.session.headers['Sec-Fetch-Mode'] = 'cors'
+        self.session.headers["Authorization"] = "Bearer %s" % token
+        self.session.headers["Sec-Fetch-Site"] = "same-site"
+        self.session.headers["Sec-Fetch-Mode"] = "cors"
 
     def iter_city_search(self, pattern):
         return self.cities.go(pattern=pattern).iter_cities()
 
     def iter_forecast(self, city):
-        if not self.session.headers.get('Authorization', None):
+        if not self.session.headers.get("Authorization", None):
             self._fill_header()
 
         return self.weather.go(lng=city._lng, lat=city._lat).iter_forecast()
 
     def get_current(self, city):
-        if not self.session.headers.get('Authorization', None):
+        if not self.session.headers.get("Authorization", None):
             self._fill_header()
 
         return self.weather.go(lng=city._lng, lat=city._lat).get_current()

@@ -26,31 +26,32 @@ from woob.tools.value import Value
 from .browser import RedditBrowser
 
 
-__all__ = ['RedditModule']
+__all__ = ["RedditModule"]
 
 
 def register_resources_handler(d, *path):
     def decorator(func):
         d[path] = func
         return func
+
     return decorator
 
 
 class RedditModule(Module, CapImage, CapCollection, CapMessages):
-    NAME = 'reddit'
-    DESCRIPTION = u'reddit website'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "reddit"
+    DESCRIPTION = "reddit website"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        Value('subreddit', label='Name of the sub-reddit', regexp='[^/]+', default='pics'),
+        Value("subreddit", label="Name of the sub-reddit", regexp="[^/]+", default="pics"),
     )
 
     BROWSER = RedditBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['subreddit'].get())
+        return self.create_browser(self.config["subreddit"].get())
 
     def get_file(self, _id):
         raise NotImplementedError()
@@ -63,10 +64,10 @@ class RedditModule(Module, CapImage, CapCollection, CapMessages):
 
     def search_image(self, pattern, sortby=CapImage.SEARCH_RELEVANCE, nsfw=False):
         sorting = {
-            CapImage.SEARCH_RELEVANCE: 'relevance',
-            CapImage.SEARCH_RATING: 'top',
-            CapImage.SEARCH_VIEWS: 'top', # not implemented
-            CapImage.SEARCH_DATE: 'new',
+            CapImage.SEARCH_RELEVANCE: "relevance",
+            CapImage.SEARCH_RATING: "top",
+            CapImage.SEARCH_VIEWS: "top",  # not implemented
+            CapImage.SEARCH_DATE: "new",
         }
         sortby = sorting[sortby]
         return self.browser.search_images(pattern, sortby, nsfw)
@@ -88,17 +89,17 @@ class RedditModule(Module, CapImage, CapCollection, CapMessages):
     @register_resources_handler(RESOURCES)
     def iter_resources_root(self, objs):
         return [
-            Collection(['hot'], 'Hot threads'),
-            Collection(['new'], 'New threads'),
-            Collection(['rising'], 'Rising threads'),
-            Collection(['controversial'], 'Controversial threads'),
-            Collection(['top'], 'Top threads'),
+            Collection(["hot"], "Hot threads"),
+            Collection(["new"], "New threads"),
+            Collection(["rising"], "Rising threads"),
+            Collection(["controversial"], "Controversial threads"),
+            Collection(["top"], "Top threads"),
         ]
 
     @register_resources_handler(RESOURCES, None)
     def iter_resources_dir(self, objs, key):
-        if key == 'hot':
-            key = ''
+        if key == "hot":
+            key = ""
 
         if Thread in objs:
             return self.iter_threads(cat=key)
@@ -107,13 +108,13 @@ class RedditModule(Module, CapImage, CapCollection, CapMessages):
         return []
 
     def fill_data(self, obj, fields):
-        if 'thumbnail' in fields and not obj.thumbnail.data:
+        if "thumbnail" in fields and not obj.thumbnail.data:
             obj.thumbnail.data = self.browser.open(obj.thumbnail.url).content
-        if 'data' in fields:
+        if "data" in fields:
             obj.data = self.browser.open(obj.url).content
 
     def fill_thread(self, obj, fields):
-        if 'root' in fields:
+        if "root" in fields:
             self.browser.fill_thread(obj)
 
     OBJECTS = {

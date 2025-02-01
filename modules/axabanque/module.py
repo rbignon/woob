@@ -1,4 +1,3 @@
-
 # flake8: compatible
 
 # Copyright(C) 2013 Romain Bignon
@@ -21,7 +20,12 @@
 import re
 
 from woob.capabilities.bank import (
-    Account, AccountNotFound, CapBankTransfer, RecipientInvalidLabel, RecipientNotFound, TransferInvalidLabel,
+    Account,
+    AccountNotFound,
+    CapBankTransfer,
+    RecipientInvalidLabel,
+    RecipientNotFound,
+    TransferInvalidLabel,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import empty, find_object
@@ -35,28 +39,28 @@ from .browser import AXAAssuranceBrowser, AXABanqueBrowser
 from .proxy_browser import ProxyBrowser
 
 
-__all__ = ['AXABanqueModule']
+__all__ = ["AXABanqueModule"]
 
 
 class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapProfile):
-    NAME = 'axabanque'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DEPENDENCIES = ('allianzbanque',)
-    DESCRIPTION = 'AXA Banque'
-    LICENSE = 'LGPLv3+'
+    NAME = "axabanque"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DEPENDENCIES = ("allianzbanque",)
+    DESCRIPTION = "AXA Banque"
+    LICENSE = "LGPLv3+"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code', regexp=r'\S+'),
-        ValueTransient('code'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Code", regexp=r"\S+"),
+        ValueTransient("code"),
+        ValueTransient("request_information"),
     )
     BROWSER = ProxyBrowser
     accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.OTHER)
 
     def create_default_browser(self):
-        login = self.config['login'].get()
+        login = self.config["login"].get()
         if login.isdigit():
             self.BROWSER = ProxyBrowser
         else:
@@ -64,7 +68,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
         return self.create_browser(
             self.config,
             login,
-            self.config['password'].get(),
+            self.config["password"].get(),
         )
 
     def iter_accounts(self):
@@ -80,7 +84,9 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
         return self.browser.iter_coming(account)
 
     def iter_transfer_recipients(self, origin_account):
-        if not isinstance(self.browser, AXABanqueBrowser):  # AxaAssuranceBrowser and AxaBourseBrowser can't have recipients
+        if not isinstance(
+            self.browser, AXABanqueBrowser
+        ):  # AxaAssuranceBrowser and AxaBourseBrowser can't have recipients
             raise NotImplementedError()
         if not isinstance(origin_account, Account):
             origin_account = self.get_account(origin_account)
@@ -105,7 +111,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
         if not transfer.label:
             raise TransferInvalidLabel()
 
-        self.logger.info('Going to do a new transfer')
+        self.logger.info("Going to do a new transfer")
 
         # origin account iban can be NotAvailable
         account = find_object(self.iter_accounts(), iban=transfer.account_iban)
@@ -114,15 +120,11 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
 
         if transfer.recipient_iban:
             recipient = find_object(
-                self.iter_transfer_recipients(account.id),
-                iban=transfer.recipient_iban,
-                error=RecipientNotFound
+                self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban, error=RecipientNotFound
             )
         else:
             recipient = find_object(
-                self.iter_transfer_recipients(account.id),
-                id=transfer.recipient_id,
-                error=RecipientNotFound
+                self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound
             )
 
         assert account.id.isdigit()
@@ -146,7 +148,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
         # Skip origin account iban check and force origin account iban
         if empty(new) or empty(old):
             self.logger.warning(
-                'Origin account iban check (%s) is not possible because iban is currently not available',
+                "Origin account iban check (%s) is not possible because iban is currently not available",
                 old,
             )
             return True
@@ -156,7 +158,7 @@ class AXABanqueModule(Module, CapBankWealth, CapBankTransfer, CapDocument, CapPr
         return self.browser.get_subscription_list()
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
+        subid = _id.rsplit("_", 1)[0]
         subscription = self.get_subscription(subid)
 
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)

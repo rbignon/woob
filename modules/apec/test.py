@@ -25,18 +25,18 @@ from woob.tools.value import Value
 
 
 class ApecTest(BackendTest):
-    MODULE = 'apec'
+    MODULE = "apec"
 
     def setUp(self):
         if not self.is_backend_configured():
-            self.backend.config['level'] = Value(value='101883')
-            self.backend.config['salaire'] = Value(value='')
-            self.backend.config['secteur'] = Value(value='')
-            self.backend.config['place'] = Value(value='089|62')
-            self.backend.config['contrat'] = Value(value='101888')
+            self.backend.config["level"] = Value(value="101883")
+            self.backend.config["salaire"] = Value(value="")
+            self.backend.config["secteur"] = Value(value="")
+            self.backend.config["place"] = Value(value="089|62")
+            self.backend.config["contrat"] = Value(value="101888")
 
     def test_apec_search(self):
-        l = list(itertools.islice(self.backend.search_job(u'informaticien'), 0, 50))
+        l = list(itertools.islice(self.backend.search_job("informaticien"), 0, 50))
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, None)
         self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))

@@ -27,37 +27,39 @@ from woob.exceptions import BrowserHTTPNotFound
 from .pages import NonogramListPage, NonogramPage
 
 
-__all__ = ['OnlineNonogramsBrowser']
+__all__ = ["OnlineNonogramsBrowser"]
 
 
 class OnlineNonogramsBrowser(PagesBrowser):
-    BASEURL = 'https://onlinenonograms.com/'
+    BASEURL = "https://onlinenonograms.com/"
 
-    nonogram_list = URL(r'index.php\?', NonogramListPage)
-    nonogram = URL(r'(?P<nonogram_id>\d+)$', NonogramPage)
+    nonogram_list = URL(r"index.php\?", NonogramListPage)
+    nonogram = URL(r"(?P<nonogram_id>\d+)$", NonogramPage)
 
     def iter_picrosses(self, solved_status):
         if solved_status == PicrossSolvedStatus.SOLVED:
             return
 
-        self.nonogram_list.go(params={
-            'place': 'catalog',
-            'kat': '0',
-            'color': '',
-            'size': '',
-            'star': '',
-            'filtr': 'all',
-            'sort': 'sortidd',  # descending identifier
-            'noset': '2',
-            'page': '1',
-        })
+        self.nonogram_list.go(
+            params={
+                "place": "catalog",
+                "kat": "0",
+                "color": "",
+                "size": "",
+                "star": "",
+                "filtr": "all",
+                "sort": "sortidd",  # descending identifier
+                "noset": "2",
+                "page": "1",
+            }
+        )
 
         for puzzle in self.page.iter_nonograms():
             self.nonogram.go(nonogram_id=puzzle.id)
             yield self.page.get_nonogram(obj=puzzle)
 
     def get_picross(self, id_):
-        if not re.fullmatch(r'\d+', id_):
+        if not re.fullmatch(r"\d+", id_):
             raise PicrossNotFound()
 
         try:

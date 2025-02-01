@@ -21,7 +21,7 @@ from .base import BaseObject, Capability, DecimalField, Field, StringField, User
 from .date import DateField
 
 
-__all__ = ['Gauge', 'GaugeSensor', 'GaugeMeasure', 'CapGauge', 'SensorNotFound']
+__all__ = ["Gauge", "GaugeSensor", "GaugeMeasure", "CapGauge", "SensorNotFound"]
 
 
 class SensorNotFound(UserError):
@@ -34,19 +34,21 @@ class Gauge(BaseObject):
     """
     Gauge class.
     """
-    name =       StringField('Name of gauge')
-    city =       StringField('City of the gauge')
-    object =     StringField('What is evaluate')  # For example, name of a river
-    sensors =    Field('List of sensors on the gauge', list)
+
+    name = StringField("Name of gauge")
+    city = StringField("City of the gauge")
+    object = StringField("What is evaluate")  # For example, name of a river
+    sensors = Field("List of sensors on the gauge", list)
 
 
 class GaugeMeasure(BaseObject):
     """
     Measure of a gauge sensor.
     """
-    level =     DecimalField('Level of measure')
-    date =      DateField('Date of measure')
-    alarm =     StringField('Alarm level')
+
+    level = DecimalField("Level of measure")
+    date = DateField("Date of measure")
+    alarm = StringField("Alarm level")
 
     def __repr__(self):
         if empty(self.level):
@@ -59,19 +61,20 @@ class GaugeSensor(BaseObject):
     """
     GaugeSensor class.
     """
-    name =      StringField('Name of the sensor')
-    unit =      StringField('Unit of values')
-    forecast =  StringField('Forecast')
-    location = Field('Address of the sensor', PostalAddress)
-    geo = Field('Geo address of the sensor', GeoCoordinates)
 
-    address = compat_field('location', 'full_address')
-    latitude = compat_field('geo', 'latitude')
-    longitude = compat_field('geo', 'longitude')
+    name = StringField("Name of the sensor")
+    unit = StringField("Unit of values")
+    forecast = StringField("Forecast")
+    location = Field("Address of the sensor", PostalAddress)
+    geo = Field("Geo address of the sensor", GeoCoordinates)
 
-    lastvalue = Field('Last value', GaugeMeasure)
-    history =   Field('Value history', list)  # lastvalue not included
-    gaugeid =   StringField('Id of the gauge')
+    address = compat_field("location", "full_address")
+    latitude = compat_field("geo", "latitude")
+    longitude = compat_field("geo", "longitude")
+
+    lastvalue = Field("Last value", GaugeMeasure)
+    history = Field("Value history", list)  # lastvalue not included
+    gaugeid = StringField("Id of the gauge")
 
     def __repr__(self):
         return "<GaugeSensor id=%s name=%s>" % (self.id, self.name)

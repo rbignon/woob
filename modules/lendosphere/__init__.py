@@ -21,4 +21,4 @@
 from .module import LendosphereModule
 
 
-__all__ = ['LendosphereModule']
+__all__ = ["LendosphereModule"]

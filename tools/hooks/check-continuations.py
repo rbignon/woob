@@ -6,8 +6,8 @@ import tokenize
 from pathlib import Path
 
 
-mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))
-Checker = mod['Checker']
+mod = runpy.run_path(str(Path(__file__).with_name("checkerlib.py")))
+Checker = mod["Checker"]
 
 
 class ContinuationChecker(Checker):
@@ -25,10 +25,11 @@ class ContinuationChecker(Checker):
             # if two adjacent tokens don't "touch" on the same line
             # and no NL/NEWLINE is involved, it's a line continuation!
             if previous_token and previous_token.end[0] != token.start[0]:
-                assert previous_token.line.endswith('\\\n')
+                assert previous_token.line.endswith("\\\n")
                 self.add_error(
                     "backslashed line-continuations are forbidden",
-                    line=token.start[0], col=token.start[1],
+                    line=token.start[0],
+                    col=token.start[1],
                 )
 
             previous_token = token
@@ -36,10 +37,10 @@ class ContinuationChecker(Checker):
         return self.ok
 
 
-args = mod['parser'].parse_args()
+args = mod["parser"].parse_args()
 
 exit_code = 0
-for file in mod['files_to_check'](args):
+for file in mod["files_to_check"](args):
     checker = ContinuationChecker(file)
     checker.parse_noqa()
     if not checker.check_lines():

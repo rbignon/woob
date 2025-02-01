@@ -20,7 +20,16 @@
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Currency, Date, DateTime, Env, Field, Format, Map,
+    CleanDecimal,
+    CleanText,
+    Coalesce,
+    Currency,
+    Date,
+    DateTime,
+    Env,
+    Field,
+    Format,
+    Map,
 )
 from woob.browser.pages import JsonPage, LoggedPage, RawPage
 from woob.capabilities.bank import Account
@@ -44,10 +53,10 @@ class ErrorPage(JsonPage):
         return super().build_doc(content)
 
     def get_error(self):
-        return Dict('error')(self.doc)
+        return Dict("error")(self.doc)
 
     def get_error_message(self):
-        return Dict('label', default=None)(self.doc)
+        return Dict("label", default=None)(self.doc)
 
 
 class LoginPage(RawPage):
@@ -56,25 +65,25 @@ class LoginPage(RawPage):
 
 class AuthenticatePage(JsonPage):
     def get_polling_id(self):
-        return Dict('returnId')(self.doc)
+        return Dict("returnId")(self.doc)
 
 
 class AuthenticateStatusPage(JsonPage):
     def get_polling_status(self):
-        return Dict('message', default=None)(self.doc)
+        return Dict("message", default=None)(self.doc)
 
 
 class AuthenticateCheckPage(JsonPage):
     def get_next_step(self):
-        return Dict('nextStep')(self.doc)
+        return Dict("nextStep")(self.doc)
 
 
 class PublicPropertiesPage(JsonPage):
     def get_captcha_key(self):
-        return self.doc['commonUrl']['google.captcha.v2.site.key.front']
+        return self.doc["commonUrl"]["google.captcha.v2.site.key.front"]
 
     def get_redirect_url(self):
-        return self.doc['commonUrl']['marketpay.cemacarteRedirection']
+        return self.doc["commonUrl"]["marketpay.cemacarteRedirection"]
 
 
 class HomePage(LoggedPage, RawPage):
@@ -86,59 +95,61 @@ class ProfilePage(JsonPage):
     class get_profile(ItemElement):
         klass = Person
 
-        obj_id = CleanText(Dict('customer/externalId'))
+        obj_id = CleanText(Dict("customer/externalId"))
 
-        obj_firstname = CleanText(Dict('customer/firstName'))
-        obj_lastname = CleanText(Dict('customer/lastName'))
-        obj_maiden_name = CleanText(Dict('personView/maidenName'))
-        obj_birth_date = Date(CleanText(Dict('personView/birthDate')))
-        obj_nationality = CleanText(Dict('personView/nationalityName'))
+        obj_firstname = CleanText(Dict("customer/firstName"))
+        obj_lastname = CleanText(Dict("customer/lastName"))
+        obj_maiden_name = CleanText(Dict("personView/maidenName"))
+        obj_birth_date = Date(CleanText(Dict("personView/birthDate")))
+        obj_nationality = CleanText(Dict("personView/nationalityName"))
         obj_gender = Map(
-            CleanText(Dict('customer/salutation')),
-            {'MISTER': 'Male', 'MISS': 'Female'},
+            CleanText(Dict("customer/salutation")),
+            {"MISTER": "Male", "MISS": "Female"},
             default=NotAvailable,
         )
 
-        obj_email = CleanText(Dict('personView/email'))  # jea*.***@***.fr
-        obj_phone = CleanText(Dict('personView/mobilePhone'))
+        obj_email = CleanText(Dict("personView/email"))  # jea*.***@***.fr
+        obj_phone = CleanText(Dict("personView/mobilePhone"))
 
-        obj_job = CleanText(Dict('personView/occupation'))
-        obj_job_start_date = Date(CleanText(
-            Dict('personView/employmentContractStartDate'),
-        ))
+        obj_job = CleanText(Dict("personView/occupation"))
+        obj_job_start_date = Date(
+            CleanText(
+                Dict("personView/employmentContractStartDate"),
+            )
+        )
 
 
 ACCOUNT_TYPES = {
-    'CHECKING_ACCOUNT': Account.TYPE_CHECKING,
+    "CHECKING_ACCOUNT": Account.TYPE_CHECKING,
 }
 
 
 class AccountsPage(JsonPage):
     @method
     class iter_accounts(DictElement):
-        item_xpath = 'current-account'
+        item_xpath = "current-account"
 
         class item(ItemElement):
             klass = Account
 
-            obj__equipmentId = Dict('equipmentId')
-            obj_id = obj_number = Dict('accountNumber')
-            obj_label = Dict('standardLabel')
-            obj_balance = CleanDecimal(Dict('availableBalance'))
-            obj_currency = Currency(Dict('currency'))
+            obj__equipmentId = Dict("equipmentId")
+            obj_id = obj_number = Dict("accountNumber")
+            obj_label = Dict("standardLabel")
+            obj_balance = CleanDecimal(Dict("availableBalance"))
+            obj_currency = Currency(Dict("currency"))
 
             obj_type = Map(
-                Dict('accountType'),
+                Dict("accountType"),
                 ACCOUNT_TYPES,
                 Account.TYPE_UNKNOWN,
             )
 
 
 TRANSACTION_TYPES = {
-    'VIRREC': FrenchTransaction.TYPE_TRANSFER,
-    'VIREMI': FrenchTransaction.TYPE_TRANSFER,
-    'PAICBP': FrenchTransaction.TYPE_CARD,
-    'FACSER': FrenchTransaction.TYPE_BANK,
+    "VIRREC": FrenchTransaction.TYPE_TRANSFER,
+    "VIREMI": FrenchTransaction.TYPE_TRANSFER,
+    "PAICBP": FrenchTransaction.TYPE_CARD,
+    "FACSER": FrenchTransaction.TYPE_BANK,
 }
 
 
@@ -149,32 +160,32 @@ class OperationsPage(JsonPage):
             # Operations in this document are organized by date, then
             # local index. We ought to iterate over these.
 
-            for per_date in self.el['accountOperations'].values():
+            for per_date in self.el["accountOperations"].values():
                 for transaction_element in per_date:
                     yield transaction_element
 
         class item(ItemElement):
             klass = FrenchTransaction
 
-            obj_date = Date(Dict('date'))
-            obj_amount = CleanDecimal(Dict('transactionAmount'))
-            obj_label = Dict('remittanceInformation')
+            obj_date = Date(Dict("date"))
+            obj_amount = CleanDecimal(Dict("transactionAmount"))
+            obj_label = Dict("remittanceInformation")
 
             def obj_rdate(self):
-                return Date(Dict('operationDate', default=Dict('date')(self)))(self)
+                return Date(Dict("operationDate", default=Dict("date")(self)))(self)
 
             def obj_raw(self):
-                raw = Dict('lib2', default=None)(self)
-                label = Field('label')(self)
+                raw = Dict("lib2", default=None)(self)
+                label = Field("label")(self)
                 if not raw:
                     return label
                 elif raw == label:
                     return raw
                 else:
-                    return '%s %s' % (raw, label)
+                    return "%s %s" % (raw, label)
 
             obj_type = Map(
-                Dict('type', default=None),
+                Dict("type", default=None),
                 TRANSACTION_TYPES,
                 default=FrenchTransaction.TYPE_UNKNOWN,
             )
@@ -182,7 +193,7 @@ class OperationsPage(JsonPage):
 
 class TransferValidatePage(JsonPage):
     def get_transfer_status(self):
-        return CleanText(Dict('transferStatus'))(self.doc)
+        return CleanText(Dict("transferStatus"))(self.doc)
 
 
 class TransferValidateCumulativePage(RawPage):
@@ -195,64 +206,64 @@ class TransferValidateUnitPage(RawPage):
 
 class TransferExecutePage(JsonPage):
     def get_transfer_status(self):
-        return CleanText(Dict('transferExecutionStatus'))(self.doc)
+        return CleanText(Dict("transferExecutionStatus"))(self.doc)
 
 
 TRANSFER_STATUS = {
-    'VALIDATED': TransferStatus.DONE,
+    "VALIDATED": TransferStatus.DONE,
 }
 
 
 class TransferHistoryPage(JsonPage):
     @method
     class iter_transfers(DictElement):
-        item_xpath = 'historicalTransferOperationViews'
+        item_xpath = "historicalTransferOperationViews"
 
         class item(ItemElement):
             klass = Transfer
 
             def parse(self, el):
-                creation_date = DateTime(CleanText(Dict('creationDate')))(el)
-                self.env['creation_date'] = creation_date
-                self.env['creation_timestamp'] = creation_date.timestamp()
+                creation_date = DateTime(CleanText(Dict("creationDate")))(el)
+                self.env["creation_date"] = creation_date
+                self.env["creation_timestamp"] = creation_date.timestamp()
 
             # The actual 'id' field varies at every query; we want to use
             # 'initiatorCustomerId' (a numeric value) and 'creationDate'
             # (an ISO datetime with timezone) here.
             obj_id = Format(
-                '%s-%.3f',
-                CleanText(Dict('initiatorCustomerId')),
-                Env('creation_timestamp'),
+                "%s-%.3f",
+                CleanText(Dict("initiatorCustomerId")),
+                Env("creation_timestamp"),
             )
-            obj_creation_date = Env('creation_date')
+            obj_creation_date = Env("creation_date")
             obj_status = Map(
-                CleanText(Dict('status')),
+                CleanText(Dict("status")),
                 TRANSFER_STATUS,
                 default=TransferStatus.UNKNOWN,
             )
 
-            obj_label = CleanText(Dict('motive'))
-            obj_amount = CleanDecimal.SI(Dict('amount'))
-            obj_currency = Currency(Dict('currency'))
+            obj_label = CleanText(Dict("motive"))
+            obj_amount = CleanDecimal.SI(Dict("amount"))
+            obj_currency = Currency(Dict("currency"))
 
             # This identifier should only be used to query the TransferPage,
             # since it changes everytime.
-            obj__id = CleanText(Dict('id'))
+            obj__id = CleanText(Dict("id"))
 
 
 class TransferDebitAccountsPage(JsonPage):
     def get_account_id(self, account_number):
-        """ Get the account identifier for a given account number. """
+        """Get the account identifier for a given account number."""
 
         for element in self.doc:
-            if element['accountNumber'] == account_number:
-                return element['accountId']
+            if element["accountNumber"] == account_number:
+                return element["accountId"]
 
 
 class TransferOngoingPage(JsonPage):
     @method
     class iter_transfers(TransferHistoryPage.iter_transfers.klass):
-        item_xpath = 'transfers'
+        item_xpath = "transfers"
 
         # TODO: We haven't actually got an example of such an array.
         #       Once we do, we will be able to mark the differences from the
@@ -265,25 +276,25 @@ class TransferPage(JsonPage):
         klass = Transfer
 
         obj_status = Map(
-            CleanText(Dict('status')),
+            CleanText(Dict("status")),
             TRANSFER_STATUS,
             default=TransferStatus.UNKNOWN,
         )
-        obj_exec_date = Date(CleanText(Dict('deadlineDate')))
+        obj_exec_date = Date(CleanText(Dict("deadlineDate")))
 
-        obj_label = CleanText(Dict('motif'))
-        obj_amount = CleanDecimal.SI(Dict('amount'))
-        obj_currency = Currency(Dict('currency'))
+        obj_label = CleanText(Dict("motif"))
+        obj_amount = CleanDecimal.SI(Dict("amount"))
+        obj_currency = Currency(Dict("currency"))
 
-        obj_recipient_id = CleanText(Dict('transferBeneficiaryId'))
+        obj_recipient_id = CleanText(Dict("transferBeneficiaryId"))
 
         def obj_date_type(self):
-            is_immediate = Dict('immediate')(self)
+            is_immediate = Dict("immediate")(self)
 
             if is_immediate:
                 return TransferDateType.FIRST_OPEN_DAY
 
-            raise AssertionError('Non-immediate transfer')
+            raise AssertionError("Non-immediate transfer")
 
 
 class RecipientsPage(JsonPage):
@@ -292,75 +303,77 @@ class RecipientsPage(JsonPage):
         Get the identifier of a recipient for use for a transfer.
         """
 
-        for recipients_key in ('recentRecipients', 'allRecipients'):
+        for recipients_key in ("recentRecipients", "allRecipients"):
             for recipient in self.doc[recipients_key]:
-                if not recipient.get('ibans'):  # None or empty list
+                if not recipient.get("ibans"):  # None or empty list
                     continue
 
-                if iban_or_id == recipient['elementId']:
-                    return recipient['ibans'][0]['ibanOnBeneficiaryId']
+                if iban_or_id == recipient["elementId"]:
+                    return recipient["ibans"][0]["ibanOnBeneficiaryId"]
 
-                for iban in recipient['ibans']:
+                for iban in recipient["ibans"]:
                     if iban_or_id in (
-                        iban['transferBeneficiaryId'],
-                        iban['ibanOnBeneficiaryId'],
-                        iban['iban'],
+                        iban["transferBeneficiaryId"],
+                        iban["ibanOnBeneficiaryId"],
+                        iban["iban"],
                     ):
-                        return iban['ibanOnBeneficiaryId']
+                        return iban["ibanOnBeneficiaryId"]
 
     @method
     class iter_transfer_recipients(DictElement):
-        item_xpath = 'allRecipients'
+        item_xpath = "allRecipients"
 
         class item(ItemElement):
             klass = Recipient
 
             def condition(self):
                 # Filter out the current account.
-                if not self.env.get('account_number'):
+                if not self.env.get("account_number"):
                     return True
 
-                recipient_number = CleanText(Dict(
-                    'accountNumber',
-                    default='',
-                ))(self.el)
+                recipient_number = CleanText(
+                    Dict(
+                        "accountNumber",
+                        default="",
+                    )
+                )(self.el)
 
                 return (
                     not recipient_number
-                    or 'account_number' not in self.env
-                    or recipient_number != self.env['account_number']
+                    or "account_number" not in self.env
+                    or recipient_number != self.env["account_number"]
                 )
 
             obj_id = Coalesce(
-                CleanText(Dict('accountNumber', default='')),
-                CleanText(Dict('iban', default='')),
+                CleanText(Dict("accountNumber", default="")),
+                CleanText(Dict("iban", default="")),
             )
 
-            obj_label = CleanText(Dict('label'))
+            obj_label = CleanText(Dict("label"))
             obj_category = Map(
-                CleanText(Dict('type')),
+                CleanText(Dict("type")),
                 {
-                    'CUSTOMER_INTERNAL_ACCOUNT': 'Interne',
-                    'BENEFICIARY_WITH_IBAN': 'Externe',
+                    "CUSTOMER_INTERNAL_ACCOUNT": "Interne",
+                    "BENEFICIARY_WITH_IBAN": "Externe",
                 },
                 default=NotAvailable,
             )
             obj_iban = Coalesce(
-                CleanText(Dict('iban', default='')),
+                CleanText(Dict("iban", default="")),
                 default=None,
             )
 
             # Not actually the date at which the recipients are enabled at,
             # but the closest thing we have, so we'll use it.
-            obj_enabled_at = Date(CleanText(Dict('lastUpdateDate')))
+            obj_enabled_at = Date(CleanText(Dict("lastUpdateDate")))
 
 
 class CreateRecipientPage(JsonPage):
     def get_inwebo_session_id(self):
-        return CleanText(Dict('inweboSessionId'))(self.doc)
+        return CleanText(Dict("inweboSessionId"))(self.doc)
 
     def get_beneficiary_id(self):
-        return CleanText(Dict('transferBeneficiaryId'))(self.doc)
+        return CleanText(Dict("transferBeneficiaryId"))(self.doc)
 
 
 class VerifyRecipientCreatedPage(RawPage):

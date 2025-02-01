@@ -27,7 +27,7 @@ from woob.browser.browsers import DigestMixin, OAuth2Mixin, PagesBrowser
 
 
 class FakeStetBrowser(DigestMixin, OAuth2Mixin, PagesBrowser):
-    BASEURL = 'http://woob.tech/'
+    BASEURL = "http://woob.tech/"
 
 
 class TestDigestMixin(TestCase):
@@ -37,13 +37,13 @@ class TestDigestMixin(TestCase):
     be removed from the headers once the request is prepared.
     """
 
-    EXPECTED_DIGEST = 'SHA-256=' + b64encode(sha256(b'{"foo": 1, "bar": 2}').digest()).decode()
-    EXPECTED_COMPACT_DIGEST = 'SHA-256=' + b64encode(sha256(b'{"foo":1,"bar":2}').digest()).decode()
+    EXPECTED_DIGEST = "SHA-256=" + b64encode(sha256(b'{"foo": 1, "bar": 2}').digest()).decode()
+    EXPECTED_COMPACT_DIGEST = "SHA-256=" + b64encode(sha256(b'{"foo":1,"bar":2}').digest()).decode()
 
     class FakeRequest:
-        url = 'http://woob.tech/'
-        method = 'POST'
-        body =  b'{"foo": 1, "bar": 2}'
+        url = "http://woob.tech/"
+        method = "POST"
+        body = b'{"foo": 1, "bar": 2}'
         data = b'{"foo": 1, "bar": 2}'
         auth = None
         cookies = None
@@ -59,9 +59,9 @@ class TestDigestMixin(TestCase):
 
     def execute_assertions(self, preq: PreparedRequest, expected_digest: str) -> None:
         assertions = [
-            ('Digest', expected_digest),
-            ('HTTP_DIGEST_EXCLUDE', None),
-            ('HTTP_DIGEST_INCLUDE', None),
+            ("Digest", expected_digest),
+            ("HTTP_DIGEST_EXCLUDE", None),
+            ("HTTP_DIGEST_INCLUDE", None),
         ]
 
         for assertion in assertions:
@@ -85,7 +85,7 @@ class TestDigestMixin(TestCase):
     def test_http_digest_method_post(self):
         """It should add a digest if the request method is in HTTP_DIGEST_METHODS."""
 
-        self.myBrowser.HTTP_DIGEST_METHODS = ('POST',)
+        self.myBrowser.HTTP_DIGEST_METHODS = ("POST",)
         preq = self.myBrowser.prepare_request(self.req)
 
         self.execute_assertions(preq, expected_digest=self.EXPECTED_DIGEST)
@@ -93,7 +93,7 @@ class TestDigestMixin(TestCase):
     def test_http_digest_method_get(self):
         """It should not add a digest if the request method is not in HTTP_DIGEST_METHODS."""
 
-        self.myBrowser.HTTP_DIGEST_METHODS = ('GET',)
+        self.myBrowser.HTTP_DIGEST_METHODS = ("GET",)
         preq = self.myBrowser.prepare_request(self.req)
 
         self.execute_assertions(preq, expected_digest=None)
@@ -113,7 +113,7 @@ class TestDigestMixin(TestCase):
         """
 
         self.myBrowser.HTTP_DIGEST_METHODS = ()
-        self.req.headers = {'HTTP_DIGEST_INCLUDE': 'true'}
+        self.req.headers = {"HTTP_DIGEST_INCLUDE": "true"}
         preq = self.myBrowser.prepare_request(self.req)
 
         self.execute_assertions(preq, expected_digest=self.EXPECTED_DIGEST)
@@ -125,7 +125,7 @@ class TestDigestMixin(TestCase):
         """
 
         self.myBrowser.HTTP_DIGEST_METHODS = None
-        self.req.headers = {'HTTP_DIGEST_EXCLUDE': 'true'}
+        self.req.headers = {"HTTP_DIGEST_EXCLUDE": "true"}
         preq = self.myBrowser.prepare_request(self.req)
 
         self.execute_assertions(preq, expected_digest=None)
@@ -134,7 +134,7 @@ class TestDigestMixin(TestCase):
         """It should add a compact digest if HTTP_DIGEST_COMPACT_JSON is true."""
 
         self.myBrowser.HTTP_DIGEST_COMPACT_JSON = True
-        self.req.headers = {'Content-Type': 'application/json'}
+        self.req.headers = {"Content-Type": "application/json"}
         preq = self.myBrowser.prepare_request(self.req)
 
         self.execute_assertions(preq, expected_digest=self.EXPECTED_COMPACT_DIGEST)
@@ -144,7 +144,7 @@ class TestDigestMixin(TestCase):
 
         self.myBrowser.HTTP_DIGEST_METHODS = ()
         self.myBrowser.HTTP_DIGEST_COMPACT_JSON = True
-        self.req.headers = {'Content-Type': 'application/json'}
+        self.req.headers = {"Content-Type": "application/json"}
         preq = self.myBrowser.prepare_request(self.req)
 
         self.execute_assertions(preq, expected_digest=None)

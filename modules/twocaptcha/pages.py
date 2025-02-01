@@ -22,17 +22,17 @@ from woob.browser.filters.standard import CleanDecimal, Type
 from woob.browser.pages import JsonPage
 
 
-__all__ = ['BalancePage', 'CaptchaPage']
+__all__ = ["BalancePage", "CaptchaPage"]
 
 
 class CaptchaPage(JsonPage):
     def get_status(self):
-        return Type(Dict('status')(self.doc), type=int)(self.doc)
+        return Type(Dict("status")(self.doc), type=int)(self.doc)
 
     def get_response(self):
-        return Dict('request')(self.doc)
+        return Dict("request")(self.doc)
 
 
 class BalancePage(JsonPage):
     def get_balance(self):
-        return CleanDecimal.SI(Dict('request'))(self.doc)
+        return CleanDecimal.SI(Dict("request"))(self.doc)

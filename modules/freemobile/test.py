@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class FreeMobileTest(BackendTest):
-    MODULE = 'freemobile'
+    MODULE = "freemobile"
 
     def test_details(self):
         for subscription in self.backend.iter_subscription():

@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import DeutschePostDHLBrowser, DHLExpressBrowser
 
 
-__all__ = ['DHLModule']
+__all__ = ["DHLModule"]
 
 
 class DHLModule(Module, CapParcel):
-    NAME = 'dhl'
-    DESCRIPTION = u'DHL website'
-    MAINTAINER = u'Matthieu Weber'
-    EMAIL = 'mweber+weboob@free.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "dhl"
+    DESCRIPTION = "DHL website"
+    MAINTAINER = "Matthieu Weber"
+    EMAIL = "mweber+weboob@free.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     def get_parcel_tracking(self, id):
         """

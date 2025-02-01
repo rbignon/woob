@@ -21,23 +21,23 @@ from logging import Formatter, LoggerAdapter, addLevelName
 from logging import getLogger as _getLogger
 
 
-__all__ = ['getLogger', 'createColoredFormatter', 'settings']
+__all__ = ["getLogger", "createColoredFormatter", "settings"]
 
 
 RESET_SEQ = "\033[0m"
 COLOR_SEQ = "%s%%s" + RESET_SEQ
 
 COLORS = {
-    'DEBUG': COLOR_SEQ % "\033[0;36m",
-    'INFO': COLOR_SEQ % "\033[32m",
-    'WARNING': COLOR_SEQ % "\033[1;33m",
-    'ERROR': COLOR_SEQ % "\033[1;31m",
-    'CRITICAL': COLOR_SEQ % ("\033[1;33m\033[1;41m"),
-    'DEBUG_FILTERS': COLOR_SEQ % "\033[0;35m",
+    "DEBUG": COLOR_SEQ % "\033[0;36m",
+    "INFO": COLOR_SEQ % "\033[32m",
+    "WARNING": COLOR_SEQ % "\033[1;33m",
+    "ERROR": COLOR_SEQ % "\033[1;31m",
+    "CRITICAL": COLOR_SEQ % ("\033[1;33m\033[1;41m"),
+    "DEBUG_FILTERS": COLOR_SEQ % "\033[0;35m",
 }
 
 DEBUG_FILTERS = 8
-addLevelName(DEBUG_FILTERS, 'DEBUG_FILTERS')
+addLevelName(DEBUG_FILTERS, "DEBUG_FILTERS")
 
 
 # Global settings f logger.
@@ -54,7 +54,7 @@ def getLogger(name, parent=None):
         extra = None
 
     if parent:
-        name = parent.name + '.' + name
+        name = parent.name + "." + name
     logger = _getLogger(name)
     logger.settings = settings
 
@@ -80,12 +80,12 @@ class ColoredFormatter(Formatter):
 
 
 def createColoredFormatter(stream, format):
-    if (sys.platform != 'win32') and stream.isatty():
+    if (sys.platform != "win32") and stream.isatty():
         return ColoredFormatter(format)
     else:
         return Formatter(format)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     for levelname, cs in COLORS.items():
-        print(cs % levelname, end=' ')
+        print(cs % levelname, end=" ")

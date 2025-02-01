@@ -21,4 +21,4 @@
 from .module import KiwibankModule
 
 
-__all__ = ['KiwibankModule']
+__all__ = ["KiwibankModule"]

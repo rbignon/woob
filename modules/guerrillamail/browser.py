@@ -21,32 +21,43 @@ from woob.browser import DomainBrowser
 from woob.tools.date import datetime
 
 
-__all__ = ['GuerrillamailBrowser']
+__all__ = ["GuerrillamailBrowser"]
 
 
 class GuerrillamailBrowser(DomainBrowser):
-    BASEURL = 'https://www.guerrillamail.com'
+    BASEURL = "https://www.guerrillamail.com"
 
     def get_mails(self, boxid):
-        params = {'email_user': boxid, 'lang': 'en', 'domain': 'guerrillamail.com'}
-        d = self.open('https://www.guerrillamail.com/ajax.php?f=set_email_user', data=params).json()
+        params = {"email_user": boxid, "lang": "en", "domain": "guerrillamail.com"}
+        d = self.open("https://www.guerrillamail.com/ajax.php?f=set_email_user", data=params).json()
 
-        d = self.open('https://www.guerrillamail.com/ajax.php?f=get_email_list&offset=0&domain=guerrillamail.com').json()
-        for m in d['list']:
+        d = self.open(
+            "https://www.guerrillamail.com/ajax.php?f=get_email_list&offset=0&domain=guerrillamail.com"
+        ).json()
+        for m in d["list"]:
             info = {}
-            info['id'] = m['mail_id']
-            info['from'] = m['mail_from']
-#            info['to'] = m['mail_recipient']
-            info['to'] = '%s@guerrillamail.com' % boxid
-            info['subject'] = m['mail_subject']
-            info['datetime'] = datetime.fromtimestamp(int(m['mail_timestamp']))
-            info['read'] = bool(int(m['mail_read']))
+            info["id"] = m["mail_id"]
+            info["from"] = m["mail_from"]
+            #            info['to'] = m['mail_recipient']
+            info["to"] = "%s@guerrillamail.com" % boxid
+            info["subject"] = m["mail_subject"]
+            info["datetime"] = datetime.fromtimestamp(int(m["mail_timestamp"]))
+            info["read"] = bool(int(m["mail_read"]))
             yield info
 
     def get_mail_content(self, mailid):
-        d = self.open('https://www.guerrillamail.com/ajax.php?f=fetch_email&email_id=mr_%s&domain=guerrillamail.com' % mailid).json()
-        return d['mail_body']
+        d = self.open(
+            "https://www.guerrillamail.com/ajax.php?f=fetch_email&email_id=mr_%s&domain=guerrillamail.com" % mailid
+        ).json()
+        return d["mail_body"]
 
     def send_mail(self, from_, to, subject, body):
-        params = {'from': from_, 'to': to, 'subject': subject, 'body': body, 'attach': '', 'domain': 'guerrillamail.com'}
-        self.open('https://www.guerrillamail.com/ajax.php?f=send_email', data=params)
+        params = {
+            "from": from_,
+            "to": to,
+            "subject": subject,
+            "body": body,
+            "attach": "",
+            "domain": "guerrillamail.com",
+        }
+        self.open("https://www.guerrillamail.com/ajax.php?f=send_email", data=params)

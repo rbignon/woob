@@ -21,4 +21,4 @@
 from .module import FreeModule
 
 
-__all__ = ['FreeModule']
+__all__ = ["FreeModule"]

@@ -27,8 +27,8 @@ from woob.capabilities.recipe import Recipe
 
 
 class ResultsPage(HTMLPage):
-    """ Page which contains results as a list of recipies
-    """
+    """Page which contains results as a list of recipies"""
+
     @method
     class iter_recipes(ListElement):
         item_xpath = '//div[@class="col-md-8"]'
@@ -36,42 +36,43 @@ class ResultsPage(HTMLPage):
         class item(ItemElement):
             klass = Recipe
 
-            obj_id = Regexp(CleanText('./h2/a/@href'), 'https://www.supertoinette.com/recette/(.*).html')
+            obj_id = Regexp(CleanText("./h2/a/@href"), "https://www.supertoinette.com/recette/(.*).html")
 
-            obj_title = CleanText('./h2/a')
+            obj_title = CleanText("./h2/a")
             obj_short_description = CleanText('./p[@class="description"]')
 
 
 class RecipePage(HTMLPage):
-    """ Page which contains a recipe
-    """
+    """Page which contains a recipe"""
 
     @method
     class get_recipe(ItemElement):
         klass = Recipe
 
-        obj_id = Env('id')
-        obj_title = CleanText('//h1')
-        obj_preparation_time = Type(Regexp(CleanText('//i[has-class("fa-utensil-spoon")]/following-sibling::span'),
-                                           r".* (\d*) min"), type=int)
+        obj_id = Env("id")
+        obj_title = CleanText("//h1")
+        obj_preparation_time = Type(
+            Regexp(CleanText('//i[has-class("fa-utensil-spoon")]/following-sibling::span'), r".* (\d*) min"), type=int
+        )
 
-        obj_cooking_time = Type(Regexp(CleanText('//i[has-class("fa-burn")]/following-sibling::span'),
-                                       r".* (\d*) min"), type=int)
+        obj_cooking_time = Type(
+            Regexp(CleanText('//i[has-class("fa-burn")]/following-sibling::span'), r".* (\d*) min"), type=int
+        )
 
         def obj_nb_person(self):
-            nb_pers = Regexp(CleanText('//div[has-class("ingredients")]/div/p'),
-                             r'.*pour (\d+) personnes', default=0)(self)
+            nb_pers = Regexp(CleanText('//div[has-class("ingredients")]/div/p'), r".*pour (\d+) personnes", default=0)(
+                self
+            )
             return [nb_pers] if nb_pers else NotAvailable
 
         def obj_ingredients(self):
             i = []
-            ingredients = XPath('//ul[has-class("ingredientsList")]/li',
-                                default=[])(self)
+            ingredients = XPath('//ul[has-class("ingredientsList")]/li', default=[])(self)
             for ingredient in ingredients:
-                i.append(CleanText('.')(ingredient))
+                i.append(CleanText(".")(ingredient))
             return i
 
-        obj_instructions = Join(u'\n- ', '//div[@class="recipe-prepa"]/ol/li', newline=True, addBefore='- ')
+        obj_instructions = Join("\n- ", '//div[@class="recipe-prepa"]/ol/li', newline=True, addBefore="- ")
 
         class obj_picture(ItemElement):
             klass = BaseImage

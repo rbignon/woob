@@ -33,14 +33,16 @@ class VideoPage(HTMLPage):
         klass = BaseVideo
 
         obj_nsfw = True
-        obj_ext = 'mp4'
-        obj_title = Attr('//meta[@property="og:title"]', 'content')
-        obj_id = Env('id')
+        obj_ext = "mp4"
+        obj_title = Attr('//meta[@property="og:title"]', "content")
+        obj_id = Env("id")
 
-        obj__props = Eval(json.loads, Regexp(RawText('//script[contains(text(),"window.initials =")]'), r'window.initials = (.*);\n'))
+        obj__props = Eval(
+            json.loads, Regexp(RawText('//script[contains(text(),"window.initials =")]'), r"window.initials = (.*);\n")
+        )
 
-        obj_duration = Base(Field('_props'), Dict('videoModel/duration'))
-        obj_url = Base(Field('_props'), Dict('videoModel/mp4File'))
+        obj_duration = Base(Field("_props"), Dict("videoModel/duration"))
+        obj_url = Base(Field("_props"), Dict("videoModel/mp4File"))
 
         def obj__page(self):
             return self.page.url
@@ -57,12 +59,12 @@ class SearchPage(HTMLPage):
             klass = BaseVideo
 
             obj_nsfw = True
-            obj_ext = 'mp4'
+            obj_ext = "mp4"
 
             obj_title = CleanText('.//a[@class="video-thumb-info__name"]')
             obj_duration = Duration(CleanText('.//div[@class="thumb-image-container__duration"]'))
-            obj__page = AbsoluteLink('./a')
-            obj_id = Regexp(obj__page, r'/videos/(.+)')
+            obj__page = AbsoluteLink("./a")
+            obj_id = Regexp(obj__page, r"/videos/(.+)")
 
             def obj_thumbnail(self):
-                return Thumbnail(Attr('.//img[@class="thumb-image-container__image"]', 'src')(self))
+                return Thumbnail(Attr('.//img[@class="thumb-image-container__image"]', "src")(self))

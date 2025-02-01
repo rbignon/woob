@@ -24,7 +24,15 @@ from woob.browser import URL, LoginBrowser, need_login
 from woob.browser.elements import ItemElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.standard import (
-    Base, BrowserURL, CleanText, DateTime, Env, Field, Filter, FilterError, RawText,
+    Base,
+    BrowserURL,
+    CleanText,
+    DateTime,
+    Env,
+    Field,
+    Filter,
+    FilterError,
+    RawText,
 )
 from woob.browser.pages import HTMLPage, RawPage
 from woob.capabilities.paste import BasePaste, PasteNotFound
@@ -42,28 +50,28 @@ class BasePastebinPage(HTMLPage):
     @property
     def logged(self):
         for link in self.doc.xpath('//div[@id="header_bottom"]/ul[@class="top_menu"]//ul/li/a'):
-            if link.text == 'logout':
+            if link.text == "logout":
                 return True
-            if link.text == 'login':
+            if link.text == "login":
                 return False
-            raise BrowserUnavailable('Unable to determine login state')
+            raise BrowserUnavailable("Unable to determine login state")
 
 
 class LoginPage(BasePastebinPage):
     def login(self, username, password):
-        form = self.get_form('myform')
-        form['user_name'] = username
-        form['user_password'] = password
+        form = self.get_form("myform")
+        form["user_name"] = username
+        form["user_password"] = password
         form.submit()
 
 
 class CleanVisibility(Filter):
     def filter(self, txt):
-        if txt is None or txt.startswith('Public'):
+        if txt is None or txt.startswith("Public"):
             return True
-        if txt.startswith('Unlisted') or txt.startswith('Private'):
+        if txt.startswith("Unlisted") or txt.startswith("Private"):
             return False
-        return self.default_or_raise(FilterError('Unable to get the paste visibility'))
+        return self.default_or_raise(FilterError("Unable to get the paste visibility"))
 
 
 class PastePage(BasePastebinPage):
@@ -72,31 +80,29 @@ class PastePage(BasePastebinPage):
         klass = PastebinPaste
 
         def parse(self, el):
-            self.env['header'] = el.find('//div[@id="content_left"]//div[@class="paste_box_info"]')
+            self.env["header"] = el.find('//div[@id="content_left"]//div[@class="paste_box_info"]')
 
-        obj_id = Env('id')
-        obj_title = Base(Env('header'), CleanText('.//div[@class="paste_box_line1"]//h1'))
+        obj_id = Env("id")
+        obj_title = Base(Env("header"), CleanText('.//div[@class="paste_box_line1"]//h1'))
         obj_contents = RawText('//textarea[@id="paste_code"]')
         obj_public = Base(
-            Env('header'),
-            CleanVisibility(Attr('.//div[@class="paste_box_line1"]//img', 'title', default=None)))
-        obj__date = Base(
-            Env('header'),
-            DateTime(Attr('.//div[@class="paste_box_line2"]/span[1]', 'title')))
-        obj_url = BrowserURL('paste', id=Field('id'))
+            Env("header"), CleanVisibility(Attr('.//div[@class="paste_box_line1"]//img', "title", default=None))
+        )
+        obj__date = Base(Env("header"), DateTime(Attr('.//div[@class="paste_box_line2"]/span[1]', "title")))
+        obj_url = BrowserURL("paste", id=Field("id"))
 
 
 class PostPage(BasePastebinPage):
     def post(self, paste, expiration=None):
-        form = self.get_form(name='myform')
-        form['paste_code'] = paste.contents
-        form['paste_name'] = paste.title
+        form = self.get_form(name="myform")
+        form["paste_code"] = paste.contents
+        form["paste_name"] = paste.title
         if paste.public is True:
-            form['paste_private'] = '0'
+            form["paste_private"] = "0"
         elif paste.public is False:
-            form['paste_private'] = '1'
+            form["paste_private"] = "1"
         if expiration:
-            form['paste_expire_date'] = expiration
+            form["paste_expire_date"] = expiration
         form.submit()
 
 
@@ -118,16 +124,16 @@ class LimitExceeded(BrowserUnavailable):
 
 
 class PastebinBrowser(LoginBrowser):
-    BASEURL = 'https://pastebin.com/'
+    BASEURL = "https://pastebin.com/"
 
-    warning = URL(r'warning\.php\?p=(?P<id>\d+)', WarningPage)
-    api = URL(r'api/api_post\.php', RawPage)
-    apilogin = URL(r'api/api_login\.php', RawPage)
-    login = URL('login', LoginPage)
-    userprofile = URL(r'u/(?P<username>.+)', UserPage)
-    postpage = URL(r'$', PostPage)
-    paste = URL(r'(?P<id>\w+)', PastePage)
-    raw = URL(r'raw\.php\?i=(?P<id>\w+)', RawPage)
+    warning = URL(r"warning\.php\?p=(?P<id>\d+)", WarningPage)
+    api = URL(r"api/api_post\.php", RawPage)
+    apilogin = URL(r"api/api_login\.php", RawPage)
+    login = URL("login", LoginPage)
+    userprofile = URL(r"u/(?P<username>.+)", UserPage)
+    postpage = URL(r"$", PostPage)
+    paste = URL(r"(?P<id>\w+)", PastePage)
+    raw = URL(r"raw\.php\?i=(?P<id>\w+)", RawPage)
 
     def __init__(self, api_key, *args, **kwargs):
         super(PastebinBrowser, self).__init__(*args, **kwargs)
@@ -152,7 +158,7 @@ class PastebinBrowser(LoginBrowser):
     def get_paste(self, url):
         m = self.paste.match(url)
         if m:
-            return PastebinPaste(m.groupdict()['id'])
+            return PastebinPaste(m.groupdict()["id"])
 
     def get_contents(self, _id):
         """
@@ -169,26 +175,24 @@ class PastebinBrowser(LoginBrowser):
         self.postpage.stay_or_go().post(paste, expiration=expiration)
         # We cannot call fill_paste because we often have a captcha
         # anti-spam page, and do not detect it.
-        paste.id = self.page.params['id']
+        paste.id = self.page.params["id"]
         paste.url = self.paste.build(id=paste.id)
 
     def api_post_paste(self, paste, expiration=None):
-        data = {'api_dev_key': self.api_key,
-                'api_option': 'paste',
-                'api_paste_code': paste.contents}
+        data = {"api_dev_key": self.api_key, "api_option": "paste", "api_paste_code": paste.contents}
         if self.password:
-            data['api_user_key'] = self.api_login()
+            data["api_user_key"] = self.api_login()
         if paste.public is True:
-            data['api_paste_private'] = '0'
+            data["api_paste_private"] = "0"
         elif paste.public is False:
-            data['api_paste_private'] = '1'
+            data["api_paste_private"] = "1"
         if paste.title:
-            data['api_paste_name'] = paste.title
+            data["api_paste_name"] = paste.title
         if expiration:
-            data['api_paste_expire_date'] = expiration
-        res = self.open(self.api.build(), data=data, data_encoding='utf-8').text
+            data["api_paste_expire_date"] = expiration
+        res = self.open(self.api.build(), data=data, data_encoding="utf-8").text
         self._validate_api_response(res)
-        paste.id = self.paste.match(res).groupdict()['id']
+        paste.id = self.paste.match(res).groupdict()["id"]
         paste.url = self.paste.build(id=paste.id)
 
     def api_login(self):
@@ -197,14 +201,12 @@ class PastebinBrowser(LoginBrowser):
         if self.user_key:
             return self.user_key
 
-        data = {'api_dev_key': self.api_key,
-                'api_user_name': self.username,
-                'api_user_password': self.password}
-        res = self.open(self.apilogin.build(), data=data, data_encoding='utf-8').text
+        data = {"api_dev_key": self.api_key, "api_user_name": self.username, "api_user_password": self.password}
+        res = self.open(self.apilogin.build(), data=data, data_encoding="utf-8").text
         try:
             self._validate_api_response(res)
         except BadAPIRequest as e:
-            if str(e) == 'invalid login':
+            if str(e) == "invalid login":
                 raise BrowserIncorrectPassword()
             else:
                 raise e
@@ -213,9 +215,9 @@ class PastebinBrowser(LoginBrowser):
 
     # TODO make it into a Page?
     def _validate_api_response(self, res):
-        matches = re.match(r'Bad API request, (?P<error>.+)', res)
+        matches = re.match(r"Bad API request, (?P<error>.+)", res)
         if matches:
-            raise BadAPIRequest(matches.groupdict().get('error'))
+            raise BadAPIRequest(matches.groupdict().get("error"))
 
     def do_login(self):
         self.login.stay_or_go().login()

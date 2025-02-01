@@ -23,18 +23,18 @@ from woob.tools.test import BackendTest
 
 
 class INATest(BackendTest):
-    MODULE = 'ina'
+    MODULE = "ina"
 
     def test_video_ina(self):
-        l = list(itertools.islice(self.backend.search_videos('chirac'), 0, 20))
+        l = list(itertools.islice(self.backend.search_videos("chirac"), 0, 20))
         self.assertTrue(len(l) > 0)
         v_id = l[0].id
         v = self.backend.get_video(v_id)
-        self.assertTrue(v.url and v.url.startswith('https://'), 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.assertTrue(v.url and v.url.startswith("https://"), 'URL for video "%s" not found: %s' % (v.id, v.url))
 
     def test_audio_ina(self):
-        l = list(itertools.islice(self.backend.search_audio('chirac'), 0, 20))
+        l = list(itertools.islice(self.backend.search_audio("chirac"), 0, 20))
         self.assertTrue(len(l) > 0)
         a_id = l[0].id
         a = self.backend.get_audio(a_id)
-        self.assertTrue(a.url and a.url.startswith('https://'), 'URL for video "%s" not found: %s' % (a.id, a.url))
+        self.assertTrue(a.url and a.url.startswith("https://"), 'URL for video "%s" not found: %s' % (a.id, a.url))

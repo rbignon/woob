@@ -25,13 +25,14 @@ class PricePerMeterFilter(_Filter):
     """
     Filter that help to fill PricePerMeter field
     """
+
     def __init__(self):
         super(PricePerMeterFilter, self).__init__()
 
     @debug()
     def __call__(self, item):
-        cost = Field('cost')(item)
-        area = Field('area')(item)
+        cost = Field("cost")(item)
+        area = Field("area")(item)
         if not (empty(cost) or empty(area)):
             return Decimal(cost or 0) / Decimal(area or 1)
         return Decimal(0)

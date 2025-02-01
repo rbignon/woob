@@ -20,4 +20,4 @@
 from .module import BECMModule
 
 
-__all__ = ['BECMModule']
+__all__ = ["BECMModule"]

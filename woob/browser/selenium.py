@@ -31,7 +31,7 @@ from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 try:
     from selenium import webdriver
 except ImportError:
-    raise ImportError('Please install python3-selenium')
+    raise ImportError("Please install python3-selenium")
 
 from selenium.common.exceptions import NoSuchElementException, NoSuchFrameException, TimeoutException
 from selenium.webdriver.common.by import By
@@ -49,11 +49,22 @@ from .url import URL
 
 
 __all__ = (
-    'SeleniumBrowser', 'SeleniumPage', 'HTMLPage',
-    'CustomCondition', 'AnyCondition', 'AllCondition', 'NotCondition',
-    'IsHereCondition', 'VisibleXPath', 'ClickableXPath', 'ClickableLinkText',
-    'HasTextCondition', 'WrapException',
-    'xpath_locator', 'link_locator', 'ElementWrapper',
+    "SeleniumBrowser",
+    "SeleniumPage",
+    "HTMLPage",
+    "CustomCondition",
+    "AnyCondition",
+    "AllCondition",
+    "NotCondition",
+    "IsHereCondition",
+    "VisibleXPath",
+    "ClickableXPath",
+    "ClickableLinkText",
+    "HasTextCondition",
+    "WrapException",
+    "xpath_locator",
+    "link_locator",
+    "ElementWrapper",
 )
 
 
@@ -85,6 +96,7 @@ class WrapException(CustomCondition):
     `WrapException` wraps such `expected_conditions` to catch those exception
     and simply return False when such exception is thrown.
     """
+
     def __init__(self, condition):
         self.condition = condition
 
@@ -96,8 +108,7 @@ class WrapException(CustomCondition):
 
 
 class AnyCondition(CustomCondition):
-    """Condition that is true if any of several conditions is true.
-    """
+    """Condition that is true if any of several conditions is true."""
 
     def __init__(self, *conditions):
         self.conditions = tuple(WrapException(cb) for cb in conditions)
@@ -107,8 +118,7 @@ class AnyCondition(CustomCondition):
 
 
 class AllCondition(CustomCondition):
-    """Condition that is true if all of several conditions are true.
-    """
+    """Condition that is true if all of several conditions are true."""
 
     def __init__(self, *conditions):
         self.conditions = tuple(WrapException(cb) for cb in conditions)
@@ -133,6 +143,7 @@ class IsHereCondition(CustomCondition):
     This condition is to be passed to `SeleniumBrowser.wait_until`.
     It mustn't be used in a `SeleniumPage.is_here` definition.
     """
+
     def __init__(self, urlobj):
         assert isinstance(urlobj, URL)
         self.urlobj = urlobj
@@ -186,9 +197,9 @@ class StablePageCondition(CustomCondition):
     def __call__(self, driver):
         self._purge()
 
-        hashed = hashlib.new("md5", driver.page_source.encode('utf-8')).hexdigest()  # nosec
+        hashed = hashlib.new("md5", driver.page_source.encode("utf-8")).hexdigest()  # nosec
         now = time.time()
-        page_id = driver.find_element_by_xpath('/*').id
+        page_id = driver.find_element_by_xpath("/*").id
 
         if page_id not in self.elements or self.elements[page_id][1] != hashed:
             self.elements[page_id] = (now, hashed)
@@ -252,6 +263,7 @@ class ElementWrapper:
 
     See https://seleniumhq.github.io/selenium/docs/api/py/webdriver_remote/selenium.webdriver.remote.webelement.html
     """
+
     def __init__(self, wrapped):
         self.wrapped = wrapped
 
@@ -286,7 +298,7 @@ class ElementWrapper:
         def __getitem__(self, k):
             v = self.el.get_attribute(k)
             if v is None:
-                raise KeyError('Attribute %r was not found' % k)
+                raise KeyError("Attribute %r was not found" % k)
             return v
 
         def get(self, k, default=None):
@@ -314,7 +326,7 @@ class SeleniumPage:
 
     @property
     def doc(self):
-        return ElementWrapper(self.browser.driver.find_element_by_xpath('/*'))
+        return ElementWrapper(self.browser.driver.find_element_by_xpath("/*"))
 
     def is_here(self):
         """Method to determine if the browser is on this page and the page is ready.
@@ -331,17 +343,17 @@ class SeleniumPage:
 
 
 class HTMLPage(BaseHTMLPage):
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
 
     def __init__(self, browser):
         fake = FakeResponse(
             url=browser.url,
             text=browser.page_source,
-            content=browser.page_source.encode('utf-8'),
-            encoding='utf-8',
+            content=browser.page_source.encode("utf-8"),
+            encoding="utf-8",
         )
 
-        super(HTMLPage, self).__init__(browser, fake, encoding='utf-8')
+        super(HTMLPage, self).__init__(browser, fake, encoding="utf-8")
         self.driver = browser.driver
 
 
@@ -416,15 +428,24 @@ class SeleniumBrowser:
 
     BASEURL = None
 
-    MAX_SAVED_RESPONSES = (1 << 30)  # limit to 1GiB
+    MAX_SAVED_RESPONSES = 1 << 30  # limit to 1GiB
 
-    def __init__(self, logger=None, proxy=None, responses_dirname=None, weboob=None, proxy_headers=None,
-                 preferences=None, remote_driver_url=None, woob=None):
+    def __init__(
+        self,
+        logger=None,
+        proxy=None,
+        responses_dirname=None,
+        weboob=None,
+        proxy_headers=None,
+        preferences=None,
+        remote_driver_url=None,
+        woob=None,
+    ):
         super(SeleniumBrowser, self).__init__()
         self.responses_dirname = responses_dirname
         self.responses_count = 0
         self.woob = woob or weboob
-        self.logger = getLogger('browser', logger)
+        self.logger = getLogger("browser", logger)
         self.proxy = proxy or {}
         self.remote_driver_url = remote_driver_url
 
@@ -433,7 +454,7 @@ class SeleniumBrowser:
         # Also, the data we send to the browser using selenium (with send_keys)
         # can be displayed clearly in the log, if the log level is
         # set to DEBUG.
-        logging.getLogger('selenium').setLevel(logging.ERROR)
+        logging.getLogger("selenium").setLevel(logging.ERROR)
 
         self.implicit_timeout = 0
         self.last_page_hash = None
@@ -458,28 +479,28 @@ class SeleniumBrowser:
                 for key, value in preferences.items():
                     options.set_preference(key, value)
             elif isinstance(options, webdriver.ChromeOptions):
-                options.add_experimental_option('prefs', preferences)
+                options.add_experimental_option("prefs", preferences)
         return options
 
     def _build_capabilities(self):
         caps = CAPA_CLASSES[self.DRIVER].copy()
-        caps['acceptInsecureCerts'] = bool(getattr(self, 'VERIFY', False))
+        caps["acceptInsecureCerts"] = bool(getattr(self, "VERIFY", False))
         return caps
 
     def get_proxy_url(self, url):
         if self.DRIVER is webdriver.Firefox:
             proxy_url = urlparse(url)
-            return proxy_url.geturl().replace('%s://' % proxy_url.scheme, '')
+            return proxy_url.geturl().replace("%s://" % proxy_url.scheme, "")
         return url
 
     def _build_proxy(self):
         proxy = Proxy()
-        if 'http' in self.proxy:
+        if "http" in self.proxy:
             proxy.proxy_type = ProxyType.MANUAL
-            proxy.http_proxy = self.get_proxy_url(self.proxy['http'])
-        if 'https' in self.proxy:
+            proxy.http_proxy = self.get_proxy_url(self.proxy["http"])
+        if "https" in self.proxy:
             proxy.proxy_type = ProxyType.MANUAL
-            proxy.ssl_proxy = self.get_proxy_url(self.proxy['https'])
+            proxy.ssl_proxy = self.get_proxy_url(self.proxy["https"])
 
         if proxy.proxy_type != ProxyType.MANUAL:
             proxy.proxy_type = ProxyType.DIRECT
@@ -505,9 +526,11 @@ class SeleniumBrowser:
         if self.responses_dirname:
             if not os.path.isdir(self.responses_dirname):
                 os.makedirs(self.responses_dirname)
-            driver_kwargs['service_log_path'] = os.path.join(self.responses_dirname, 'selenium.log')
+            driver_kwargs["service_log_path"] = os.path.join(self.responses_dirname, "selenium.log")
         else:
-            driver_kwargs['service_log_path'] = NamedTemporaryFile(prefix='woob_selenium_', suffix='.log', delete=False).name
+            driver_kwargs["service_log_path"] = NamedTemporaryFile(
+                prefix="woob_selenium_", suffix=".log", delete=False
+            ).name
 
         if self.remote_driver_url:
             self._setup_remote_driver(options=options, capabilities=capa, proxy=proxy)
@@ -518,12 +541,12 @@ class SeleniumBrowser:
 
             options.profile = DirFirefoxProfile(self.responses_dirname)
             if self.responses_dirname:
-                capa['profile'] = self.responses_dirname
+                capa["profile"] = self.responses_dirname
             self.driver = self.DRIVER(options=options, capabilities=capa, **driver_kwargs)
         elif self.DRIVER is webdriver.Chrome:
             if self.HEADLESS:
                 # Prevent random renderer timeout
-                options.add_argument('--disable-gpu')
+                options.add_argument("--disable-gpu")
             self.driver = self.DRIVER(options=options, desired_capabilities=capa, **driver_kwargs)
         else:
             raise NotImplementedError()
@@ -533,18 +556,18 @@ class SeleniumBrowser:
 
     def _setup_remote_driver(self, options, capabilities, proxy):
         if self.DRIVER is webdriver.Firefox:
-            capabilities['browserName'] = 'firefox'
+            capabilities["browserName"] = "firefox"
         elif self.DRIVER is webdriver.Chrome:
-            capabilities['browserName'] = 'chrome'
+            capabilities["browserName"] = "chrome"
             options.add_argument("start-maximized")  # must be start maximized to avoid diffs using headless
         else:
-            raise SeleniumBrowserSetupError('Remote driver supports only Firefox and Chrome.')
+            raise SeleniumBrowserSetupError("Remote driver supports only Firefox and Chrome.")
 
         self.driver = webdriver.Remote(
-            command_executor='%s/wd/hub' % self.remote_driver_url,
+            command_executor="%s/wd/hub" % self.remote_driver_url,
             desired_capabilities=capabilities,
             options=options,
-            proxy=proxy
+            proxy=proxy,
         )
 
     ### Browser
@@ -559,7 +582,7 @@ class SeleniumBrowser:
     @property
     def page(self):
         def do_on_load(page):
-            if hasattr(page, 'on_load'):
+            if hasattr(page, "on_load"):
                 page.on_load()
 
         for val in self._urls:
@@ -571,19 +594,19 @@ class SeleniumBrowser:
                 try:
                     if isinstance(page.is_here, CustomCondition):
                         if page.is_here(self.driver):
-                            self.logger.debug('Handle %s with %s', self.url, type(page).__name__)
+                            self.logger.debug("Handle %s with %s", self.url, type(page).__name__)
                             self.save_response_if_changed()
                             do_on_load(page)
                             return page
                     elif page.is_here():
-                        self.logger.debug('Handle %s with %s', self.url, type(page).__name__)
+                        self.logger.debug("Handle %s with %s", self.url, type(page).__name__)
                         self.save_response_if_changed()
                         do_on_load(page)
                         return page
                 except NoSuchElementException:
                     pass
 
-        self.logger.debug('Unable to handle %s', self.url)
+        self.logger.debug("Unable to handle %s", self.url)
 
     def open(self, *args, **kwargs):
         """
@@ -625,7 +648,7 @@ class SeleniumBrowser:
         url_parsed._replace(query=query)
         url = urlunparse(url_parsed)
 
-        self.logger.debug('opening %r', url)
+        self.logger.debug("opening %r", url)
         self.driver.get(url)
 
         try:
@@ -637,16 +660,16 @@ class SeleniumBrowser:
     def export_session(self):
         cookies = [cookie.copy() for cookie in self.driver.get_cookies()]
         for cookie in cookies:
-            cookie['expirationDate'] = cookie.pop('expiry', None)
+            cookie["expirationDate"] = cookie.pop("expiry", None)
 
         ret = {
-            'url': self.url,
-            'cookies': cookies,
+            "url": self.url,
+            "cookies": cookies,
         }
         return ret
 
     def save_response_if_changed(self):
-        hash = hashlib.new("md5", self.driver.page_source.encode('utf-8')).hexdigest()  # nosec
+        hash = hashlib.new("md5", self.driver.page_source.encode("utf-8")).hexdigest()  # nosec
         if self.last_page_hash != hash:
             self.save_response()
 
@@ -657,16 +680,16 @@ class SeleniumBrowser:
             if not os.path.isdir(self.responses_dirname):
                 os.makedirs(self.responses_dirname)
 
-            total = sum(os.path.getsize(f) for f in glob('%s/*' % self.responses_dirname))
+            total = sum(os.path.getsize(f) for f in glob("%s/*" % self.responses_dirname))
             if self.MAX_SAVED_RESPONSES is not None and total >= self.MAX_SAVED_RESPONSES:
-                self.logger.info('quota reached, not saving responses')
+                self.logger.info("quota reached, not saving responses")
                 return
 
             self.responses_count += 1
-            path = '%s/%02d.html' % (self.responses_dirname, self.responses_count)
-            with codecs.open(path, 'w', encoding='utf-8') as fd:
+            path = "%s/%02d.html" % (self.responses_dirname, self.responses_count)
+            with codecs.open(path, "w", encoding="utf-8") as fd:
                 fd.write(self.driver.page_source)
-            self.logger.info('Response saved to %s', path)
+            self.logger.info("Response saved to %s", path)
 
     def absurl(self, uri, base=None):
         # FIXME this is copy-pasta from DomainBrowser
@@ -709,7 +732,7 @@ class SeleniumBrowser:
             WebDriverWait(self.driver, timeout).until(condition)
         except (NoSuchElementException, TimeoutException):
             if self.responses_dirname:
-                self.driver.get_screenshot_as_file('%s/%02d.png' % (self.responses_dirname, self.responses_count))
+                self.driver.get_screenshot_as_file("%s/%02d.png" % (self.responses_dirname, self.responses_count))
             self.save_response()
             raise
 
@@ -783,9 +806,9 @@ class SeleniumBrowser:
         response = self.driver.execute(Command.GET_LOCAL_STORAGE_KEYS)
 
         ret = {}
-        for k in response['value']:
-            response = self.driver.execute(Command.GET_LOCAL_STORAGE_ITEM, {'key': k})
-            ret[k] = response['value']
+        for k in response["value"]:
+            response = self.driver.execute(Command.GET_LOCAL_STORAGE_ITEM, {"key": k})
+            ret[k] = response["value"]
         return ret
 
     def update_storage(self, d):
@@ -795,7 +818,7 @@ class SeleniumBrowser:
         """
 
         for k, v in d.items():
-            self.driver.execute(Command.SET_LOCAL_STORAGE_ITEM, {'key': k, 'value': v})
+            self.driver.execute(Command.SET_LOCAL_STORAGE_ITEM, {"key": k, "value": v})
 
     def clear_storage(self):
         """Clear local storage."""
@@ -810,35 +833,35 @@ class SubSeleniumMixin:
 
     """Class of Selenium browser to use for the login"""
 
-    __states__ = ('selenium_state',)
+    __states__ = ("selenium_state",)
 
     selenium_state = None
 
     def create_selenium_browser(self):
         dirname = self.responses_dirname
         if dirname:
-            dirname += '/selenium'
+            dirname += "/selenium"
 
         return self.SELENIUM_BROWSER(self.config, logger=self.logger, responses_dirname=dirname, proxy=self.PROXIES)
 
     def do_login(self):
         sub_browser = self.create_selenium_browser()
         try:
-            if self.selenium_state and hasattr(sub_browser, 'load_state'):
+            if self.selenium_state and hasattr(sub_browser, "load_state"):
                 sub_browser.load_state(self.selenium_state)
             sub_browser.do_login()
             self.load_selenium_session(sub_browser)
         finally:
             try:
-                if hasattr(sub_browser, 'dump_state'):
+                if hasattr(sub_browser, "dump_state"):
                     self.selenium_state = sub_browser.dump_state()
             finally:
                 sub_browser.deinit()
 
     def load_selenium_session(self, selenium):
         d = selenium.export_session()
-        for cookie in d['cookies']:
-            self.session.cookies.set(cookie['name'], cookie['value'], domain=cookie['domain'])
+        for cookie in d["cookies"]:
+            self.session.cookies.set(cookie["name"], cookie["value"], domain=cookie["domain"])
 
-        if hasattr(self, 'locate_browser'):
+        if hasattr(self, "locate_browser"):
             self.locate_browser(d)

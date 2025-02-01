@@ -24,32 +24,32 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import BoursedirectBrowser
 
 
-__all__ = ['BoursedirectModule']
+__all__ = ["BoursedirectModule"]
 
 
 class BoursedirectModule(Module, CapBankWealth):
-    NAME = 'boursedirect'
-    DESCRIPTION = 'Bourse direct'
-    MAINTAINER = 'Vincent Ardisson'
-    EMAIL = 'vardisson@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "boursedirect"
+    DESCRIPTION = "Bourse direct"
+    MAINTAINER = "Vincent Ardisson"
+    EMAIL = "vardisson@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = BoursedirectBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code personnel'),
-        ValueTransient('totp', label='TOTP', regexp=r'\d{6}'),
-        ValueTransient('otp_sms', label='Code SMS', regexp=r'\d{6}'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Code personnel"),
+        ValueTransient("totp", label="TOTP", regexp=r"\d{6}"),
+        ValueTransient("otp_sms", label="Code SMS", regexp=r"\d{6}"),
+        ValueTransient("request_information"),
     )
 
     def create_default_browser(self):
         return self.create_browser(
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_accounts(self):

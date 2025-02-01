@@ -22,29 +22,35 @@ from woob.capabilities.messages import Message
 from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
-    HomeTimelinePage, LoginErrorPage, LoginPage, SearchPage, SearchTimelinePage, ThreadPage, TimelinePage, TrendsPage,
+    HomeTimelinePage,
+    LoginErrorPage,
+    LoginPage,
+    SearchPage,
+    SearchTimelinePage,
+    ThreadPage,
+    TimelinePage,
+    TrendsPage,
     Tweet,
 )
 
 
-__all__ = ['TwitterBrowser']
+__all__ = ["TwitterBrowser"]
 
 
 class TwitterBrowser(LoginBrowser):
-    BASEURL = 'https://twitter.com/'
+    BASEURL = "https://twitter.com/"
 
     authenticity_token = None
 
-    thread_page = URL(r'(?P<user>.+)/status/(?P<_id>.+)', ThreadPage)
-    login_error = URL(r'login/error.+', LoginErrorPage)
-    tweet = URL(u'i/tweet/create', Tweet)
-    trends = URL(r'i/trends\?pc=true&show_context=false&src=search-home&k=(?P<token>.*)', TrendsPage)
-    search = URL(u'i/search/timeline', SearchTimelinePage)
-    search_page = URL(r'search\?q=(?P<pattern>.+)&src=sprv',
-                      u'search-home', SearchPage)
-    profil = URL(r'i/profiles/show/(?P<path>.+)/timeline/tweets', HomeTimelinePage)
-    timeline = URL(u'i/timeline', TimelinePage)
-    login = URL(u'', LoginPage)
+    thread_page = URL(r"(?P<user>.+)/status/(?P<_id>.+)", ThreadPage)
+    login_error = URL(r"login/error.+", LoginErrorPage)
+    tweet = URL("i/tweet/create", Tweet)
+    trends = URL(r"i/trends\?pc=true&show_context=false&src=search-home&k=(?P<token>.*)", TrendsPage)
+    search = URL("i/search/timeline", SearchTimelinePage)
+    search_page = URL(r"search\?q=(?P<pattern>.+)&src=sprv", "search-home", SearchPage)
+    profil = URL(r"i/profiles/show/(?P<path>.+)/timeline/tweets", HomeTimelinePage)
+    timeline = URL("i/timeline", TimelinePage)
+    login = URL("", LoginPage)
 
     def do_login(self):
         self.login.stay_or_go()
@@ -78,39 +84,39 @@ class TwitterBrowser(LoginBrowser):
 
     @need_login
     def post(self, thread, message):
-        datas = {'place_id': '',
-                 'tagged_users': ''}
-        datas['authenticity_token'] = self.authenticity_token
-        datas['status'] = message
+        datas = {"place_id": "", "tagged_users": ""}
+        datas["authenticity_token"] = self.authenticity_token
+        datas["status"] = message
         if thread:
-            datas['in_reply_to_status_id'] = thread.id.split('#')[-1]
+            datas["in_reply_to_status_id"] = thread.id.split("#")[-1]
 
         self.tweet.open(data=datas)
 
     def get_thread(self, _id, thread=None, seen=None):
-        splitted_id = _id.split('#')
+        splitted_id = _id.split("#")
 
         if not thread:
-            thread = self.thread_page.go(_id=splitted_id[1].split('.')[-1], user=splitted_id[0]).get_thread(obj=thread)
+            thread = self.thread_page.go(_id=splitted_id[1].split(".")[-1], user=splitted_id[0]).get_thread(obj=thread)
 
-        title_content = thread.title.split('\n\t')[-1]
+        title_content = thread.title.split("\n\t")[-1]
 
-        thread.root = Message(thread=thread,
-                              id=splitted_id[1].split('.')[-1],
-                              title=title_content[:50] if len(title_content) > 50 else title_content,
-                              sender=splitted_id[0],
-                              receivers=None,
-                              date=thread.date,
-                              parent=thread.root,
-                              content=title_content,
-                              signature=u'',
-                              children=[]
-                              )
+        thread.root = Message(
+            thread=thread,
+            id=splitted_id[1].split(".")[-1],
+            title=title_content[:50] if len(title_content) > 50 else title_content,
+            sender=splitted_id[0],
+            receivers=None,
+            date=thread.date,
+            parent=thread.root,
+            content=title_content,
+            signature="",
+            children=[],
+        )
 
         if seen and (_id not in seen):
             thread.root.flags = Message.IS_UNREAD
 
-        comments = self.thread_page.stay_or_go(_id=splitted_id[1].split('.')[-1], user=splitted_id[0]).iter_comments()
+        comments = self.thread_page.stay_or_go(_id=splitted_id[1].split(".")[-1], user=splitted_id[0]).iter_comments()
         for comment in comments:
             comment.thread = thread
             comment.parent = thread.root
@@ -125,11 +131,10 @@ class TwitterBrowser(LoginBrowser):
         return self.profil.go(path=path).iter_threads()
 
     def get_tweets_from_hashtag(self, path):
-        return self.get_tweets_from_search(u'#%s' % path if not path.startswith('#') else path)
+        return self.get_tweets_from_search("#%s" % path if not path.startswith("#") else path)
 
     def get_tweets_from_search(self, path):
         min_position = self.search_page.go(pattern=path).get_min_position()
-        params = {'q': "%s" % path,
-                  'src': 'sprv'}
+        params = {"q": "%s" % path, "src": "sprv"}
 
         return self.search.go(params=params).iter_threads(params=params, min_position=min_position)

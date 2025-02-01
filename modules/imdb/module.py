@@ -23,16 +23,16 @@ from woob.tools.backend import Module
 from .browser import ImdbBrowser
 
 
-__all__ = ['ImdbModule']
+__all__ = ["ImdbModule"]
 
 
 class ImdbModule(Module, CapCinema):
-    NAME = 'imdb'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'Internet Movie Database service'
-    LICENSE = 'AGPLv3+'
+    NAME = "imdb"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "julien.veyssier@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Internet Movie Database service"
+    LICENSE = "AGPLv3+"
     BROWSER = ImdbBrowser
 
     def get_movie(self, id):
@@ -66,11 +66,18 @@ class ImdbModule(Module, CapCinema):
         return self.browser.get_movie_releases(id, country)
 
     def fill_person(self, person, fields):
-        if 'real_name' in fields or 'birth_place' in fields\
-            or 'death_date' in fields or 'nationality' in fields\
-            or 'short_biography' in fields or 'roles' in fields\
-            or 'birth_date' in fields or 'thumbnail_url' in fields\
-                or 'gender' in fields or fields is None:
+        if (
+            "real_name" in fields
+            or "birth_place" in fields
+            or "death_date" in fields
+            or "nationality" in fields
+            or "short_biography" in fields
+            or "roles" in fields
+            or "birth_date" in fields
+            or "thumbnail_url" in fields
+            or "gender" in fields
+            or fields is None
+        ):
             per = self.get_person(person.id)
             person.real_name = per.real_name
             person.birth_date = per.birth_date
@@ -83,16 +90,21 @@ class ImdbModule(Module, CapCinema):
             person.roles = per.roles
             person.thumbnail_url = per.thumbnail_url
 
-        if 'biography' in fields:
+        if "biography" in fields:
             person.biography = self.get_person_biography(person.id)
 
         return person
 
     def fill_movie(self, movie, fields):
-        if 'other_titles' in fields or 'release_date' in fields\
-            or 'duration' in fields or 'country' in fields\
-            or 'roles' in fields or 'note' in fields\
-                or 'thumbnail_url' in fields:
+        if (
+            "other_titles" in fields
+            or "release_date" in fields
+            or "duration" in fields
+            or "country" in fields
+            or "roles" in fields
+            or "note" in fields
+            or "thumbnail_url" in fields
+        ):
             mov = self.get_movie(movie.id)
             movie.other_titles = mov.other_titles
             movie.release_date = mov.release_date
@@ -105,12 +117,9 @@ class ImdbModule(Module, CapCinema):
             movie.short_description = mov.short_description
             movie.thumbnail_url = mov.thumbnail_url
 
-        if 'all_release_dates' in fields:
+        if "all_release_dates" in fields:
             movie.all_release_dates = self.get_movie_releases(movie.id)
 
         return movie
 
-    OBJECTS = {
-        Person: fill_person,
-        Movie: fill_movie
-    }
+    OBJECTS = {Person: fill_person, Movie: fill_movie}

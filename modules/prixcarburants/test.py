@@ -25,18 +25,18 @@ from woob.tools.value import Value
 
 
 class PrixCarburantsTest(BackendTest):
-    MODULE = 'prixcarburants'
+    MODULE = "prixcarburants"
 
     def setUp(self):
         if not self.is_backend_configured():
-            self.backend.config['Zipcode'] = Value(value='59000')
+            self.backend.config["Zipcode"] = Value(value="59000")
 
     def test_search_products(self):
-        products = list(self.backend.search_products('gpl'))
+        products = list(self.backend.search_products("gpl"))
         self.assertTrue(len(products) == 1)
 
     def test_prixcarburants(self):
-        products = list(self.backend.search_products('gpl'))
+        products = list(self.backend.search_products("gpl"))
         product = products[0]
         product.backend = self.backend.name
         prices = list(itertools.islice(self.backend.iter_prices([product]), 0, 20))

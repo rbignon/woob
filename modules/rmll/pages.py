@@ -32,12 +32,12 @@ from woob.capabilities.image import Thumbnail
 from .video import RmllVideo
 
 
-BASE_URL = 'http://video.rmll.info'
+BASE_URL = "http://video.rmll.info"
 
 
 class NormalizeThumbnail(Filter):
     def filter(self, thumbnail):
-        if not thumbnail.startswith('http'):
+        if not thumbnail.startswith("http"):
             thumbnail = BASE_URL + thumbnail
         if thumbnail == "http://rmll.ubicast.tv/statics/mediaserver/images/video_icon.png":
             # This is the default: remove it as any frontend default should be better
@@ -46,17 +46,17 @@ class NormalizeThumbnail(Filter):
 
 
 class RmllDuration(Duration):
-    _regexp = re.compile(r'((?P<hh>\d+) h )?((?P<mm>\d+) m )?(?P<ss>\d+) s')
-    kwargs = {'hours': 'hh', 'minutes': 'mm', 'seconds': 'ss'}
+    _regexp = re.compile(r"((?P<hh>\d+) h )?((?P<mm>\d+) m )?(?P<ss>\d+) s")
+    kwargs = {"hours": "hh", "minutes": "mm", "seconds": "ss"}
 
 
 def create_video(metadata):
-    video = RmllVideo(metadata['oid'])
+    video = RmllVideo(metadata["oid"])
 
-    video.title = str(metadata['title'])
-    video.date = DateTime(Dict('creation'), default=NotLoaded)(metadata)
-    video.duration = RmllDuration(Dict('duration', default=''), default=NotLoaded)(metadata)
-    thumbnail = NormalizeThumbnail(Dict('thumb'))(metadata)
+    video.title = str(metadata["title"])
+    video.date = DateTime(Dict("creation"), default=NotLoaded)(metadata)
+    video.duration = RmllDuration(Dict("duration", default=""), default=NotLoaded)(metadata)
+    thumbnail = NormalizeThumbnail(Dict("thumb"))(metadata)
     video.thumbnail = Thumbnail(thumbnail)
     video.thumbnail.url = video.thumbnail.id
     video.url = NotLoaded
@@ -69,9 +69,13 @@ class RmllVideoPage(HTMLPage):
     class get_video(ItemElement):
         klass = RmllVideo
 
-        obj_id = CleanHTML('/html/head/meta[@property="og:url"]/@content') & CleanText() & Regexp(pattern=r'.*/permalink/(.+)/$')
-        obj_title = Format(u'%s', CleanHTML('/html/head/meta[@name="DC.title"]/@content') & CleanText())
-        obj_description = Format(u'%s', CleanHTML('/html/head/meta[@property="og:description"]/@content') & CleanText())
+        obj_id = (
+            CleanHTML('/html/head/meta[@property="og:url"]/@content')
+            & CleanText()
+            & Regexp(pattern=r".*/permalink/(.+)/$")
+        )
+        obj_title = Format("%s", CleanHTML('/html/head/meta[@name="DC.title"]/@content') & CleanText())
+        obj_description = Format("%s", CleanHTML('/html/head/meta[@property="og:description"]/@content') & CleanText())
 
         def obj_thumbnail(self):
             url = NormalizeThumbnail(CleanText('/html/head/meta[@property="og:image"]/@content'))(self)
@@ -81,17 +85,19 @@ class RmllVideoPage(HTMLPage):
                 return thumbnail
 
         def obj_url(self):
-            links = XPath('//div[@id="download_links"]/div[@class="paragraph"]/div[has-class("share")]/a[@target="_blank"]/@href')(self)
+            links = XPath(
+                '//div[@id="download_links"]/div[@class="paragraph"]/div[has-class("share")]/a[@target="_blank"]/@href'
+            )(self)
             for link in links:
-                ext = str(link).split('.')[-1]
+                ext = str(link).split(".")[-1]
                 self.logger.debug("Link:%s Ext:%s", link, ext)
-                if ext in ['mp4', 'webm']:
+                if ext in ["mp4", "webm"]:
                     return self.page.browser.BASEURL + link
 
 
 class RmllDurationPage(JsonPage):
     def get_duration(self):
-        return timedelta(seconds=Dict('duration')(self.doc))
+        return timedelta(seconds=Dict("duration")(self.doc))
 
 
 class RmllCollectionPage(HTMLPage):
@@ -103,8 +109,8 @@ class RmllCollectionPage(HTMLPage):
         class item(ItemElement):
             klass = RmllVideo
 
-            obj_id = Link('a') & Regexp(pattern=r'.*/videos/(.+)/$')
-            obj_title = Format(u'%s', CleanHTML('a/span/span/span[@class="item-entry-title"]') & CleanText())
+            obj_id = Link("a") & Regexp(pattern=r".*/videos/(.+)/$")
+            obj_title = Format("%s", CleanHTML('a/span/span/span[@class="item-entry-title"]') & CleanText())
             obj_url = NotLoaded
             # obj_date = XPath('a/span/span/span[@class="item-entry-creation"]')
 
@@ -120,32 +126,32 @@ class RmllCollectionPage(HTMLPage):
 
 class RmllChannelsPage(JsonPage):
     def iter_resources(self, split_path):
-        if 'channels' in self.doc:
-            for metadata in self.doc['channels']:
-                collection = Collection(split_path+[metadata['oid']], metadata['title'])
+        if "channels" in self.doc:
+            for metadata in self.doc["channels"]:
+                collection = Collection(split_path + [metadata["oid"]], metadata["title"])
                 yield collection
 
-        if 'videos' in self.doc:
-            for metadata in self.doc['videos']:
+        if "videos" in self.doc:
+            for metadata in self.doc["videos"]:
                 video = create_video(metadata)
                 yield video
 
 
 class RmllLatestPage(JsonPage):
     def iter_resources(self):
-        for metadata in self.doc['items']:
-            if metadata['type'] == 'c':
-                collection = Collection([metadata['oid']], metadata['title'])
+        for metadata in self.doc["items"]:
+            if metadata["type"] == "c":
+                collection = Collection([metadata["oid"]], metadata["title"])
                 yield collection
 
-            if metadata['type'] == 'v':
+            if metadata["type"] == "v":
                 video = create_video(metadata)
                 yield video
 
 
 class RmllSearchPage(JsonPage):
     def iter_resources(self):
-        if 'videos' in self.doc:
-            for metadata in self.doc['videos']:
+        if "videos" in self.doc:
+            for metadata in self.doc["videos"]:
                 video = create_video(metadata)
                 yield video

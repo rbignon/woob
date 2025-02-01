@@ -22,12 +22,12 @@ from typing import Any, Callable
 from .base import _NO_DEFAULT, Filter, ItemNotFound, _Filter, debug
 
 
-__all__ = ['Dict']
+__all__ = ["Dict"]
 
 
 class NotFound:
     def __repr__(self):
-        return 'NOT_FOUND'
+        return "NOT_FOUND"
 
 
 _NOT_FOUND = NotFound()
@@ -59,14 +59,13 @@ class Dict(Filter):
     >>> Dict('notfound', default=None)(d)
     >>>
     """
-    def __init__(self,
-                 selector: str | _Filter | Callable | Any | None = None,
-                 default: Any = _NO_DEFAULT):
+
+    def __init__(self, selector: str | _Filter | Callable | Any | None = None, default: Any = _NO_DEFAULT):
         super().__init__(default=default)
-        if selector is None or selector == '':
+        if selector is None or selector == "":
             self.selector = []
         elif isinstance(selector, str):
-            self.selector = selector.split('/')
+            self.selector = selector.split("/")
         elif callable(selector):
             self.selector = [selector]
         else:
@@ -79,7 +78,7 @@ class Dict(Filter):
     @debug()
     def filter(self, value):
         if value is _NOT_FOUND:
-            return self.default_or_raise(ItemNotFound(f'Element {self.selector!r} not found' % self.selector))
+            return self.default_or_raise(ItemNotFound(f"Element {self.selector!r} not found" % self.selector))
 
         return value
 

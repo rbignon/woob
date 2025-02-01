@@ -20,23 +20,23 @@
 from woob_modules.creditmutuel.browser import CreditMutuelBrowser
 
 
-__all__ = ['CICBrowser']
+__all__ = ["CICBrowser"]
 
 
 class CICBrowser(CreditMutuelBrowser):
-    BASEURL = 'https://www.cic.fr'
+    BASEURL = "https://www.cic.fr"
 
     login = CreditMutuelBrowser.login.with_urls(
-        r'/fr/authentification.html',
-        r'/sb/fr/banques/particuliers/index.html',
-        r'/(?P<subbank>.*)/fr/$',
-        r'/(?P<subbank>.*)/fr/banques/accueil.html',
-        r'/(?P<subbank>.*)/fr/banques/particuliers/index.html',
+        r"/fr/authentification.html",
+        r"/sb/fr/banques/particuliers/index.html",
+        r"/(?P<subbank>.*)/fr/$",
+        r"/(?P<subbank>.*)/fr/banques/accueil.html",
+        r"/(?P<subbank>.*)/fr/banques/particuliers/index.html",
     )
 
     decoupled_state = CreditMutuelBrowser.decoupled_state.with_urls(
-        r'/(?P<subbank>.*)fr/otp/SOSD_OTP_GetTransactionState.htm',
+        r"/(?P<subbank>.*)fr/otp/SOSD_OTP_GetTransactionState.htm",
     )
     cancel_decoupled = CreditMutuelBrowser.cancel_decoupled.with_urls(
-        r'/(?P<subbank>.*)fr/otp/SOSD_OTP_CancelTransaction.htm',
+        r"/(?P<subbank>.*)fr/otp/SOSD_OTP_CancelTransaction.htm",
     )

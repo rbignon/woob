@@ -31,30 +31,30 @@ from woob.tools.date import datetime
 from .browser import ImgurBrowser
 
 
-__all__ = ['ImgurModule']
+__all__ = ["ImgurModule"]
 
 
 class ImgPaste(BasePaste):
-    delete_url = StringField('URL to delete the image')
+    delete_url = StringField("URL to delete the image")
 
     @classmethod
     def id2url(cls, id):
-        return 'https://imgur.com/%s' % id
+        return "https://imgur.com/%s" % id
 
     @property
     def raw_url(self):
         # TODO get the right extension
-        return 'https://i.imgur.com/%s.png' % self.id
+        return "https://i.imgur.com/%s.png" % self.id
 
 
 class Img(BaseImage):
     @property
     def thumbnail_url(self):
-        return ImgPaste(self.id + 't').raw_url
+        return ImgPaste(self.id + "t").raw_url
 
     @property
     def raw_url(self):
-        return 'https://i.imgur.com/%s.%s' % (self.id, self.ext)
+        return "https://i.imgur.com/%s.%s" % (self.id, self.ext)
 
 
 class ImgGallery(BaseGallery):
@@ -64,25 +64,25 @@ class ImgGallery(BaseGallery):
 
     @classmethod
     def id2url(cls, id):
-        return 'https://imgur.com/gallery/%s' % id
+        return "https://imgur.com/gallery/%s" % id
 
     def iter_image(self):
         return self._imgs
 
 
 class ImgurModule(Module, CapPaste, CapGallery, CapImage):
-    NAME = 'imgur'
-    DESCRIPTION = u'imgur image upload service'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "imgur"
+    DESCRIPTION = "imgur image upload service"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = ImgurBrowser
 
-    IMGURL = re.compile(r'https?://(?:[a-z]+\.)?imgur.com/([a-zA-Z0-9]+)(?:\.[a-z]+)?$')
-    GALLURL = re.compile(r'https?://(?:[a-z]+\.)?imgur.com/a/([a-zA-Z0-9]+)/?$')
-    ID = re.compile(r'[0-9a-zA-Z]+$')
+    IMGURL = re.compile(r"https?://(?:[a-z]+\.)?imgur.com/([a-zA-Z0-9]+)(?:\.[a-z]+)?$")
+    GALLURL = re.compile(r"https?://(?:[a-z]+\.)?imgur.com/a/([a-zA-Z0-9]+)/?$")
+    ID = re.compile(r"[0-9a-zA-Z]+$")
 
     # CapPaste
     def new_paste(self, *a, **kw):
@@ -91,12 +91,12 @@ class ImgurModule(Module, CapPaste, CapGallery, CapImage):
     def can_post(self, contents, title=None, public=None, max_age=None):
         if public is False:
             return 0
-        elif re.search(r'[^a-zA-Z0-9=+/\s]', contents):
+        elif re.search(r"[^a-zA-Z0-9=+/\s]", contents):
             return 0
         elif max_age:
             return 0
         else:
-            mime = image_mime(contents, ('gif', 'jpeg', 'png', 'tiff', 'xcf', 'pdf'))
+            mime = image_mime(contents, ("gif", "jpeg", "png", "tiff", "xcf", "pdf"))
             return 20 * int(mime is not None)
 
     def get_paste(self, id):
@@ -113,32 +113,32 @@ class ImgurModule(Module, CapPaste, CapGallery, CapImage):
 
     def post_paste(self, paste, max_age=None):
         res = self.browser.post_image(b64=paste.contents, title=paste.title)
-        paste.id = res['id']
-        paste.delete_url = res['delete_url']
+        paste.id = res["id"]
+        paste.delete_url = res["delete_url"]
         return paste
 
     # CapGallery
     def _build_img(self, d, n, gallery):
-        img = Img(d['id'], gallery=gallery, url=d['link'], index=n)
-        img.title = d['title'] or u''
-        img.description = d['description'] or u''
-        img.ext = img.url.rsplit('.', 1)[-1]
-        img.date = datetime.fromtimestamp(d['datetime'])
+        img = Img(d["id"], gallery=gallery, url=d["link"], index=n)
+        img.title = d["title"] or ""
+        img.description = d["description"] or ""
+        img.ext = img.url.rsplit(".", 1)[-1]
+        img.date = datetime.fromtimestamp(d["datetime"])
         img.thumbnail = Thumbnail(img.thumbnail_url)
         img.thumbnail.date = img.date
-        img.nsfw = bool(d['nsfw'])
-        img.size = d['size']
+        img.nsfw = bool(d["nsfw"])
+        img.size = d["size"]
         return img
 
     def _build_gallery(self, d):
-        gallery = ImgGallery(d['id'], url=d['link'])
-        gallery.title = d['title'] or u''
-        gallery.description = d['description'] or u''
-        gallery.date = datetime.fromtimestamp(d['datetime'])
-        gallery.thumbnail = Thumbnail(Img(d['cover']).thumbnail_url)
+        gallery = ImgGallery(d["id"], url=d["link"])
+        gallery.title = d["title"] or ""
+        gallery.description = d["description"] or ""
+        gallery.date = datetime.fromtimestamp(d["datetime"])
+        gallery.thumbnail = Thumbnail(Img(d["cover"]).thumbnail_url)
 
-        if 'images' in d:
-            for n, d in enumerate(d['images']):
+        if "images" in d:
+            for n, d in enumerate(d["images"]):
                 img = self._build_img(d, n, gallery)
                 gallery._imgs.append(img)
             gallery.cardinality = len(gallery._imgs)
@@ -166,7 +166,7 @@ class ImgurModule(Module, CapPaste, CapGallery, CapImage):
     def search_galleries(self, pattern, sortby=CapGallery.SEARCH_RELEVANCE):
         d = self.browser.search_items(pattern, sortby)
         for sub in d:
-            if sub['is_album']:
+            if sub["is_album"]:
                 yield self._build_gallery(sub)
 
     # CapImage
@@ -185,7 +185,7 @@ class ImgurModule(Module, CapPaste, CapGallery, CapImage):
     def search_file(self, pattern, sortby=CapGallery.SEARCH_RELEVANCE):
         d = self.browser.search_items(pattern, sortby)
         for sub in d:
-            if not sub['is_album']:
+            if not sub["is_album"]:
                 yield self._build_img(sub, 0, None)
 
     def search_image(self, pattern, sortby=CapGallery.SEARCH_RELEVANCE, nsfw=False):
@@ -194,9 +194,9 @@ class ImgurModule(Module, CapPaste, CapGallery, CapImage):
                 yield img
 
     def fill_img(self, img, fields):
-        if 'data' in fields:
+        if "data" in fields:
             self.browser.fill_file(img, fields)
-        if 'thumbnail' in fields and img.thumbnail:
+        if "thumbnail" in fields and img.thumbnail:
             self.fillobj(img.thumbnail, None)
         return img
 

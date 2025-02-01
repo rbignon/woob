@@ -20,7 +20,7 @@ from woob.tools.test import BackendTest
 
 
 class BinanceTest(BackendTest):
-    MODULE = 'binance'
+    MODULE = "binance"
 
     def test_iter_accounts(self):
         return list(self.backend.iter_accounts())

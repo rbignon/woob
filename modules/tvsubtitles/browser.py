@@ -23,20 +23,43 @@ from woob.browser.exceptions import BrowserHTTPNotFound
 from .pages import HomePage, SearchPage, SeasonPage, SeriePage
 
 
-__all__ = ['TvsubtitlesBrowser']
+__all__ = ["TvsubtitlesBrowser"]
 
-LANGUAGE_LIST = ['en', 'es', 'fr', 'de', 'br', 'ru', 'ua', 'it', 'gr',
-                 'ar', 'hu', 'pl', 'tr', 'nl', 'pt', 'sv', 'da', 'fi',
-                 'ko', 'cn', 'jp', 'bg', 'cz', 'ro']
+LANGUAGE_LIST = [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "br",
+    "ru",
+    "ua",
+    "it",
+    "gr",
+    "ar",
+    "hu",
+    "pl",
+    "tr",
+    "nl",
+    "pt",
+    "sv",
+    "da",
+    "fi",
+    "ko",
+    "cn",
+    "jp",
+    "bg",
+    "cz",
+    "ro",
+]
 
 
 class TvsubtitlesBrowser(PagesBrowser):
-    BASEURL = 'http://www.tvsubtitles.net'
+    BASEURL = "http://www.tvsubtitles.net"
 
-    search = URL(r'/search.php', SearchPage)
-    serie = URL(r'/tvshow-.*.html', SeriePage)
-    season = URL(r'/subtitle-(?P<id>[0-9]*-[0-9]*-.*).html', SeasonPage)
-    home = URL(r'/', HomePage)
+    search = URL(r"/search.php", SearchPage)
+    serie = URL(r"/tvshow-.*.html", SeriePage)
+    season = URL(r"/subtitle-(?P<id>[0-9]*-[0-9]*-.*).html", SeasonPage)
+    home = URL(r"/", HomePage)
 
     def iter_subtitles(self, language, pattern):
         self.home.go()

@@ -23,42 +23,40 @@ from .pages import CatchHTTP, EntryPage, ListPage, SearchPage
 
 
 class RedditBrowser(PagesBrowser):
-    BASEURL = 'https://www.reddit.com/r/pics/'
+    BASEURL = "https://www.reddit.com/r/pics/"
 
-    listing = URL(r'(?P<cat>\w*)/?\?count=\d+&after=(?P<after>\w+)',
-                  r'(?P<cat>\w*)/?$',
-                  ListPage)
-    entry = URL(r'/comments/(?P<id>\w+)/.*', EntryPage)
-    search = URL(r'search\?sort=(?P<sort>\w+)&restrict_sr=on', SearchPage)
+    listing = URL(r"(?P<cat>\w*)/?\?count=\d+&after=(?P<after>\w+)", r"(?P<cat>\w*)/?$", ListPage)
+    entry = URL(r"/comments/(?P<id>\w+)/.*", EntryPage)
+    search = URL(r"search\?sort=(?P<sort>\w+)&restrict_sr=on", SearchPage)
     # catch-all to avoid BrowserHTTPSDowngrade
-    catch_http = URL(r'http://.*', CatchHTTP)
+    catch_http = URL(r"http://.*", CatchHTTP)
 
     def __init__(self, sub, *args, **kwargs):
         super(RedditBrowser, self).__init__(*args, **kwargs)
-        self.BASEURL = 'https://www.reddit.com/r/%s/' % sub
+        self.BASEURL = "https://www.reddit.com/r/%s/" % sub
 
-    def iter_images(self, cat=''):
+    def iter_images(self, cat=""):
         self.listing.go(cat=cat)
         return self.page.iter_images()
 
-    def search_images(self, pattern, sort='top', nsfw=False):
-        nsfw = {True: 'yes', False: 'no'}[nsfw]
-        pattern = '%s nsfw:%s' % (pattern, nsfw)
+    def search_images(self, pattern, sort="top", nsfw=False):
+        nsfw = {True: "yes", False: "no"}[nsfw]
+        pattern = "%s nsfw:%s" % (pattern, nsfw)
 
-        self.search.go(sort=sort, params={'q': pattern})
+        self.search.go(sort=sort, params={"q": pattern})
         return self.page.iter_images()
 
-    def iter_threads(self, cat=''):
+    def iter_threads(self, cat=""):
         self.listing.go(cat=cat)
         return self.page.iter_threads()
 
     def fill_thread(self, thread):
-        self.location(thread.url, params={'sort': 'old'})
+        self.location(thread.url, params={"sort": "old"})
         assert self.entry.is_here()
         self.page.fill_thread(thread)
 
     def get_thread(self, id):
-        self.entry.go(id=id, params={'sort': 'old'})
+        self.entry.go(id=id, params={"sort": "old"})
         return self.page.get_thread(id)
 
     def get_image(self, id):

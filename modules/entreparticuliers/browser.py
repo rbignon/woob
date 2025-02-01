@@ -26,12 +26,11 @@ from .pages import CitiesPage, HousingPage, SearchPage
 
 
 class EntreparticuliersBrowser(PagesBrowser):
-    BASEURL = 'https://api.entreparticuliers.com'
+    BASEURL = "https://api.entreparticuliers.com"
 
-    cities = URL(r'/api/voiture/GetLocalisations/\?term=(?P<pattern>.*)', CitiesPage)
-    housing = URL(r'/api/immo/Getannonce/\?id=(?P<_id>.*)&rubrique=(?P<_rubrique>.*)',
-                  HousingPage)
-    search_house = URL('/api/immo/GetBiens', SearchPage)
+    cities = URL(r"/api/voiture/GetLocalisations/\?term=(?P<pattern>.*)", CitiesPage)
+    housing = URL(r"/api/immo/Getannonce/\?id=(?P<_id>.*)&rubrique=(?P<_rubrique>.*)", HousingPage)
+    search_house = URL("/api/immo/GetBiens", SearchPage)
 
     def search_city(self, pattern):
         self.update_header()
@@ -41,50 +40,59 @@ class EntreparticuliersBrowser(PagesBrowser):
         self.update_header()
 
         data = {}
-        data['rubrique'] = TYPES.get(query.type)
-        data['prix_max'] = query.cost_max or None
-        data['surface_min'] = query.area_min or None
+        data["rubrique"] = TYPES.get(query.type)
+        data["prix_max"] = query.cost_max or None
+        data["surface_min"] = query.area_min or None
         if len(cities) > 1:
-            data['rayon'] = None
+            data["rayon"] = None
         else:
-            data['rayon'] = 100
-        data['CategorieMode'] = None
-        data['CategorieMaison'] = None
-        data['Kilometrage'] = None
-        data['top'] = 50
-        data['order_by'] = 5
-        data['sort_order'] = 1
-        data['lstNbPieces'] = [query.nb_rooms or 0]
-        data['pageNumber'] = 1
+            data["rayon"] = 100
+        data["CategorieMode"] = None
+        data["CategorieMaison"] = None
+        data["Kilometrage"] = None
+        data["top"] = 50
+        data["order_by"] = 5
+        data["sort_order"] = 1
+        data["lstNbPieces"] = [query.nb_rooms or 0]
+        data["pageNumber"] = 1
 
         for city in cities:
-            data['localisation'] = {}
-            data['localisation']['localisationid'] = city.id
-            data['localisation']['label'] = city.name
-            data['localisation']['localisationType'] = 5
-            data['localisationType'] = 5
-            data['lstLocalisationId'] = str(city.id)
+            data["localisation"] = {}
+            data["localisation"]["localisationid"] = city.id
+            data["localisation"]["label"] = city.name
+            data["localisation"]["localisationType"] = 5
+            data["localisationType"] = 5
+            data["lstLocalisationId"] = str(city.id)
 
             for house_type in query.house_types:
-                data['lstTbien'] = RET.get(house_type)
+                data["lstTbien"] = RET.get(house_type)
 
                 for house in self.search_house.go(data=json.dumps(data)).iter_houses():
-                    if (empty(query.cost_min) or house.cost >= query.cost_min) and \
-                       (empty(query.area_max) or house.area <= query.area_max):
+                    if (empty(query.cost_min) or house.cost >= query.cost_min) and (
+                        empty(query.area_max) or house.area <= query.area_max
+                    ):
                         yield house
 
     def get_housing(self, _id, obj=None):
         self.reset_header()
 
-        _id_ = _id.split('#')
+        _id_ = _id.split("#")
         return self.housing.go(_rubrique=_id_[0], _id=_id_[1]).get_housing(obj=obj)
 
     def update_header(self):
-        self.session.headers.update({"X-Requested-With": "XMLHttpRequest",
-                                     "Content-Type": "application/json; charset=utf-8",
-                                     "Accept": "application/json, text/javascript, */*; q=0.01"})
+        self.session.headers.update(
+            {
+                "X-Requested-With": "XMLHttpRequest",
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json, text/javascript, */*; q=0.01",
+            }
+        )
 
     def reset_header(self):
-        self.session.headers.update({"Upgrade-Insecure-Requests": "1",
-                                     "Content-Type": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"})
+        self.session.headers.update(
+            {
+                "Upgrade-Insecure-Requests": "1",
+                "Content-Type": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            }
+        )

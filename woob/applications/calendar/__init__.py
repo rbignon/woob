@@ -18,4 +18,4 @@
 from .calendar import AppCalendar
 
 
-__all__ = ['AppCalendar']
+__all__ = ["AppCalendar"]

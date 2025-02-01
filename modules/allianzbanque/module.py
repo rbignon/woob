@@ -26,31 +26,31 @@ from woob_modules.cmso.module import CmsoModule
 from .browser import AllianzbanqueBrowser
 
 
-__all__ = ['AllianzbanqueModule']
+__all__ = ["AllianzbanqueModule"]
 
 
 class AllianzbanqueModule(CmsoModule, CapBankWealth, CapProfile):
-    NAME = 'allianzbanque'
-    DESCRIPTION = 'Allianz Banque'
-    MAINTAINER = 'Damien Mat'
-    EMAIL = 'damien.mat@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('cmso',)
+    NAME = "allianzbanque"
+    DESCRIPTION = "Allianz Banque"
+    MAINTAINER = "Damien Mat"
+    EMAIL = "damien.mat@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("cmso",)
     BROWSER = AllianzbanqueBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('code'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("code"),
+        ValueTransient("request_information"),
     )
 
     def create_default_browser(self):
         return self.create_browser(
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_investment(self, account):

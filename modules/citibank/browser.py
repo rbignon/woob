@@ -31,67 +31,70 @@ from woob.tools.js import Javascript
 from .parser import StatementParser, clean_label
 
 
-__all__ = ['Citibank']
+__all__ = ["Citibank"]
 
 
 class SomePage(HTMLPage):
     @property
     def logged(self):
-        return bool(self.doc.xpath('//a[text()="Sign Off"]') +
-            self.doc.xpath('//div[@id="CardsLoadingDiv"]'))
+        return bool(self.doc.xpath('//a[text()="Sign Off"]') + self.doc.xpath('//div[@id="CardsLoadingDiv"]'))
 
 
 class IndexPage(SomePage):
     def extra(self):
-        APPEND = r'jQuery\( "form" \).each\(function\(\) {' \
-                    r'if\(isValidUrl\(jQuery\(this\).attr\("action"\)\)\){' \
-                        r'jQuery\(this\).append\(([^)]+)\);}}\);'
-        script = self.doc.xpath(
-            '//script[contains(text(),"XXX_Extra")]/text()')[0]
-        script = re.sub(APPEND, lambda m: 'return %s;' % m.group(1), script)
-        script = re.sub(r'jQuery\(document\)[^\n]+\n', '', script)
-        for x in re.findall(r'function ([^(]+)\(', script):
-            script += '\nvar x = %s(); if (x) return x;' % x
+        APPEND = (
+            r'jQuery\( "form" \).each\(function\(\) {'
+            r'if\(isValidUrl\(jQuery\(this\).attr\("action"\)\)\){'
+            r"jQuery\(this\).append\(([^)]+)\);}}\);"
+        )
+        script = self.doc.xpath('//script[contains(text(),"XXX_Extra")]/text()')[0]
+        script = re.sub(APPEND, lambda m: "return %s;" % m.group(1), script)
+        script = re.sub(r"jQuery\(document\)[^\n]+\n", "", script)
+        for x in re.findall(r"function ([^(]+)\(", script):
+            script += "\nvar x = %s(); if (x) return x;" % x
         js = Javascript("function run(){%s}" % script)
         html = js.call("run")
-        return re.findall(r'name=([^ ]+) value=([^>]+)>', html)
+        return re.findall(r"name=([^ ]+) value=([^>]+)>", html)
 
 
 class AccountsPage(JsonPage):
     logged = True
 
     def inner_ids_dict(self):
-        return dict((prod['parsedAccountName'][-4:], prod['accountInstanceId'])
-            for bean in self.doc['summaryViewBeanList']
-            for cat in bean['accountsSummaryViewObj']['categoryList']
-            for prod in cat['products'] if cat['categoryType'] == 'CRD')
+        return dict(
+            (prod["parsedAccountName"][-4:], prod["accountInstanceId"])
+            for bean in self.doc["summaryViewBeanList"]
+            for cat in bean["accountsSummaryViewObj"]["categoryList"]
+            for prod in cat["products"]
+            if cat["categoryType"] == "CRD"
+        )
 
 
 class AccDetailsPage(JsonPage):
     logged = True
 
     def account(self):
-        detact = self.doc['accountDetailsAndActivity']
-        details = detact['accountDetails']
+        detact = self.doc["accountDetailsAndActivity"]
+        details = detact["accountDetails"]
         account = Account()
         account.type = Account.TYPE_CARD
-        account.label = re.sub(r'<[^>]+>', '', detact['accountName'])
+        account.label = re.sub(r"<[^>]+>", "", detact["accountName"])
         account.id = account.label[-4:]
-        for bal in details['accountBalances']:
-            label, value = bal['label'], (bal['value'] or ['0'])[0]
-            if label == 'Current Balance:':
-                if value[0] == '(' and value[-1] == ')':
+        for bal in details["accountBalances"]:
+            label, value = bal["label"], (bal["value"] or ["0"])[0]
+            if label == "Current Balance:":
+                if value[0] == "(" and value[-1] == ")":
                     value = value[1:-1]
                     sign = 1
                 else:
                     sign = -1
                 account.currency = Account.get_currency(value)
                 account.balance = sign * AmTr.decimal_amount(value)
-            elif label == 'Total Revolving Credit Line:':
+            elif label == "Total Revolving Credit Line:":
                 account.cardlimit = AmTr.decimal_amount(value)
-            elif label.startswith('Minimum Payment Due'):
-                d = re.match(r'.*(..-..-....):$', label).group(1)
-                account.paydate = datetime.strptime(d, '%m-%d-%Y')
+            elif label.startswith("Minimum Payment Due"):
+                d = re.match(r".*(..-..-....):$", label).group(1)
+                account.paydate = datetime.strptime(d, "%m-%d-%Y")
                 account.paymin = AmTr.decimal_amount(value)
         return account
 
@@ -99,25 +102,23 @@ class AccDetailsPage(JsonPage):
         return sorted(self.unsorted_trans(), key=lambda t: t.date, reverse=True)
 
     def unsorted_trans(self):
-        for jnl in self.doc['accountDetailsAndActivity']['accountActivity'] \
-                           ['postedTransactionJournals']:
-            tdate = jnl['columns'][0]['activityColumn'][0]
-            label = jnl['columns'][1]['activityColumn'][0]
-            amount = jnl['columns'][3]['activityColumn'][0]
-            xdescs = dict((x['label'], x['value'][0])
-                          for x in jnl['extendedDescriptions'])
-            pdate = xdescs['Posted Date :']
-            ref = xdescs.get('Reference Number:') or ''
+        for jnl in self.doc["accountDetailsAndActivity"]["accountActivity"]["postedTransactionJournals"]:
+            tdate = jnl["columns"][0]["activityColumn"][0]
+            label = jnl["columns"][1]["activityColumn"][0]
+            amount = jnl["columns"][3]["activityColumn"][0]
+            xdescs = dict((x["label"], x["value"][0]) for x in jnl["extendedDescriptions"])
+            pdate = xdescs["Posted Date :"]
+            ref = xdescs.get("Reference Number:") or ""
 
-            if amount.startswith('(') and amount.endswith(')'):
+            if amount.startswith("(") and amount.endswith(")"):
                 amount = AmTr.decimal_amount(amount[1:-1])
             else:
                 amount = -AmTr.decimal_amount(amount)
             label = clean_label(label)
 
             trans = Transaction(ref)
-            trans.date = datetime.strptime(tdate, '%m-%d-%Y')
-            trans.rdate = datetime.strptime(pdate, '%m-%d-%Y')
+            trans.date = datetime.strptime(tdate, "%m-%d-%Y")
+            trans.rdate = datetime.strptime(pdate, "%m-%d-%Y")
             trans.type = Transaction.TYPE_UNKNOWN
             trans.raw = label
             trans.label = label
@@ -127,9 +128,11 @@ class AccDetailsPage(JsonPage):
 
 class StatementsPage(SomePage):
     def dates(self):
-        return [x[:10] for x in self.doc.xpath(
-            '//select[@id="currentStatementsDate"]/option/@value')
-            if re.match(r'^\d\d\d\d-\d\d-\d\d All$', x)]
+        return [
+            x[:10]
+            for x in self.doc.xpath('//select[@id="currentStatementsDate"]/option/@value')
+            if re.match(r"^\d\d\d\d-\d\d-\d\d All$", x)
+        ]
 
 
 class StatementPage(RawPage):
@@ -161,21 +164,24 @@ class Citibank(LoginBrowser):
     Contributions are welcome!
     """
 
-    BASEURL = 'https://online.citi.com'
+    BASEURL = "https://online.citi.com"
     MAX_RETRIES = 10
     TIMEOUT = 30.0
-    index = URL(r'/US/JPS/portal/Index.do', IndexPage)
-    signon = URL(r'/US/JSO/signon/ProcessUsernameSignon.do', SomePage)
-    accdetailhtml = URL(r'/US/NCPS/accountdetailactivity/flow.action.*$', SomePage)
-    accounts = URL(r'/US/REST/accountsPanel/getCustomerAccounts.jws\?ttc=(?P<ttc>.*)$',
-                   AccountsPage)
-    accdetails = URL(r'/US/REST/accountDetailsActivity'
-        r'/getAccountDetailsActivity.jws\?accountID=(?P<accountID>.*)$', AccDetailsPage)
-    statements = URL(r'/US/NCSC/doccenter/flow.action\?TTC=1079&'
-        r'accountID=(?P<accountID>.*)$', StatementsPage)
-    statement = URL(r'/US/REST/doccenterresource/downloadStatementsPdf.jws\?'
-        r'selectedIndex=0&date=(?P<date>....-..-..)&downloadFormat=pdf', StatementPage)
-    unknown = URL(r'/.*$', SomePage)
+    index = URL(r"/US/JPS/portal/Index.do", IndexPage)
+    signon = URL(r"/US/JSO/signon/ProcessUsernameSignon.do", SomePage)
+    accdetailhtml = URL(r"/US/NCPS/accountdetailactivity/flow.action.*$", SomePage)
+    accounts = URL(r"/US/REST/accountsPanel/getCustomerAccounts.jws\?ttc=(?P<ttc>.*)$", AccountsPage)
+    accdetails = URL(
+        r"/US/REST/accountDetailsActivity" r"/getAccountDetailsActivity.jws\?accountID=(?P<accountID>.*)$",
+        AccDetailsPage,
+    )
+    statements = URL(r"/US/NCSC/doccenter/flow.action\?TTC=1079&" r"accountID=(?P<accountID>.*)$", StatementsPage)
+    statement = URL(
+        r"/US/REST/doccenterresource/downloadStatementsPdf.jws\?"
+        r"selectedIndex=0&date=(?P<date>....-..-..)&downloadFormat=pdf",
+        StatementPage,
+    )
+    unknown = URL(r"/.*$", SomePage)
 
     def get_account(self, id_):
         innerId = self.to_accounts().inner_ids_dict().get(id_)
@@ -199,7 +205,7 @@ class Citibank(LoginBrowser):
         return self.to_page(self.accdetails, accountID=innerId)
 
     def to_accounts(self):
-        return self.to_page(self.accounts, ttc='742')
+        return self.to_page(self.accounts, ttc="742")
 
     def to_statements(self, innerId):
         return self.to_page(self.statements, accountID=innerId)
@@ -224,7 +230,6 @@ class Citibank(LoginBrowser):
 
     def do_login(self):
         self.session.cookies.clear()
-        data = dict([('username', self.username), ('password', self.password)]
-                    + self.index.go().extra())
+        data = dict([("username", self.username), ("password", self.password)] + self.index.go().extra())
         if not self.signon.go(data=data).logged:
             raise BrowserIncorrectPassword()

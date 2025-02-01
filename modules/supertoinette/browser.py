@@ -23,14 +23,14 @@ from woob.browser import URL, PagesBrowser
 from .pages import RecipePage, ResultsPage
 
 
-__all__ = ['SupertoinetteBrowser']
+__all__ = ["SupertoinetteBrowser"]
 
 
 class SupertoinetteBrowser(PagesBrowser):
-    BASEURL = 'https://www.supertoinette.com'
+    BASEURL = "https://www.supertoinette.com"
 
-    search = URL(r'/liste-recettes\?q=(?P<pattern>.*)', ResultsPage)
-    recipe = URL('/recette/(?P<id>.*).html', RecipePage)
+    search = URL(r"/liste-recettes\?q=(?P<pattern>.*)", ResultsPage)
+    recipe = URL("/recette/(?P<id>.*).html", RecipePage)
 
     def iter_recipes(self, pattern):
         return self.search.go(pattern=pattern).iter_recipes()

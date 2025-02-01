@@ -30,7 +30,7 @@ class Visibility(Optimization):
         self._cron = None
 
     def start(self):
-        self._cron = self._sched.repeat(60*5, self.reconnect)
+        self._cron = self._sched.repeat(60 * 5, self.reconnect)
         return True
 
     def stop(self):

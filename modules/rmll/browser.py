@@ -23,18 +23,18 @@ from woob.browser.exceptions import HTTPNotFound
 from .pages import RmllChannelsPage, RmllCollectionPage, RmllDurationPage, RmllLatestPage, RmllSearchPage, RmllVideoPage
 
 
-__all__ = ['RmllBrowser']
+__all__ = ["RmllBrowser"]
 
 
 class RmllBrowser(PagesBrowser):
-    BASEURL = 'https://rmll.ubicast.tv'
+    BASEURL = "https://rmll.ubicast.tv"
 
-    index_page = URL(r'channels/content/(?P<id>.+)', RmllCollectionPage)
-    latest_page = URL(r'api/v2/latest/', RmllLatestPage)
-    video_page = URL(r'permalink/(?P<id>.+)/', RmllVideoPage)
-    channels_page = URL(r'api/v2/channels/content/\?parent_oid=(?P<oid>.*)', RmllChannelsPage)
-    search_page = URL(r'api/v2/search/\?search=(?P<pattern>.+)', RmllSearchPage)
-    duration_page = URL(r'api/v2/medias/modes/\?oid=(?P<oid>.*)', RmllDurationPage)
+    index_page = URL(r"channels/content/(?P<id>.+)", RmllCollectionPage)
+    latest_page = URL(r"api/v2/latest/", RmllLatestPage)
+    video_page = URL(r"permalink/(?P<id>.+)/", RmllVideoPage)
+    channels_page = URL(r"api/v2/channels/content/\?parent_oid=(?P<oid>.*)", RmllChannelsPage)
+    search_page = URL(r"api/v2/search/\?search=(?P<pattern>.+)", RmllSearchPage)
+    duration_page = URL(r"api/v2/medias/modes/\?oid=(?P<oid>.*)", RmllDurationPage)
 
     def __init__(self, *args, **kwargs):
         self.channels = None
@@ -60,7 +60,7 @@ class RmllBrowser(PagesBrowser):
         return self.page.iter_resources()
 
     def get_channel_videos(self, split_path):
-        oid = ''
+        oid = ""
         if len(split_path) > 0:
             oid = split_path[-1]
         try:

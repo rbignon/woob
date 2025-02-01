@@ -21,4 +21,4 @@
 from .module import TapatalkModule
 
 
-__all__ = ['TapatalkModule']
+__all__ = ["TapatalkModule"]

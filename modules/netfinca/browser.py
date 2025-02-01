@@ -30,13 +30,12 @@ from .pages import AccountsPage, HistoryPage, InvestmentsPage, MarketOrdersPage
 
 
 class NetfincaBrowser(LoginBrowser):
-    accounts = URL(r'/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis', AccountsPage)
+    accounts = URL(r"/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis", AccountsPage)
     investments = URL(
-        r'/netfinca-titres/servlet/com.netfinca.frontcr.account.WalletVal\?nump=(?P<nump_id>.*)',
-        InvestmentsPage
+        r"/netfinca-titres/servlet/com.netfinca.frontcr.account.WalletVal\?nump=(?P<nump_id>.*)", InvestmentsPage
     )
-    market_orders = URL(r'/netfinca-titres/servlet/com.netfinca.frontcr.order.OrderList', MarketOrdersPage)
-    history = URL(r'/netfinca-titres/servlet/com.netfinca.frontcr.account.AccountHistory', HistoryPage)
+    market_orders = URL(r"/netfinca-titres/servlet/com.netfinca.frontcr.order.OrderList", MarketOrdersPage)
+    history = URL(r"/netfinca-titres/servlet/com.netfinca.frontcr.account.AccountHistory", HistoryPage)
 
     def do_login(self):
         raise BrowserUnavailable()
@@ -49,7 +48,7 @@ class NetfincaBrowser(LoginBrowser):
     def check_action_needed(self):
         self.accounts.stay_or_go()
         message = self.page.get_action_needed_message()
-        if 'merci de renseigner les informations' in message:
+        if "merci de renseigner les informations" in message:
             # Customers have to fill their e-mail address and phone number
             raise ActionNeeded(message)
 
@@ -68,14 +67,14 @@ class NetfincaBrowser(LoginBrowser):
 
     def go_history_page(self, nump_id, end, start, page):
         data = {
-            'cashFilter': 'ALL',
-            'beginDayfilter': start.strftime('%d/%m/%Y'),
-            'endDayfilter': end.strftime('%d/%m/%Y'),
-            'valueFilter': 'ALL',
-            'nump': nump_id,
-            'PAGE': page,
-            'sensTri': '-',
-            'champsTri': 'HMVT_DATE',
+            "cashFilter": "ALL",
+            "beginDayfilter": start.strftime("%d/%m/%Y"),
+            "endDayfilter": end.strftime("%d/%m/%Y"),
+            "valueFilter": "ALL",
+            "nump": nump_id,
+            "PAGE": page,
+            "sensTri": "-",
+            "champsTri": "HMVT_DATE",
         }
 
         self.history.go(data=data)
@@ -114,17 +113,17 @@ class NetfincaBrowser(LoginBrowser):
 
     def go_to_market_orders(self, page, from_date, to_date):
         data = {
-            'ORDER_STATUS': 'NONE',
-            'ORDER_UPDDTMIN': from_date,
-            'ORDER_UPDDTMAX': to_date,
-            'PRODUCT_ID': '',
-            'ORDER_LIST_OPERATION_TYPE_ALL': '1',
-            'ORDER_TYPE': 'UNKNOWN',
-            'save': 'false',
-            'sensTri': '-',
-            'champsTri': 'LAST_MKT_IMPACT',
-            'PAGE': str(page),
-            'expandCriterias': 'true',
+            "ORDER_STATUS": "NONE",
+            "ORDER_UPDDTMIN": from_date,
+            "ORDER_UPDDTMAX": to_date,
+            "PRODUCT_ID": "",
+            "ORDER_LIST_OPERATION_TYPE_ALL": "1",
+            "ORDER_TYPE": "UNKNOWN",
+            "save": "false",
+            "sensTri": "-",
+            "champsTri": "LAST_MKT_IMPACT",
+            "PAGE": str(page),
+            "expandCriterias": "true",
         }
         self.market_orders.go(data=data)
 
@@ -134,7 +133,7 @@ class NetfincaBrowser(LoginBrowser):
         nump_id = self.page.get_nump_id(account)
         self.investments.go(nump_id=nump_id)
         # Then access account market orders with 6 months of history
-        date_format = '%d/%m/%Y'
+        date_format = "%d/%m/%Y"
         today = datetime.today()
         to_date = today.strftime(date_format)
         from_date = (today - relativedelta(months=6)).strftime(date_format)

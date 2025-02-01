@@ -23,23 +23,23 @@ from woob_modules.caissedepargne.module import CaisseEpargneModule
 from .proxy_browser import ProxyBrowser
 
 
-__all__ = ['CreditCooperatifModule']
+__all__ = ["CreditCooperatifModule"]
 
 
 class CreditCooperatifModule(CaisseEpargneModule, CapBankTransferAddRecipient, CapDocument, CapProfile):
-    NAME = 'creditcooperatif'
-    MAINTAINER = 'Kevin Pouget'
-    EMAIL = 'weboob@kevin.pouget.me'
-    DESCRIPTION = 'Crédit Coopératif'
-    LICENSE = 'LGPLv3+'
-    DEPENDENCIES = ('caissedepargne', 'linebourse')
+    NAME = "creditcooperatif"
+    MAINTAINER = "Kevin Pouget"
+    EMAIL = "weboob@kevin.pouget.me"
+    DESCRIPTION = "Crédit Coopératif"
+    LICENSE = "LGPLv3+"
+    DEPENDENCIES = ("caissedepargne", "linebourse")
 
     BROWSER = ProxyBrowser
 
     def create_default_browser(self):
         return self.create_browser(
-            nuser=self.config['nuser'].get(),
+            nuser=self.config["nuser"].get(),
             config=self.config,
-            username=self.config['login'].get(),
-            password=self.config['password'].get(),
+            username=self.config["login"].get(),
+            password=self.config["password"].get(),
         )

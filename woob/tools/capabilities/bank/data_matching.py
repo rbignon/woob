@@ -18,7 +18,7 @@
 from woob.capabilities.bank.pfm import AccountDiff
 
 
-__all__ = ['diff_accounts']
+__all__ = ["diff_accounts"]
 
 
 def group_by(iterable, func):
@@ -35,7 +35,7 @@ def match_unique(new_accounts, old_accounts, func):
     new_groups = {key: accs for key, accs in group_by(new_accounts, func).items() if key and len(accs) == 1}
     old_groups = {key: accs for key, accs in group_by(old_accounts, func).items() if key and len(accs) == 1}
 
-    for matching_key in (new_groups.keys() & old_groups.keys()):
+    for matching_key in new_groups.keys() & old_groups.keys():
         new = new_groups[matching_key][0]
         old = old_groups[matching_key][0]
 
@@ -46,6 +46,7 @@ def match_unique(new_accounts, old_accounts, func):
 
 class IdSet:
     """A set for unhashable objects, expecting to pass the same objects"""
+
     def __init__(self, elements=()):
         self.container = {}
         for el in elements:
@@ -93,7 +94,7 @@ def diff_accounts(backend, new_accounts, old_accounts):
     diff.matching.extend(match_unique(new_accounts, old_accounts, lambda acc: acc.id))
     diff.matching.extend(match_unique(new_accounts, old_accounts, lambda acc: acc.iban))
 
-    if hasattr(backend, 'diff_accounts'):
+    if hasattr(backend, "diff_accounts"):
         try:
             module_diff = backend.diff_accounts(new_accounts, old_accounts)
         except NotImplementedError:

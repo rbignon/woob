@@ -25,32 +25,32 @@ from woob_modules.materielnet.module import MaterielnetModule
 from .browser import LdlcParBrowser, LdlcProBrowser
 
 
-__all__ = ['LdlcModule']
+__all__ = ["LdlcModule"]
 
 
 class LdlcModule(MaterielnetModule, CapDocument):
-    NAME = 'ldlc'
-    DESCRIPTION = 'ldlc website'
-    MAINTAINER = 'Vincent Paredes'
-    EMAIL = 'vparedes@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('materielnet',)
+    NAME = "ldlc"
+    DESCRIPTION = "ldlc website"
+    MAINTAINER = "Vincent Paredes"
+    EMAIL = "vparedes@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("materielnet",)
     CONFIG = MaterielnetModule.CONFIG.with_values(
-        Value('website', label='Site web', default='part', choices={'pro': 'Professionnels', 'part': 'Particuliers'}),
+        Value("website", label="Site web", default="part", choices={"pro": "Professionnels", "part": "Particuliers"}),
     )
 
     def create_default_browser(self):
-        if self.config['website'].get() == 'part':
+        if self.config["website"].get() == "part":
             self.BROWSER = LdlcParBrowser
             return self.create_browser(
                 self.config,
-                self.config['login'].get(),
-                self.config['password'].get(),
+                self.config["login"].get(),
+                self.config["password"].get(),
             )
         else:
             self.BROWSER = LdlcProBrowser
-            return self.create_browser(self.config, self.config['login'].get(), self.config['password'].get())
+            return self.create_browser(self.config, self.config["login"].get(), self.config["password"].get())
 
     def download_document(self, bill):
         if not isinstance(bill, Bill):

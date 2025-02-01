@@ -19,20 +19,20 @@ from .base import BaseObject, Capability, Enum, Field, IntField, NotAvailable, S
 from .date import DateField
 
 
-__all__ = ['BaseFile', 'CapFile']
+__all__ = ["BaseFile", "CapFile"]
 
 
 class Licenses(Enum):
-    OTHER = 'Other license'
-    PD = 'Public Domain'
-    COPYRIGHT = 'All rights reserved'
-    CCBY = 'Creative Commons BY'
-    CCBYSA = 'Creative Commons BY-SA'
-    CCBYNC = 'Creative Commons BY-NC'
-    CCBYND = 'Creative Commons BY-ND'
-    CCBYNCSA = 'Creative Commons BY-NC-SA'
-    CCBYNCND = 'Creative Commons BY-NC-ND'
-    GFDL = 'GNU Free Documentation License'
+    OTHER = "Other license"
+    PD = "Public Domain"
+    COPYRIGHT = "All rights reserved"
+    CCBY = "Creative Commons BY"
+    CCBYSA = "Creative Commons BY-SA"
+    CCBYNC = "Creative Commons BY-NC"
+    CCBYND = "Creative Commons BY-ND"
+    CCBYNCSA = "Creative Commons BY-NC-SA"
+    CCBYNCND = "Creative Commons BY-NC-ND"
+    GFDL = "GNU Free Documentation License"
 
 
 LICENSES = Licenses
@@ -42,23 +42,24 @@ class BaseFile(BaseObject):
     """
     Represent a file.
     """
-    title =         StringField('File title')
-    ext =           StringField('File extension')
-    mime_type =     StringField('MIME Type')
-    author =        StringField('File author')
-    description =   StringField('File description')
-    date =          DateField('File publication date')
-    last_update =   DateField('Last update or last modified date', default=NotAvailable)
-    size =          IntField('File size in bytes', default=NotAvailable)
-    rating =        Field('Rating', int, float, default=NotAvailable)
-    rating_max =    Field('Maximum rating', int, float, default=NotAvailable)
-    license =       StringField('License name')
+
+    title = StringField("File title")
+    ext = StringField("File extension")
+    mime_type = StringField("MIME Type")
+    author = StringField("File author")
+    description = StringField("File description")
+    date = DateField("File publication date")
+    last_update = DateField("Last update or last modified date", default=NotAvailable)
+    size = IntField("File size in bytes", default=NotAvailable)
+    rating = Field("Rating", int, float, default=NotAvailable)
+    rating_max = Field("Maximum rating", int, float, default=NotAvailable)
+    license = StringField("License name")
 
     def __str__(self):
-        return self.url or ''
+        return self.url or ""
 
     def __repr__(self):
-        return '<%s title=%r url=%r>' % (type(self).__name__, self.title, self.url)
+        return "<%s title=%r url=%r>" % (type(self).__name__, self.title, self.url)
 
     @classmethod
     def id2url(cls, _id):
@@ -86,6 +87,7 @@ class CapFile(Capability):
     """
     Provide file download
     """
+
     SEARCH_RELEVANCE = SearchSort.RELEVANCE
     SEARCH_RATING = SearchSort.RATING
     SEARCH_VIEWS = SearchSort.VIEWS

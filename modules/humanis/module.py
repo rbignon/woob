@@ -24,19 +24,19 @@ from woob_modules.cmes.module import CmesModule
 from .browser import HumanisBrowser
 
 
-__all__ = ['HumanisModule']
+__all__ = ["HumanisModule"]
 
 
 class HumanisModule(CmesModule, CapBankWealth):
-    NAME = 'humanis'
-    DESCRIPTION = 'Humanis Épargne Salariale'
-    MAINTAINER = 'Quentin Defenouillère'
-    EMAIL = 'quentin.defenouillere@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('cmes',)
+    NAME = "humanis"
+    DESCRIPTION = "Humanis Épargne Salariale"
+    MAINTAINER = "Quentin Defenouillère"
+    EMAIL = "quentin.defenouillere@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("cmes",)
     CONFIG = CmesModule.CONFIG.with_values(
-        ValueBackendPassword('login', label="Code d'accès", masked=False),
+        ValueBackendPassword("login", label="Code d'accès", masked=False),
     )
 
     BROWSER = HumanisBrowser
@@ -44,8 +44,8 @@ class HumanisModule(CmesModule, CapBankWealth):
     def create_default_browser(self):
         return self.create_browser(
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
-            'https://www.gestion-epargne-salariale.fr',
-            'epsens/',
+            self.config["login"].get(),
+            self.config["password"].get(),
+            "https://www.gestion-epargne-salariale.fr",
+            "epsens/",
         )

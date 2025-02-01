@@ -15,23 +15,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['CacheMixin']
+__all__ = ["CacheMixin"]
 
 
 class CacheEntry:
     def __init__(self, response):
         self.response = response
-        self.etag = response.headers.get('ETag')
-        self.last_modified = response.headers.get('Last-Modified')
+        self.etag = response.headers.get("ETag")
+        self.last_modified = response.headers.get("Last-Modified")
 
     def has_cache_key(self):
-        return (self.etag or self.last_modified)
+        return self.etag or self.last_modified
 
     def update_request(self, request):
         if self.last_modified:
-            request.headers['If-Modified-Since'] = self.last_modified
+            request.headers["If-Modified-Since"] = self.last_modified
         if self.etag:
-            request.headers['If-None-Match'] = self.etag
+            request.headers["If-None-Match"] = self.etag
 
 
 class CacheMixin:
@@ -66,7 +66,7 @@ class CacheMixin:
     def make_cache_key(self, request):
         """Make a key for the cache corresponding to the request."""
 
-        body = getattr(request, 'body', None)
+        body = getattr(request, "body", None)
         headers = tuple(request.headers.values())
         return (request.method, request.url, body, headers)
 
@@ -77,20 +77,20 @@ class CacheMixin:
         key = self.make_cache_key(request)
         if key in self.cache:
             if not self.cache_is_updatable:
-                self.logger.debug('cache HIT for %r', request.url)
+                self.logger.debug("cache HIT for %r", request.url)
                 return self.cache[key].response
             else:
                 self.cache[key].update_request(request)
 
         response = super(CacheMixin, self).open(request, **kwargs)
         if response.status_code == 304:
-            self.logger.debug('cache HIT for %r', request.url)
+            self.logger.debug("cache HIT for %r", request.url)
             return self.cache[key].response
         elif response.status_code == 200:
             entry = CacheEntry(response)
             if entry.has_cache_key():
-                self.logger.debug('storing %r response in cache', request.url)
+                self.logger.debug("storing %r response in cache", request.url)
                 self.cache[key] = entry
 
-        self.logger.debug('cache MISS for %r', request.url)
+        self.logger.debug("cache MISS for %r", request.url)
         return response

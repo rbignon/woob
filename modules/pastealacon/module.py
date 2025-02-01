@@ -28,18 +28,18 @@ from .browser import PastealaconBrowser, PastealaconPaste
 
 
 class PastealaconModule(Module, BasePasteModule):
-    NAME = 'pastealacon'
-    MAINTAINER = u'Laurent Bachelier'
-    EMAIL = 'laurent@bachelier.name'
-    VERSION = '3.7'
-    DESCRIPTION = u'Paste à la con text sharing tool'
-    LICENSE = 'AGPLv3+'
+    NAME = "pastealacon"
+    MAINTAINER = "Laurent Bachelier"
+    EMAIL = "laurent@bachelier.name"
+    VERSION = "3.7"
+    DESCRIPTION = "Paste à la con text sharing tool"
+    LICENSE = "AGPLv3+"
     BROWSER = PastealaconBrowser
 
     EXPIRATIONS = {
-        24 * 3600: 'd',
-        24 * 3600 * 30: 'm',
-        False: 'f',
+        24 * 3600: "d",
+        24 * 3600 * 30: "m",
+        False: "f",
     }
 
     def new_paste(self, *args, **kwargs):
@@ -47,7 +47,7 @@ class PastealaconModule(Module, BasePasteModule):
 
     def can_post(self, contents, title=None, public=None, max_age=None):
         try:
-            contents.encode('ISO-8859-1')
+            contents.encode("ISO-8859-1")
         except UnicodeEncodeError:
             return 0
         if public is False:
@@ -56,7 +56,7 @@ class PastealaconModule(Module, BasePasteModule):
             if self.get_closest_expiration(max_age) is None:
                 return 0
         # the "title" is filtered (does not even accepts dots)
-        if not title or re.match(r'^\w+$', title) and len(title) <= 24:
+        if not title or re.match(r"^\w+$", title) and len(title) <= 24:
             return 2
         return 1
 
@@ -65,7 +65,7 @@ class PastealaconModule(Module, BasePasteModule):
 
     def fill_paste(self, paste, fields):
         # if we only want the contents
-        if fields == ['contents']:
+        if fields == ["contents"]:
             if paste.contents is NotLoaded:
                 contents = self.browser.get_contents(paste.id)
                 paste.contents = contents

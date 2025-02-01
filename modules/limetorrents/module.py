@@ -25,16 +25,16 @@ from woob.tools.backend import Module
 from .browser import LimetorrentsBrowser
 
 
-__all__ = ['LimetorrentsModule']
+__all__ = ["LimetorrentsModule"]
 
 
 class LimetorrentsModule(Module, CapTorrent):
-    NAME = 'limetorrents'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'eneiluj@posteo.net'
-    VERSION = '3.7'
-    DESCRIPTION = 'Limetorrents BitTorrent tracker'
-    LICENSE = 'AGPLv3+'
+    NAME = "limetorrents"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "eneiluj@posteo.net"
+    VERSION = "3.7"
+    DESCRIPTION = "Limetorrents BitTorrent tracker"
+    LICENSE = "AGPLv3+"
     BROWSER = LimetorrentsBrowser
 
     def get_torrent(self, id):
@@ -49,15 +49,13 @@ class LimetorrentsModule(Module, CapTorrent):
         return resp.content
 
     def iter_torrents(self, pattern):
-        return self.browser.iter_torrents(quote_plus(pattern.encode('utf-8')))
+        return self.browser.iter_torrents(quote_plus(pattern.encode("utf-8")))
 
     def fill_torrent(self, torrent, fields):
-        if 'files' in fields:
+        if "files" in fields:
             tor = self.get_torrent(torrent.id)
             torrent.magnet = tor.magnet
             torrent.files = tor.files
         return torrent
 
-    OBJECTS = {
-        Torrent:fill_torrent
-    }
+    OBJECTS = {Torrent: fill_torrent}

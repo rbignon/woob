@@ -27,25 +27,23 @@ from woob.tools.value import Value
 from .browser import InstagramBrowser
 
 
-__all__ = ['InstagramModule']
+__all__ = ["InstagramModule"]
 
 
 class InstagramModule(Module, CapImage, CapCollection):
-    NAME = 'instagram'
-    DESCRIPTION = 'Instagram'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "instagram"
+    DESCRIPTION = "Instagram"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = InstagramBrowser
 
-    CONFIG = BackendConfig(
-        Value('user')
-    )
+    CONFIG = BackendConfig(Value("user"))
 
     def create_default_browser(self):
-        return self.create_browser(self.config['user'].get())
+        return self.create_browser(self.config["user"].get())
 
     def iter_resources(self, types, split_path):
         for type in types:
@@ -54,7 +52,7 @@ class InstagramModule(Module, CapImage, CapCollection):
                 break
 
     def fill_img(self, img, fields):
-        if 'data' in fields and img.url:
+        if "data" in fields and img.url:
             img.data = self.browser.open(img.url).content
 
     OBJECTS = {

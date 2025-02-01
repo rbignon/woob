@@ -25,29 +25,38 @@ from woob.tools.json import json
 from .pages import HomePage, SearchPage
 
 
-__all__ = ['PluzzBrowser']
+__all__ = ["PluzzBrowser"]
 
 
 class PluzzBrowser(PagesBrowser):
-    BASEURL = 'https://www.france.tv'
+    BASEURL = "https://www.france.tv"
     PROGRAMS = None
 
-    search_page = URL(r'https://vwdlashufe-dsn.algolia.net/1/indexes/\*/queries\?(?P<p>.*)', SearchPage)
-    home = URL(r'/(?P<cat>.*)', HomePage)
-    base = URL(r'/', HomePage)
+    search_page = URL(r"https://vwdlashufe-dsn.algolia.net/1/indexes/\*/queries\?(?P<p>.*)", SearchPage)
+    home = URL(r"/(?P<cat>.*)", HomePage)
+    base = URL(r"/", HomePage)
 
     def search_videos(self, s):
         self.go_home()
         algolia_app_id, algolia_api_key = self.page.get_params()
 
-        params = "x-algolia-agent=Algolia for vanilla JavaScript (lite) 3.27.0;instantsearch.js 2.10.2;JS Helper 2.26.0&x-algolia-application-id="+algolia_app_id+"&x-algolia-api-key="+algolia_api_key
+        params = (
+            "x-algolia-agent=Algolia for vanilla JavaScript (lite) 3.27.0;instantsearch.js 2.10.2;JS Helper 2.26.0&x-algolia-application-id="
+            + algolia_app_id
+            + "&x-algolia-api-key="
+            + algolia_api_key
+        )
 
         data = {}
-        data['requests'] = [0]
-        data['requests'][0] = {}
-        data['requests'][0]['indexName'] = "yatta_prod_contents"
+        data["requests"] = [0]
+        data["requests"][0] = {}
+        data["requests"][0]["indexName"] = "yatta_prod_contents"
         ts = int(time.time())
-        data['requests'][0]['params'] = 'query={}&hitsPerPage=20&page=0&filters=class:video AND ranges.replay.web.begin_date < {} AND ranges.replay.web.end_date > {}&facetFilters=["class:video"]&facets=[]&tagFilters='.format(s, ts, ts)
+        data["requests"][0]["params"] = (
+            'query={}&hitsPerPage=20&page=0&filters=class:video AND ranges.replay.web.begin_date < {} AND ranges.replay.web.end_date > {}&facetFilters=["class:video"]&facets=[]&tagFilters='.format(
+                s, ts, ts
+            )
+        )
         return self.search_page.go(p=params, data=json.dumps(data)).iter_videos()
 
     def get_categories(self, cat=""):

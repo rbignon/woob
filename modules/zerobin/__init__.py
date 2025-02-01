@@ -21,4 +21,4 @@
 from .module import ZerobinModule
 
 
-__all__ = ['ZerobinModule']
+__all__ = ["ZerobinModule"]

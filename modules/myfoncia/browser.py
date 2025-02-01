@@ -27,17 +27,17 @@ from .pages import DocumentsPage, FeesPage, LoginPage, MyPropertyPage
 
 
 class MyFonciaSeleniumBrowser(SeleniumBrowser):
-    BASEURL = 'https://myfoncia.fr'
+    BASEURL = "https://myfoncia.fr"
     HEADLESS = True
 
     DRIVER = webdriver.Chrome
     WINDOW_SIZE = (1920, 1080)
 
-    login = URL(r'/login', LoginPage)
+    login = URL(r"/login", LoginPage)
 
     def __init__(self, config, *args, **kwargs):
-        self.username = config['login'].get()
-        self.password = config['password'].get()
+        self.username = config["login"].get()
+        self.password = config["password"].get()
         super(MyFonciaSeleniumBrowser, self).__init__(*args, **kwargs)
 
     def _build_options(self, preferences):
@@ -46,9 +46,9 @@ class MyFonciaSeleniumBrowser(SeleniumBrowser):
         # To successfully pass the login, we have to
         options = super(MyFonciaSeleniumBrowser, self)._build_options(preferences)
         # Hide the fact that the navigator is controlled by webdriver
-        options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_argument("--disable-blink-features=AutomationControlled")
         # Hardcode an User Agent so we don't expose Chrome is in headless mode
-        options.add_argument('user-agent=Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
+        options.add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0")
 
         return options
 
@@ -57,28 +57,24 @@ class MyFonciaSeleniumBrowser(SeleniumBrowser):
         self.page.do_login(self.username, self.password)
         if self.login.is_here():
             msg = self.page.get_error_msg()
-            if 'Service momentanément indisponible' in msg:
+            if "Service momentanément indisponible" in msg:
                 raise BrowserUnavailable()
             # Votre e-mail, votre identifiant ou votre mot de passe est incorrect.
-            elif 'mot de passe est incorrect' in msg:
+            elif "mot de passe est incorrect" in msg:
                 raise BrowserIncorrectPassword()
-            raise AssertionError('Unhandled error message at login step: %s', msg)
+            raise AssertionError("Unhandled error message at login step: %s", msg)
 
 
 class MyFonciaBrowser(PagesBrowser, SubSeleniumMixin):
-    BASEURL = 'https://myfoncia.fr'
+    BASEURL = "https://myfoncia.fr"
 
     SELENIUM_BROWSER = MyFonciaSeleniumBrowser
 
-    my_property = URL(r'/espace-client/espace-de-gestion/mon-bien', MyPropertyPage)
+    my_property = URL(r"/espace-client/espace-de-gestion/mon-bien", MyPropertyPage)
     documents = URL(
-        r'/espace-client/espace-de-gestion/mes-documents/(?P<subscription_id>.+)/(?P<letter>[A-Z])',
-        DocumentsPage
+        r"/espace-client/espace-de-gestion/mes-documents/(?P<subscription_id>.+)/(?P<letter>[A-Z])", DocumentsPage
     )
-    fees = URL(
-        r'/espace-client/espace-de-gestion/mes-charges/(?P<subscription_id>.+)',
-        FeesPage
-    )
+    fees = URL(r"/espace-client/espace-de-gestion/mes-charges/(?P<subscription_id>.+)", FeesPage)
 
     def __init__(self, config, *args, **kwargs):
         self.config = config

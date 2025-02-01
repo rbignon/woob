@@ -24,10 +24,10 @@ from .pages import RecipePage, SearchPage
 
 
 class JournaldesfemmesBrowser(PagesBrowser):
-    BASEURL = 'https://cuisine.journaldesfemmes.fr'
+    BASEURL = "https://cuisine.journaldesfemmes.fr"
 
-    recipe = URL(r'/recette/(?P<id>.+)', RecipePage)
-    search = URL(r'/s/\?f_recherche=(?P<search>.+)', SearchPage)
+    recipe = URL(r"/recette/(?P<id>.+)", RecipePage)
+    search = URL(r"/s/\?f_recherche=(?P<search>.+)", SearchPage)
 
     @recipe.id2url
     def get_recipe(self, url, obj=None):

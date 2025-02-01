@@ -25,22 +25,24 @@ from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 from .browser import OvhBrowser
 
 
-__all__ = ['OvhModule']
+__all__ = ["OvhModule"]
 
 
 class OvhModule(Module, CapDocument):
-    NAME = 'ovh'
-    DESCRIPTION = 'Ovh'
-    MAINTAINER = 'Vincent Paredes'
-    EMAIL = 'vparedes@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "ovh"
+    DESCRIPTION = "Ovh"
+    MAINTAINER = "Vincent Paredes"
+    EMAIL = "vparedes@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Account ID'),
-        ValueBackendPassword('password', label='Password'),
-        Value('pin_code', label='Code PIN / Email', required=False, default=''),
-        ValueTransient('2fa_type', label=u'Type of 2FA', choices=['totp', 'sms', 'u2f', 'staticOTP'], required=False, default=None),
-        ValueTransient('2fa_value', label=u'Value of 2FA', required=False),
+        ValueBackendPassword("login", label="Account ID"),
+        ValueBackendPassword("password", label="Password"),
+        Value("pin_code", label="Code PIN / Email", required=False, default=""),
+        ValueTransient(
+            "2fa_type", label="Type of 2FA", choices=["totp", "sms", "u2f", "staticOTP"], required=False, default=None
+        ),
+        ValueTransient("2fa_value", label="Value of 2FA", required=False),
     )
 
     BROWSER = OvhBrowser
@@ -55,7 +57,7 @@ class OvhModule(Module, CapDocument):
         return self.browser.get_subscription_list()
 
     def get_document(self, _id):
-        subid = _id.split('.')[0]
+        subid = _id.split(".")[0]
         subscription = self.get_subscription(subid)
 
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)

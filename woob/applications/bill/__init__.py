@@ -19,4 +19,4 @@
 from .bill import AppBill
 
 
-__all__ = ['AppBill']
+__all__ = ["AppBill"]

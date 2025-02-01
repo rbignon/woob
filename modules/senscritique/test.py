@@ -24,7 +24,7 @@ from woob.tools.test import BackendTest
 
 
 class SenscritiqueTest(BackendTest):
-    MODULE = 'senscritique'
+    MODULE = "senscritique"
 
     def test_senscritique(self):
         l = list(self.backend.list_events(datetime.now()))

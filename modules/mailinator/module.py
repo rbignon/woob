@@ -25,31 +25,31 @@ from woob.tools.value import Value
 from .browser import MailinatorBrowser
 
 
-__all__ = ['MailinatorModule']
+__all__ = ["MailinatorModule"]
 
 
 # There is only one thread per inbox, and the thread id is the inbox name
 # TODO but this can lead to bans if there are too many messages...
 class MailinatorModule(Module, CapMessages):
-    NAME = 'mailinator'
-    DESCRIPTION = u'mailinator temp mailbox'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "mailinator"
+    DESCRIPTION = "mailinator temp mailbox"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = MailinatorBrowser
 
-    CONFIG = BackendConfig(Value('inbox', label='Inbox', default=''))
+    CONFIG = BackendConfig(Value("inbox", label="Inbox", default=""))
 
     def iter_threads(self):
-        inbox = self.config['inbox'].get()
+        inbox = self.config["inbox"].get()
         if not inbox:
             raise NotImplementedError()
         else:
             for d in self.browser.get_mails(inbox):
-                thread = Thread(d['id'])
-                thread.title = d['subject']
+                thread = Thread(d["id"])
+                thread.title = d["subject"]
                 thread.flags = thread.IS_DISCUSSION
 
                 msg = self.make_message(d, thread)
@@ -61,7 +61,7 @@ class MailinatorModule(Module, CapMessages):
 
     def _fetch_content(self, msg):
         msg_type, msg.content = self.browser.get_mail_content(msg.id)
-        if msg_type == 'html':
+        if msg_type == "html":
             msg.flags = Message.IS_HTML
 
     def _get_messages_thread(self, inbox, thread):
@@ -78,24 +78,24 @@ class MailinatorModule(Module, CapMessages):
 
     def get_thread(self, _id):
         thread = Thread(_id)
-        thread.title = 'Mail for %s' % _id
+        thread.title = "Mail for %s" % _id
         thread.flags = thread.IS_DISCUSSION
 
         self._get_messages_thread(_id, thread)
         return thread
 
     def make_message(self, d, thread):
-        msg = Message(thread, d['id'])
+        msg = Message(thread, d["id"])
         msg.children = []
-        msg.sender = d['from']
+        msg.sender = d["from"]
         msg.flags = 0
-        msg.title = d['subject']
-        msg.date = d['datetime']
-        msg.receivers = [d['to']]
+        msg.title = d["subject"]
+        msg.date = d["datetime"]
+        msg.receivers = [d["to"]]
         return msg
 
     def fill_msg(self, msg, fields):
-        if 'content' in fields:
+        if "content" in fields:
             self._fetch_content(msg)
 
         return msg

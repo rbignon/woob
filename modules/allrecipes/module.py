@@ -23,16 +23,16 @@ from woob.tools.backend import Module
 from .browser import AllrecipesBrowser
 
 
-__all__ = ['AllrecipesModule']
+__all__ = ["AllrecipesModule"]
 
 
 class AllrecipesModule(Module, CapRecipe):
-    NAME = 'allrecipes'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = u'Allrecipes English recipe website'
-    LICENSE = 'AGPLv3+'
+    NAME = "allrecipes"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "julien.veyssier@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Allrecipes English recipe website"
+    LICENSE = "AGPLv3+"
     BROWSER = AllrecipesBrowser
 
     def get_recipe(self, recipe_id):
@@ -42,10 +42,10 @@ class AllrecipesModule(Module, CapRecipe):
         return self.browser.iter_recipes(pattern)
 
     def fill_recipe(self, recipe, fields):
-        if 'nb_person' in fields or 'instructions' in fields or 'picture' in fields:
+        if "nb_person" in fields or "instructions" in fields or "picture" in fields:
             recipe = self.browser.get_recipe(recipe.id, recipe)
 
-        if 'comments' in fields:
+        if "comments" in fields:
             recipe.comments = list(self.browser.get_comments(recipe.id))
         return recipe
 

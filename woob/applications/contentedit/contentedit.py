@@ -26,13 +26,13 @@ from woob.core.bcall import CallErrors
 from woob.tools.application.repl import ReplApplication, defaultcount
 
 
-__all__ = ['AppContentEdit']
+__all__ = ["AppContentEdit"]
 
 
 class AppContentEdit(ReplApplication):
-    APPNAME = 'contentedit'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
+    APPNAME = "contentedit"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2010-YEAR Romain Bignon"
     DESCRIPTION = "Console application allowing to display and edit contents on various websites."
     SHORT_DESCRIPTION = "manage websites content"
     CAPS = CapContent
@@ -48,10 +48,10 @@ class AppContentEdit(ReplApplication):
             _id, backend_name = self.parse_id(id, unique_backend=True)
             backend_names = (backend_name,) if backend_name is not None else self.enabled_backends
 
-            contents += [content for content in self.do('get_content', _id, backends=backend_names) if content]
+            contents += [content for content in self.do("get_content", _id, backends=backend_names) if content]
 
         if len(contents) == 0:
-            print('No contents found', file=self.stderr)
+            print("No contents found", file=self.stderr)
             return 3
 
         if self.stdin.isatty():
@@ -60,21 +60,26 @@ class AppContentEdit(ReplApplication):
                 tmpdir = os.path.join(tempfile.gettempdir(), "woob")
                 if not os.path.isdir(tmpdir):
                     os.makedirs(tmpdir)
-                with tempfile.NamedTemporaryFile('w+t', prefix='%s_' % content.id.replace(os.path.sep, '_'), dir=tmpdir, delete=False) as f:
+                with tempfile.NamedTemporaryFile(
+                    "w+t", prefix="%s_" % content.id.replace(os.path.sep, "_"), dir=tmpdir, delete=False
+                ) as f:
                     if content.content is None:
-                        content.content = ''
+                        content.content = ""
                     f.write(content.content)
                 paths[f.name] = content
 
             params = []
-            editor = os.environ.get('EDITOR', 'vim')
+            editor = os.environ.get("EDITOR", "vim")
             # check cases where /usr/bin/vi is a symlink to vim
-            if 'vim' in (os.path.basename(editor), os.path.basename(os.path.realpath(which(editor) or '/')).replace('.nox', '')):
-                params = ['-p']
+            if "vim" in (
+                os.path.basename(editor),
+                os.path.basename(os.path.realpath(which(editor) or "/")).replace(".nox", ""),
+            ):
+                params = ["-p"]
             subprocess.call([editor, *params, *paths])
 
             for path, content in paths.items():
-                with open(path, 'r') as f:
+                with open(path, "r") as f:
                     try:
                         data = f.read()
                     except UnicodeError:
@@ -85,28 +90,28 @@ class AppContentEdit(ReplApplication):
                     contents.remove(content)
 
             if len(contents) == 0:
-                print('No changes. Abort.', file=self.stderr)
+                print("No changes. Abort.", file=self.stderr)
                 return 1
 
-            print('Contents changed:\n%s' % ('\n'.join(' * %s' % content.id for content in contents)))
+            print("Contents changed:\n%s" % ("\n".join(" * %s" % content.id for content in contents)))
 
-            message = self.ask('Enter a commit message', default='')
-            minor = self.ask('Is this a minor edit?', default=False)
-            if not self.ask('Do you want to push?', default=True):
+            message = self.ask("Enter a commit message", default="")
+            minor = self.ask("Is this a minor edit?", default=False)
+            if not self.ask("Do you want to push?", default=True):
                 return
 
             errors = CallErrors([])
             for content in contents:
                 path = [path for path, c in paths.items() if c == content][0]
-                self.stdout.write('Pushing %s...' % content.id)
+                self.stdout.write("Pushing %s..." % content.id)
                 self.stdout.flush()
                 try:
-                    self.do('push_content', content, message, minor=minor, backends=[content.backend]).wait()
+                    self.do("push_content", content, message, minor=minor, backends=[content.backend]).wait()
                 except CallErrors as e:
                     errors.errors += e.errors
-                    self.stdout.write(' error (content saved in %s)\n' % path)
+                    self.stdout.write(" error (content saved in %s)\n" % path)
                 else:
-                    self.stdout.write(' done\n')
+                    self.stdout.write(" done\n")
                     os.unlink(path)
         else:
             # stdin is not a tty
@@ -115,21 +120,21 @@ class AppContentEdit(ReplApplication):
                 print("Multiple ids not supported with pipe", file=self.stderr)
                 return 2
 
-            message, minor = '', False
+            message, minor = "", False
             data = self.stdin.read()
             contents[0].content = data
 
             errors = CallErrors([])
             for content in contents:
-                self.stdout.write('Pushing %s...' % content.id)
+                self.stdout.write("Pushing %s..." % content.id)
                 self.stdout.flush()
                 try:
-                    self.do('push_content', content, message, minor=minor, backends=[content.backend]).wait()
+                    self.do("push_content", content, message, minor=minor, backends=[content.backend]).wait()
                 except CallErrors as e:
                     errors.errors += e.errors
-                    self.stdout.write(' error\n')
+                    self.stdout.write(" error\n")
                 else:
-                    self.stdout.write(' done\n')
+                    self.stdout.write(" done\n")
 
         if len(errors.errors) > 0:
             raise errors
@@ -142,8 +147,8 @@ class AppContentEdit(ReplApplication):
         title, backend = args
 
         if self.stdin.isatty():
-            editor = os.environ.get('EDITOR', 'vi')
-            with tempfile.NamedTemporaryFile('w+t', suffix='.md') as fd:
+            editor = os.environ.get("EDITOR", "vi")
+            with tempfile.NamedTemporaryFile("w+t", suffix=".md") as fd:
                 subprocess.call([editor, fd.name])
                 data = fd.read()
         else:
@@ -153,9 +158,11 @@ class AppContentEdit(ReplApplication):
         content.title = args[0]
         content.content = data
         content.backend = backend
-        content = next(iter(self.do('push_content', content, message='', minor=False, backends=[content.backend]))) or content
+        content = (
+            next(iter(self.do("push_content", content, message="", minor=False, backends=[content.backend]))) or content
+        )
         if content.url:
-            print('Pushed to', content.url, file=self.stdout)
+            print("Pushed to", content.url, file=self.stdout)
 
     @defaultcount(10)
     def do_log(self, line):
@@ -165,14 +172,14 @@ class AppContentEdit(ReplApplication):
         Display log of a page
         """
         if not line:
-            print('Error: please give a page ID', file=self.stderr)
+            print("Error: please give a page ID", file=self.stderr)
             return 2
 
         _id, backend_name = self.parse_id(line)
         backend_names = (backend_name,) if backend_name is not None else self.enabled_backends
 
         self.start_format()
-        for revision in self.do('iter_revisions', _id, backends=backend_names):
+        for revision in self.do("iter_revisions", _id, backends=backend_names):
             self.format(revision)
 
     def do_get(self, line):
@@ -182,20 +189,20 @@ class AppContentEdit(ReplApplication):
         Get page contents
         """
         if not line:
-            print('Error: please give a page ID', file=self.stderr)
+            print("Error: please give a page ID", file=self.stderr)
             return 2
 
-        _part_line = line.strip().split(' ')
+        _part_line = line.strip().split(" ")
         revision = None
-        if '-r' in _part_line:
-            r_index = _part_line.index('-r')
+        if "-r" in _part_line:
+            r_index = _part_line.index("-r")
             if len(_part_line) - 1 > r_index:
-                revision = Revision(_part_line[r_index+1])
+                revision = Revision(_part_line[r_index + 1])
                 _part_line.remove(revision.id)
-            _part_line.remove('-r')
+            _part_line.remove("-r")
 
             if not _part_line:
-                print('Error: please give a page ID', file=self.stderr)
+                print("Error: please give a page ID", file=self.stderr)
                 return 2
 
         _id, backend_name = self.parse_id(" ".join(_part_line))
@@ -203,10 +210,12 @@ class AppContentEdit(ReplApplication):
         backend_names = (backend_name,) if backend_name is not None else self.enabled_backends
 
         output = self.stdout
-        for contents in [content for content in self.do('get_content', _id, revision, backends=backend_names) if content]:
+        for contents in [
+            content for content in self.do("get_content", _id, revision, backends=backend_names) if content
+        ]:
             output.write(contents.content)
 
         # add a newline unless we are writing
         # in a file or in a pipe
         if output.isatty():
-            output.write('\n')
+            output.write("\n")

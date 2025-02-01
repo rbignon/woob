@@ -21,4 +21,4 @@
 from .module import EnsapModule
 
 
-__all__ = ['EnsapModule']
+__all__ = ["EnsapModule"]

@@ -32,43 +32,45 @@ class Child(Filter):
 class SearchPage(HTMLPage):
     @method
     class iter_job_adverts(TableElement):
-        item_xpath = '//tr[position() > 1]'
+        item_xpath = "//tr[position() > 1]"
         head_xpath = "//tr[1]/td[@class='titreCol2Tableau']/text()"
 
-        col_place = u'Région'
-        col_job_name = u'Filière'
-        col_id = u'Intitulé du poste'
-        col_society_name = u'CCI(R)'
+        col_place = "Région"
+        col_job_name = "Filière"
+        col_id = "Intitulé du poste"
+        col_society_name = "CCI(R)"
 
         class item(ItemElement):
             klass = BaseJobAdvert
 
             def validate(self, advert):
-                if advert and 'pattern' in self.env and self.env['pattern']:
-                    return self.env['pattern'].upper() in advert.title.upper() or \
-                        self.env['pattern'].upper() in advert.job_name.upper()
+                if advert and "pattern" in self.env and self.env["pattern"]:
+                    return (
+                        self.env["pattern"].upper() in advert.title.upper()
+                        or self.env["pattern"].upper() in advert.job_name.upper()
+                    )
                 return True
 
-            obj_id = CleanText(Link(Child(TableCell('id'))), replace=[('#', '')])
-            obj_title = Format('%s - %s', CleanText(TableCell('id')), CleanText(TableCell('job_name')))
-            obj_society_name = Format(u'CCI %s', CleanText(TableCell('society_name')))
-            obj_place = CleanText(TableCell('place'))
-            obj_job_name = CleanText(TableCell('id'))
+            obj_id = CleanText(Link(Child(TableCell("id"))), replace=[("#", "")])
+            obj_title = Format("%s - %s", CleanText(TableCell("id")), CleanText(TableCell("job_name")))
+            obj_society_name = Format("CCI %s", CleanText(TableCell("society_name")))
+            obj_place = CleanText(TableCell("place"))
+            obj_job_name = CleanText(TableCell("id"))
 
     @method
     class get_job_advert(ItemElement):
         klass = BaseJobAdvert
 
-        obj_url = Format('%s#%s', Env('url'), Env('id'))
-        obj_description = Join('\r\n',
-                               'div/fieldset/*[(@class="titreParagraphe" or @class="normal")]',
-                               textCleaner=CleanHTML)
+        obj_url = Format("%s#%s", Env("url"), Env("id"))
+        obj_description = Join(
+            "\r\n", 'div/fieldset/*[(@class="titreParagraphe" or @class="normal")]', textCleaner=CleanHTML
+        )
         obj_title = CleanText('div/span[@class="intituleposte"]')
         obj_job_name = CleanText('div/span[@class="intituleposte"]')
-        obj_society_name = Format('CCI %s', CleanText('div/span[@class="crci crcititle"]'))
+        obj_society_name = Format("CCI %s", CleanText('div/span[@class="crci crcititle"]'))
         obj_publication_date = DateTime(CleanText('div/fieldset/p[@class="dateOffre"]'), dayfirst=True)
 
         def parse(self, el):
-            self.el = el.xpath('//div[@id=$id]/div', id=self.obj.id)[0]
-            self.env['url'] = self.page.url
-            self.env['id'] = self.obj.id
+            self.el = el.xpath("//div[@id=$id]/div", id=self.obj.id)[0]
+            self.env["url"] = self.page.url
+            self.env["id"] = self.obj.id

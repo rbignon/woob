@@ -27,19 +27,19 @@ from woob.tools.value import ValueBackendPassword
 from .browser import MilleisBrowser
 
 
-__all__ = ['MilleisModule']
+__all__ = ["MilleisModule"]
 
 
 class MilleisModule(Module, CapBankWealth, CapProfile, CapDocument):
-    NAME = 'milleis'
-    MAINTAINER = 'Jean Walrave'
-    EMAIL = 'jwalrave@budget-insight.com'
+    NAME = "milleis"
+    MAINTAINER = "Jean Walrave"
+    EMAIL = "jwalrave@budget-insight.com"
     VERSION = "3.7"
-    DESCRIPTION = 'Milleis'
-    LICENSE = 'LGPLv3+'
+    DESCRIPTION = "Milleis"
+    LICENSE = "LGPLv3+"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label="N° d'abonné", masked=False),
-        ValueBackendPassword('password', label='Code confidentiel', regexp=r'\d+'),
+        ValueBackendPassword("login", label="N° d'abonné", masked=False),
+        ValueBackendPassword("password", label="Code confidentiel", regexp=r"\d+"),
     )
     BROWSER = MilleisBrowser
 
@@ -47,8 +47,8 @@ class MilleisModule(Module, CapBankWealth, CapProfile, CapDocument):
 
     def create_default_browser(self):
         return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_accounts(self):
@@ -70,7 +70,7 @@ class MilleisModule(Module, CapBankWealth, CapProfile, CapDocument):
         return self.browser.iter_documents(subscription)
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
+        subid = _id.rsplit("_", 1)[0]
         subscription = self.get_subscription(subid)
 
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)

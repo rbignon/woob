@@ -20,4 +20,4 @@
 from .module import SevenFiftyGramsModule
 
 
-__all__ = ['SevenFiftyGramsModule']
+__all__ = ["SevenFiftyGramsModule"]

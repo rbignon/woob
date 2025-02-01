@@ -21,4 +21,4 @@
 from .module import GLSModule
 
 
-__all__ = ['GLSModule']
+__all__ = ["GLSModule"]

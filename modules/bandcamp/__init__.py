@@ -21,4 +21,4 @@
 from .module import BandcampModule
 
 
-__all__ = ['BandcampModule']
+__all__ = ["BandcampModule"]

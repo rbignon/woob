@@ -16,7 +16,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-__all__ = ['FormattersLoader', 'FormatterLoadError']
+__all__ = ["FormattersLoader", "FormatterLoadError"]
 
 
 class FormatterLoadError(Exception):
@@ -24,7 +24,7 @@ class FormatterLoadError(Exception):
 
 
 class FormattersLoader:
-    BUILTINS = ['htmltable', 'multiline', 'simple', 'table', 'csv', 'json', 'json_line']
+    BUILTINS = ["htmltable", "multiline", "simple", "table", "csv", "json", "json_line"]
 
     def __init__(self):
         self.formatters = {}
@@ -51,24 +51,31 @@ class FormattersLoader:
         if name not in self.BUILTINS:
             raise FormatterLoadError('Formatter "%s" does not exist' % name)
 
-        if name == 'htmltable':
+        if name == "htmltable":
             from .table import HTMLTableFormatter
+
             return HTMLTableFormatter
-        elif name == 'table':
+        elif name == "table":
             from .table import TableFormatter
+
             return TableFormatter
-        elif name == 'simple':
+        elif name == "simple":
             from .simple import SimpleFormatter
+
             return SimpleFormatter
-        elif name == 'multiline':
+        elif name == "multiline":
             from .multiline import MultilineFormatter
+
             return MultilineFormatter
-        elif name == 'csv':
+        elif name == "csv":
             from .csv import CSVFormatter
+
             return CSVFormatter
-        elif name == 'json':
+        elif name == "json":
             from .json import JsonFormatter
+
             return JsonFormatter
-        elif name == 'json_line':
+        elif name == "json_line":
             from .json import JsonLineFormatter
+
             return JsonLineFormatter

@@ -24,7 +24,14 @@ from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserUnava
 from woob_modules.s2e.browser import BnppereBrowser as _BnppereBrowser
 
 from .pages import (
-    AccountPage, AccountSwitchPage, HistoryPage, InvestmentPage, LoginErrorPage, LoginPage, LoginStep2Page, ProfilePage,
+    AccountPage,
+    AccountSwitchPage,
+    HistoryPage,
+    InvestmentPage,
+    LoginErrorPage,
+    LoginPage,
+    LoginStep2Page,
+    ProfilePage,
     TermPage,
 )
 
@@ -34,27 +41,26 @@ class BnppereBrowser(_BnppereBrowser):
 
 
 class VisiogoBrowser(LoginBrowser):
-    BASEURL = 'https://visiogo.bnpparibas.com/'
+    BASEURL = "https://visiogo.bnpparibas.com/"
     TIMEOUT = 30.0
 
-    login_page = URL(r'https://authentication.bnpparibas.com/ind_auth/Account/Login\?ReturnUrl=.+', LoginPage)
+    login_page = URL(r"https://authentication.bnpparibas.com/ind_auth/Account/Login\?ReturnUrl=.+", LoginPage)
     login_second_step = URL(
-        r'https://authentication.bnpparibas.com/ind_auth/connect/authorize/callback',
-        LoginStep2Page
+        r"https://authentication.bnpparibas.com/ind_auth/connect/authorize/callback", LoginStep2Page
     )
-    login_error = URL(r'https://authentication.bnpparibas.com/ind_auth/Account/Login$', LoginErrorPage)
-    term_page = URL(r'/Home/TermsOfUseApproval', TermPage)
-    account_page = URL(r'/GlobalView/Synthesis', AccountPage)
-    account_switch = URL(r'/Contract/_ChangeAffiliation', AccountSwitchPage)
-    investment_page = URL(r'/Saving/Details', InvestmentPage)
-    profile_page = URL(r'/en/Profile/EditContactDetails', ProfilePage)
-    history_page = URL(r'/en/Operation/History', HistoryPage)
+    login_error = URL(r"https://authentication.bnpparibas.com/ind_auth/Account/Login$", LoginErrorPage)
+    term_page = URL(r"/Home/TermsOfUseApproval", TermPage)
+    account_page = URL(r"/GlobalView/Synthesis", AccountPage)
+    account_switch = URL(r"/Contract/_ChangeAffiliation", AccountSwitchPage)
+    investment_page = URL(r"/Saving/Details", InvestmentPage)
+    profile_page = URL(r"/en/Profile/EditContactDetails", ProfilePage)
+    history_page = URL(r"/en/Operation/History", HistoryPage)
 
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
         self.multi_accounts = False
-        kwargs['username'] = self.config['login'].get()
-        kwargs['password'] = self.config['password'].get()
+        kwargs["username"] = self.config["login"].get()
+        kwargs["password"] = self.config["password"].get()
         super(VisiogoBrowser, self).__init__(*args, **kwargs)
 
     def do_login(self):
@@ -63,14 +69,14 @@ class VisiogoBrowser(LoginBrowser):
 
         if self.login_error.is_here():
             message = self.page.get_message()
-            if 'affiliation status' in message:
+            if "affiliation status" in message:
                 # 'Your affiliation status no longer allows you to connect to your account.'
                 raise ActionNeeded(message)
-            elif 'incorrect' in message:
+            elif "incorrect" in message:
                 raise BrowserIncorrectPassword(message)
-            raise AssertionError('Unknown error on LoginErrorPage: %s.' % message)
+            raise AssertionError("Unknown error on LoginErrorPage: %s." % message)
 
-        assert self.login_second_step.is_here(), 'Should be on the page of the second step of login'
+        assert self.login_second_step.is_here(), "Should be on the page of the second step of login"
 
         # for some users the website is unavailable
         # we are in a redirection loop on '/Account/LogOff'
@@ -116,18 +122,14 @@ class VisiogoBrowser(LoginBrowser):
     def iter_investment(self, account):
         if self.multi_accounts:
             # Access details of the right account
-            self.account_switch.go(
-                data={'index': account._index}
-            )
+            self.account_switch.go(data={"index": account._index})
         self.investment_page.go()
         return self.page.iter_investments()
 
     def iter_history(self, account):
         if self.multi_accounts:
             # Access details of the right account
-            self.account_switch.go(
-                data={'index': account._index}
-            )
+            self.account_switch.go(data={"index": account._index})
         self.history_page.go()
         return self.page.iter_history()
 

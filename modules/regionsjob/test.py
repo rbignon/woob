@@ -25,18 +25,18 @@ from woob.tools.value import Value
 
 
 class RegionsjobTest(BackendTest):
-    MODULE = 'regionsjob'
+    MODULE = "regionsjob"
 
     def setUp(self):
         if not self.is_backend_configured():
-            self.backend.config['website'] = Value(value='www.parisjob.com')
-            self.backend.config['experience'] = Value(value='')
-            self.backend.config['secteur'] = Value(value='')
-            self.backend.config['contract'] = Value(value='CDI')
-            self.backend.config['metier'] = Value(value='')
+            self.backend.config["website"] = Value(value="www.parisjob.com")
+            self.backend.config["experience"] = Value(value="")
+            self.backend.config["secteur"] = Value(value="")
+            self.backend.config["contract"] = Value(value="CDI")
+            self.backend.config["metier"] = Value(value="")
 
     def test_regionjob_search(self):
-        l = list(itertools.islice(self.backend.search_job(u'informaticien'), 0, 41))
+        l = list(itertools.islice(self.backend.search_job("informaticien"), 0, 41))
         assert len(l)
         assert l[0].id
         assert l[0].url

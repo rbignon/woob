@@ -25,36 +25,36 @@ from recipe import Recipe
 import woob.capabilities
 
 
-__all__ = ['BaseRecipe', 'CapRecipe']
+__all__ = ["BaseRecipe", "CapRecipe"]
 
 
 class BaseRecipe(Recipe):
-    NAME = 'base'
+    NAME = "base"
 
     def generate(self):
-        self.write('__init__.py', self.template('init'))
-        self.write('module.py', self.template('base_module'))
-        self.write('browser.py', self.template('base_browser'))
-        self.write('pages.py', self.template('base_pages'))
-        self.write('test.py', self.template('base_test'))
-        self.write('requirements.txt', self.template('requirements.txt'))
+        self.write("__init__.py", self.template("init"))
+        self.write("module.py", self.template("base_module"))
+        self.write("browser.py", self.template("base_browser"))
+        self.write("pages.py", self.template("base_pages"))
+        self.write("test.py", self.template("base_test"))
+        self.write("requirements.txt", self.template("requirements.txt"))
 
 
 class CapRecipe(Recipe):
-    NAME = 'cap'
+    NAME = "cap"
 
     def __init__(self, args):
         super().__init__(args)
         self.capname = args.capname
 
-        PREFIX = 'woob.capabilities.'
+        PREFIX = "woob.capabilities."
         if not self.capname.startswith(PREFIX):
             self.capname = PREFIX + self.capname
 
         try:
-            self.capmodulename, self.capname = self.capname.rsplit('.', 1)
+            self.capmodulename, self.capname = self.capname.rsplit(".", 1)
         except ValueError:
-            self.error('Cap name must be in format module.CapSomething or CapSomething')
+            self.error("Cap name must be in format module.CapSomething or CapSomething")
 
         self.login = args.login
         self.methods = []
@@ -62,33 +62,33 @@ class CapRecipe(Recipe):
     @classmethod
     def configure_subparser(cls, subparsers):
         subparser = super().configure_subparser(subparsers)
-        subparser.add_argument('--login', action='store_true', help='The site requires login')
-        subparser.add_argument('capname', help='Capability name')
+        subparser.add_argument("--login", action="store_true", help="The site requires login")
+        subparser.add_argument("capname", help="Capability name")
         return subparser
 
     def find_module_cap(self):
-        if '.' not in self.capname:
+        if "." not in self.capname:
             return self.search_cap()
 
         try:
             module = importlib.import_module(self.capmodulename)
         except ImportError:
-            self.error(f'Module {self.capmodulename} not found')
+            self.error(f"Module {self.capmodulename} not found")
         try:
             cap = getattr(module, self.capname)
         except AttributeError:
-            self.error(f'Module {self.capmodulename} has no such capability {self.capname}')
+            self.error(f"Module {self.capmodulename} has no such capability {self.capname}")
         return cap
 
     def search_cap(self):
-        modules = pkgutil.walk_packages(woob.capabilities.__path__, prefix='woob.capabilities.')
+        modules = pkgutil.walk_packages(woob.capabilities.__path__, prefix="woob.capabilities.")
         for _, capmodulename, __ in modules:
             module = importlib.import_module(capmodulename)
             if hasattr(module, self.capname):
                 self.capmodulename = capmodulename
                 return getattr(module, self.capname)
 
-        self.error(f'Capability {self.capname} not found')
+        self.error(f"Capability {self.capname} not found")
         return None
 
     def error(self, message):
@@ -110,9 +110,9 @@ class CapRecipe(Recipe):
 
         self.methods = self.methods_code(cap)
 
-        self.write('__init__.py', self.template('init'))
-        self.write('module.py', self.template('cap_module'))
-        self.write('browser.py', self.template('base_browser'))
-        self.write('pages.py', self.template('base_pages'))
-        self.write('test.py', self.template('base_test'))
-        self.write('requirements.txt', self.template('requirements.txt'))
+        self.write("__init__.py", self.template("init"))
+        self.write("module.py", self.template("cap_module"))
+        self.write("browser.py", self.template("base_browser"))
+        self.write("pages.py", self.template("base_pages"))
+        self.write("test.py", self.template("base_test"))
+        self.write("requirements.txt", self.template("requirements.txt"))

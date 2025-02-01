@@ -23,16 +23,16 @@ from woob.tools.backend import Module
 from .browser import LANGUAGE_LIST, TvsubtitlesBrowser
 
 
-__all__ = ['TvsubtitlesModule']
+__all__ = ["TvsubtitlesModule"]
 
 
 class TvsubtitlesModule(Module, CapSubtitle):
-    NAME = 'tvsubtitles'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'Tvsubtitles subtitle website'
-    LICENSE = 'AGPLv3+'
+    NAME = "tvsubtitles"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "julien.veyssier@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Tvsubtitles subtitle website"
+    LICENSE = "AGPLv3+"
     BROWSER = TvsubtitlesBrowser
 
     def get_subtitle(self, id):

@@ -24,24 +24,24 @@ from woob_modules.cmes.module import CmesModule
 from .browser import CicesBrowser
 
 
-__all__ = ['CicesModule']
+__all__ = ["CicesModule"]
 
 
 class CicesModule(CmesModule, CapBankWealth):
-    NAME = 'cices'
-    DESCRIPTION = 'CIC Épargne Salariale'
-    MAINTAINER = 'Edouard Lambert'
-    EMAIL = 'elambert@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('cmes',)
+    NAME = "cices"
+    DESCRIPTION = "CIC Épargne Salariale"
+    MAINTAINER = "Edouard Lambert"
+    EMAIL = "elambert@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("cmes",)
 
     BROWSER = CicesBrowser
 
     def create_default_browser(self):
         return self.create_browser(
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
-            'https://www.cic-epargnesalariale.fr',
+            self.config["login"].get(),
+            self.config["password"].get(),
+            "https://www.cic-epargnesalariale.fr",
         )

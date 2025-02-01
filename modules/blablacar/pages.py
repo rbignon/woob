@@ -38,10 +38,10 @@ class DeparturesPage(JsonPage):
         super(DeparturesPage, self).__init__(browser, response, *args, **kwargs)
         self.encoding = self.ENCODING or response.encoding
         parser = html.HTMLParser(encoding=self.encoding)
-        if 'results' in self.doc['html']:
-            self.doc = html.parse(StringIO(self.doc['html']['results']), parser)
+        if "results" in self.doc["html"]:
+            self.doc = html.parse(StringIO(self.doc["html"]["results"]), parser)
         else:
-            self.doc = html.Element('brinbrin')
+            self.doc = html.Element("brinbrin")
 
     @method
     class get_station_departures(ListElement):
@@ -50,21 +50,26 @@ class DeparturesPage(JsonPage):
         class item(ItemElement):
             klass = Departure
 
-            obj_id = Regexp(Link('.'), '/(.*)')
+            obj_id = Regexp(Link("."), "/(.*)")
 
             def obj_time(self):
-                _date = CleanText('./article/div/h3[@itemprop="startDate"]/@content')(self).split('-')
-                _time = Regexp(CleanText('./article/div/h3[@itemprop="startDate"]'),
-                               r'.* à (\d+:\d+)')(self).split(':')
-                return datetime(int(_date[0]), int(_date[1]),
-                                int(_date[2]), int(_time[0]),
-                                0 if len(_time) < 2 or len(_time) == 2 and not _time[1] else int(_time[1]))
+                _date = CleanText('./article/div/h3[@itemprop="startDate"]/@content')(self).split("-")
+                _time = Regexp(CleanText('./article/div/h3[@itemprop="startDate"]'), r".* à (\d+:\d+)")(self).split(":")
+                return datetime(
+                    int(_date[0]),
+                    int(_date[1]),
+                    int(_date[2]),
+                    int(_time[0]),
+                    0 if len(_time) < 2 or len(_time) == 2 and not _time[1] else int(_time[1]),
+                )
 
             obj_type = CleanText('./article/div/h3[@class="fromto"]/span[@class!="u-visuallyHidden"]')
-            obj_departure_station = CleanText('./article/div/dl[@class="geo-from"]/dd',
-                                              replace=[(": voir avec le conducteur", "")])
-            obj_arrival_station = CleanText('./article/div/dl[@class="geo-to"]/dd',
-                                            replace=[(": voir avec le conducteur", "")])
+            obj_departure_station = CleanText(
+                './article/div/dl[@class="geo-from"]/dd', replace=[(": voir avec le conducteur", "")]
+            )
+            obj_arrival_station = CleanText(
+                './article/div/dl[@class="geo-to"]/dd', replace=[(": voir avec le conducteur", "")]
+            )
 
             obj_price = CleanDecimal(CleanText('./article/div/div[@itemprop="location"]/strong/span[last()]'))
 

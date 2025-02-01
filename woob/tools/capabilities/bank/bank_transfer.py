@@ -17,7 +17,7 @@
 
 
 __all__ = [
-    'sorted_transfers',
+    "sorted_transfers",
 ]
 
 

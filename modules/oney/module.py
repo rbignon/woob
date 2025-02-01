@@ -26,22 +26,22 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import OneyBrowser
 
 
-__all__ = ['OneyModule']
+__all__ = ["OneyModule"]
 
 
 class OneyModule(Module, CapBank):
-    NAME = 'oney'
-    MAINTAINER = 'Vincent Paredes'
-    EMAIL = 'vparedes@budget-insight.com'
-    VERSION = '3.7'
-    LICENSE = 'LGPLv3+'
-    DESCRIPTION = 'Oney'
+    NAME = "oney"
+    MAINTAINER = "Vincent Paredes"
+    EMAIL = "vparedes@budget-insight.com"
+    VERSION = "3.7"
+    LICENSE = "LGPLv3+"
+    DESCRIPTION = "Oney"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'([0-9]{9}|.+@.+\..+)'),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('request_information'),
-        ValueTransient('code', regexp=r'^\d{6}$'),
-        ValueTransient('resume'),
+        ValueBackendPassword("login", label="Identifiant", masked=False, regexp=r"([0-9]{9}|.+@.+\..+)"),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("request_information"),
+        ValueTransient("code", regexp=r"^\d{6}$"),
+        ValueTransient("resume"),
     )
     BROWSER = OneyBrowser
 

@@ -29,12 +29,25 @@ from woob.browser.elements import DictElement, ItemElement, ListElement, TableEl
 from woob.browser.filters.html import AbsoluteLink, Attr, Link, TableCell
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Eval, Field, MapIn, Regexp,
+    Base,
+    CleanDecimal,
+    CleanText,
+    Coalesce,
+    Currency,
+    Date,
+    Eval,
+    Field,
+    MapIn,
+    Regexp,
 )
 from woob.browser.pages import CsvPage, FormNotFound, HTMLPage, JsonPage, LoggedPage
 from woob.capabilities.bank import Account, AccountOwnership, AccountOwnerType
 from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
+    Investment,
+    MarketOrder,
+    MarketOrderDirection,
+    MarketOrderPayment,
+    MarketOrderType,
 )
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.profile import Person
@@ -46,43 +59,37 @@ from woob.tools.date import parse_french_date
 
 class Transaction(FrenchTransaction):
     PATTERNS = [
-        (re.compile(r'^(?P<category>CHEQUE)(?P<text>.*)'), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r"^(?P<category>CHEQUE)(?P<text>.*)"), FrenchTransaction.TYPE_CHECK),
         (
             re.compile(
-                r'^(?P<category>FACTURE CARTE) DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<text>.*?)( CA?R?T?E? ?\d*X*\d*)?$'
+                r"^(?P<category>FACTURE CARTE) DU (?P<dd>\d{2})(?P<mm>\d{2})(?P<yy>\d{2}) (?P<text>.*?)( CA?R?T?E? ?\d*X*\d*)?$"
             ),
             FrenchTransaction.TYPE_CARD,
         ),
         (
-            re.compile(
-                r'^(?P<category>CARTE)( DU)? (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'
-            ),
+            re.compile(r"^(?P<category>CARTE)( DU)? (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)"),
             FrenchTransaction.TYPE_CARD,
         ),
         (
-            re.compile(
-                r'^(?P<category>ANN CARTE)( DU)? ((?P<dd>\d{2})/(?P<mm>\d{2}) )?(?P<text>.*)'
-            ),
+            re.compile(r"^(?P<category>ANN CARTE)( DU)? ((?P<dd>\d{2})/(?P<mm>\d{2}) )?(?P<text>.*)"),
             FrenchTransaction.TYPE_CARD,
         ),
-        (re.compile(r'^(?P<category>(PRELEVEMENT|TELEREGLEMENT|TIP|PRLV)) (?P<text>.*)'), FrenchTransaction.TYPE_ORDER),
-        (re.compile(r'^(?P<category>ECHEANCEPRET)(?P<text>.*)'), FrenchTransaction.TYPE_LOAN_PAYMENT),
+        (re.compile(r"^(?P<category>(PRELEVEMENT|TELEREGLEMENT|TIP|PRLV)) (?P<text>.*)"), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r"^(?P<category>ECHEANCEPRET)(?P<text>.*)"), FrenchTransaction.TYPE_LOAN_PAYMENT),
         (
             re.compile(
-                r'^(?P<category>RET(RAIT)? DAB) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})( (?P<HH>\d+)H(?P<MM>\d+))? (?P<text>.*)'
+                r"^(?P<category>RET(RAIT)? DAB) (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})( (?P<HH>\d+)H(?P<MM>\d+))? (?P<text>.*)"
             ),
             FrenchTransaction.TYPE_WITHDRAWAL,
         ),
         (
-            re.compile(
-                r'^(?P<category>VIR(EMEN)?T? ((RECU|FAVEUR) TIERS|SEPA RECU)?)( /FRM)?(?P<text>.*)'
-            ),
+            re.compile(r"^(?P<category>VIR(EMEN)?T? ((RECU|FAVEUR) TIERS|SEPA RECU)?)( /FRM)?(?P<text>.*)"),
             FrenchTransaction.TYPE_TRANSFER,
         ),
-        (re.compile(r'^(?P<category>REMBOURST)(?P<text>.*)'), FrenchTransaction.TYPE_PAYBACK),
-        (re.compile(r'^(?P<category>COMMISSIONS)(?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^(?P<text>(?P<category>REMUNERATION).*)'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^(?P<category>(REMISE CHEQUES|REM CHQ))(?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r"^(?P<category>REMBOURST)(?P<text>.*)"), FrenchTransaction.TYPE_PAYBACK),
+        (re.compile(r"^(?P<category>COMMISSIONS)(?P<text>.*)"), FrenchTransaction.TYPE_BANK),
+        (re.compile(r"^(?P<text>(?P<category>REMUNERATION).*)"), FrenchTransaction.TYPE_BANK),
+        (re.compile(r"^(?P<category>(REMISE CHEQUES|REM CHQ))(?P<text>.*)"), FrenchTransaction.TYPE_DEPOSIT),
     ]
 
 
@@ -91,7 +98,9 @@ class ActionNeededPage(LoggedPage, HTMLPage):
         # NB: The CGUs happens on every page as long as it is not skipped or
         # validated. The implementation is done in the Accounts page because
         # we decide to skip the CGUs in browser.iter_accounts()
-        return bool(self.doc.xpath('//input[@class="bouton_valid01" and contains(@title, "Me le demander ultérieurement")]'))
+        return bool(
+            self.doc.xpath('//input[@class="bouton_valid01" and contains(@title, "Me le demander ultérieurement")]')
+        )
 
     def get_action_needed_message(self):
         warning = CleanText(
@@ -122,7 +131,7 @@ class ActionNeededPage(LoggedPage, HTMLPage):
 
     def send_info_form(self):
         try:
-            form = self.get_form(name='validation_messages_bloquants')
+            form = self.get_form(name="validation_messages_bloquants")
         except FormNotFound:
             return False
         else:
@@ -131,22 +140,22 @@ class ActionNeededPage(LoggedPage, HTMLPage):
 
 
 MARKET_ORDER_DIRECTIONS = {
-    'Achat': MarketOrderDirection.BUY,
-    'Vente': MarketOrderDirection.SALE,
+    "Achat": MarketOrderDirection.BUY,
+    "Vente": MarketOrderDirection.SALE,
 }
 
 MARKET_ORDER_TYPES = {
-    'MAR': MarketOrderType.MARKET,
-    'DC': MarketOrderType.MARKET,
-    'LIM': MarketOrderType.LIMIT,
-    'AML': MarketOrderType.LIMIT,
-    'ASD': MarketOrderType.TRIGGER,
-    'APD': MarketOrderType.TRIGGER,
+    "MAR": MarketOrderType.MARKET,
+    "DC": MarketOrderType.MARKET,
+    "LIM": MarketOrderType.LIMIT,
+    "AML": MarketOrderType.LIMIT,
+    "ASD": MarketOrderType.TRIGGER,
+    "APD": MarketOrderType.TRIGGER,
 }
 
 MARKET_ORDER_PAYMENT_METHODS = {
-    'CPT': MarketOrderPayment.CASH,
-    'SRD': MarketOrderPayment.DEFERRED,
+    "CPT": MarketOrderPayment.CASH,
+    "SRD": MarketOrderPayment.DEFERRED,
 }
 
 
@@ -165,70 +174,72 @@ class PeaHistoryPage(ActionNeededPage):
         item_xpath = '//table[contains(@id, "t_intraday")]/tbody/tr[not(has-class("categorie") or has-class("detail") or has-class("detail02"))]'
         head_xpath = '//table[contains(@id, "t_intraday")]/thead//th'
 
-        col_label = 'Libellé'
-        col_unitvalue = 'Cours'
-        col_quantity = 'Qté'
-        col_unitprice = 'PRU / PM'
-        col_valuation = 'Valorisation'
-        col_diff = '+/- values'
-        col_portfolio_share = 'Poids'
+        col_label = "Libellé"
+        col_unitvalue = "Cours"
+        col_quantity = "Qté"
+        col_unitprice = "PRU / PM"
+        col_valuation = "Valorisation"
+        col_diff = "+/- values"
+        col_portfolio_share = "Poids"
 
         class item(ItemElement):
             klass = Investment
 
             def condition(self):
-                return Field('valuation')(self)
+                return Field("valuation")(self)
 
-            obj_label = CleanText(TableCell('label'))
-            obj_id = Base(TableCell('label'), Regexp(Link('./a[contains(@href, "cdReferentiel")]'), r'cdReferentiel=(.*)'))
-            obj_code = IsinCode(Regexp(Field('id'), r'^[A-Z]+[0-9]+(.*)$'), default=NotAvailable)
-            obj_code_type = IsinType(Regexp(Field('id'), r'^[A-Z]+[0-9]+(.*)$'), default=NotAvailable)
-            obj_quantity = CleanDecimal.French(TableCell('quantity'), default=NotAvailable)
-            obj_valuation = CleanDecimal.French(TableCell('valuation'), default=NotAvailable)
+            obj_label = CleanText(TableCell("label"))
+            obj_id = Base(
+                TableCell("label"), Regexp(Link('./a[contains(@href, "cdReferentiel")]'), r"cdReferentiel=(.*)")
+            )
+            obj_code = IsinCode(Regexp(Field("id"), r"^[A-Z]+[0-9]+(.*)$"), default=NotAvailable)
+            obj_code_type = IsinType(Regexp(Field("id"), r"^[A-Z]+[0-9]+(.*)$"), default=NotAvailable)
+            obj_quantity = CleanDecimal.French(TableCell("quantity"), default=NotAvailable)
+            obj_valuation = CleanDecimal.French(TableCell("valuation"), default=NotAvailable)
 
             # We check if there is a currency in the unitvalue TableCell.
             # If there is, it means the unitvalue & unitprice are displayed in the original currency of the asset.
             # If not, it means the unitvalue & unitprice are displayed in the account currency.
-            obj_original_currency = Currency(TableCell('unitvalue'))
+            obj_original_currency = Currency(TableCell("unitvalue"))
 
             def obj_unitvalue(self):
-                if not Field('original_currency')(self):
-                    return CleanDecimal.US(TableCell('unitvalue'), default=NotAvailable)(self)
+                if not Field("original_currency")(self):
+                    return CleanDecimal.US(TableCell("unitvalue"), default=NotAvailable)(self)
                 return NotAvailable
 
             def obj_original_unitvalue(self):
-                if Field('original_currency')(self):
-                    return CleanDecimal.US(TableCell('unitvalue'), default=NotAvailable)(self)
+                if Field("original_currency")(self):
+                    return CleanDecimal.US(TableCell("unitvalue"), default=NotAvailable)(self)
                 return NotAvailable
 
             def obj_unitprice(self):
-                if not Field('original_currency')(self):
-                    return CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)(self)
+                if not Field("original_currency")(self):
+                    return CleanDecimal.French(TableCell("unitprice"), default=NotAvailable)(self)
                 return NotAvailable
 
             def obj_original_unitprice(self):
-                if Field('original_currency')(self):
-                    return CleanDecimal.French(TableCell('unitprice'), default=NotAvailable)(self)
+                if Field("original_currency")(self):
+                    return CleanDecimal.French(TableCell("unitprice"), default=NotAvailable)(self)
                 return NotAvailable
 
             def obj_diff(self):
-                if not Field('original_currency')(self):
-                    return Base(TableCell('diff'), CleanDecimal.French('./text()', default=NotAvailable))(self)
+                if not Field("original_currency")(self):
+                    return Base(TableCell("diff"), CleanDecimal.French("./text()", default=NotAvailable))(self)
                 return NotAvailable
 
             def obj_original_diff(self):
-                if Field('original_currency')(self):
-                    return Base(TableCell('diff'), CleanDecimal.French('./text()', default=NotAvailable))(self)
+                if Field("original_currency")(self):
+                    return Base(TableCell("diff"), CleanDecimal.French("./text()", default=NotAvailable))(self)
                 return NotAvailable
 
             def obj_diff_ratio(self):
-                diff_ratio_percent = Base(TableCell('diff'), CleanDecimal.French('./span', default=None))(self)
+                diff_ratio_percent = Base(TableCell("diff"), CleanDecimal.French("./span", default=None))(self)
                 if diff_ratio_percent:
                     return diff_ratio_percent / 100
                 return NotAvailable
 
             def obj_portfolio_share(self):
-                portfolio_share = CleanDecimal.French(TableCell('portfolio_share'), default=None)(self)
+                portfolio_share = CleanDecimal.French(TableCell("portfolio_share"), default=None)(self)
                 if portfolio_share:
                     return portfolio_share / 100
                 return NotAvailable
@@ -238,12 +249,12 @@ class PeaHistoryPage(ActionNeededPage):
 
     def select_period(self):
         try:
-            form = self.get_form(name='form_historique_titres')
+            form = self.get_form(name="form_historique_titres")
         except FormNotFound:
             return False
-        form['dateDebut'] = (date.today() - relativedelta(years=2)).strftime('%d/%m/%Y')
-        form['nbResultats'] = '100'
-        form['typeOperation'] = '01'
+        form["dateDebut"] = (date.today() - relativedelta(years=2)).strftime("%d/%m/%Y")
+        form["nbResultats"] = "100"
+        form["typeOperation"] = "01"
         form.submit(timeout=30)
         return True
 
@@ -252,35 +263,35 @@ class PeaHistoryPage(ActionNeededPage):
         item_xpath = '//table[@id="tabHistoriqueOperations"]/tbody/tr'
         head_xpath = '//table[@id="tabHistoriqueOperations"]/thead//th'
 
-        col_raw = 'Opération'
-        col_date = 'Date'
-        col_amount = 'Montant brut'
-        col_commission = re.compile(r'Courtage')
-        col_currency = 'Devise'
+        col_raw = "Opération"
+        col_date = "Date"
+        col_amount = "Montant brut"
+        col_commission = re.compile(r"Courtage")
+        col_currency = "Devise"
 
-        col_inv_label = 'Libellé'
-        col_inv_quantity = 'Qté'
+        col_inv_label = "Libellé"
+        col_inv_quantity = "Qté"
         col_inv_unitvalue = "Prix d'éxé"
 
         class item(ItemElement):
             klass = Transaction
 
             def condition(self):
-                return CleanText(TableCell('currency'))(self)
+                return CleanText(TableCell("currency"))(self)
 
             obj_type = Transaction.TYPE_BANK
 
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_label = obj_raw = CleanText(TableCell('raw'))
-            obj_amount = CleanDecimal.French(TableCell('amount'), default=0)
-            obj_commission = CleanDecimal.French(TableCell('commission'))
+            obj_date = Date(CleanText(TableCell("date")), dayfirst=True)
+            obj_label = obj_raw = CleanText(TableCell("raw"))
+            obj_amount = CleanDecimal.French(TableCell("amount"), default=0)
+            obj_commission = CleanDecimal.French(TableCell("commission"))
 
             def obj_investments(self):
                 investment = Investment()
-                investment.valuation = Field('amount')(self)
-                investment.label = CleanText(TableCell('inv_label'))(self)
-                investment.quantity = CleanDecimal.French(TableCell('inv_quantity'), default=0)(self)
-                investment.unitvalue = CleanDecimal.French(TableCell('inv_unitvalue'), default=0)(self)
+                investment.valuation = Field("amount")(self)
+                investment.label = CleanText(TableCell("inv_label"))(self)
+                investment.quantity = CleanDecimal.French(TableCell("inv_quantity"), default=0)(self)
+                investment.unitvalue = CleanDecimal.French(TableCell("inv_unitvalue"), default=0)(self)
                 return [investment]
 
             obj__details_link = None
@@ -293,12 +304,12 @@ class PeaHistoryPage(ActionNeededPage):
             # So Compte Titres's balance is only composed of titles' valuation
             if self.obj.type == Account.TYPE_MARKET:
                 title_valuation = self.xpath('//tr[@class="title"]/td[contains(text(),"Évaluation Titres")]')[0]
-                return CleanDecimal.French('./following-sibling::td/text()')(title_valuation)
+                return CleanDecimal.French("./following-sibling::td/text()")(title_valuation)
 
             valuations = self.xpath('//div[@id="valorisation_compte"]//table/tr')
             for valuation in valuations:
-                if 'Valorisation totale' in CleanText('.')(valuation):
-                    return CleanDecimal.French('./td[2]')(valuation)
+                if "Valorisation totale" in CleanText(".")(valuation):
+                    return CleanDecimal.French("./td[2]")(valuation)
 
         def obj_currency(self):
             return Currency('//div[@id="valorisation_compte"]//td[contains(text(), "Solde")]')(self)
@@ -306,35 +317,35 @@ class PeaHistoryPage(ActionNeededPage):
         def obj__market_orders_link(self):
             link = AbsoluteLink('//a[contains(@href, "carnet-d-ordres.jsp")]', default=None)(self)
             if not link:
-                self.logger.warning('Market orders link not available for account %s', self.obj.label)
+                self.logger.warning("Market orders link not available for account %s", self.obj.label)
             return link
 
     def get_date_range_form(self):
         today = date.today()
         form = self.get_form()
-        form['dateDeb'] = (today - relativedelta(years=1)).strftime('%d/%m/%Y')
-        form['dateFin'] = today.strftime('%d/%m/%Y')
+        form["dateDeb"] = (today - relativedelta(years=1)).strftime("%d/%m/%Y")
+        form["dateFin"] = today.strftime("%d/%m/%Y")
         return form
 
     def are_market_orders_loaded(self):
         return bool(self.doc.xpath('//form[@id="afficherCarnetOrdre"]'))
 
     def get_parameters_hash(self):
-        return Attr('//input[@value="as_afficherCarnetOrdre.do_"]', 'name')(self.doc)
+        return Attr('//input[@value="as_afficherCarnetOrdre.do_"]', "name")(self.doc)
 
     @method
     class iter_market_orders(TableElement):
         item_xpath = '//table[@id="t_intraday"]/tbody/tr[td and not(./td[contains(text(), "Aucun ordre")])]'
         head_xpath = '//table[@id="t_intraday"]/thead//th'
 
-        col_label = re.compile(r'.*Libellé')
-        col_direction = 'Sens'
-        col_quantity = 'Qté'
-        col_order_type_ordervalue = re.compile(r'Type')
-        col_validity_date = 'Validité'
-        col_state_unitprice = 'Etat'
-        col_date = 'Transmission'
-        col_currency = 'Devise'
+        col_label = re.compile(r".*Libellé")
+        col_direction = "Sens"
+        col_quantity = "Qté"
+        col_order_type_ordervalue = re.compile(r"Type")
+        col_validity_date = "Validité"
+        col_state_unitprice = "Etat"
+        col_date = "Transmission"
+        col_currency = "Devise"
 
         class item(ItemElement):
             klass = MarketOrder
@@ -342,50 +353,42 @@ class PeaHistoryPage(ActionNeededPage):
             obj__details_link = AbsoluteLink('.//a[@class="bt_l_loupe"]', default=NotAvailable)
             obj_id = Regexp(
                 Link('.//a[@class="bt_l_loupe"]', default=NotAvailable),
-                r'idOrdre=([^&]+)',
+                r"idOrdre=([^&]+)",
                 default=NotAvailable,
             )
-            obj_label = CleanText(TableCell('label'))
+            obj_label = CleanText(TableCell("label"))
 
             obj_direction = MapIn(
-                CleanText(TableCell('direction')),
-                MARKET_ORDER_DIRECTIONS,
-                MarketOrderDirection.UNKNOWN
+                CleanText(TableCell("direction")), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN
             )
 
             obj_payment_method = MapIn(
-                CleanText(TableCell('direction')),
-                MARKET_ORDER_PAYMENT_METHODS,
-                MarketOrderPayment.UNKNOWN
+                CleanText(TableCell("direction")), MARKET_ORDER_PAYMENT_METHODS, MarketOrderPayment.UNKNOWN
             )
 
-            obj_quantity = CleanDecimal.French(TableCell('quantity'))
+            obj_quantity = CleanDecimal.French(TableCell("quantity"))
 
             obj_order_type = MapIn(
-                CleanText(
-                    TableCell('order_type_ordervalue')
-                ),
-                MARKET_ORDER_TYPES,
-                MarketOrderType.UNKNOWN
+                CleanText(TableCell("order_type_ordervalue")), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN
             )
 
             obj_ordervalue = CleanDecimal.French(
-                Regexp(CleanText(TableCell('order_type_ordervalue')), r'\(.*\)', default=NotAvailable),
+                Regexp(CleanText(TableCell("order_type_ordervalue")), r"\(.*\)", default=NotAvailable),
                 default=NotAvailable,
             )
-            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True)
+            obj_validity_date = Date(CleanText(TableCell("validity_date")), dayfirst=True)
 
             # If the order has been executed, the state is followed by the unit price.
-            obj_state = Regexp(CleanText(TableCell('state_unitprice')), r'(.+?)\d|$', default=NotAvailable)
-            obj_unitprice = CleanDecimal.French(TableCell('state_unitprice'), default=NotAvailable)
+            obj_state = Regexp(CleanText(TableCell("state_unitprice")), r"(.+?)\d|$", default=NotAvailable)
+            obj_unitprice = CleanDecimal.French(TableCell("state_unitprice"), default=NotAvailable)
 
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_currency = Currency(TableCell('currency'))
+            obj_date = Date(CleanText(TableCell("date")), dayfirst=True)
+            obj_currency = Currency(TableCell("currency"))
 
     @method
     class fill_market_order(ItemElement):
         obj_execution_date = Date(
-            Regexp(CleanText('//tr[contains(./th, "Date et heure d\'exécution")]/td'), r'(.*) -', default=NotAvailable),
+            Regexp(CleanText('//tr[contains(./th, "Date et heure d\'exécution")]/td'), r"(.*) -", default=NotAvailable),
             dayfirst=True,
             default=NotAvailable,
         )
@@ -402,66 +405,60 @@ class PeaHistoryPage(ActionNeededPage):
 class InvestmentApiPage(LoggedPage, JsonPage):
     @method
     class fill_account(ItemElement):
-        obj_balance = CleanDecimal.SI(Dict('estimatedBalance'))
-        obj_currency = 'EUR'
-        obj_opening_date = Date(
-            CleanText(Dict('subscriptionDate')),
-            default=NotAvailable
-        )
+        obj_balance = CleanDecimal.SI(Dict("estimatedBalance"))
+        obj_currency = "EUR"
+        obj_opening_date = Date(CleanText(Dict("subscriptionDate")), default=NotAvailable)
 
-        obj_valuation_diff = CleanDecimal.SI(Dict('performanceAmount'))
+        obj_valuation_diff = CleanDecimal.SI(Dict("performanceAmount"))
 
         def obj_valuation_diff_ratio(self):
-            valuation_diff_ratio = CleanDecimal.SI(Dict('performancePercent'))(self)
+            valuation_diff_ratio = CleanDecimal.SI(Dict("performancePercent"))(self)
             if not empty(valuation_diff_ratio):
                 return valuation_diff_ratio / 100
             return NotAvailable
 
     @method
     class iter_investments(DictElement):
-        item_xpath = 'contractsFinancialInstrumentsList'
+        item_xpath = "contractsFinancialInstrumentsList"
 
         class item(ItemElement):
             klass = Investment
 
-            obj_label = CleanText(Dict('financialInstrument/financialInstrumentDescription'))
-            obj_id = CleanText(Dict('financialInstrument/referencedCode'))
+            obj_label = CleanText(Dict("financialInstrument/financialInstrumentDescription"))
+            obj_id = CleanText(Dict("financialInstrument/referencedCode"))
             obj_code = Coalesce(
-                IsinCode(CleanText(Dict('financialInstrument/isinCode')), default=NotAvailable),
-                CleanText(Dict('financialInstrument/isinCode')),
-                default=NotAvailable
+                IsinCode(CleanText(Dict("financialInstrument/isinCode")), default=NotAvailable),
+                CleanText(Dict("financialInstrument/isinCode")),
+                default=NotAvailable,
             )
-            obj_code_type = IsinType(Field('code'))
+            obj_code_type = IsinType(Field("code"))
 
             def obj_quantity(self):
-                if Dict('financialInstrument/isEuroFund')(self):
+                if Dict("financialInstrument/isEuroFund")(self):
                     return NotAvailable
-                return CleanDecimal.SI(Dict('unitsNumber'))(self)
+                return CleanDecimal.SI(Dict("unitsNumber"))(self)
 
             def obj_unitprice(self):
-                if Dict('financialInstrument/isEuroFund')(self):
+                if Dict("financialInstrument/isEuroFund")(self):
                     return NotAvailable
-                return CleanDecimal.SI(Dict('unitCostPrice'))(self)
+                return CleanDecimal.SI(Dict("unitCostPrice"))(self)
 
             def obj_unitvalue(self):
-                if Dict('financialInstrument/isEuroFund')(self):
+                if Dict("financialInstrument/isEuroFund")(self):
                     return NotAvailable
-                return CleanDecimal.SI(Dict('financialInstrument/netAssetValue'))(self)
+                return CleanDecimal.SI(Dict("financialInstrument/netAssetValue"))(self)
 
-            obj_valuation = CleanDecimal.SI(Dict('estimatedBalance'))
-            obj_vdate = Date(
-                CleanText(Dict('financialInstrument/latestNetAssetValueDate')),
-                default=NotAvailable
-            )
+            obj_valuation = CleanDecimal.SI(Dict("estimatedBalance"))
+            obj_vdate = Date(CleanText(Dict("financialInstrument/latestNetAssetValueDate")), default=NotAvailable)
 
             def obj_portfolio_share(self):
-                portfolio_share = CleanDecimal.SI(Dict('breakdown'), default=NotAvailable)(self)
+                portfolio_share = CleanDecimal.SI(Dict("breakdown"), default=NotAvailable)(self)
                 if not empty(portfolio_share):
                     return portfolio_share / 100
                 return NotAvailable
 
             def obj_diff_ratio(self):
-                diff_ratio_percent = CleanDecimal.SI(Dict('performanceAmount'), default=NotAvailable)(self)
+                diff_ratio_percent = CleanDecimal.SI(Dict("performanceAmount"), default=NotAvailable)(self)
                 if not empty(diff_ratio_percent):
                     return diff_ratio_percent / 100
                 return NotAvailable
@@ -469,21 +466,18 @@ class InvestmentApiPage(LoggedPage, JsonPage):
 
 class InvestmentHistoryPage(ActionNeededPage):
     def get_account_api_id(self):
-        return Regexp(
-            Attr('//iframe[@id="valuationIframe"]', 'src'),
-            r'accountId=(.+)'
-        )(self.doc)
+        return Regexp(Attr('//iframe[@id="valuationIframe"]', "src"), r"accountId=(.+)")(self.doc)
 
     def select_period(self):
         assert isinstance(self.browser.page, type(self))
 
         try:
-            form = self.get_form(name='OperationsForm')
+            form = self.get_form(name="OperationsForm")
         except FormNotFound:
             return False
 
-        form['dateDebut'] = (date.today() - relativedelta(years=2)).strftime('%d/%m/%Y')
-        form['nbrEltsParPage'] = '100'
+        form["dateDebut"] = (date.today() - relativedelta(years=2)).strftime("%d/%m/%Y")
+        form["nbrEltsParPage"] = "100"
         form.submit()
         return True
 
@@ -492,29 +486,26 @@ class InvestmentHistoryPage(ActionNeededPage):
         item_xpath = '//table[@id="tableau_histo_opes" and not(thead/tr/th[contains(text(), "ISIN")])]/tbody/tr'
         head_xpath = '//table[@id="tableau_histo_opes" and not(thead/tr/th[contains(text(), "ISIN")])]/thead//th'
 
-        col_details_link = 'Détail'
+        col_details_link = "Détail"
         col_date = "Date d'opération"
-        col_raw = 'Libellé'
-        col_amount = re.compile(r'Montant Net')
+        col_raw = "Libellé"
+        col_amount = re.compile(r"Montant Net")
 
         class item(ItemElement):
             klass = Transaction
 
             def condition(self):
-                return CleanDecimal.French(TableCell('amount'), default=None)(self) is not None
+                return CleanDecimal.French(TableCell("amount"), default=None)(self) is not None
 
             obj_type = Transaction.TYPE_BANK
 
-            obj_date = obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_label = obj_raw = CleanText(TableCell('raw'))
-            obj_amount = CleanDecimal.French(TableCell('amount'), default=0)
+            obj_date = obj_rdate = Date(CleanText(TableCell("date")), dayfirst=True)
+            obj_label = obj_raw = CleanText(TableCell("raw"))
+            obj_amount = CleanDecimal.French(TableCell("amount"), default=0)
 
             obj__details_link = Base(
-                TableCell('details_link'),
-                Regexp(
-                    Attr('./a', 'onclick', default=''),
-                    r"afficherDetailOperation\('([^']+)", default=''
-                )
+                TableCell("details_link"),
+                Regexp(Attr("./a", "onclick", default=""), r"afficherDetailOperation\('([^']+)", default=""),
             )
 
     @method
@@ -522,64 +513,66 @@ class InvestmentHistoryPage(ActionNeededPage):
         item_xpath = '//form[@name="DetailOperationForm"]//table[not(thead/tr/th[contains(text(), "ISIN")])]/tbody/tr[not(@id)][td[3]]'
         head_xpath = '//form[@name="DetailOperationForm"]//table[not(thead/tr/th[contains(text(), "ISIN")])]/thead//th'
 
-        col_date = 'Date'
-        col_raw = 'Libellé'
-        col_amount = 'Montant'
+        col_date = "Date"
+        col_raw = "Libellé"
+        col_amount = "Montant"
 
         class item(ItemElement):
             klass = Transaction
 
             def condition(self):
-                return CleanDecimal.French(TableCell('amount'), default=None)(self) is not None
+                return CleanDecimal.French(TableCell("amount"), default=None)(self) is not None
 
             obj_type = Transaction.TYPE_BANK
 
-            obj_date = obj_rdate = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_label = obj_raw = CleanText(TableCell('raw'))
-            obj_amount = CleanDecimal.French(TableCell('amount'), default=0)
+            obj_date = obj_rdate = Date(CleanText(TableCell("date")), dayfirst=True)
+            obj_label = obj_raw = CleanText(TableCell("raw"))
+            obj_amount = CleanDecimal.French(TableCell("amount"), default=0)
 
             obj__details_link = None
 
 
 class AccountHistoryPage(ActionNeededPage):
     def build_doc(self, content):
-        content = re.sub(br'\*<E\w+', b'*', content)
+        content = re.sub(rb"\*<E\w+", b"*", content)
         return super(AccountHistoryPage, self).build_doc(content)
 
     @method
     class fill_account(ItemElement):
         def obj_coming(self):
             for tr in self.xpath('//table[@id="tableauConsultationHisto"]/tbody/tr'):
-                if 'Encours' in CleanText('./td')(tr):
-                    return CleanDecimal('./td//strong', replace_dots=True, sign=lambda x: -1, default=NotAvailable)(tr)
+                if "Encours" in CleanText("./td")(tr):
+                    return CleanDecimal("./td//strong", replace_dots=True, sign=lambda x: -1, default=NotAvailable)(tr)
 
         def obj_balance(self):
             for tr in self.xpath('//table[@id="tableauConsultationHisto"]/tbody/tr'):
-                if 'Solde' in CleanText('./td')(tr):
-                    return CleanDecimal.French('./td/strong')(tr)
+                if "Solde" in CleanText("./td")(tr):
+                    return CleanDecimal.French("./td/strong")(tr)
 
         def obj_currency(self):
             for tr in self.xpath('//table[@id="tableauConsultationHisto"]/tbody/tr'):
-                if 'Solde' in CleanText('./td')(tr):
-                    return Currency('./td/strong')(tr)
+                if "Solde" in CleanText("./td")(tr):
+                    return Currency("./td/strong")(tr)
 
     def iter_investments(self):
         return []
 
     def select_period(self):
         try:
-            form = self.get_form(xpath='//form[@name="ConsultationHistoriqueOperationsForm" '
-                                       + ' or @name="form_historique_titres" '
-                                       + ' or @name="OperationsForm"]')
+            form = self.get_form(
+                xpath='//form[@name="ConsultationHistoriqueOperationsForm" '
+                + ' or @name="form_historique_titres" '
+                + ' or @name="OperationsForm"]'
+            )
         except FormNotFound:
             return False
 
-        form['dateRechercheDebut'] = (date.today() - relativedelta(years=2)).strftime('%d/%m/%Y')
-        form['nbrEltsParPage'] = '100'
+        form["dateRechercheDebut"] = (date.today() - relativedelta(years=2)).strftime("%d/%m/%Y")
+        form["nbrEltsParPage"] = "100"
 
         # '�' char may be in here instead of a space char (eg: '5\xa0733,29')
-        form['montantSoldeDebut'] = unidecode(form['montantSoldeDebut'])
-        form['montantSoldeFin'] = unidecode(form['montantSoldeFin'])
+        form["montantSoldeDebut"] = unidecode(form["montantSoldeDebut"])
+        form["montantSoldeFin"] = unidecode(form["montantSoldeFin"])
 
         form.submit()
 
@@ -591,32 +584,30 @@ class AccountHistoryPage(ActionNeededPage):
         head_xpath = '(//table[@id="tabHistoriqueOperations"]/thead)[1]//th'
 
         col_date = "Date d'opération"
-        col_vdate = 'Date de valeur'
-        col_label = 'Libellé'
-        col_debit = 'Débit'
-        col_credit = 'Crédit'
+        col_vdate = "Date de valeur"
+        col_label = "Libellé"
+        col_debit = "Débit"
+        col_credit = "Crédit"
 
         class item(ItemElement):
             klass = Transaction
 
             def condition(self):
-                return Field('amount')(self) != 0
+                return Field("amount")(self) != 0
 
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
-            obj_raw = Transaction.Raw(Base(TableCell('label'), CleanText('./text()')))
+            obj_date = Date(CleanText(TableCell("date")), dayfirst=True)
+            obj_vdate = Date(CleanText(TableCell("vdate")), dayfirst=True, default=NotAvailable)
+            obj_raw = Transaction.Raw(Base(TableCell("label"), CleanText("./text()")))
 
             def obj_label(self):
-                return (
-                    Base(TableCell('label'), CleanText('./div'))(self)
-                    or Base(TableCell('label'), CleanText('./text()'))(self)
-                )
+                return Base(TableCell("label"), CleanText("./div"))(self) or Base(
+                    TableCell("label"), CleanText("./text()")
+                )(self)
 
             def obj_amount(self):
-                return (
-                    CleanDecimal.US(TableCell('credit'), default=0)(self)
-                    + CleanDecimal.US(TableCell('debit'), default=0)(self)
-                )
+                return CleanDecimal.US(TableCell("credit"), default=0)(self) + CleanDecimal.US(
+                    TableCell("debit"), default=0
+                )(self)
 
             obj__details_link = None
 
@@ -634,42 +625,41 @@ class CardHistoryPage(ActionNeededPage):
         head_xpath = '//table[@id="tableauEncours"]/thead//th'
 
         col_rdate = "Date d'opération"
-        col_date = 'Date de prélèvement'
-        col_raw = 'Libellé'
-        col_debit = 'Débit'
-        col_credit = 'Crédit'
+        col_date = "Date de prélèvement"
+        col_raw = "Libellé"
+        col_debit = "Débit"
+        col_credit = "Crédit"
 
         class item(ItemElement):
             klass = Transaction
 
             def condition(self):
-                return Field('amount')(self) != 0
+                return Field("amount")(self) != 0
 
-            obj_raw = obj_label = CleanText(TableCell('raw'))
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_rdate = obj_bdate = Date(CleanText(TableCell('rdate')), dayfirst=True)
+            obj_raw = obj_label = CleanText(TableCell("raw"))
+            obj_date = Date(CleanText(TableCell("date")), dayfirst=True)
+            obj_rdate = obj_bdate = Date(CleanText(TableCell("rdate")), dayfirst=True)
             obj_type = Transaction.TYPE_DEFERRED_CARD
 
             def obj_amount(self):
-                return (
-                    CleanDecimal.French(TableCell('credit'), default=0)(self)
-                    + CleanDecimal.French(TableCell('debit'), default=0)(self)
-                )
+                return CleanDecimal.French(TableCell("credit"), default=0)(self) + CleanDecimal.French(
+                    TableCell("debit"), default=0
+                )(self)
 
     def is_loading(self):
         return bool(self.doc.xpath('//span[@class="loading"]'))
 
 
 ACCOUNT_TYPES = {
-    'mes-comptes/compte-courant/consulter-situation': Account.TYPE_CHECKING,
-    'mes-comptes/compte-especes': Account.TYPE_CHECKING,
-    'mes-comptes/compte-courant/carte-bancaire': Account.TYPE_CARD,
-    'mes-comptes/assurance-vie': Account.TYPE_LIFE_INSURANCE,
-    'mes-comptes/livret': Account.TYPE_SAVINGS,
-    'mes-comptes/pea': Account.TYPE_PEA,
-    'mes-comptes/ppe': Account.TYPE_PEA,
-    'mes-comptes/compte-titres-pea': Account.TYPE_MARKET,
-    'mes-comptes/credit-immo': Account.TYPE_MORTGAGE,
+    "mes-comptes/compte-courant/consulter-situation": Account.TYPE_CHECKING,
+    "mes-comptes/compte-especes": Account.TYPE_CHECKING,
+    "mes-comptes/compte-courant/carte-bancaire": Account.TYPE_CARD,
+    "mes-comptes/assurance-vie": Account.TYPE_LIFE_INSURANCE,
+    "mes-comptes/livret": Account.TYPE_SAVINGS,
+    "mes-comptes/pea": Account.TYPE_PEA,
+    "mes-comptes/ppe": Account.TYPE_PEA,
+    "mes-comptes/compte-titres-pea": Account.TYPE_MARKET,
+    "mes-comptes/credit-immo": Account.TYPE_MORTGAGE,
 }
 
 
@@ -687,7 +677,7 @@ class AccountsList(ActionNeededPage):
     def get_iframe_url(self):
         iframe = self.doc.xpath('//iframe[@id="iframe_centrale"]')
         if iframe:
-            return iframe[0].attrib['src']
+            return iframe[0].attrib["src"]
 
     def need_reload(self):
         form = self.doc.xpath('//form[@name="InformationsPersonnellesForm"]')
@@ -697,16 +687,18 @@ class AccountsList(ActionNeededPage):
         return len(self.doc.xpath('//div[@id="aidesecuforte"]'))
 
     def has_accounts(self):
-        accounts = self.doc.xpath('//div[contains(@class, " compte") and not(contains(@class, "compte_selected")) and not(contains(@class, "aut"))]')
+        accounts = self.doc.xpath(
+            '//div[contains(@class, " compte") and not(contains(@class, "compte_selected")) and not(contains(@class, "aut"))]'
+        )
         return len(accounts) > 0
 
     @staticmethod
     def to_transfer_history_link(link):
-        return link.replace('saisie-virement', 'operations-en-cours/initialiser-operations-en-cours')
+        return link.replace("saisie-virement", "operations-en-cours/initialiser-operations-en-cours")
 
     def iter_transfer_history_links(self):
         for transfer_init_a in self.doc.xpath(self.TRANSFER_INIT_XPATH):
-            init_transfer_link = transfer_init_a.get('href')
+            init_transfer_link = transfer_init_a.get("href")
             if init_transfer_link:
                 yield self.to_transfer_history_link(init_transfer_link)
 
@@ -723,19 +715,17 @@ class AccountsList(ActionNeededPage):
                 + 'or contains(@id, "historique") '
                 + 'or contains(@id, "contrat") '
                 + 'or contains(@id, "assurance_vie_operations")]',
-                default=None
+                default=None,
             )
 
             def obj__transfers_link(self):
                 init_transfer_link = Link(self.page.TRANSFER_INIT_XPATH, None)(self)
                 if init_transfer_link:
-                    return self.page.to_transfer_history_link(
-                        init_transfer_link
-                    )
+                    return self.page.to_transfer_history_link(init_transfer_link)
 
             obj__investment_link = AbsoluteLink('./ul/li/a[contains(@id, "portefeuille")]', default=None)
 
-            obj_id = obj_number = CleanText('./a[contains(@class, "numero_compte")]/div', replace=[('N° ', '')])
+            obj_id = obj_number = CleanText('./a[contains(@class, "numero_compte")]/div', replace=[("N° ", "")])
             obj__ca = CleanText('./a[contains(@class, "numero_compte")]/@rel')
             obj_owner_type = AccountOwnerType.PRIVATE
             obj__tpp_id = NotAvailable
@@ -748,25 +738,21 @@ class AccountsList(ActionNeededPage):
                 return card_links
 
             obj_label = CleanText('./a[contains(@class, "numero_compte")]/@title')
-            obj_type = MapIn(Field('_history_link'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+            obj_type = MapIn(Field("_history_link"), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
 
             def obj_ownership(self):
                 regexp = re.search(
-                    r'(m\. |mme\. )(.+)',
-                    CleanText('//span[has-class("mon_espace_nom")]')(self),
-                    re.IGNORECASE
+                    r"(m\. |mme\. )(.+)", CleanText('//span[has-class("mon_espace_nom")]')(self), re.IGNORECASE
                 )
                 if regexp and len(regexp.groups()) == 2:
-                    gender = regexp.group(1).replace('.', '').rstrip()
+                    gender = regexp.group(1).replace(".", "").rstrip()
                     name = regexp.group(2)
-                    label = Field('label')(self)
+                    label = Field("label")(self)
                     if re.search(
-                        r'(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)',
-                        label,
-                        re.IGNORECASE
+                        r"(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)", label, re.IGNORECASE
                     ):
                         return AccountOwnership.CO_OWNER
-                    if re.search(r'{} {}'.format(gender, name), label, re.IGNORECASE):
+                    if re.search(r"{} {}".format(gender, name), label, re.IGNORECASE):
                         return AccountOwnership.OWNER
                     return AccountOwnership.ATTORNEY
                 return NotAvailable
@@ -776,8 +762,8 @@ class AccountsList(ActionNeededPage):
         def obj__tpp_id(self):
             return Attr(
                 '//input[@name="numeroCompte" and contains(@value, "%s")]/preceding-sibling::input[1]' % self.obj.id,
-                'value',
-                default=NotAvailable
+                "value",
+                default=NotAvailable,
             )(self)
 
     def is_loading(self):
@@ -791,9 +777,11 @@ class FalseActionPage(ActionNeededPage):
 class LoanPage(ActionNeededPage):
     @method
     class fill_account(ItemElement):
-        obj_balance = CleanDecimal.French('//p[@id="c_montantRestant"]//strong', sign='-')
+        obj_balance = CleanDecimal.French('//p[@id="c_montantRestant"]//strong', sign="-")
         obj_total_amount = CleanDecimal.French('(//p[@id="c_montantEmprunte"]//strong)[2]')
-        obj_next_payment_amount = CleanDecimal.French(Regexp(CleanText('//p[@id="c_prochaineEcheance"]//strong'), r'(.*) le'))
+        obj_next_payment_amount = CleanDecimal.French(
+            Regexp(CleanText('//p[@id="c_prochaineEcheance"]//strong'), r"(.*) le")
+        )
         obj_next_payment_date = Date(CleanText('//p[@id="c_prochaineEcheance"]//strong/strong'), dayfirst=True)
         obj_account_label = CleanText('//p[@id="c_comptePrelevementl"]//strong')
         obj_maturity_date = Date(CleanText('//p[@id="c_dateFin"]//strong'), dayfirst=True)
@@ -815,32 +803,40 @@ class ProfilePage(ActionNeededPage):
         klass = Person
 
         obj_phone = Regexp(
-            CleanText('//div[@id="consultationform_telephones"]/p[@id="c_numeroPortable"]'), r'([\d\*]+)', default=None
+            CleanText('//div[@id="consultationform_telephones"]/p[@id="c_numeroPortable"]'), r"([\d\*]+)", default=None
         )
         obj_email = CleanText('//div[@id="modification_email"]//p[@id="c_email_actuel"]/span')
         obj_address = CleanText('//div[@id="consultationform_adresse_domicile"]/div[@class="container"]//span')
         obj_job = CleanText('//div[@id="consultationform_informations_complementaires"]/p[@id="c_profession"]/span')
-        obj_job_activity_area = CleanText('//div[@id="consultationform_informations_complementaires"]/p[@id="c_secteurActivite"]/span')
-        obj_company_name = CleanText('//div[@id="consultationform_informations_complementaires"]/p[@id="c_employeur"]/span')
+        obj_job_activity_area = CleanText(
+            '//div[@id="consultationform_informations_complementaires"]/p[@id="c_secteurActivite"]/span'
+        )
+        obj_company_name = CleanText(
+            '//div[@id="consultationform_informations_complementaires"]/p[@id="c_employeur"]/span'
+        )
 
 
 class ProfilePageCSV(LoggedPage, CsvPage):
-    ENCODING = 'latin_1'
-    FMTPARAMS = {'delimiter': ';'}
+    ENCODING = "latin_1"
+    FMTPARAMS = {"delimiter": ";"}
 
     def get_profile(self):
         d = {el[0]: el[1] for el in self.doc}
         profile = Person()
-        profile.name = '%s %s' % (d['Nom'], d['Prénom'])
-        profile.birth_date = parse_french_date(d['Date de naissance']).date()
-        profile.address = '%s %s %s' % (d['Adresse de correspondance'], d['Code postal résidence fiscale'], d['Ville adresse de correspondance'])
-        profile.country = d['Pays adresse de correspondance']
-        profile.email = d['Adresse e-mail']
-        profile.phone = d.get('Téléphone portable')
-        profile.job_activity_area = d.get('Secteur d\'activité')
-        profile.job = d.get('Situation professionnelle')
-        profile.company_name = d.get('Employeur')
-        profile.family_situation = d.get('Situation familiale')
+        profile.name = "%s %s" % (d["Nom"], d["Prénom"])
+        profile.birth_date = parse_french_date(d["Date de naissance"]).date()
+        profile.address = "%s %s %s" % (
+            d["Adresse de correspondance"],
+            d["Code postal résidence fiscale"],
+            d["Ville adresse de correspondance"],
+        )
+        profile.country = d["Pays adresse de correspondance"]
+        profile.email = d["Adresse e-mail"]
+        profile.phone = d.get("Téléphone portable")
+        profile.job_activity_area = d.get("Secteur d'activité")
+        profile.job = d.get("Situation professionnelle")
+        profile.company_name = d.get("Employeur")
+        profile.family_situation = d.get("Situation familiale")
         return profile
 
 

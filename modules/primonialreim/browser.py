@@ -25,7 +25,7 @@ from .pages import AccountsPage, AfterLoginPage, LoginPage, TaxDocsPage
 
 
 class PrimonialreimBrowser(LoginBrowser):
-    BASEURL = 'https://www.primonialreim.fr'
+    BASEURL = "https://www.primonialreim.fr"
 
     login = URL("/fr/login", LoginPage)
     accounts = URL("/group/extranet-associes/mon-patrimoine", AccountsPage)

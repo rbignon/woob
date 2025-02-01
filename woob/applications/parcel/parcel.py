@@ -22,14 +22,14 @@ from woob.tools.application.formatters.iformatter import IFormatter
 from woob.tools.application.repl import ReplApplication
 
 
-__all__ = ['AppParcel']
+__all__ = ["AppParcel"]
 
 
 STATUS = {
-    Parcel.STATUS_PLANNED:    ('PLANNED', 'red'),
-    Parcel.STATUS_IN_TRANSIT: ('IN TRANSIT', 'yellow'),
-    Parcel.STATUS_ARRIVED:    ('ARRIVED', 'green'),
-    Parcel.STATUS_UNKNOWN:    ('', 'white'),
+    Parcel.STATUS_PLANNED: ("PLANNED", "red"),
+    Parcel.STATUS_IN_TRANSIT: ("IN TRANSIT", "yellow"),
+    Parcel.STATUS_ARRIVED: ("ARRIVED", "green"),
+    Parcel.STATUS_UNKNOWN: ("", "white"),
 }
 
 
@@ -42,62 +42,71 @@ class HistoryFormatter(IFormatter):
 
     def format_obj(self, obj, alias):
         if isinstance(obj, Parcel):
-            result =  'Parcel %s (%s)\n' % (self.colored(obj.id, 'red', 'bold'),
-                                            self.colored(obj.backend, 'blue', 'bold'))
-            result += '%sArrival:%s %s\n' % (self.BOLD, self.NC, obj.arrival)
+            result = "Parcel %s (%s)\n" % (
+                self.colored(obj.id, "red", "bold"),
+                self.colored(obj.backend, "blue", "bold"),
+            )
+            result += "%sArrival:%s %s\n" % (self.BOLD, self.NC, obj.arrival)
             status, status_color = STATUS[obj.status]
-            result += '%sStatus:%s  %s\n' % (self.BOLD, self.NC, self.colored(status, status_color))
-            result += '%sInfo:%s  %s\n\n' % (self.BOLD, self.NC, obj.info)
-            result += ' Date                  Location          Activity                                          \n'
-            result += '---------------------+-----------------+---------------------------------------------------'
+            result += "%sStatus:%s  %s\n" % (self.BOLD, self.NC, self.colored(status, status_color))
+            result += "%sInfo:%s  %s\n\n" % (self.BOLD, self.NC, obj.info)
+            result += " Date                  Location          Activity                                          \n"
+            result += "---------------------+-----------------+---------------------------------------------------"
             return result
 
-        return ' %s   %s %s' % (self.colored('%-19s' % obj.date, 'blue'),
-                                self.colored('%-17s' % (obj.location or ''), 'magenta'),
-                                self.colored(obj.activity or '', 'yellow'))
+        return " %s   %s %s" % (
+            self.colored("%-19s" % obj.date, "blue"),
+            self.colored("%-17s" % (obj.location or ""), "magenta"),
+            self.colored(obj.activity or "", "yellow"),
+        )
 
 
 class StatusFormatter(IFormatter):
-    MANDATORY_FIELDS = ('id',)
+    MANDATORY_FIELDS = ("id",)
 
     def format_obj(self, obj, alias):
         if alias is not None:
-            id = '%s (%s)' % (self.colored('%3s' % ('#' + alias), 'red', 'bold'),
-                              self.colored(obj.backend, 'blue', 'bold'))
-            clean = '#%s (%s)' % (alias, obj.backend)
+            id = "%s (%s)" % (
+                self.colored("%3s" % ("#" + alias), "red", "bold"),
+                self.colored(obj.backend, "blue", "bold"),
+            )
+            clean = "#%s (%s)" % (alias, obj.backend)
             if len(clean) < 15:
-                id += (' ' * (15 - len(clean)))
+                id += " " * (15 - len(clean))
         else:
-            id = self.colored('%30s' % obj.fullid, 'red', 'bold')
+            id = self.colored("%30s" % obj.fullid, "red", "bold")
 
         status, status_color = STATUS[obj.status]
-        arrival = obj.arrival.strftime('%Y-%m-%d') if not empty(obj.arrival) else ''
-        result = '%s %s %s %s  %s' % (id, self.colored('—', 'cyan'),
-                                      self.colored('%-10s' % status, status_color),
-                                      self.colored('%-10s' % arrival, 'blue'),
-                                      self.colored('%-20s' % obj.info, 'yellow'))
+        arrival = obj.arrival.strftime("%Y-%m-%d") if not empty(obj.arrival) else ""
+        result = "%s %s %s %s  %s" % (
+            id,
+            self.colored("—", "cyan"),
+            self.colored("%-10s" % status, status_color),
+            self.colored("%-10s" % arrival, "blue"),
+            self.colored("%-20s" % obj.info, "yellow"),
+        )
 
         return result
 
 
 class AppParcel(ReplApplication):
-    APPNAME = 'parcel'
-    OLD_APPNAME = 'parceloob'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2013-YEAR Romain Bignon'
+    APPNAME = "parcel"
+    OLD_APPNAME = "parceloob"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2013-YEAR Romain Bignon"
     CAPS = CapParcel
     DESCRIPTION = "Console application to track your parcels."
     SHORT_DESCRIPTION = "manage your parcels"
     EXTRA_FORMATTERS = {
-        'status':   StatusFormatter,
-        'history':  HistoryFormatter,
+        "status": StatusFormatter,
+        "history": HistoryFormatter,
     }
-    DEFAULT_FORMATTER = 'table'
+    DEFAULT_FORMATTER = "table"
     COMMANDS_FORMATTERS = {
-        'status':      'status',
-        'info':        'history',
+        "status": "status",
+        "info": "history",
     }
-    STORAGE = {'tracking': []}
+    STORAGE = {"tracking": []}
 
     def do_track(self, line):
         """
@@ -105,14 +114,14 @@ class AppParcel(ReplApplication):
 
         Track a parcel.
         """
-        parcel = self.get_object(line, 'get_parcel_tracking')
+        parcel = self.get_object(line, "get_parcel_tracking")
         if not parcel:
             print('Error: the parcel "%s" is not found' % line, file=self.stderr)
             return 2
 
-        parcels = set(self.storage.get('tracking', default=[]))
+        parcels = set(self.storage.get("tracking", default=[]))
         parcels.add(parcel.fullid)
-        self.storage.set('tracking', list(parcels))
+        self.storage.set("tracking", list(parcels))
         self.storage.save()
 
         print('Parcel "%s" has been tracked.' % parcel.fullid)
@@ -125,7 +134,7 @@ class AppParcel(ReplApplication):
         """
         removed = False
         # Always try to first remove the parcel, the untrack should always success
-        parcels = set(self.storage.get('tracking', default=[]))
+        parcels = set(self.storage.get("tracking", default=[]))
         try:
             parcels.remove(line)
             removed = True
@@ -134,27 +143,30 @@ class AppParcel(ReplApplication):
 
         if not removed:
             try:
-                parcel = self.get_object(line, 'get_parcel_tracking')
+                parcel = self.get_object(line, "get_parcel_tracking")
             except ParcelNotFound:
                 parcel = False
 
             if not parcel:
-                print('Error: the parcel "%s" is not found. Did you provide the full id@backend parameter?' % line, file=self.stderr)
+                print(
+                    'Error: the parcel "%s" is not found. Did you provide the full id@backend parameter?' % line,
+                    file=self.stderr,
+                )
                 return 2
 
             try:
                 parcels.remove(parcel.fullid)
             except KeyError:
-                print("Error: parcel \"%s\" wasn't tracked" % parcel.fullid, file=self.stderr)
+                print('Error: parcel "%s" wasn\'t tracked' % parcel.fullid, file=self.stderr)
                 return 2
 
-        self.storage.set('tracking', list(parcels))
+        self.storage.set("tracking", list(parcels))
         self.storage.save()
 
         if removed:
-            print("Parcel \"%s\" isn't tracked anymore." % line)
+            print('Parcel "%s" isn\'t tracked anymore.' % line)
         else:
-            print("Parcel \"%s\" isn't tracked anymore." % parcel.fullid)
+            print('Parcel "%s" isn\'t tracked anymore.' % parcel.fullid)
 
     def do_status(self, line):
         """
@@ -166,19 +178,19 @@ class AppParcel(ReplApplication):
         self.start_format()
         # XXX cleaning of cached objects may be by start_format()?
         self.objects = []
-        for id in self.storage.get('tracking', default=[]):
+        for id in self.storage.get("tracking", default=[]):
             # It should be safe to do it here, since all objects in storage
             # are stored with the fullid
-            _id, backend_name = id.rsplit('@', 1)
+            _id, backend_name = id.rsplit("@", 1)
             # If the user use the -b or -e option, do not try to get
             # the status of parcel of not loaded backends
             if backend_name not in backends:
                 continue
 
             try:
-                p = self.get_object(id, 'get_parcel_tracking')
+                p = self.get_object(id, "get_parcel_tracking")
             except CallErrors as errors:
-                print('Error with parcel', id, file=self.stderr)
+                print("Error with parcel", id, file=self.stderr)
                 self.bcall_errors_handler(errors)
                 continue
 
@@ -192,9 +204,9 @@ class AppParcel(ReplApplication):
 
         Get information about a parcel.
         """
-        parcel = self.get_object(id, 'get_parcel_tracking', [])
+        parcel = self.get_object(id, "get_parcel_tracking", [])
         if not parcel:
-            print('Error: parcel not found', file=self.stderr)
+            print("Error: parcel not found", file=self.stderr)
             return 2
 
         self.start_format()

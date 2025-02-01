@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class BinckTest(BackendTest):
-    MODULE = 'binck'
+    MODULE = "binck"
 
     def test_binck(self):
         raise NotImplementedError()

@@ -48,7 +48,7 @@ class LoginPage(HTMLPage):
         form["j_username"] = username
         form["j_password"] = password
         if captcha is not None:
-            form['g-recaptcha-response'] = captcha
+            form["g-recaptcha-response"] = captcha
         form.submit()
 
 
@@ -79,22 +79,14 @@ class EmployeesPage(PajemploiPage):
             obj__nom1 = CleanText(TableCell("nom"))
             obj__nom2 = CleanText(Attr('.//input[contains(@id, ".nom")]', "value"))
             obj__prenom1 = CleanText(TableCell("prenom"))
-            obj__prenom2 = CleanText(
-                Attr('.//input[contains(@id, ".prenom")]', "value")
-            )
-            obj__internal_id = CleanText(
-                Attr('.//input[contains(@id, ".salaEmplPk.noIntSala")]', "value")
-            )
-            obj__pseudo_siret = CleanText(
-                Attr('.//input[contains(@id, ".salaEmplPk.psdoSirt")]', "value")
-            )
+            obj__prenom2 = CleanText(Attr('.//input[contains(@id, ".prenom")]', "value"))
+            obj__internal_id = CleanText(Attr('.//input[contains(@id, ".salaEmplPk.noIntSala")]', "value"))
+            obj__pseudo_siret = CleanText(Attr('.//input[contains(@id, ".salaEmplPk.psdoSirt")]', "value"))
             obj__date_creation = Date(
                 CleanText(Attr('.//input[contains(@id, ".dtCreation")]', "value")),
                 dayfirst=True,
             )
-            obj_label = Format(
-                "%s %s", CleanText(Field("_prenom1")), CleanText(Field("_nom1"))
-            )
+            obj_label = Format("%s %s", CleanText(Field("_prenom1")), CleanText(Field("_nom1")))
             # obj_subscriber = Env("subscriber")
             obj__type = "employee"
             obj__active = Eval(lambda x: x[0].checked, (Child(TableCell("actif"))))
@@ -107,9 +99,7 @@ class TaxCertificatesPage(PajemploiPage):
         next_page = None
         try:
             form = self.get_form('//input[@id="id_btn_valider"]/parent::form')
-            next_yr = self.doc.xpath(
-                '//select[@name="annee"]/option[@selected]/following-sibling::option'
-            )
+            next_yr = self.doc.xpath('//select[@name="annee"]/option[@selected]/following-sibling::option')
             if len(next_yr):
                 form["annee"] = Attr(".", "value")(next_yr[0])
                 next_page = form.request
@@ -211,9 +201,7 @@ class AjaxDetailSocialInfoPage(PartialHTMLPage):
 
 class DeclarationDetailPage(PajemploiPage):
     def on_load(self):
-        js = self.doc.xpath(
-            '//script[@language="Javascript"][contains(text(), "function selectRecherche")]'
-        )
+        js = self.doc.xpath('//script[@language="Javascript"][contains(text(), "function selectRecherche")]')
         div = self.doc.xpath('//div[@id="cont_onglet1"]')
         if js and div:
             service_ajax = Regexp(
@@ -226,26 +214,18 @@ class DeclarationDetailPage(PajemploiPage):
                 r"pageAjax=\"cont_onglet1\";\W+serviceAjax = \"[^\"]+\";\W+parametre = \"([^\"]+)\";",
                 default=None,
             )(self.doc)
-            self.browser.session.headers.update(
-                {"Content-Type": "application/x-www-form-urlencoded"}
-            )
+            self.browser.session.headers.update({"Content-Type": "application/x-www-form-urlencoded"})
             pg = self.browser.open(service_ajax, data=parametre)
             if hasattr(pg, "page") and pg.page:
                 self._doc2 = pg.page.doc
 
     def get_date(self):
         date = None
-        dt_elt = self.doc.xpath(
-            '//td[text()="Période d\'emploi"]/following-sibling::td'
-        )
+        dt_elt = self.doc.xpath('//td[text()="Période d\'emploi"]/following-sibling::td')
         if not dt_elt:
-            dt_elt = self._doc2.xpath(
-                '//td[text()="Période d\'emploi"]/following-sibling::td'
-            )
+            dt_elt = self._doc2.xpath('//td[text()="Période d\'emploi"]/following-sibling::td')
         if dt_elt:
-            date = Date(
-                Regexp(CleanText("."), r"au (\d{2}\/\d{2}\/\d{4})"), dayfirst=True
-            )(dt_elt[0])
+            date = Date(Regexp(CleanText("."), r"au (\d{2}\/\d{2}\/\d{4})"), dayfirst=True)(dt_elt[0])
         else:
             raise ParseError()
         return date
@@ -255,8 +235,8 @@ class DeclarationDetailPage(PajemploiPage):
 
         script = CleanText('//script[not(@src)][contains(text(), "traitementEffectue")]')
         try:
-            traitementEffectue = JSVar(script, var='traitementEffectue')(self.doc)
-            presAnnule = JSVar(script, var='presAnnule')(self.doc)
+            traitementEffectue = JSVar(script, var="traitementEffectue")(self.doc)
+            presAnnule = JSVar(script, var="presAnnule")(self.doc)
         except ItemNotFound:
             traitementEffectue = True
             presAnnule = 0

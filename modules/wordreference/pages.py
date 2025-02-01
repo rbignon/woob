@@ -31,7 +31,7 @@ class TranslatePage(HTMLPage):
         class item(ItemElement):
             klass = Translation
 
-            obj_id = Regexp(CleanText('./@id'), '.*:(.*)')
-            obj_lang_src = Env('sl')
-            obj_lang_dst = Env('tl')
+            obj_id = Regexp(CleanText("./@id"), ".*:(.*)")
+            obj_lang_src = Env("sl")
+            obj_lang_dst = Env("tl")
             obj_text = CleanText('./td[@class="ToWrd"]', children=False)

@@ -25,16 +25,16 @@ from woob.tools.backend import Module
 from .browser import MeteofranceBrowser
 
 
-__all__ = ['MeteofranceModule']
+__all__ = ["MeteofranceModule"]
 
 
 class MeteofranceModule(Module, CapWeather):
-    NAME = 'meteofrance'
-    MAINTAINER = u'Cedric Defortis'
-    EMAIL = 'cedric@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'Get forecasts from the MeteoFrance website'
-    LICENSE = 'AGPLv3+'
+    NAME = "meteofrance"
+    MAINTAINER = "Cedric Defortis"
+    EMAIL = "cedric@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Get forecasts from the MeteoFrance website"
+    LICENSE = "AGPLv3+"
     BROWSER = MeteofranceBrowser
 
     def get_current(self, city_id):

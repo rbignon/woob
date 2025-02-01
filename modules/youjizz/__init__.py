@@ -20,4 +20,4 @@
 from .module import YoujizzModule
 
 
-__all__ = ['YoujizzModule']
+__all__ = ["YoujizzModule"]

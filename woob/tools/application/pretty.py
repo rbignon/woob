@@ -19,28 +19,34 @@ import os
 import sys
 
 
-if sys.platform == 'win32' \
-        or not sys.stdout.isatty() \
-        or os.getenv('NO_COLOR') is not None \
-        or os.getenv('ANSI_COLORS_DISABLED') is not None:
+if (
+    sys.platform == "win32"
+    or not sys.stdout.isatty()
+    or os.getenv("NO_COLOR") is not None
+    or os.getenv("ANSI_COLORS_DISABLED") is not None
+):
     # workaround to disable bold
-    BOLD   = ''
-    NC     = ''         # no color
+    BOLD = ""
+    NC = ""  # no color
 else:
-    BOLD   = '\x1b[1m'
-    NC     = '\x1b[0m'
+    BOLD = "\x1b[1m"
+    NC = "\x1b[0m"
 
 
 try:
     from termcolor import colored
 except ImportError:
+
     def colored(s, color=None, on_color=None, attrs=None):
-        if os.getenv('ANSI_COLORS_DISABLED') is None \
-                and os.getenv('NO_COLOR') is None \
-                and attrs is not None and 'bold' in attrs:
-            return '%s%s%s' % (BOLD, s, NC)
+        if (
+            os.getenv("ANSI_COLORS_DISABLED") is None
+            and os.getenv("NO_COLOR") is None
+            and attrs is not None
+            and "bold" in attrs
+        ):
+            return "%s%s%s" % (BOLD, s, NC)
         else:
             return s
 
 
-__all__ = ['colored', 'NC', 'BOLD']
+__all__ = ["colored", "NC", "BOLD"]

@@ -51,21 +51,23 @@ def encrypt(plaintext):
     smalliv = trunc_iv(iv, plaintext, 0)
 
     cipher = AES.new(key, mode=AES.MODE_CCM, nonce=smalliv, mac_len=ts // 8)
-    ciphertext = b''.join(cipher.encrypt_and_digest(plaintext))
+    ciphertext = b"".join(cipher.encrypt_and_digest(plaintext))
 
     # OrderedDict because 0bin is a piece of shit requiring "iv" as the first key
-    return password.decode('ascii'), OrderedDict([
-        ('iv', b64encode(iv).decode('ascii')),
-        ('v', 1),
-        ('iter', iterations),
-        ('ks', ks),
-        ('ts', ts),
-        ('mode', 'ccm'),
-        ('adata', ''),
-        ('cipher', 'aes'),
-        ('salt', b64encode(salt).decode('ascii')),
-        ('ct', b64encode(ciphertext).decode('ascii')),
-    ])
+    return password.decode("ascii"), OrderedDict(
+        [
+            ("iv", b64encode(iv).decode("ascii")),
+            ("v", 1),
+            ("iter", iterations),
+            ("ks", ks),
+            ("ts", ts),
+            ("mode", "ccm"),
+            ("adata", ""),
+            ("cipher", "aes"),
+            ("salt", b64encode(salt).decode("ascii")),
+            ("ct", b64encode(ciphertext).decode("ascii")),
+        ]
+    )
 
 
 def trunc_iv(iv, t, tl):
@@ -73,7 +75,7 @@ def trunc_iv(iv, t, tl):
     if ol <= 0:
         oll = 2
     else:
-        oll = int(max(2, math.ceil(log2(ol) / 8.)))
+        oll = int(max(2, math.ceil(log2(ol) / 8.0)))
     assert oll <= 4
     if oll < 15 - len(iv):
         ivl = len(iv)
@@ -84,26 +86,26 @@ def trunc_iv(iv, t, tl):
 
 
 def decrypt(secretkey, params):
-    iv = b64decode(params['iv'])
-    salt = b64decode(params['salt'])
-    #~ keylen = params.get('ks', 128) // 8 # FIXME use somewhere?
-    taglen = params.get('ts', 64) // 8
-    iterations = params.get('iter', 1000)
-    data = b64decode(params['ct'])
+    iv = b64decode(params["iv"])
+    salt = b64decode(params["salt"])
+    # ~ keylen = params.get('ks', 128) // 8 # FIXME use somewhere?
+    taglen = params.get("ts", 64) // 8
+    iterations = params.get("iter", 1000)
+    data = b64decode(params["ct"])
     ciphertext = data[:-taglen]
     tag = data[-taglen:]
 
-    if params.get('adata'):
-        raise NotImplementedError('authenticated data support is not implemented')
+    if params.get("adata"):
+        raise NotImplementedError("authenticated data support is not implemented")
 
     iv = trunc_iv(iv, ciphertext, taglen)
 
     hash_func = lambda k, s: HMAC.new(k, s, SHA256).digest()
     key = PBKDF2(secretkey, salt=salt, count=iterations, prf=hash_func)
 
-    mode_str = params.get('mode', 'ccm')
+    mode_str = params.get("mode", "ccm")
     mode = dict(ccm=AES.MODE_CCM)[mode_str]
-    if mode_str == 'ccm':
+    if mode_str == "ccm":
         cipher = AES.new(key, mode=AES.MODE_CCM, nonce=iv, mac_len=taglen)
     else:
         cipher = AES.new(key, mode=mode, iv=iv)

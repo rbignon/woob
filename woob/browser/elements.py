@@ -39,18 +39,18 @@ from .filters.standard import CleanText, _Filter
 
 
 __all__ = [
-    'AbstractElement',
-    'DataError',
-    'DictElement',
-    'ItemElement',
-    'ItemElementFromAbstractPage',
-    'ListElement',
-    'MetaAbstractItemElement',
-    'SkipItem',
-    'TableElement',
-    'generate_table_element',
-    'magic_highlight',
-    'method',
+    "AbstractElement",
+    "DataError",
+    "DictElement",
+    "ItemElement",
+    "ItemElementFromAbstractPage",
+    "ListElement",
+    "MetaAbstractItemElement",
+    "SkipItem",
+    "TableElement",
+    "generate_table_element",
+    "magic_highlight",
+    "method",
 ]
 
 
@@ -65,28 +65,29 @@ def generate_table_element(doc, head_xpath, cleaner=CleanText):
     :type cleaner: Filter
     """
     from unidecode import unidecode
+
     indent = 4
     headers = doc.xpath(head_xpath)
     cols = dict()
     for el in headers:
         th = cleaner.clean(el)
-        cols.update({re.sub('[^a-zA-Z]', '_', unidecode(th)).lower(): th})
+        cols.update({re.sub("[^a-zA-Z]", "_", unidecode(th)).lower(): th})
 
-    print(' ' * indent + '@method')
-    print(' ' * indent + 'class get_items(TableElement):')
+    print(" " * indent + "@method")
+    print(" " * indent + "class get_items(TableElement):")
     if cleaner is not CleanText:
-        print(' ' * indent * 2 + 'cleaner = %s' % cleaner.__name__)
-    print(' ' * indent * 2 + 'head_xpath = ' + repr(head_xpath))
-    print(' ' * indent * 2 + 'item_xpath = ' + repr('...') + '\n')
+        print(" " * indent * 2 + "cleaner = %s" % cleaner.__name__)
+    print(" " * indent * 2 + "head_xpath = " + repr(head_xpath))
+    print(" " * indent * 2 + "item_xpath = " + repr("...") + "\n")
 
     for col, name in cols.items():
-        print(' ' * indent * 2 + 'col_' + col + ' = ' + repr(name))
+        print(" " * indent * 2 + "col_" + col + " = " + repr(name))
 
-    print('\n' + ' ' * indent * 2 + 'class item(ItemElement):')
-    print(' ' * indent * 3 + 'klass = BaseObject' + '\n')
+    print("\n" + " " * indent * 2 + "class item(ItemElement):")
+    print(" " * indent * 3 + "klass = BaseObject" + "\n")
 
     for col in cols:
-        print(' ' * indent * 3 + 'obj_' + col + ' = ' + "TableCell('%s') & CleanText()" % col)
+        print(" " * indent * 3 + "obj_" + col + " = " + "TableCell('%s') & CleanText()" % col)
 
 
 class DataError(Exception):
@@ -127,7 +128,7 @@ class AbstractElement:
     """
 
     def __new__(cls, *args, **kwargs):
-        """ Accept any arguments, necessary for ItemElementFromAbstractPage __new__
+        """Accept any arguments, necessary for ItemElementFromAbstractPage __new__
         override.
 
         ItemElementFromAbstractPage, in its overridden __new__, removes itself from
@@ -160,11 +161,7 @@ class AbstractElement:
 
         self.loaders = {}
 
-    def use_selector(
-        self,
-        func: _Filter | 'ItemElement' | 'ListElement' | Callable[[], Any],
-        key: str | None = None
-    ):
+    def use_selector(self, func: _Filter | "ItemElement" | "ListElement" | Callable[[], Any], key: str | None = None):
         if isinstance(func, _Filter):
             func._obj = self
             func._key = key
@@ -191,7 +188,7 @@ class AbstractElement:
 
     def handle_loaders(self):
         for attrname in dir(self):
-            m = re.match('load_(.*)', attrname)
+            m = re.match("load_(.*)", attrname)
             if not m:
                 continue
             name = m.group(1)
@@ -255,7 +252,7 @@ class ListElement(AbstractElement):
                     yield el
             elif self.empty_xpath is not None and not self.el.xpath(self.empty_xpath):
                 # Send a warning if no item_xpath node was found and an empty_xpath is defined
-                self.logger.warning('No element matched the item_xpath and the defined empty_xpath was not found!')
+                self.logger.warning("No element matched the item_xpath and the defined empty_xpath was not found!")
         else:
             yield self.el
 
@@ -294,10 +291,10 @@ class ListElement(AbstractElement):
             yield obj
 
     def check_next_page(self):
-        if not hasattr(self, 'next_page'):
+        if not hasattr(self, "next_page"):
             return
 
-        next_page = getattr(self, 'next_page')
+        next_page = getattr(self, "next_page")
         try:
             value = self.use_selector(next_page)
         except (AttributeNotFound, XPathNotFound):
@@ -312,10 +309,10 @@ class ListElement(AbstractElement):
         if obj.id:
             if obj.id in self.objects:
                 if self.ignore_duplicate:
-                    self.logger.warning('There are two objects with the same ID! %s' % obj.id)
+                    self.logger.warning("There are two objects with the same ID! %s" % obj.id)
                     return
                 else:
-                    raise DataError('There are two objects with the same ID! %s' % obj.id)
+                    raise DataError("There are two objects with the same ID! %s" % obj.id)
             self.objects[obj.id] = obj
         return obj
 
@@ -330,17 +327,26 @@ class _ItemElementMeta(type):
     """
     Private meta-class used to keep order of obj_* attributes in :class:`ItemElement`.
     """
+
     def __new__(mcs, name, bases, attrs):
         _attrs = []
         for base in bases:
-            if hasattr(base, '_attrs'):
+            if hasattr(base, "_attrs"):
                 _attrs += base._attrs
 
-        filters = [(re.sub('^obj_', '', attr_name), attrs[attr_name]) for attr_name, obj in attrs.items() if attr_name.startswith('obj_')]
+        filters = [
+            (re.sub("^obj_", "", attr_name), attrs[attr_name])
+            for attr_name, obj in attrs.items()
+            if attr_name.startswith("obj_")
+        ]
         # constants first, then filters, then methods
-        filters.sort(key=lambda x: x[1]._creation_counter if hasattr(x[1], '_creation_counter') else (sys.maxsize if callable(x[1]) else 0))
+        filters.sort(
+            key=lambda x: (
+                x[1]._creation_counter if hasattr(x[1], "_creation_counter") else (sys.maxsize if callable(x[1]) else 0)
+            )
+        )
 
-        attrs['_class_file'], attrs['_class_line'] = traceback.extract_stack()[-2][:2]
+        attrs["_class_file"], attrs["_class_line"] = traceback.extract_stack()[-2][:2]
         new_class = super().__new__(mcs, name, bases, attrs)
         new_class._attrs = _attrs + [f[0] for f in filters]
         return new_class
@@ -419,10 +425,10 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
         if item_xpath is None:
             return el
 
-        if hasattr(el, 'xpath'):
+        if hasattr(el, "xpath"):
             return el.xpath(item_xpath)
         elif isinstance(el, (dict, list)):
-            return Dict.select(item_xpath.split('/'), self)
+            return Dict.select(item_xpath.split("/"), self)
         return el
 
     def _write_highlighted(self):
@@ -432,10 +438,10 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
         responses_dirname = self.page.browser.responses_dirname
         html = lxml.html.tostring(self.el.getroottree().getroot())
 
-        fn = os.path.join(responses_dirname, 'obj-%s.html' % self._random_id)
-        with open(fn, 'w') as fd:
+        fn = os.path.join(responses_dirname, "obj-%s.html" % self._random_id)
+        with open(fn, "w") as fd:
             fd.write(html)
-        self.logger.debug('highlighted object to %s', fn)
+        self.logger.debug("highlighted object to %s", fn)
 
     def __call__(self, obj=None, **kwargs):
         if obj is not None:
@@ -458,7 +464,7 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
             try:
                 if self.should_highlight():
                     self.saved_attrib[self.el] = dict(self.el.attrib)
-                    self.el.attrib['style'] = 'color: white !important; background: orange !important;'
+                    self.el.attrib["style"] = "color: white !important; background: orange !important;"
 
                 try:
                     if self.obj is None:
@@ -466,7 +472,7 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
                     self.parse(self.el)
                     self.handle_loaders()
                     for attr in self._attrs:
-                        self.handle_attr(attr, getattr(self, 'obj_%s' % attr))
+                        self.handle_attr(attr, getattr(self, "obj_%s" % attr))
                 except SkipItem:
                     return
 
@@ -492,12 +498,12 @@ class ItemElement(AbstractElement, metaclass=_ItemElementMeta):
             raise
         except Exception as e:
             # If we are here, we have probably a real parsing issue
-            self.logger.warning('Attribute %s (in %s:%s) raises %s', key, self._class_file, self._class_line, repr(e))
+            self.logger.warning("Attribute %s (in %s:%s) raises %s", key, self._class_file, self._class_line, repr(e))
             if not self.skip_optional_fields_errors or key not in self.obj._fields or self.obj._fields[key].mandatory:
                 raise
             else:
                 value = FetchError
-        logger = getLogger('woob.browser.b2filters')
+        logger = getLogger("woob.browser.b2filters")
         logger.log(DEBUG_FILTERS, "%s.%s = %r" % (self._random_id, key, value))
         setattr(self.obj, key, value)
 
@@ -511,25 +517,25 @@ class MetaAbstractItemElement(type):
     def __new__(mcs, name, bases, dct):
         from woob.tools.backend import Module  # here to avoid file wide circular dependency
 
-        if name != 'ItemElementFromAbstractPage' and ItemElementFromAbstractPage in bases:
-            parent_attr = dct.get('BROWSER_ATTR', None)
+        if name != "ItemElementFromAbstractPage" and ItemElementFromAbstractPage in bases:
+            parent_attr = dct.get("BROWSER_ATTR", None)
             if parent_attr:
-                m = re.match(r'^[^.]+\.(.*)\.([^.]+)$', parent_attr)
+                m = re.match(r"^[^.]+\.(.*)\.([^.]+)$", parent_attr)
                 path, klass_name = m.group(1, 2)
-                module = importlib.import_module('woob_modules.%s.%s' % (dct['PARENT'], path))
+                module = importlib.import_module("woob_modules.%s.%s" % (dct["PARENT"], path))
                 browser_klass = getattr(module, klass_name)
             else:
-                module = importlib.import_module('woob_modules.%s' % dct['PARENT'])
+                module = importlib.import_module("woob_modules.%s" % dct["PARENT"])
                 for attrname in dir(module):
                     attr = getattr(module, attrname)
                     if isinstance(attr, type) and issubclass(attr, Module) and attr != Module:
                         browser_klass = attr.BROWSER
                         break
 
-            url = getattr(browser_klass, dct['PARENT_URL'])
+            url = getattr(browser_klass, dct["PARENT_URL"])
             page_class = url.klass
 
-            element_class = getattr(page_class, dct['ITER_ELEMENT']).klass
+            element_class = getattr(page_class, dct["ITER_ELEMENT"]).klass
             item_class = element_class.item
 
             bases = tuple(item_class if isinstance(base, mcs) else base for base in bases)
@@ -554,7 +560,7 @@ class TableElement(ListElement):
 
         columns = {}
         for attrname in dir(self):
-            m = re.match('col_(.*)', attrname)
+            m = re.match("col_(.*)", attrname)
             if m:
                 cols = getattr(self, attrname)
                 if not isinstance(cols, (list, tuple)):
@@ -567,11 +573,12 @@ class TableElement(ListElement):
             for name, titles in columns.items():
                 if name in self._cols:
                     continue
-                if title.lower() in [s for s in titles if isinstance(s, str)] or \
-                   any(map(lambda x: x.match(title), [s for s in titles if isinstance(s, type(re.compile('')))])):
+                if title.lower() in [s for s in titles if isinstance(s, str)] or any(
+                    map(lambda x: x.match(title), [s for s in titles if isinstance(s, type(re.compile("")))])
+                ):
                     self._cols[name] = colnum
             try:
-                colnum += int(el.attrib.get('colspan', 1))
+                colnum += int(el.attrib.get("colspan", 1))
             except (ValueError, AttributeError):
                 colnum += 1
 
@@ -585,14 +592,14 @@ class DictElement(ListElement):
             selector = []
 
         elif isinstance(self.item_xpath, str):
-            selector = self.item_xpath.split('/')
+            selector = self.item_xpath.split("/")
 
         else:
             selector = self.item_xpath
 
         bases = [self.el]
         for key in selector:
-            if key == '*':
+            if key == "*":
                 bases = sum([el if isinstance(el, list) else list(el.values()) for el in bases], [])
             else:
                 bases = [el[int(key)] if isinstance(el, list) else el[key] for el in bases]
@@ -613,34 +620,33 @@ def magic_highlight(els, open_browser=True):
     import lxml.html
 
     if not els:
-        raise Exception('no elements to highlight')
+        raise Exception("no elements to highlight")
 
     if not isinstance(els, (list, tuple)):
         els = [els]
 
     saved = {}
     for el in els:
-        saved[el] = el.attrib.get('style', '')
-        el.attrib['style'] = 'color: white !important; background: red !important;'
+        saved[el] = el.attrib.get("style", "")
+        el.attrib["style"] = "color: white !important; background: red !important;"
 
-    html = lxml.html.tostring(el.xpath('/*')[0])
+    html = lxml.html.tostring(el.xpath("/*")[0])
     for el in els:
-        el.attrib['style'] = saved[el]
+        el.attrib["style"] = saved[el]
 
-    _, fn = tempfile.mkstemp(prefix='woob-highlight', suffix='.html')
-    with open(fn, 'w') as fd:
+    _, fn = tempfile.mkstemp(prefix="woob-highlight", suffix=".html")
+    with open(fn, "w") as fd:
         fd.write(html)
 
-    print('Saved to %r' % fn)
+    print("Saved to %r" % fn)
     if open_browser:
-        webbrowser.open('file://%s' % fn)
+        webbrowser.open("file://%s" % fn)
 
 
 def __getattr__(name: str) -> Any:
-    if name == 'ItemElementRerootMixin':
+    if name == "ItemElementRerootMixin":
         warnings.warn(
-            'ItemElementRerootMixin is deprecated: rerooting is now '
-            + 'allowed with ItemElement directly.',
+            "ItemElementRerootMixin is deprecated: rerooting is now " + "allowed with ItemElement directly.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -658,4 +664,4 @@ def __getattr__(name: str) -> Any:
 
 
 def __dir__() -> list[str]:
-    return sorted(list(__all__) + ['ItemElementRerootMixin'])
+    return sorted(list(__all__) + ["ItemElementRerootMixin"])

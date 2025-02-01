@@ -20,27 +20,29 @@ from .base import BaseObject, BoolField, Capability, StringField
 from .date import DateField
 
 
-__all__ = ['Content', 'Revision', 'CapContent']
+__all__ = ["Content", "Revision", "CapContent"]
 
 
 class Content(BaseObject):
     """
     Content object.
     """
-    title =         StringField('Title of content')
-    author =        StringField('Original author of content')
-    content =       StringField('Body')
-    revision =      StringField('ID of revision')
+
+    title = StringField("Title of content")
+    author = StringField("Original author of content")
+    content = StringField("Body")
+    revision = StringField("ID of revision")
 
 
 class Revision(BaseObject):
     """
     Revision of a change on a content.
     """
-    author =        StringField('Author of revision')
-    comment =       StringField('Comment log about revision')
-    timestamp =     DateField('Date of revision')
-    minor =         BoolField('Is this change minor?')
+
+    author = StringField("Author of revision")
+    comment = StringField("Comment log about revision")
+    timestamp = DateField("Date of revision")
+    minor = BoolField("Is this change minor?")
 
 
 class CapContent(Capability):

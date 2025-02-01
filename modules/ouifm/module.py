@@ -27,57 +27,58 @@ from woob.tools.capabilities.streaminfo import StreamInfo
 from woob.tools.misc import to_unicode
 
 
-__all__ = ['OuiFMModule']
+__all__ = ["OuiFMModule"]
 
 
 class OuiFMModule(Module, CapRadio, CapCollection):
-    NAME = 'ouifm'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = u'OÜI FM French radio'
-    LICENSE = 'AGPLv3+'
+    NAME = "ouifm"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "OÜI FM French radio"
+    LICENSE = "AGPLv3+"
     BROWSER = APIBrowser
 
-    _RADIOS = {'general':     (u"OUI FM",
-                               u'OUI FM',
-                               u'http://stream.ouifm.fr/ouifm-high.mp3"', 160),
-               'alternatif':  (u"OUI FM Alternatif",
-                               u'OUI FM - Alternatif',
-                               u'http://alternatif.stream.ouifm.fr/ouifm2.mp3', 128),
-               'classicrock': (u"OUI FM Classic Rock",
-                               u'OUI FM - Classic Rock',
-                               u'http://classicrock.stream.ouifm.fr/ouifm3.mp3', 128),
-               'bluesnrock':  (u"OUI FM Blues'n'Rock",
-                               u'OUI FM - Blues\'n\'Rock',
-                               u'http://bluesnrock.stream.ouifm.fr/ouifmbluesnrock-128.mp3', 128),
-               'rockinde':    (u"OUI FM Rock Indé",
-                               u'OUI FM - Rock Indé',
-                               u'http://rockinde.stream.ouifm.fr/ouifm5.mp3', 128),
-               'ganja':       (u"OUI FM Ganja",
-                               u'OUI FM - Ganja',
-                               u'http://ganja.stream.ouifm.fr/ouifmganja-128.mp3', 128),
-               'rock60s':     (u"OUI FM Rock 60's",
-                               u'OUI FM - Rock 60\'s',
-                               u'http://rock60s.stream.ouifm.fr/ouifmsixties.mp3', 128),
-               'rock70s':     (u"OUI FM Rock 70's",
-                               u'OUI FM - Rock 70\'s',
-                               u'http://rock70s.stream.ouifm.fr/ouifmseventies.mp3', 128),
-               'rock80s':     (u"OUI FM Rock 80's",
-                               u'OUI FM - Rock 80\'s',
-                               u'http://rock80s.stream.ouifm.fr/ouifmeighties.mp3', 128),
-               'rock90s':     (u"OUI FM Rock 90's",
-                               u'OUI FM - Rock 90\'s',
-                               u'http://rock90s.stream.ouifm.fr/ouifmnineties.mp3', 128),
-               'rock2000':    (u"OUI FM Rock 2000",
-                               u'OUI FM - Rock 2000',
-                               u'http://rock2000.stream.ouifm.fr/ouifmrock2000.mp3', 128),
-                'slowrock':    (u"OUI FM Les Slows du Rock",
-                               u'OUI FM - Les Slows du Rock',
-                               u'http://slowrock.stream.ouifm.fr/ouifmslowrock.mp3', 128),
-               'summertime':  (u"OUI FM Summertime",
-                               u'OUI FM - Summertime',
-                               u'http://summertime.stream.ouifm.fr/ouifmsummertime.mp3', 128)}
+    _RADIOS = {
+        "general": ("OUI FM", "OUI FM", 'http://stream.ouifm.fr/ouifm-high.mp3"', 160),
+        "alternatif": ("OUI FM Alternatif", "OUI FM - Alternatif", "http://alternatif.stream.ouifm.fr/ouifm2.mp3", 128),
+        "classicrock": (
+            "OUI FM Classic Rock",
+            "OUI FM - Classic Rock",
+            "http://classicrock.stream.ouifm.fr/ouifm3.mp3",
+            128,
+        ),
+        "bluesnrock": (
+            "OUI FM Blues'n'Rock",
+            "OUI FM - Blues'n'Rock",
+            "http://bluesnrock.stream.ouifm.fr/ouifmbluesnrock-128.mp3",
+            128,
+        ),
+        "rockinde": ("OUI FM Rock Indé", "OUI FM - Rock Indé", "http://rockinde.stream.ouifm.fr/ouifm5.mp3", 128),
+        "ganja": ("OUI FM Ganja", "OUI FM - Ganja", "http://ganja.stream.ouifm.fr/ouifmganja-128.mp3", 128),
+        "rock60s": ("OUI FM Rock 60's", "OUI FM - Rock 60's", "http://rock60s.stream.ouifm.fr/ouifmsixties.mp3", 128),
+        "rock70s": ("OUI FM Rock 70's", "OUI FM - Rock 70's", "http://rock70s.stream.ouifm.fr/ouifmseventies.mp3", 128),
+        "rock80s": ("OUI FM Rock 80's", "OUI FM - Rock 80's", "http://rock80s.stream.ouifm.fr/ouifmeighties.mp3", 128),
+        "rock90s": ("OUI FM Rock 90's", "OUI FM - Rock 90's", "http://rock90s.stream.ouifm.fr/ouifmnineties.mp3", 128),
+        "rock2000": (
+            "OUI FM Rock 2000",
+            "OUI FM - Rock 2000",
+            "http://rock2000.stream.ouifm.fr/ouifmrock2000.mp3",
+            128,
+        ),
+        "slowrock": (
+            "OUI FM Les Slows du Rock",
+            "OUI FM - Les Slows du Rock",
+            "http://slowrock.stream.ouifm.fr/ouifmslowrock.mp3",
+            128,
+        ),
+        "summertime": (
+            "OUI FM Summertime",
+            "OUI FM - Summertime",
+            "http://summertime.stream.ouifm.fr/ouifmsummertime.mp3",
+            128,
+        ),
+    }
 
     def iter_resources(self, objs, split_path):
         if Radio in objs:
@@ -87,22 +88,22 @@ class OuiFMModule(Module, CapRadio, CapCollection):
                 yield self.get_radio(id)
 
     def iter_radios_search(self, pattern):
-        for radio in self.iter_resources((Radio, ), []):
+        for radio in self.iter_resources((Radio,), []):
             if pattern.lower() in radio.title.lower() or pattern.lower() in radio.description.lower():
                 yield radio
 
     def get_current(self, radio):
-        document = self.browser.request('http://www.ouifm.fr/onair.json')
-        rad = ''
-        if radio == 'general':
-            rad = 'rock'
+        document = self.browser.request("http://www.ouifm.fr/onair.json")
+        rad = ""
+        if radio == "general":
+            rad = "rock"
         else:
             rad = radio
 
         last = document[rad][0]
 
-        artist = to_unicode(last.get('artist', '').strip())
-        title = to_unicode(last.get('title', '').strip())
+        artist = to_unicode(last.get("artist", "").strip())
+        title = to_unicode(last.get("title", "").strip())
         return artist, title
 
     def get_radio(self, radio):
@@ -124,14 +125,14 @@ class OuiFMModule(Module, CapRadio, CapCollection):
 
         stream = BaseAudioStream(0)
         stream.bitrate = bitrate
-        stream.format = u'mp3'
-        stream.title = u'%skbits/s' % (stream.bitrate)
+        stream.format = "mp3"
+        stream.title = "%skbits/s" % (stream.bitrate)
         stream.url = url
         radio.streams = [stream]
         return radio
 
     def fill_radio(self, radio, fields):
-        if 'current' in fields:
+        if "current" in fields:
             if not radio.current:
                 radio.current = StreamInfo(0)
             radio.current.who, radio.current.what = self.get_current(radio.id)

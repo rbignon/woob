@@ -32,21 +32,21 @@ from woob.tools.value import ValueBackendPassword, ValueDate
 from .api_browser import IngAPIBrowser
 
 
-__all__ = ['INGModule']
+__all__ = ["INGModule"]
 
 
 class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument, CapProfile):
-    NAME = 'ing'
-    MAINTAINER = 'Florent Fourcot'
-    EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.7'
-    DEPENDENCIES = ('boursedirect',)
-    LICENSE = 'LGPLv3+'
-    DESCRIPTION = 'ING France'
+    NAME = "ing"
+    MAINTAINER = "Florent Fourcot"
+    EMAIL = "weboob@flo.fourcot.fr"
+    VERSION = "3.7"
+    DEPENDENCIES = ("boursedirect",)
+    LICENSE = "LGPLv3+"
+    DESCRIPTION = "ING France"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Numéro client', masked=False, regexp=r'^(\d{1,10})$'),
-        ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
-        ValueDate('birthday', required=True, label='Date de naissance', formats=('%d%m%Y', '%d/%m/%Y', '%d-%m-%Y'))
+        ValueBackendPassword("login", label="Numéro client", masked=False, regexp=r"^(\d{1,10})$"),
+        ValueBackendPassword("password", label="Code secret", regexp=r"^(\d{6})$"),
+        ValueDate("birthday", required=True, label="Date de naissance", formats=("%d%m%Y", "%d/%m/%Y", "%d-%m-%Y")),
     )
     BROWSER = IngAPIBrowser
 
@@ -54,9 +54,9 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
 
     def create_default_browser(self):
         return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get(),
-            birthday=self.config['birthday'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
+            birthday=self.config["birthday"].get(),
         )
 
     def iter_resources(self, objs, split_path):
@@ -83,7 +83,7 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
 
     def fill_account(self, account, fields):
         # TODO iban
-        if 'coming' in fields:
+        if "coming" in fields:
             self.browser.fill_account_coming(account)
 
     ############# CapWealth #############
@@ -113,14 +113,14 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
         return self.browser.iter_recipients(emitter_account)
 
     def new_recipient(self, recipient, **params):
-        cleaned_label = re.sub(r"[^0-9a-zA-Z:/\-\?\(\)\.,\+ ']", '', recipient.label)
-        cleaned_label = re.sub(r'\s{2,}', ' ', cleaned_label)
+        cleaned_label = re.sub(r"[^0-9a-zA-Z:/\-\?\(\)\.,\+ ']", "", recipient.label)
+        cleaned_label = re.sub(r"\s{2,}", " ", cleaned_label)
         recipient.label = cleaned_label.strip()
 
         return self.browser.new_recipient(recipient, **params)
 
     def init_transfer(self, transfer, **params):
-        self.logger.info('Going to do a new transfer')
+        self.logger.info("Going to do a new transfer")
 
         if transfer.account_iban:
             account = find_object(self.iter_accounts(), iban=transfer.account_iban, error=AccountNotFound)
@@ -128,12 +128,10 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
             account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 
         recipient = strict_find_object(
-            self.iter_transfer_recipients(account),
-            id=transfer.recipient_id,
-            error=RecipientNotFound
+            self.iter_transfer_recipients(account), id=transfer.recipient_id, error=RecipientNotFound
         )
 
-        transfer.amount = Decimal(transfer.amount).quantize(Decimal('.01'))
+        transfer.amount = Decimal(transfer.amount).quantize(Decimal(".01"))
 
         return self.browser.init_transfer(account, recipient, transfer)
 
@@ -156,7 +154,7 @@ class INGModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapDocument,
         return self.browser.get_subscriptions()
 
     def get_document(self, _id):
-        subscription = self.get_subscription(_id.split('.')[0])
+        subscription = self.get_subscription(_id.split(".")[0])
         return find_object(self.browser.get_documents(subscription), id=_id, error=DocumentNotFound)
 
     def iter_documents(self, subscription):

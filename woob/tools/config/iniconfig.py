@@ -25,11 +25,11 @@ from .iconfig import IConfig
 from .util import LOGGER
 
 
-__all__ = ['INIConfig']
+__all__ = ["INIConfig"]
 
 
 class INIConfig(IConfig):
-    ROOTSECT = 'ROOT'
+    ROOTSECT = "ROOT"
 
     def __init__(self, path):
         self.path = path
@@ -40,10 +40,10 @@ class INIConfig(IConfig):
         self.values = OrderedDict(default)
 
         if os.path.exists(self.path):
-            LOGGER.debug('Loading application configuration file: %s.', self.path)
-            self.config.read(self.path, encoding='utf-8')
+            LOGGER.debug("Loading application configuration file: %s.", self.path)
+            self.config.read(self.path, encoding="utf-8")
             for section in self.config.sections():
-                args = section.split(':')
+                args = section.split(":")
                 if args[0] == self.ROOTSECT:
                     args.pop(0)
                 for key, value in self.config.items(section):
@@ -54,14 +54,15 @@ class INIConfig(IConfig):
                 for key, value in self.config.items(DEFAULTSECT):
                     if first:
                         LOGGER.warning('The configuration file "%s" uses an old-style', self.path)
-                        LOGGER.warning('Please rename the %s section to %s', (DEFAULTSECT, self.ROOTSECT))
+                        LOGGER.warning("Please rename the %s section to %s", (DEFAULTSECT, self.ROOTSECT))
                         first = False
                     self.set(key, value)
-            LOGGER.debug('Application configuration file loaded: %s.', self.path)
+            LOGGER.debug("Application configuration file loaded: %s.", self.path)
         else:
             self.save()
-            LOGGER.debug('Application configuration file created with default values: %s. '
-                         'Please customize it.', self.path)
+            LOGGER.debug(
+                "Application configuration file created with default values: %s. " "Please customize it.", self.path
+            )
         return self.values
 
     def save(self):
@@ -72,18 +73,21 @@ class INIConfig(IConfig):
                         self.config.add_section(root_section)
                     self.config.set(root_section, k, str(v))
                 elif isinstance(v, dict):
-                    new_section = ':'.join((root_section, k)) if (root_section != self.ROOTSECT or k == self.ROOTSECT) else k
+                    new_section = (
+                        ":".join((root_section, k)) if (root_section != self.ROOTSECT or k == self.ROOTSECT) else k
+                    )
                     if not self.config.has_section(new_section):
                         self.config.add_section(new_section)
                     save_section(v, new_section)
+
         save_section(self.values)
-        with io.open(self.path, 'w', encoding='utf-8') as f:
+        with io.open(self.path, "w", encoding="utf-8") as f:
             self.config.write(f)
 
     def get(self, *args, **kwargs):
         default = None
-        if 'default' in kwargs:
-            default = kwargs['default']
+        if "default" in kwargs:
+            default = kwargs["default"]
 
         v = self.values
         for k in args[:-1]:

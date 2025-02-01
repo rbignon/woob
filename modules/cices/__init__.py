@@ -21,4 +21,4 @@
 from .module import CicesModule
 
 
-__all__ = ['CicesModule']
+__all__ = ["CicesModule"]

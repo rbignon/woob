@@ -28,24 +28,24 @@ from woob.capabilities.video import BaseVideo
 
 class ListPage(HTMLPage):
     def get_token(self):
-        return Regexp(CleanText('//script'), '"jwt":"(.*)","url"', default=None)(self.doc)
+        return Regexp(CleanText("//script"), '"jwt":"(.*)","url"', default=None)(self.doc)
 
 
 class APIPage(JsonPage):
     @pagination
     @method
     class iter_videos(DictElement):
-        item_xpath = 'data'
+        item_xpath = "data"
 
-        next_page = Dict('paging/next')
+        next_page = Dict("paging/next")
 
         class item(ItemElement):
             klass = BaseVideo
 
-            obj_id = Regexp(Dict('clip/uri'), '/videos/(.*)')
-            obj_title = Dict('clip/name')
+            obj_id = Regexp(Dict("clip/uri"), "/videos/(.*)")
+            obj_title = Dict("clip/name")
 
             def obj_thumbnail(self):
-                thumbnail = Thumbnail(Dict('clip/pictures/sizes/0/link')(self))
+                thumbnail = Thumbnail(Dict("clip/pictures/sizes/0/link")(self))
                 thumbnail.url = thumbnail.id
                 return thumbnail

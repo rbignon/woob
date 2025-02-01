@@ -19,7 +19,12 @@
 
 from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
+    CapDocument,
+    Document,
+    DocumentCategory,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
 )
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
@@ -56,9 +61,7 @@ class PajemploiModule(Module, CapDocument):
     document_categories = {DocumentCategory.ADMINISTRATIVE}
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config["username"].get(), self.config["password"].get()
-        )
+        return self.create_browser(self.config["username"].get(), self.config["password"].get())
 
     def download_document(self, document):
         if not isinstance(document, Document):
@@ -71,9 +74,7 @@ class PajemploiModule(Module, CapDocument):
     def get_document(self, _id):
         subscription_id = _id.split("_")[0]
         subscription = self.get_subscription(subscription_id)
-        return find_object(
-            self.iter_documents(subscription), id=_id, error=DocumentNotFound
-        )
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):

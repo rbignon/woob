@@ -20,7 +20,16 @@
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Link
 from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Date, Env, Eval, Field, Format, QueryValue, Regexp, Slugify,
+    CleanDecimal,
+    CleanText,
+    Date,
+    Env,
+    Eval,
+    Field,
+    Format,
+    QueryValue,
+    Regexp,
+    Slugify,
 )
 from woob.browser.pages import HTMLPage, LoggedPage, RawPage
 from woob.capabilities.base import NotAvailable
@@ -31,9 +40,9 @@ from woob.tools.date import parse_french_date
 
 class LoginPage(HTMLPage):
     def login(self, login, password):
-        form = self.get_form(id='log_form')
-        form['login'] = login
-        form['pass'] = password
+        form = self.get_form(id="log_form")
+        form["login"] = login
+        form["pass"] = password
 
         form.submit()
 
@@ -47,8 +56,8 @@ class HomePage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Subscription
 
-            obj_subscriber = Env('subscriber')
-            obj_id = Env('subid')
+            obj_subscriber = Env("subscriber")
+            obj_id = Env("subid")
             obj_label = obj_id
 
             def parse(self, el):
@@ -57,8 +66,8 @@ class HomePage(LoggedPage, HTMLPage):
                     subscriber = CleanText('//div[@class="infos_abonne"]/ul/li[1]')(self)
                 except UnicodeDecodeError:
                     subscriber = username
-                self.env['subscriber'] = subscriber
-                self.env['subid'] = username
+                self.env["subscriber"] = subscriber
+                self.env["subid"] = username
 
 
 class ConsolePage(LoggedPage, RawPage):
@@ -88,20 +97,16 @@ class DocumentsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Format(
-                '%s_%s',
-                Env('subid'),
-                QueryValue(Field("url"), "no_facture")
-            )
+            obj_id = Format("%s_%s", Env("subid"), QueryValue(Field("url"), "no_facture"))
             obj_url = Link("./span[1]/a", default=NotAvailable)
-            obj_date = Env('date')
-            obj_format = 'pdf'
+            obj_date = Env("date")
+            obj_format = "pdf"
             obj_label = Format("Facture %s", CleanText("./span[2]"))
             obj_total_price = CleanDecimal.French('./span[has-class("last")]')
-            obj_currency = 'EUR'
+            obj_currency = "EUR"
 
             def parse(self, el):
-                self.env['date'] = parse_french_date('01 %s' % CleanText('./span[2]')(self)).date()
+                self.env["date"] = parse_french_date("01 %s" % CleanText("./span[2]")(self)).date()
 
 
 class ProfilePage(LoggedPage, HTMLPage):
@@ -114,24 +119,20 @@ class ProfilePage(LoggedPage, HTMLPage):
         return p
 
     def set_address(self, profile):
-        assert len(self.doc.xpath('//p/strong[contains(text(), " ")]')) == 1, 'There are several addresses.'
+        assert len(self.doc.xpath('//p/strong[contains(text(), " ")]')) == 1, "There are several addresses."
         profile.address = CleanText('//p/strong[contains(text(), " ")]')(self.doc) or NotAvailable
 
 
 class ContractPage(LoggedPage, HTMLPage):
     @method
     class iter_documents(ListElement):
-        item_xpath = (
-            '//div[has-class("monabo")]//ul[has-class("no_arrow")]/li[not(@class)]//a'
-        )
+        item_xpath = '//div[has-class("monabo")]//ul[has-class("no_arrow")]/li[not(@class)]//a'
 
         class item(ItemElement):
             klass = Document
             obj_url = Link(".")
             obj_date = Date(
-                CleanText(
-                    'ancestor::div[contains(@class, "monabo")]//strong/span[@class="red"]'
-                ),
+                CleanText('ancestor::div[contains(@class, "monabo")]//strong/span[@class="red"]'),
                 dayfirst=True,
             )
             obj_id = Format(

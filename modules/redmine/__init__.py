@@ -21,4 +21,4 @@
 from .module import RedmineModule
 
 
-__all__ = ['RedmineModule']
+__all__ = ["RedmineModule"]

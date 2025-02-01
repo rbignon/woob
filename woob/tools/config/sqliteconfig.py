@@ -34,7 +34,7 @@ except ImportError:
     from yaml import SafeLoader
 
 
-__all__ = ['SQLiteConfig']
+__all__ = ["SQLiteConfig"]
 
 
 def quote(s, errors="strict"):
@@ -43,7 +43,7 @@ def quote(s, errors="strict"):
     if nul_index >= 0:
         raise ValueError("invalid identifier")
 
-    return "\"" + encodable.replace("\"", "\"\"") + "\""
+    return '"' + encodable.replace('"', '""') + '"'
 
 
 class VirtualRootDict(Mapping):
@@ -53,7 +53,7 @@ class VirtualRootDict(Mapping):
     def __getitem__(self, base):
         if base in self.config._tables:
             return VirtualDict(self.config, base)
-        raise KeyError('%s table not found' % base)
+        raise KeyError("%s table not found" % base)
 
     def __iter__(self):
         for base in self.config._tables:
@@ -72,7 +72,7 @@ class VirtualDict(MutableMapping):
         try:
             return self.config.get(self.base, key)
         except ConfigError:
-            raise KeyError('%s key in %s table not found' % (key, self.base))
+            raise KeyError("%s key in %s table not found" % (key, self.base))
 
     def __contains__(self, key):
         return self.config.has(self.base, key)
@@ -91,7 +91,7 @@ class VirtualDict(MutableMapping):
         try:
             self.config.delete(self, self.base, key)
         except ConfigError:
-            raise KeyError('%s key in %s table not found' % (key, self.base))
+            raise KeyError("%s key in %s table not found" % (key, self.base))
 
     def __setitem__(self, key, value):
         self.config.set(self.base, key, value)
@@ -108,16 +108,18 @@ class SQLiteConfig(IConfig):
         if dump_since_seconds:
             self.dump_since_seconds = dump_since_seconds
         if self.commit_since_seconds:
-            self.commit = time_buffer(since_seconds=self.commit_since_seconds, last_run=last_run, logger=logger)(self.commit)
+            self.commit = time_buffer(since_seconds=self.commit_since_seconds, last_run=last_run, logger=logger)(
+                self.commit
+            )
         if self.dump_since_seconds:
             self.dump = time_buffer(since_seconds=self.dump_since_seconds, last_run=last_run, logger=logger)(self.dump)
 
     def load(self, default={}, optimize=True):
         self.storage = sqlite3.connect(self.path)
-        self.storage.execute('PRAGMA page_size = 4096')
+        self.storage.execute("PRAGMA page_size = 4096")
         if optimize:
-            self.storage.execute('VACUUM')
-            self.storage.execute('REINDEX')
+            self.storage.execute("VACUUM")
+            self.storage.execute("REINDEX")
         self._tables = set(self.tables())
         self.values = VirtualRootDict(self)
 
@@ -135,30 +137,35 @@ class SQLiteConfig(IConfig):
         super(SQLiteConfig, self).__exit__(t, v, tb)
 
     def commit(self, **kwargs):
-        kwargs.pop('since_seconds', None)
+        kwargs.pop("since_seconds", None)
         self.storage.commit()
 
     def dump(self, **kwargs):
-        kwargs.pop('since_seconds', None)
-        target = os.path.splitext(self.path)[0] + '.sql'
+        kwargs.pop("since_seconds", None)
+        target = os.path.splitext(self.path)[0] + ".sql"
         with tempfile.NamedTemporaryFile(dir=os.path.dirname(self.path), delete=False) as f:
             for line in self.storage.iterdump():
-                f.write(str(line).encode('utf-8'))
-                f.write(b'\n')
+                f.write(str(line).encode("utf-8"))
+                f.write(b"\n")
         replace(f.name, target)
 
     def ensure_table(self, name):
         if name not in self._tables:
-            self.storage.execute('''CREATE TABLE IF NOT EXISTS %s (
+            self.storage.execute(
+                """CREATE TABLE IF NOT EXISTS %s (
                 key text PRIMARY KEY,
                 value text
-            );''' % quote(name))  # nosec
+            );"""
+                % quote(name)
+            )  # nosec
             self._tables.add(name)
 
     def tables(self):
         cur = self.storage.cursor()
-        cur.execute('''SELECT name FROM sqlite_master
-            WHERE type="table" AND name NOT LIKE "sqlite_%";''')
+        cur.execute(
+            """SELECT name FROM sqlite_master
+            WHERE type="table" AND name NOT LIKE "sqlite_%";"""
+        )
         return [k[0] for k in cur.fetchall()]
 
     def items(self, table, size=100):
@@ -167,7 +174,7 @@ class SQLiteConfig(IConfig):
         The size parameters alters how many items are fetched at a time.
         """
         cur = self.storage.cursor()
-        cur.execute('SELECT key, value FROM %s;' % quote(table))  # nosec
+        cur.execute("SELECT key, value FROM %s;" % quote(table))  # nosec
         items = cur.fetchmany(size)
         while items:
             for key, strvalue in items:
@@ -180,7 +187,7 @@ class SQLiteConfig(IConfig):
         The size parameters alters how many items are fetched at a time.
         """
         cur = self.storage.cursor()
-        cur.execute('SELECT key FROM %s;' % quote(table))  # nosec
+        cur.execute("SELECT key FROM %s;" % quote(table))  # nosec
         items = cur.fetchmany(size)
         while items:
             for item in items:
@@ -189,22 +196,22 @@ class SQLiteConfig(IConfig):
 
     def count(self, table):
         cur = self.storage.cursor()
-        cur.execute('SELECT count(*) FROM %s;' % quote(table))  # nosec
+        cur.execute("SELECT count(*) FROM %s;" % quote(table))  # nosec
         return cur.fetchone()[0]
 
     def get(self, *args, **kwargs):
         table = args[0]
-        key = '.'.join(args[1:])
+        key = ".".join(args[1:])
         self.ensure_table(table)
         if not key:
             return self.values[table]
         try:
             cur = self.storage.cursor()
-            cur.execute('SELECT value FROM %s WHERE key=?;' % quote(table), (key, ))  # nosec
+            cur.execute("SELECT value FROM %s WHERE key=?;" % quote(table), (key,))  # nosec
             row = cur.fetchone()
             if row is None:
-                if 'default' in kwargs:
-                    value = kwargs.get('default')
+                if "default" in kwargs:
+                    value = kwargs.get("default")
                 else:
                     raise ConfigError()
             else:
@@ -216,15 +223,15 @@ class SQLiteConfig(IConfig):
 
     def set(self, *args):
         table = args[0]
-        key = '.'.join(args[1:-1])
+        key = ".".join(args[1:-1])
         if not key:
-            raise ConfigError('A minimum of two levels are required.')
+            raise ConfigError("A minimum of two levels are required.")
         value = args[-1]
         self.ensure_table(table)
         try:
             strvalue = yaml.dump(value, None, Dumper=WoobDumper, default_flow_style=False)
             cur = self.storage.cursor()
-            cur.execute('''INSERT OR REPLACE INTO %s VALUES (?, ?)''' % quote(table), (key, strvalue))  # nosec
+            cur.execute("""INSERT OR REPLACE INTO %s VALUES (?, ?)""" % quote(table), (key, strvalue))  # nosec
         except KeyError:
             raise ConfigError()
         except TypeError:
@@ -232,25 +239,25 @@ class SQLiteConfig(IConfig):
 
     def delete(self, *args):
         table = args[0]
-        key = '.'.join(args[1:])
+        key = ".".join(args[1:])
         if not key:
             if table in self._tables:
                 cur = self.storage.cursor()
-                cur.execute('DROP TABLE %s;' % quote(table))  # nosec
+                cur.execute("DROP TABLE %s;" % quote(table))  # nosec
             else:
                 raise ConfigError()
         else:
             self.ensure_table(table)
             cur = self.storage.cursor()
-            cur.execute('DELETE FROM %s WHERE key=?;' % quote(table), (key, ))  # nosec
+            cur.execute("DELETE FROM %s WHERE key=?;" % quote(table), (key,))  # nosec
             if not cur.rowcount:
                 raise ConfigError()
 
     def has(self, *args):
         table = args[0]
-        key = '.'.join(args[1:])
+        key = ".".join(args[1:])
         if not key:
             return table in self._tables
         cur = self.storage.cursor()
-        cur.execute('SELECT count(*) FROM %s WHERE key=?;' % quote(table), (key, ))  # nosec
+        cur.execute("SELECT count(*) FROM %s WHERE key=?;" % quote(table), (key,))  # nosec
         return cur.fetchone()[0] > 0

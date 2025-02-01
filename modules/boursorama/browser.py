@@ -35,17 +35,43 @@ from woob.browser.pages import FormNotFound
 from woob.browser.retry import RetryLoginBrowser, login_method, retry_on_logout
 from woob.browser.url import URL
 from woob.capabilities.bank import (
-    Account, AccountNotFound, AccountOwnership, AddRecipientBankError, AddRecipientStep, AddRecipientTimeout, Emitter,
-    NoAccountsException, Rate, RecipientNotFound, TransactionType, TransferBankError, TransferDateType, TransferError,
-    TransferInvalidAmount, TransferInvalidEmitter, TransferInvalidLabel, TransferInvalidRecipient, TransferStep,
+    Account,
+    AccountNotFound,
+    AccountOwnership,
+    AddRecipientBankError,
+    AddRecipientStep,
+    AddRecipientTimeout,
+    Emitter,
+    NoAccountsException,
+    Rate,
+    RecipientNotFound,
+    TransactionType,
+    TransferBankError,
+    TransferDateType,
+    TransferError,
+    TransferInvalidAmount,
+    TransferInvalidEmitter,
+    TransferInvalidLabel,
+    TransferInvalidRecipient,
+    TransferStep,
     TransferTimeout,
 )
 from woob.capabilities.base import NotAvailable, NotLoaded, empty, find_object, strict_find_object
 from woob.capabilities.contact import Advisor
 from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidation, AppValidationCancelled, AppValidationExpired, AuthMethodNotImplemented,
-    BrowserHTTPNotFound, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable, BrowserUserBanned,
-    OTPSentType, SentOTPQuestion,
+    ActionNeeded,
+    ActionType,
+    AppValidation,
+    AppValidationCancelled,
+    AppValidationExpired,
+    AuthMethodNotImplemented,
+    BrowserHTTPNotFound,
+    BrowserIncorrectPassword,
+    BrowserPasswordExpired,
+    BrowserUnavailable,
+    BrowserUserBanned,
+    OTPSentType,
+    SentOTPQuestion,
 )
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -56,96 +82,134 @@ from woob.tools.value import Value
 
 from .document_pages import BankIdentityPage, BankStatementsPage, PdfDocumentPage
 from .pages import (
-    AccountsErrorPage, AccountsPage, AddRecipientOtpSendPage, AddRecipientPage, AsvPage, AuthenticationPage,
-    CalendarPage, CardCalendarPage, CardHistoryPage, CardInformationPage, CardRenewalPage, CardSumDetailPage, CATPage,
-    CurrencyConvertPage, CurrencyListPage, ErrorPage, ExpertPage, HistoryPage, HomePage, IbanPage, IncidentPage,
-    IncidentTradingPage, LoanPage, MarketPage, MinorPage, NewTransferConfirm, NewTransferEstimateFees, NewTransferSent,
-    NewTransferUnexpectedStep, NewTransferWizard, NoAccountPage, OtpCheckPage, OtpPage, PasswordPage, PEPPage, PerPage,
-    ProfilePage, RecipientsPage, SavingMarketPage, StatusPage, TncPage, TransferAccounts, TransferCharacteristics,
-    TransferConfirm, TransferMainPage, TransferRecipients, TransferSent, VirtKeyboardPage,
+    AccountsErrorPage,
+    AccountsPage,
+    AddRecipientOtpSendPage,
+    AddRecipientPage,
+    AsvPage,
+    AuthenticationPage,
+    CalendarPage,
+    CardCalendarPage,
+    CardHistoryPage,
+    CardInformationPage,
+    CardRenewalPage,
+    CardSumDetailPage,
+    CATPage,
+    CurrencyConvertPage,
+    CurrencyListPage,
+    ErrorPage,
+    ExpertPage,
+    HistoryPage,
+    HomePage,
+    IbanPage,
+    IncidentPage,
+    IncidentTradingPage,
+    LoanPage,
+    MarketPage,
+    MinorPage,
+    NewTransferConfirm,
+    NewTransferEstimateFees,
+    NewTransferSent,
+    NewTransferUnexpectedStep,
+    NewTransferWizard,
+    NoAccountPage,
+    OtpCheckPage,
+    OtpPage,
+    PasswordPage,
+    PEPPage,
+    PerPage,
+    ProfilePage,
+    RecipientsPage,
+    SavingMarketPage,
+    StatusPage,
+    TncPage,
+    TransferAccounts,
+    TransferCharacteristics,
+    TransferConfirm,
+    TransferMainPage,
+    TransferRecipients,
+    TransferSent,
+    VirtKeyboardPage,
 )
 from .transfer_pages import TransferInfoPage, TransferListPage
 
 
-__all__ = ['BoursoramaBrowser']
+__all__ = ["BoursoramaBrowser"]
 
 
 class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
-    BASEURL = 'https://clients.boursobank.com'
+    BASEURL = "https://clients.boursobank.com"
     TIMEOUT = 60.0
     HAS_CREDENTIALS_ONLY = True
     TWOFA_DURATION = 60 * 24 * 90
 
-    home = URL('/$', HomePage)
-    keyboard = URL(r'/connexion/clavier-virtuel\?_hinclude=1', VirtKeyboardPage)
+    home = URL("/$", HomePage)
+    keyboard = URL(r"/connexion/clavier-virtuel\?_hinclude=1", VirtKeyboardPage)
     # following URL has to be declared early because there are two other URL with the same url
     # PdfDocumentPage has been declared with a is_here attribute to be differentiated to the 2 others
     # (the two other pages seem to be in csv format)
-    pdf_document_page = URL(r'https://api.boursobank.com/services/api/files/download.phtml.*', PdfDocumentPage)
-    status = URL(r'/aide/messages/dashboard\?showza=0&_hinclude=1', StatusPage)
-    calendar = URL(r'/compte/cav/.*/calendrier', CalendarPage)
-    card_calendar = URL(r'https://api.boursobank.com/services/api/files/download.phtml.*', CardCalendarPage)
-    card_renewal = URL(r'/infos-profil/renouvellement-carte-bancaire', CardRenewalPage)
-    incident_trading_page = URL(r'/infos-profil/incident-trading', IncidentTradingPage)
+    pdf_document_page = URL(r"https://api.boursobank.com/services/api/files/download.phtml.*", PdfDocumentPage)
+    status = URL(r"/aide/messages/dashboard\?showza=0&_hinclude=1", StatusPage)
+    calendar = URL(r"/compte/cav/.*/calendrier", CalendarPage)
+    card_calendar = URL(r"https://api.boursobank.com/services/api/files/download.phtml.*", CardCalendarPage)
+    card_renewal = URL(r"/infos-profil/renouvellement-carte-bancaire", CardRenewalPage)
+    incident_trading_page = URL(r"/infos-profil/incident-trading", IncidentTradingPage)
     error = URL(
-        r'/connexion/compte-verrouille',
-        r'/infos-profil',
-        r'/connexion/compte-en-pause',
-        r'/infos-profil/pedagogie-fraude/',
+        r"/connexion/compte-verrouille",
+        r"/infos-profil",
+        r"/connexion/compte-en-pause",
+        r"/infos-profil/pedagogie-fraude/",
         ErrorPage,
     )
     login = URL(
-        r'/connexion/saisie-mot-de-passe',
+        r"/connexion/saisie-mot-de-passe",
         # When getting logged out, we get redirected to
         # either /connexion/ or /connexion/?ubiquite=1 or /connexion/?ubiquite= or /connexion/?org=...
-        r'/connexion/$',
-        r'/connexion/(\?ubiquite=1?)?$',
-        r'/connexion/(\?org=.*)?$',
-        r'/connexion/\?expire=',
-        r'/connexion/\?deconnexion=$',
-        PasswordPage
+        r"/connexion/$",
+        r"/connexion/(\?ubiquite=1?)?$",
+        r"/connexion/(\?org=.*)?$",
+        r"/connexion/\?expire=",
+        r"/connexion/\?deconnexion=$",
+        PasswordPage,
     )
     otp_page = URL(
-        r'https://api.boursobank.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/(?P<otp_challenge>(challenge|otp))/(?P<otp_operation>(check|start))(?P<otp_type>.*)/(?P<otp_number>.*)',
-        OtpPage
+        r"https://api.boursobank.com/services/api/v1.7/_user_/_(?P<user_hash>.*)_/session/(?P<otp_challenge>(challenge|otp))/(?P<otp_operation>(check|start))(?P<otp_type>.*)/(?P<otp_number>.*)",
+        OtpPage,
     )
-    minor = URL(r'/connexion/mineur', MinorPage)
-    accounts = URL(r'/produits/mes-produits', AccountsPage)
-    accounts_error = URL(r'/dashboard/comptes\?_hinclude=300000', AccountsErrorPage)
+    minor = URL(r"/connexion/mineur", MinorPage)
+    accounts = URL(r"/produits/mes-produits", AccountsPage)
+    accounts_error = URL(r"/dashboard/comptes\?_hinclude=300000", AccountsErrorPage)
     no_account = URL(
-        r'/dashboard/comptes\?_hinclude=300000',
-        r'/dashboard/comptes-professionnels\?_hinclude=1',
-        NoAccountPage
+        r"/dashboard/comptes\?_hinclude=300000", r"/dashboard/comptes-professionnels\?_hinclude=1", NoAccountPage
     )
 
-    history = URL(r'/compte/(cav|epargne)/(?P<webid>.*)/mouvements.*', HistoryPage)
-    card_transactions = URL(r'/compte/cav/(?P<webid>.*)/carte/.*', HistoryPage)
-    deffered_card_history = URL(r'https://api.boursobank.com/services/api/files/download.phtml.*', CardHistoryPage)
-    budget_transactions = URL(r'/budget/compte/(?P<webid>.*)/mouvements.*', HistoryPage)
-    other_transactions = URL(r'/compte/cav/(?P<webid>.*)/mouvements.*', HistoryPage)
-    saving_transactions = URL(r'/compte/epargne/csl/(?P<webid>.*)/mouvements.*', HistoryPage)
-    card_summary_detail_transactions = URL(r'/contre-valeurs-operation/.*', CardSumDetailPage)
-    saving_pep = URL(r'/compte/epargne/pep', PEPPage)
-    saving_cat = URL(r'/compte/epargne/cat', CATPage)
-    incident = URL(r'/compte/cav/(?P<webid>.*)/mes-incidents.*', IncidentPage)
+    history = URL(r"/compte/(cav|epargne)/(?P<webid>.*)/mouvements.*", HistoryPage)
+    card_transactions = URL(r"/compte/cav/(?P<webid>.*)/carte/.*", HistoryPage)
+    deffered_card_history = URL(r"https://api.boursobank.com/services/api/files/download.phtml.*", CardHistoryPage)
+    budget_transactions = URL(r"/budget/compte/(?P<webid>.*)/mouvements.*", HistoryPage)
+    other_transactions = URL(r"/compte/cav/(?P<webid>.*)/mouvements.*", HistoryPage)
+    saving_transactions = URL(r"/compte/epargne/csl/(?P<webid>.*)/mouvements.*", HistoryPage)
+    card_summary_detail_transactions = URL(r"/contre-valeurs-operation/.*", CardSumDetailPage)
+    saving_pep = URL(r"/compte/epargne/pep", PEPPage)
+    saving_cat = URL(r"/compte/epargne/cat", CATPage)
+    incident = URL(r"/compte/cav/(?P<webid>.*)/mes-incidents.*", IncidentPage)
 
     # transfer
     transfer_list = URL(
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)$',
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)$",
         # next url is for pagination, token is very long
         # make sure you don't match "details" or it could break "transfer_info" URL
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)/[a-zA-Z0-9]{30,}$',
-        TransferListPage
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)/[a-zA-Z0-9]{30,}$",
+        TransferListPage,
     )
     transfer_info = URL(
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)/details/[\w-]{40,}',
-        TransferInfoPage
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/suivi/(?P<type>\w+)/details/[\w-]{40,}", TransferInfoPage
     )
-    transfer_main_page = URL(r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements$', TransferMainPage)
+    transfer_main_page = URL(r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements$", TransferMainPage)
     transfer_accounts = URL(
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/nouveau$',
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/1',
-        TransferAccounts
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/nouveau$",
+        r"/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/1",
+        TransferAccounts,
     )
 
     # transfer_recipients_page is the 'select a recipient' interface from the
@@ -153,125 +217,121 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     # available recipients; it doesn't always have the 'add recipient'
     # button.
     transfer_recipients_page = URL(
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements$',
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/2',
-        TransferRecipients
+        r"/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements$",
+        r"/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/2",
+        TransferRecipients,
     )
 
     # recipients_page is the 'manage recipients' interface, which only lists
     # external recipients but always has an 'add recipient' button if
     # accessible.
     recipients_page = URL(
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/$',
+        r"/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/$",
         RecipientsPage,
     )
 
     transfer_characteristics = URL(
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/3',
-        TransferCharacteristics
+        r"/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/3", TransferCharacteristics
     )
-    transfer_confirm = URL(
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/4',
-        TransferConfirm
-    )
-    transfer_sent = URL(
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/5',
-        TransferSent
-    )
+    transfer_confirm = URL(r"/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/4", TransferConfirm)
+    transfer_sent = URL(r"/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/nouveau/(?P<id>\w+)/5", TransferSent)
     # transfer_type should be one of : "immediat", "programme"
     new_transfer_wizard = URL(
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/(?P<transfer_type>immediat|programme)/nouveau/?$',
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/(?P<step>[1-6])$',
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/(?P<step>[1-7])$',
-        NewTransferWizard
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/(?P<transfer_type>immediat|programme)/nouveau/?$",
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/(?P<step>[1-6])$",
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/(?P<step>[1-7])$",
+        NewTransferWizard,
     )
     new_transfer_estimate_fees = URL(
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/7$',
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/8$',
-        NewTransferEstimateFees
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/7$",
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/8$",
+        NewTransferEstimateFees,
     )
     new_transfer_confirm = URL(
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/[78]$',
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/[89]$',
-        NewTransferConfirm
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/[78]$",
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/[89]$",
+        NewTransferConfirm,
     )
     new_transfer_unexpected_step = URL(
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/7$',
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/8$',
-        NewTransferUnexpectedStep
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/7$",
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/8$",
+        NewTransferUnexpectedStep,
     )
     new_transfer_sent = URL(
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/9$',
-        r'/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/10$',
-        NewTransferSent
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/immediat/nouveau/(?P<id>\w+)/9$",
+        r"/compte/(?P<acc_type>[^/]+)/(?P<webid>\w+)/virements/programme/nouveau/(?P<id>\w+)/10$",
+        NewTransferSent,
     )
     rcpt_page = URL(
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/nouveau/(?P<id>\w+)/\d',
-        r'/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/nouveau$',
-        AddRecipientPage
+        r"/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/nouveau/(?P<id>\w+)/\d",
+        r"/compte/(?P<type>[^/]+)/(?P<webid>\w+)/virements/comptes-externes/nouveau$",
+        AddRecipientPage,
     )
     rcpt_send_otp_page = URL(
-        r'https://api.boursobank.com/services/api/v\d+\.\d+/_user_/_\w+_/session/(otp|challenge)/start(?P<otp_type>\w+)/\d+',
+        r"https://api.boursobank.com/services/api/v\d+\.\d+/_user_/_\w+_/session/(otp|challenge)/start(?P<otp_type>\w+)/\d+",
         AddRecipientOtpSendPage,
     )
     rcpt_check_otp_page = URL(
-        r'https://api.boursobank.com/services/api/v\d+\.\d+/_user_/_\w+_/session/(otp|challenge)/check(?P<otp_type>\w+)/\d+',
+        r"https://api.boursobank.com/services/api/v\d+\.\d+/_user_/_\w+_/session/(otp|challenge)/check(?P<otp_type>\w+)/\d+",
         OtpCheckPage,
     )
 
-    asv = URL(r'/compte/assurance-vie/.*', AsvPage)
-    per = URL(r'/compte/per/.*', PerPage)
+    asv = URL(r"/compte/assurance-vie/.*", AsvPage)
+    per = URL(r"/compte/per/.*", PerPage)
     saving_history = URL(
-        r'/compte/cefp/.*/(positions|mouvements)',
-        r'/compte/.*ord/.*/mouvements',
-        r'/compte/pea/.*/mouvements',
-        r'/compte/0%25pea/.*/mouvements',
-        r'/compte/pea-pme/.*/mouvements',
-        SavingMarketPage
+        r"/compte/cefp/.*/(positions|mouvements)",
+        r"/compte/.*ord/.*/mouvements",
+        r"/compte/pea/.*/mouvements",
+        r"/compte/0%25pea/.*/mouvements",
+        r"/compte/pea-pme/.*/mouvements",
+        SavingMarketPage,
     )
     market = URL(
-        r'/compte/(?!assurance|cav|epargne).*/(positions|mouvements|ordres)',
-        r'/compte/ord/.*/positions',
-        MarketPage
+        r"/compte/(?!assurance|cav|epargne).*/(positions|mouvements|ordres)", r"/compte/ord/.*/positions", MarketPage
     )
     loans = URL(
-        r'/credit/paiement-3x/.*/informations',
-        r'/credit/immobilier/.*/informations',
-        r'/credit/immobilier/.*/caracteristiques',
-        r'/credit/consommation/.*/informations',
-        r'/credit/lombard/.*/caracteristiques',
-        LoanPage
+        r"/credit/paiement-3x/.*/informations",
+        r"/credit/immobilier/.*/informations",
+        r"/credit/immobilier/.*/caracteristiques",
+        r"/credit/consommation/.*/informations",
+        r"/credit/lombard/.*/caracteristiques",
+        LoanPage,
     )
     # At the moment we don't manage tnc ('titres non cotés') accounts, so if we are on the tnc page, we will ignore the account.
-    tnc = URL(r'/compte/tnc/.*/investissements', TncPage)
-    authentication = URL(r'/securisation$', AuthenticationPage)
+    tnc = URL(r"/compte/tnc/.*/investissements", TncPage)
+    authentication = URL(r"/securisation$", AuthenticationPage)
     # We need this URL to make a post to validate the twofa
-    authentication_validation = URL(r'/securisation/validation', AuthenticationPage)
-    iban = URL(r'/compte/(?P<webid>.*)/rib', IbanPage)
-    profile = URL(r'/mon-profil/', ProfilePage)
-    profile_children = URL(r'/mon-profil/coordonnees/enfants', ProfilePage)
+    authentication_validation = URL(r"/securisation/validation", AuthenticationPage)
+    iban = URL(r"/compte/(?P<webid>.*)/rib", IbanPage)
+    profile = URL(r"/mon-profil/", ProfilePage)
+    profile_children = URL(r"/mon-profil/coordonnees/enfants", ProfilePage)
 
-    expert = URL(r'/compte/derive/', ExpertPage)
+    expert = URL(r"/compte/derive/", ExpertPage)
 
     card_information = URL(
-        r'/compte/cav/cb/informations/(?P<webid>.*)/(?P<key>.*)',
-        r'/compte/cav/cb/(?P<webid>.*)?creditCardKey=(?P<key>.*)',
-        CardInformationPage
+        r"/compte/cav/cb/informations/(?P<webid>.*)/(?P<key>.*)",
+        r"/compte/cav/cb/(?P<webid>.*)?creditCardKey=(?P<key>.*)",
+        CardInformationPage,
     )
 
-    currencylist = URL(r'https://www.boursorama.com/bourse/devises/parite/_detail-parite', CurrencyListPage)
+    currencylist = URL(r"https://www.boursorama.com/bourse/devises/parite/_detail-parite", CurrencyListPage)
     currencyconvert = URL(
-        r'https://www.boursorama.com/bourse/devises/convertisseur-devises/convertir',
-        CurrencyConvertPage
+        r"https://www.boursorama.com/bourse/devises/convertisseur-devises/convertir", CurrencyConvertPage
     )
 
-    statements_page = URL(r'/documents/releves', BankStatementsPage)
-    rib_page = URL(r'/documents/compte-bancaire', BankIdentityPage)
+    statements_page = URL(r"/documents/releves", BankStatementsPage)
+    rib_page = URL(r"/documents/compte-bancaire", BankIdentityPage)
 
     __states__ = (
-        'recipient_form', 'transfer_form', 'form_state',
-        'user_hash', 'otp_number', 'otp_form_token',
-        'twofa_config', 'otp_headers', 'twofa_count',
+        "recipient_form",
+        "transfer_form",
+        "form_state",
+        "user_hash",
+        "otp_number",
+        "otp_form_token",
+        "twofa_config",
+        "otp_headers",
+        "twofa_count",
     )
 
     def __init__(self, config=None, *args, **kwargs):
@@ -284,13 +344,13 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.recipient_form = None
         self.transfer_form = None
         self.clear_twofa_params()
-        kwargs['username'] = self.config['login'].get()
-        kwargs['password'] = self.config['password'].get()
+        kwargs["username"] = self.config["login"].get()
+        kwargs["password"] = self.config["password"].get()
 
         self.AUTHENTICATION_METHODS = {
-            'code': self.handle_sms,
-            'email_code': self.handle_email,
-            'resume': self.handle_polling,
+            "code": self.handle_sms,
+            "email_code": self.handle_email,
+            "resume": self.handle_polling,
         }
 
         super(BoursoramaBrowser, self).__init__(config, *args, **kwargs)
@@ -306,15 +366,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     def locate_browser(self, state):
         try:
-            self.location(state['url'])
+            self.location(state["url"])
         except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects, LoggedOut):
             pass
 
     def load_state(self, state):
         # needed to continue the session while adding recipient with otp or 2FA validation
         # it keeps the form to continue to submit the otp
-        if state.get('recipient_form') or state.get('transfer_form') or state.get('otp_number'):
-            state.pop('url', None)
+        if state.get("recipient_form") or state.get("transfer_form") or state.get("otp_number"):
+            state.pop("url", None)
 
         super(BoursoramaBrowser, self).load_state(state)
 
@@ -325,21 +385,21 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.twofa_count += 1
         if self.twofa_count > 2:
             self.twofa_count = 0
-            raise AssertionError('more than two consecutive twofa')
+            raise AssertionError("more than two consecutive twofa")
 
         available_twofa_type = {
-            'sms': SentOTPQuestion(
-                'code',
+            "sms": SentOTPQuestion(
+                "code",
                 medium_type=OTPSentType.SMS,
-                message='Entrez le code reçu par SMS',
+                message="Entrez le code reçu par SMS",
             ),
-            'email': SentOTPQuestion(
-                'email_code',
+            "email": SentOTPQuestion(
+                "email_code",
                 medium_type=OTPSentType.EMAIL,
-                message='Entrez le code reçu par EMAIL',
+                message="Entrez le code reçu par EMAIL",
             ),
-            'webtoapp': AppValidation(
-                message='Une notification à valider vous a été envoyée',
+            "webtoapp": AppValidation(
+                message="Une notification à valider vous a été envoyée",
             ),
         }
         self.twofa_config = self.page.get_twofa_config()
@@ -347,37 +407,44 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         api_config = self.page.get_api_config()
         otp_token = f"Bearer {api_config['DEFAULT_API_BEARER']}"
         self.otp_headers = {
-            'Authorization': otp_token,
-            'x-referer-feature-id': '_._.sca',
+            "Authorization": otp_token,
+            "x-referer-feature-id": "_._.sca",
         }
         self.otp_form_token = self.page.get_form_token()
-        self.user_hash = api_config['USER_HASH']
+        self.user_hash = api_config["USER_HASH"]
         self.otp_number = self.page.get_otp_number()
         self.form_state = self.page.get_form_state()
 
         self.otp_page.open(
-            user_hash=self.user_hash, otp_number=self.otp_number,
-            otp_challenge=self.twofa_config['otp_challenge'], otp_operation='start',
-            otp_type=self.twofa_config['otp_type'], headers=self.otp_headers, json={'formState': self.form_state},
+            user_hash=self.user_hash,
+            otp_number=self.otp_number,
+            otp_challenge=self.twofa_config["otp_challenge"],
+            otp_operation="start",
+            otp_type=self.twofa_config["otp_type"],
+            headers=self.otp_headers,
+            json={"formState": self.form_state},
         )
 
-        raise available_twofa_type[self.twofa_config['otp_type']]
+        raise available_twofa_type[self.twofa_config["otp_type"]]
 
     def check_twofa_status(self, token=None):
-        json = {'formState': self.form_state}
+        json = {"formState": self.form_state}
 
         if token:
-            json['token'] = token
+            json["token"] = token
 
         self.otp_page.go(
-            user_hash=self.user_hash, otp_number=self.otp_number,
-            otp_challenge=self.twofa_config['otp_challenge'], otp_operation='check',
-            otp_type=self.twofa_config['otp_type'], headers=self.otp_headers,
+            user_hash=self.user_hash,
+            otp_number=self.otp_number,
+            otp_challenge=self.twofa_config["otp_challenge"],
+            otp_operation="check",
+            otp_type=self.twofa_config["otp_type"],
+            headers=self.otp_headers,
             json=json,
         )
 
     def validate_twofa(self):
-        self.authentication_validation.go(data={'form[_token]': self.otp_form_token})
+        self.authentication_validation.go(data={"form[_token]": self.otp_form_token})
         if self.authentication.is_here():
             # Several consecutive twofa may be required (e.g. sms + email)
             self.trigger_twofa()
@@ -402,14 +469,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         try:
             self.check_twofa_status(token=token)
         except ServerError as e:
-            error = e.response.json().get('error', '')
+            error = e.response.json().get("error", "")
             if error:
-                error_message = error.get('message')
+                error_message = error.get("message")
                 if error_message == "Le code d'authentification est incorrect":
-                    raise BrowserIncorrectPassword(error_message, bad_fields=['code'])
+                    raise BrowserIncorrectPassword(error_message, bad_fields=["code"])
 
                 self.clear_twofa_params()
-                raise AssertionError(f'otp validation error: {error_message}')
+                raise AssertionError(f"otp validation error: {error_message}")
 
             raise
 
@@ -428,14 +495,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             try:
                 self.check_twofa_status()
             except HTTPNotFound as e:
-                error = e.response.json().get('error', '')
+                error = e.response.json().get("error", "")
                 if error:
-                    error_message = error.get('message')
+                    error_message = error.get("message")
                     if error_message == "La demande n'a pas abouti ou a été annulée":
                         raise AppValidationCancelled(error_message)
 
                     self.clear_twofa_params()
-                    raise AssertionError(f'otp validation error: {error_message}')
+                    raise AssertionError(f"otp validation error: {error_message}")
 
                 raise
             if self.page.is_success():
@@ -451,16 +518,13 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         self.validate_twofa()
 
     def check_security_action_needed(self, error_message):
-        security_message = re.compile(
-            'bonnes pratiques de securite'
-            + '|Protégez-vous contre la fraude'
-        )
+        security_message = re.compile("bonnes pratiques de securite" + "|Protégez-vous contre la fraude")
 
         if security_message.search(error_message):
             # error_message isn't explicit enough for the user to understand he has something to do
             raise ActionNeeded(
                 locale="fr-FR",
-                message='Un message relatif aux bonnes pratiques de sécurité nécessite une confirmation sur votre espace.',
+                message="Un message relatif aux bonnes pratiques de sécurité nécessite une confirmation sur votre espace.",
                 action_type=ActionType.ACKNOWLEDGE,
             )
 
@@ -473,36 +537,33 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if self.minor.is_here():
             error_message = self.page.get_error_message()
             # The full message here is "Votre dossier de passage à la majorité est validé ! Vous pourrez vous connecter à votre Espace Client dès votre majorité."
-            if 'Votre dossier de passage à la majorité est validé' in error_message:
+            if "Votre dossier de passage à la majorité est validé" in error_message:
                 raise BrowserUnavailable(error_message)
             # Here we raise an ActionNeeded because in this case the users will have 18 yo soon, and he have to update his informations
             # The message is hardcoded because the error_message in this case is really big and not really relevant.
-            if 'nous devons collecter quelques éléments vous concernant.' in error_message:
+            if "nous devons collecter quelques éléments vous concernant." in error_message:
                 raise ActionNeeded(
-                    locale="fr-FR", message='Vous avez 18 ans, veuillez mettre à jour votre dossier.',
+                    locale="fr-FR",
+                    message="Vous avez 18 ans, veuillez mettre à jour votre dossier.",
                     action_type=ActionType.FILL_KYC,
                 )
-            if 'pas accessible aux jeunes de moins de 18 ans.' in error_message:
+            if "pas accessible aux jeunes de moins de 18 ans." in error_message:
                 raise BrowserUserBanned(self.page.get_error_message())
             # The full message here is " Vous pourrez accéder à vos comptes dans quelques minutes, pour cela, il vous suffit de finaliser la mise à jour de votre
             # dossier. Il vous reste à : Ensuite vous aurez accès à vos comptes et pourrez commander une Carte Bancaire : Si vous êtes détenteur de l'offre Freedom,
             # votre CB sera utilisable jusqu'à vos 18 ans et 2 mois, il sera donc important que vous commandiez une nouvelle carte en ligne pour continuer à profiter
             # d'un moyen de paiement chez Boursorama Banque"
-            if 'finaliser la mise à jour de votre dossier' in error_message:
+            if "finaliser la mise à jour de votre dossier" in error_message:
                 raise ActionNeeded(
-                    locale="fr-FR", message='Une mise à jour de votre dossier est nécessaire pour accéder à votre espace banque en ligne.',
+                    locale="fr-FR",
+                    message="Une mise à jour de votre dossier est nécessaire pour accéder à votre espace banque en ligne.",
                     action_type=ActionType.FILL_KYC,
                 )
-            if 'impératif que vous les complétiez dès à présent.' in error_message:
+            if "impératif que vous les complétiez dès à présent." in error_message:
                 raise ActionNeeded(locale="fr-FR", message=error_message, action_type=ActionType.FILL_KYC)
-            raise AssertionError('Unhandled error message: %s' % error_message)
+            raise AssertionError("Unhandled error message: %s" % error_message)
         elif self.error.is_here():
-            messages = re.compile(
-                'verrouille'
-                + '|incident'
-                + '|nous adresser'
-                + '|desactive'
-            )
+            messages = re.compile("verrouille" + "|incident" + "|nous adresser" + "|desactive")
 
             error_message = self.page.get_error_message()
             if messages.search(error_message):
@@ -512,19 +573,20 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         elif self.card_renewal.is_here():
             raise ActionNeeded(
-                locale="fr-FR", message='Une confirmation pour le renouvellement de carte bancaire est nécessaire sur votre espace.',
+                locale="fr-FR",
+                message="Une confirmation pour le renouvellement de carte bancaire est nécessaire sur votre espace.",
                 action_type=ActionType.ACKNOWLEDGE,
             )
         elif self.login.is_here():
             error = self.page.get_error()
-            assert error, 'Should not be on login page without error message'
+            assert error, "Should not be on login page without error message"
 
             is_wrongpass = re.search(
                 "Identifiant ou mot de passe invalide"
                 + "|Erreur d'authentification"
                 + "|Cette valeur n'est pas valide"
                 + "|votre identifiant ou votre mot de passe n'est pas valide",
-                error
+                error,
             )
 
             is_website_unavailable = re.search(
@@ -533,13 +595,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 + "|Maintenance en cours, merci de réessayer ultérieurement."
                 + "|Oups, Il semble qu'une erreur soit survenue de notre côté"
                 + "|Service momentanément indisponible",
-                error
+                error,
             )
 
             is_user_banned = re.search(
-                "Compte bloqué Pour des raisons de sécurité"
-                + "|Trop de tentatives de connexion ont échoué",
-                error
+                "Compte bloqué Pour des raisons de sécurité" + "|Trop de tentatives de connexion ont échoué", error
             )
 
             if is_website_unavailable:
@@ -638,7 +698,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             try:
                 self.accounts.go()
             except BrowserUnavailable as e:
-                self.logger.warning('par accounts seem unavailable, retrying')
+                self.logger.warning("par accounts seem unavailable, retrying")
                 exc = e
                 accounts_list = None
                 continue
@@ -663,7 +723,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     # a Loan object and remove the corresponding Account:
                     self.location(account.url)
                     loan = self.page.get_loan()
-                    for attr in ['url', 'owner_type', 'bank_name']:
+                    for attr in ["url", "owner_type", "bank_name"]:
                         setattr(loan, attr, getattr(account, attr))
                     loans_list.append(loan)
                     accounts_list.remove(account)
@@ -673,7 +733,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             for card in self.cards_list:
                 self.card_information.go(webid=card._webid, key=card._key)
                 if not self.card_information.is_here():
-                    self.logger.warning('Should have been on CardInformationPage.')
+                    self.logger.warning("Should have been on CardInformationPage.")
                     accounts_list.remove(card)
                     continue
                 card.number = self.page.get_card_number(card)
@@ -684,9 +744,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     accounts_list.remove(card)
                 else:
                     # Here we need the card number to add more detail to the label.
-                    card_number = Regexp(pattern=r'^.{12}(\d{4})$', default=None).filter(card.number)
+                    card_number = Regexp(pattern=r"^.{12}(\d{4})$", default=None).filter(card.number)
                     if card_number:
-                        card.label = f'XX{card_number} {card.label}'
+                        card.label = f"XX{card_number} {card.label}"
 
             type_with_iban = (
                 Account.TYPE_CHECKING,
@@ -704,7 +764,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     account.iban = account_iban
 
             for card in self.cards_list:
-                checking, = [
+                (checking,) = [
                     account
                     for account in accounts_list
                     if account.type == Account.TYPE_CHECKING and account.url in card.url
@@ -732,12 +792,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 # it is a website scoped problem and not a bad request from our part.
                 # 404 is the original behavior. We could remove it in the future if it does not happen again.
                 status_code = e.response.status_code
-                if (
-                    status_code in (404, 503)
-                    and account.type == Account.TYPE_LIFE_INSURANCE
-                ):
+                if status_code in (404, 503) and account.type == Account.TYPE_LIFE_INSURANCE:
                     self.logger.warning(
-                        '%s ! Broken link for life insurance account (%s). Account will be skipped',
+                        "%s ! Broken link for life insurance account (%s). Account will be skipped",
                         status_code,
                         account.label,
                     )
@@ -768,13 +825,17 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     @retry_on_logout()
     @need_login
     def get_history(self, account, coming=False):
-        if account.type in (
-            Account.TYPE_LOAN,
-            Account.TYPE_MORTGAGE,
-            Account.TYPE_CONSUMER_CREDIT,
-            Account.TYPE_DEPOSIT,
-            Account.TYPE_REAL_ESTATE,
-        ) or '/compte/derive' in account.url:
+        if (
+            account.type
+            in (
+                Account.TYPE_LOAN,
+                Account.TYPE_MORTGAGE,
+                Account.TYPE_CONSUMER_CREDIT,
+                Account.TYPE_DEPOSIT,
+                Account.TYPE_REAL_ESTATE,
+            )
+            or "/compte/derive" in account.url
+        ):
             return []
         if account.type is Account.TYPE_SAVINGS and "PLAN D'ÉPARGNE POPULAIRE" in account.label:
             return []
@@ -787,7 +848,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def otp_location(self, *args, **kwargs):
         # this method is used in `otp_pagination` decorator from pages
         # without this header, we don't get a 401 but a 302 that logs us out
-        kwargs.setdefault('headers', {}).update({'X-Requested-With': "XMLHttpRequest"})
+        kwargs.setdefault("headers", {}).update({"X-Requested-With": "XMLHttpRequest"})
         try:
             return super(BoursoramaBrowser, self).location(*args, **kwargs)
         except ClientError as e:
@@ -800,10 +861,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def get_regular_transactions(self, account, coming):
         # We look for 3 years of history.
         params = {}
-        params['movementSearch[toDate]'] = (date.today() + relativedelta(days=40)).strftime('%d/%m/%Y')
-        params['movementSearch[fromDate]'] = (date.today() - relativedelta(years=3)).strftime('%d/%m/%Y')
-        params['movementSearch[advanced]'] = 1
-        if self.otp_location('%s/mouvements' % account.url.rstrip('/'), params=params) is None:
+        params["movementSearch[toDate]"] = (date.today() + relativedelta(days=40)).strftime("%d/%m/%Y")
+        params["movementSearch[fromDate]"] = (date.today() - relativedelta(years=3)).strftime("%d/%m/%Y")
+        params["movementSearch[advanced]"] = 1
+        if self.otp_location("%s/mouvements" % account.url.rstrip("/"), params=params) is None:
             return
 
         for transaction in self.page.iter_history():
@@ -820,16 +881,16 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                 yield transaction
 
     def get_html_past_card_transactions(self, account):
-        """ Get card transactions from parent account page """
+        """Get card transactions from parent account page"""
 
-        self.otp_location('%s/mouvements' % account.parent.url.rstrip('/'))
+        self.otp_location("%s/mouvements" % account.parent.url.rstrip("/"))
         for tr in self.page.iter_history(is_card=False):
             # get card summaries
             if (
                 tr.type == TransactionType.CARD_SUMMARY
                 and account.number in tr.label  # in case of several cards per parent account
             ):
-                tr.amount = - tr.amount
+                tr.amount = -tr.amount
                 yield tr
 
                 # for each summaries, get detailed transactions
@@ -860,8 +921,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             self.location(self.page.get_calendar_link())
 
         params = {}
-        params['movementSearch[fromDate]'] = (date.today() - relativedelta(years=3)).strftime('%d/%m/%Y')
-        params['fullSearch'] = 1
+        params["movementSearch[fromDate]"] = (date.today() - relativedelta(years=3)).strftime("%d/%m/%Y")
+        params["fullSearch"] = 1
         if self.otp_location(account.url, params=params) is None:
             return
 
@@ -887,7 +948,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if coming:
             return
         transactions = []
-        self.location('%s/mouvements' % account.url.rstrip('/'))
+        self.location("%s/mouvements" % account.url.rstrip("/"))
         account._history_pages = []
         for t in self.page.iter_history(account=account):
             transactions.append(t)
@@ -907,7 +968,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             Account.TYPE_REAL_ESTATE,
         )
 
-        if ('/compte/derive' not in account.url and account.type in invest_account):
+        if "/compte/derive" not in account.url and account.type in invest_account:
             self.location(account.url)
             if account.type != Account.TYPE_REAL_ESTATE:
                 liquidity = self.page.get_liquidity()
@@ -922,7 +983,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     @need_login
     def iter_market_orders(self, account):
         # Only Market & PEA accounts have the Market Orders tab
-        if '/compte/derive' in account.url or account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
+        if "/compte/derive" in account.url or account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA):
             return []
         self.location(account.url)
 
@@ -948,11 +1009,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
     def get_account_type_and_id(self, account_url):
         url = urlsplit(account_url)
-        parts = [part for part in url.path.split('/') if part]
+        parts = [part for part in url.path.split("/") if part]
 
-        assert len(parts) > 2, 'Account url missing some important part to iter recipient'
+        assert len(parts) > 2, "Account url missing some important part to iter recipient"
         account_type = parts[1]  # cav, ord, epargne ...
-        if parts[-1] == 'mouvements-a-venir':
+        if parts[-1] == "mouvements-a-venir":
             # cards account have one part on the url
             account_webid = parts[-2]
         else:
@@ -975,15 +1036,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             self.page.submit_account(account_id)
         elif self.transfer_main_page.is_here():
             if for_scheduled:
-                transfer_type = 'programme'
+                transfer_type = "programme"
             else:
-                transfer_type = 'immediat'
-            self.new_transfer_wizard.go(
-                acc_type=account_type,
-                webid=account_webid,
-                transfer_type=transfer_type
-            )
-            assert self.new_transfer_wizard.is_here(), 'Should be on recipients page'
+                transfer_type = "immediat"
+            self.new_transfer_wizard.go(acc_type=account_type, webid=account_webid, transfer_type=transfer_type)
+            assert self.new_transfer_wizard.is_here(), "Should be on recipients page"
             # may raise AccountNotFound
             self.page.submit_account(account_id)
 
@@ -997,9 +1054,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         if not account.url:
             account = find_object(self.get_accounts_list(), iban=account.iban)
-            assert account, 'Could not find an account with a matching iban'
+            assert account, "Could not find an account with a matching iban"
 
-        assert account.url, 'Account should have an url to access its recipients'
+        assert account.url, "Account should have an url to access its recipients"
 
         try:
             self.go_recipients_list(account.url, account.id, for_scheduled)
@@ -1007,21 +1064,20 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             return []
 
         assert (
-            self.transfer_recipients_page.is_here()
-            or self.new_transfer_wizard.is_here()
-        ), 'Should be on recipients page'
+            self.transfer_recipients_page.is_here() or self.new_transfer_wizard.is_here()
+        ), "Should be on recipients page"
 
         return self.page.iter_recipients()
 
     def check_basic_transfer(self, transfer):
         if transfer.date_type == TransferDateType.PERIODIC:
-            raise NotImplementedError('Periodic transfer is not implemented')
+            raise NotImplementedError("Periodic transfer is not implemented")
         if transfer.amount <= 0:
-            raise TransferInvalidAmount('transfer amount must be positive')
+            raise TransferInvalidAmount("transfer amount must be positive")
         if transfer.recipient_id == transfer.account_id:
-            raise TransferInvalidRecipient('recipient must be different from emitter')
+            raise TransferInvalidRecipient("recipient must be different from emitter")
         if not transfer.label:
-            raise TransferInvalidLabel('transfer label cannot be empty')
+            raise TransferInvalidLabel("transfer label cannot be empty")
 
     @need_login
     def init_transfer(self, transfer, **kwargs):
@@ -1044,7 +1100,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             else:
                 transfer_date_type = TransferDateType.FIRST_OPEN_DAY
 
-        is_scheduled = (transfer_date_type in [TransferDateType.DEFERRED, TransferDateType.PERIODIC])
+        is_scheduled = transfer_date_type in [TransferDateType.DEFERRED, TransferDateType.PERIODIC]
 
         self.check_basic_transfer(transfer)
 
@@ -1054,18 +1110,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         recipients = list(self.iter_transfer_recipients(account, is_scheduled))
         if not recipients:
-            raise TransferInvalidEmitter(
-                message="Le compte émetteur ne permet pas d'effectuer des virements"
-            )
+            raise TransferInvalidEmitter(message="Le compte émetteur ne permet pas d'effectuer des virements")
 
         recipients = [rcpt for rcpt in recipients if rcpt.id == transfer.recipient_id]
         if len(recipients) == 0 and not empty(transfer.recipient_iban):
             # try to find recipients by iban:
-            recipients = [rcpt for rcpt in recipients
-                          if not empty(rcpt.iban) and rcpt.iban == transfer.recipient_iban]
+            recipients = [rcpt for rcpt in recipients if not empty(rcpt.iban) and rcpt.iban == transfer.recipient_iban]
         if len(recipients) == 0:
             raise TransferInvalidRecipient(
-                message='Le compte émetteur ne peut pas faire de virement vers ce bénéficiaire'
+                message="Le compte émetteur ne peut pas faire de virement vers ce bénéficiaire"
             )
         assert len(recipients) == 1
 
@@ -1115,9 +1168,10 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         if recipients[0].label != ret.recipient_label:
             self.logger.info(
                 'Recipients from iter_recipient and from the transfer are different: "%s" and "%s"',
-                recipients[0].label, ret.recipient_label
+                recipients[0].label,
+                ret.recipient_label,
             )
-            if not ret.recipient_label.startswith('%s - ' % recipients[0].label):
+            if not ret.recipient_label.startswith("%s - " % recipients[0].label):
                 # the label displayed here is  "<name> - <bank>"
                 # but in the recipients list it is "<name>"...
                 raise AssertionError(
@@ -1128,8 +1182,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         ret.recipient_iban = recipients[0].iban
 
         if account.label != ret.account_label:
-            raise TransferError('Account label changed during transfer (from "%s" to "%s")'
-                                % (account.label, ret.account_label))
+            raise TransferError(
+                'Account label changed during transfer (from "%s" to "%s")' % (account.label, ret.account_label)
+            )
 
         ret.account_id = account.id
         ret.account_iban = account.iban
@@ -1145,8 +1200,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         This page should not have "@need_login", as a "relogin" would void
         the validity of any existing otp code.
         """
-        otp_code = kwargs.get('otp_sms', kwargs.get('otp_email'))
-        resume = kwargs.get('resume')
+        otp_code = kwargs.get("otp_sms", kwargs.get("otp_email"))
+        resume = kwargs.get("resume")
         if not otp_code and not resume:
             return False
 
@@ -1187,7 +1242,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
             self.check_and_initiate_otp(
                 None,
-                store_form='transfer_form',
+                store_form="transfer_form",
                 raise_step=raise_step,
                 resource=transfer,
             )
@@ -1196,15 +1251,15 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             # and raise an error depending on the alert.
             error = self.page.get_alert_message()
             if error:
-                if 'fonds disponibles sont insuffisants' in error.casefold():
+                if "fonds disponibles sont insuffisants" in error.casefold():
                     raise TransferInvalidAmount(message=error)
 
                 raise AssertionError(
-                    f'Unhandled error message in transfer sent page: {error}',
+                    f"Unhandled error message in transfer sent page: {error}",
                 )
 
             # We are not sure if the transfer was successful or not, so raise an error
-            raise AssertionError('Confirmation message not found inside transfer sent page')
+            raise AssertionError("Confirmation message not found inside transfer sent page")
 
         # The last page contains no info, return the last transfer object from init_transfer
         return transfer
@@ -1225,9 +1280,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
                     break
             elif account.id == recipient.origin_account_id:
                 break
-            elif (not empty(recipient.origin_account_iban)
-                  and not empty(account.iban)
-                  and account.iban == recipient.origin_account_iban):
+            elif (
+                not empty(recipient.origin_account_iban)
+                and not empty(account.iban)
+                and account.iban == recipient.origin_account_iban
+            ):
                 break
         else:
             raise AddRecipientBankError(
@@ -1237,14 +1294,14 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         account_type, account_webid = self.get_account_type_and_id(account.url)
         self.recipients_page.go(type=account_type, webid=account_webid)
 
-        assert self.recipients_page.is_here(), 'Should be on recipients page'
+        assert self.recipients_page.is_here(), "Should be on recipients page"
 
         self.rcpt_page.go(type=account_type, webid=account_webid)
 
         if self.page.is_type_choice():
             self.page.submit_choice_external_type()
 
-        assert self.page.is_characteristics(), 'Not on the page to add recipients.'
+        assert self.page.is_characteristics(), "Not on the page to add recipients."
 
         # fill recipient form
         self.page.submit_recipient(recipient)
@@ -1252,7 +1309,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             recipient.origin_account_id = account.id
 
         # Go to recipient confirmation page that will request to send an sms
-        assert self.page.is_confirm_send_sms(), 'Cannot reach the page asking to send a sms.'
+        assert self.page.is_confirm_send_sms(), "Cannot reach the page asking to send a sms."
         self.page.confirm_send_sms()
 
         def raise_step(value):
@@ -1260,7 +1317,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         self.check_and_initiate_otp(
             account.url,
-            store_form='recipient_form',
+            store_form="recipient_form",
             raise_step=raise_step,
             resource=recipient,
         )
@@ -1269,8 +1326,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         return self.check_and_update_recipient(recipient, account.url, account)
 
     def new_recipient(self, recipient, **kwargs):
-        otp_code = kwargs.get('otp_sms', kwargs.get('otp_email'))
-        resume = kwargs.get('resume')
+        otp_code = kwargs.get("otp_sms", kwargs.get("otp_email"))
+        resume = kwargs.get("resume")
         if not otp_code and not resume:
             # step 1 of new recipient
             return self.init_new_recipient(recipient)
@@ -1296,7 +1353,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         self.check_and_initiate_otp(
             account_url,
-            store_form='recipient_form',
+            store_form="recipient_form",
             raise_step=raise_step,
             resource=recipient,
         )
@@ -1304,23 +1361,20 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         return self.check_and_update_recipient(recipient, account_url)
 
     def send_otp_data(self, otp_data, otp_code, exception, is_app=False):
-        confirm_data = otp_data['confirm_data']
-        url = confirm_data['url']
-        confirm_params = {
-            key: value for key, value in confirm_data.items()
-            if key != 'url'
-        }
+        confirm_data = otp_data["confirm_data"]
+        url = confirm_data["url"]
+        confirm_params = {key: value for key, value in confirm_data.items() if key != "url"}
 
         if not is_app:
             # Validate the OTP
-            confirm_data['token'] = otp_code
+            confirm_data["token"] = otp_code
 
             try:
                 self.location(url, data=confirm_params)
             except ServerError as e:
                 # If the code is invalid, we have an error 503
                 if e.response.status_code == 503:
-                    raise exception(message=e.response.json()['error']['message'])
+                    raise exception(message=e.response.json()["error"]["message"])
                 raise
         else:
             # Check the app validation status.
@@ -1342,19 +1396,20 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             else:
                 raise AppValidationExpired()
 
-        del otp_data['confirm_data']
-        account_url = otp_data.pop('account_url')
+        del otp_data["confirm_data"]
+        account_url = otp_data.pop("account_url")
 
         # Continue the navigation by sending the form data
         # we saved.
-        html_page_form = otp_data.pop('html_page_form')
-        url = html_page_form.pop('url')
+        html_page_form = otp_data.pop("html_page_form")
+        url = html_page_form.pop("url")
         self.location(url, data=html_page_form)
 
         return account_url
 
     def check_and_initiate_otp(
-        self, account_url,
+        self,
+        account_url,
         store_form=None,
         raise_step=lambda value: None,
         resource=None,
@@ -1378,11 +1433,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         otp_exception = None
         otp_field_value = None
         if self.page.is_send_sms():
-            otp_name = 'sms'
-            otp_field_value = Value('otp_sms', label='Veuillez saisir le code reçu par sms')
+            otp_name = "sms"
+            otp_field_value = Value("otp_sms", label="Veuillez saisir le code reçu par sms")
         elif self.page.is_send_email():
-            otp_name = 'email'
-            otp_field_value = Value('otp_email', label='Veuillez saisir le code reçu par email')
+            otp_name = "email"
+            otp_field_value = Value("otp_email", label="Veuillez saisir le code reçu par email")
         elif self.page.is_send_app():
             otp_exception = AppValidation(
                 message="Veuillez valider dans l'application mobile.",
@@ -1392,13 +1447,13 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         else:
             return
 
-        otp_data = {'account_url': account_url}
+        otp_data = {"account_url": account_url}
 
-        otp_data['html_page_form'] = self.page.get_confirm_otp_form()
-        otp_data['confirm_data'] = self.page.get_confirm_otp_data()
+        otp_data["html_page_form"] = self.page.get_confirm_otp_form()
+        otp_data["confirm_data"] = self.page.get_confirm_otp_data()
 
         if self.page.send_otp():
-            assert self.page.is_confirm_otp(), 'The %s was not sent.' % otp_name
+            assert self.page.is_confirm_otp(), "The %s was not sent." % otp_name
 
         if store_form is not None:
             setattr(self, store_form, otp_data)
@@ -1409,7 +1464,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         raise_step(otp_field_value)
 
     def check_and_update_recipient(self, recipient, account_url, account=None):
-        assert self.page.is_created(), 'The recipient was not added.'
+        assert self.page.is_created(), "The recipient was not added."
 
         # At this point, the recipient was added to the website,
         # here we just want to return the right Recipient object.
@@ -1423,24 +1478,23 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
 
         self.go_recipients_list(account_url, account.id)
         assert (
-            self.transfer_recipients_page.is_here()
-            or self.new_transfer_wizard.is_here()
-        ), 'Should be on recipients page'
+            self.transfer_recipients_page.is_here() or self.new_transfer_wizard.is_here()
+        ), "Should be on recipients page"
         return find_object(self.page.iter_recipients(), iban=recipient.iban, error=RecipientNotFound)
 
     @need_login
     def iter_transfers(self, account):
         if account is not None:
             if not (isinstance(account, Account) or isinstance(account, Emitter)):
-                self.logger.debug('we have only the emitter id %r, fetching full object', account)
+                self.logger.debug("we have only the emitter id %r, fetching full object", account)
                 account = find_object(self.iter_emitters(), id=account)
 
             return sorted_transfers(self.iter_transfers_for_emitter(account))
 
         transfers = []
-        self.logger.debug('no account given: fetching all emitters')
+        self.logger.debug("no account given: fetching all emitters")
         for emitter in self.iter_emitters():
-            self.logger.debug('fetching transfers for emitter %r', emitter.id)
+            self.logger.debug("fetching transfers for emitter %r", emitter.id)
             transfers.extend(self.iter_transfers_for_emitter(emitter))
         transfers = sorted_transfers(transfers)
         return transfers
@@ -1453,7 +1507,7 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
         # TODO Maybe the site is not stateful and we could do parallel navigation
         # on both lists, to merge the sorted iterators.
 
-        self.transfer_list.go(acc_type='temp', webid=emitter._bourso_id, type='ponctuels')
+        self.transfer_list.go(acc_type="temp", webid=emitter._bourso_id, type="ponctuels")
         for transfer in self.page.iter_transfers():
             transfer.account_id = emitter.id
             transfer.date_type = TransferDateType.FIRST_OPEN_DAY
@@ -1469,11 +1523,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             self.page.fill_transfer(obj=transfer)
 
             # build id with account id because get_transfer will receive only the account id
-            assert transfer.id, 'transfer should have an id from site'
-            transfer.id = '%s.%s' % (emitter.id, transfer.id)
+            assert transfer.id, "transfer should have an id from site"
+            transfer.id = "%s.%s" % (emitter.id, transfer.id)
             yield transfer
 
-        self.transfer_list.go(acc_type='temp', webid=emitter._bourso_id, type='permanents')
+        self.transfer_list.go(acc_type="temp", webid=emitter._bourso_id, type="permanents")
         for transfer in self.page.iter_transfers():
             transfer.account_id = emitter.id
             transfer.date_type = TransferDateType.PERIODIC
@@ -1481,8 +1535,8 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             self.page.fill_transfer(obj=transfer)
             self.page.fill_periodic_transfer(obj=transfer)
 
-            assert transfer.id, 'transfer should have an id from site'
-            transfer.id = '%s.%s' % (emitter.id, transfer.id)
+            assert transfer.id, "transfer should have an id from site"
+            transfer.id = "%s.%s" % (emitter.id, transfer.id)
             yield transfer
 
     def iter_currencies(self):
@@ -1491,9 +1545,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def get_rate(self, curr_from, curr_to):
         r = Rate()
         params = {
-            'from': curr_from,
-            'to': curr_to,
-            'amount': '1',
+            "from": curr_from,
+            "to": curr_to,
+            "amount": "1",
         }
         r.currency_from = curr_from
         r.currency_to = curr_to
@@ -1510,9 +1564,9 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
     def iter_emitters(self):
         # It seems that if we give a wrong acc_type and webid to the transfer page
         # we are redirected to a page where we can choose the emitter account
-        self.transfer_accounts.go(acc_type='temp', webid='temp')
+        self.transfer_accounts.go(acc_type="temp", webid="temp")
         if self.transfer_main_page.is_here():
-            self.new_transfer_wizard.go(acc_type='temp', webid='temp', transfer_type='immediat')
+            self.new_transfer_wizard.go(acc_type="temp", webid="temp", transfer_type="immediat")
         return self.page.iter_emitters()
 
     @retry_on_logout()
@@ -1528,11 +1582,11 @@ class BoursoramaBrowser(RetryLoginBrowser, TwoFactorBrowser):
             yield doc
 
         params = {
-            'FiltersType[accountsKeys][]': subscription._account_key,
-            'FiltersType[fromDate]': '01/01/1970',  # epoch, so we fetch as much as possible
-            'FiltersType[toDate]': date.today().strftime("%d/%m/%Y"),
-            'FiltersType[documentsTypes][]': ['cc', 'export_historic_statement', 'frais'],
-            'FiltersType[buttons][submit]': '',
+            "FiltersType[accountsKeys][]": subscription._account_key,
+            "FiltersType[fromDate]": "01/01/1970",  # epoch, so we fetch as much as possible
+            "FiltersType[toDate]": date.today().strftime("%d/%m/%Y"),
+            "FiltersType[documentsTypes][]": ["cc", "export_historic_statement", "frais"],
+            "FiltersType[buttons][submit]": "",
         }
         self.statements_page.go(params=params)
 

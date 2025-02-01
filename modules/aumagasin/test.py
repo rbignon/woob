@@ -22,11 +22,11 @@ from woob.tools.test import BackendTest
 
 
 class AumagasinTest(BackendTest):
-    MODULE = 'aumagasin'
+    MODULE = "aumagasin"
 
     def test_search_pagination(self):
         q = SearchQuery()
-        q.name = 'V and B'
+        q.name = "V and B"
         res = list(itertools.islice(self.backend.search_contacts(q, None), 0, 80))
         self.assertNotEqual(len(res), 0)
         self.assertNotEmpty(res[0].name)
@@ -36,7 +36,7 @@ class AumagasinTest(BackendTest):
 
     def test_search_number(self):
         q = SearchQuery()
-        q.name = '4 murs'
+        q.name = "4 murs"
 
         res = list(itertools.islice(self.backend.search_contacts(q, None), 0, 20))
         self.assertNotEqual(len(res), 0)
@@ -47,7 +47,7 @@ class AumagasinTest(BackendTest):
 
     def test_not(self):
         q = SearchQuery()
-        q.name = 'brinbrin'
+        q.name = "brinbrin"
 
         try:
             self.backend.search_contacts(q, None)

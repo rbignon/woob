@@ -26,18 +26,19 @@ from .pages import DeparturesPage, DeparturesPage2, HorairesPage, RoadMapPage, S
 
 class Transilien(PagesBrowser):
 
-    BASEURL = 'http://www.transilien.com'
+    BASEURL = "http://www.transilien.com"
     TIMEOUT = 20
-    stations_page = URL(r'aidesaisie/autocompletion\?saisie=(?P<pattern>.*)', StationsPage)
-    departures_page = URL(r'gare/pagegare/chargerGare\?nomGare=(?P<station>.*)',
-                          r'gare/.*', DeparturesPage)
-    departures_page2 = URL(r'fichehoraire/fichehoraire/(?P<url>.*)',
-                           r'fichehoraire/fichehoraire/.*', DeparturesPage2)
+    stations_page = URL(r"aidesaisie/autocompletion\?saisie=(?P<pattern>.*)", StationsPage)
+    departures_page = URL(r"gare/pagegare/chargerGare\?nomGare=(?P<station>.*)", r"gare/.*", DeparturesPage)
+    departures_page2 = URL(r"fichehoraire/fichehoraire/(?P<url>.*)", r"fichehoraire/fichehoraire/.*", DeparturesPage2)
 
-    horaires_page = URL(r'fiche-horaire/(?P<station>.*)--(?P<arrival>.*)-(?P<station2>.*)-(?P<arrival2>)-(?P<date>)',
-                        r'fiche-horaire/.*', HorairesPage)
+    horaires_page = URL(
+        r"fiche-horaire/(?P<station>.*)--(?P<arrival>.*)-(?P<station2>.*)-(?P<arrival2>)-(?P<date>)",
+        r"fiche-horaire/.*",
+        HorairesPage,
+    )
 
-    roadmap_page = URL('itineraire/trajet', RoadMapPage)
+    roadmap_page = URL("itineraire/trajet", RoadMapPage)
 
     def get_roadmap(self, departure, arrival, filters):
         dep = next(self.get_stations(departure, False))
@@ -52,8 +53,8 @@ class Transilien(PagesBrowser):
 
     def get_station_departues(self, station, arrival_id, date):
         if arrival_id is not None:
-            arrival_name = arrival_id.replace('-', ' ')
-            self.departures_page2.go(url='init').init_departure(station)
+            arrival_name = arrival_id.replace("-", " ")
+            self.departures_page2.go(url="init").init_departure(station)
 
             arrival = self.page.get_potential_arrivals().get(arrival_name)
             if arrival:
@@ -64,8 +65,13 @@ class Transilien(PagesBrowser):
 
                 _date = datetime.strftime(date, "%d/%m/%Y-%H:%M")
 
-                self.horaires_page.go(station=station.replace(' ', '-'), arrival=arrival_id, station2=station_id,
-                                      arrival2=arrival, date=_date)
+                self.horaires_page.go(
+                    station=station.replace(" ", "-"),
+                    arrival=arrival_id,
+                    station2=station_id,
+                    arrival2=arrival,
+                    date=_date,
+                )
                 return self.page.get_departures(station, arrival_name, date)
             return []
         else:

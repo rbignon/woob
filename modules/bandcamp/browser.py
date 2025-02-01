@@ -23,14 +23,13 @@ from .pages import AlbumPage, AlbumsPage, ReleasesPage, SearchPage, TrackPage
 
 
 class BandcampBrowser(PagesBrowser):
-    BASEURL = 'https://bandcamp.com'
+    BASEURL = "https://bandcamp.com"
 
-    search = URL(r'/search\?(?:page=\d+&)?q=(?P<q>.*)',
-                 SearchPage)
-    releases = URL(r'https://(?P<band>[^.]+).bandcamp.com/releases', ReleasesPage)
-    albums = URL(r'https://(?P<band>[^.]+).bandcamp.com/music', AlbumsPage)
-    album = URL(r'https://(?P<band>[^.]+).bandcamp.com/album/(?P<album>[^/]+)', AlbumPage)
-    track = URL(r'https://(?P<band>[^.]+).bandcamp.com/track/(?P<track>[^/]+)', TrackPage)
+    search = URL(r"/search\?(?:page=\d+&)?q=(?P<q>.*)", SearchPage)
+    releases = URL(r"https://(?P<band>[^.]+).bandcamp.com/releases", ReleasesPage)
+    albums = URL(r"https://(?P<band>[^.]+).bandcamp.com/music", AlbumsPage)
+    album = URL(r"https://(?P<band>[^.]+).bandcamp.com/album/(?P<album>[^/]+)", AlbumPage)
+    track = URL(r"https://(?P<band>[^.]+).bandcamp.com/track/(?P<track>[^/]+)", TrackPage)
 
     def do_search(self, pattern):
         self.search.go(q=pattern)
@@ -51,8 +50,8 @@ class BandcampBrowser(PagesBrowser):
         album = self.page.get_album()
         album.tracks_list = list(self.page.iter_tracks())
         for tr, extra in zip(album.tracks_list, self.page.get_tracks_extra()):
-            tr.url = extra['url']
-            tr.duration = extra['duration']
+            tr.url = extra["url"]
+            tr.duration = extra["duration"]
         return album
 
     def fetch_track(self, track):

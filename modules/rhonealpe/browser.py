@@ -22,7 +22,7 @@ from woob_modules.creditdunord.browser import CreditDuNordBrowser
 
 
 class RhonealpeBrowser(CreditDuNordBrowser):
-    BASEURL = 'https://www.banque-rhone-alpes.fr'
+    BASEURL = "https://www.banque-rhone-alpes.fr"
 
     def do_login(self):
         raise BrowserUnavailable()

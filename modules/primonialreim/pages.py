@@ -53,12 +53,14 @@ class AccountsPage(LoggedPage, HTMLPage):
         jdata = json.loads(self.doc.xpath("//div/@js-new-graph[contains(., 'bar')]")[0])
         jdata = {item["legendText"]: item["dataPoints"] for item in jdata["data"]}
         for jpoint in jdata["Valeur totale d achat"]:
-            yield Account.from_dict(dict(
-                id=jpoint["label"].lower().replace(" ", ""),
-                label=jpoint["label"],
-                balance=Decimal(str(jpoint["y"])),
-                type=Account.TYPE_REAL_ESTATE,
-            ))
+            yield Account.from_dict(
+                dict(
+                    id=jpoint["label"].lower().replace(" ", ""),
+                    label=jpoint["label"],
+                    balance=Decimal(str(jpoint["y"])),
+                    type=Account.TYPE_REAL_ESTATE,
+                )
+            )
 
 
 class TaxDocsPage(LoggedPage, HTMLPage):
@@ -76,11 +78,7 @@ class TaxDocsPage(LoggedPage, HTMLPage):
             obj_id = Regexp(obj_url, r"/([^/]+)\.pdf")
 
             obj__year = Regexp(obj_url, r"(\d+)\.pdf")
-            obj_label = Format(
-                "%s %s",
-                CleanText("."),
-                obj__year
-            )
+            obj_label = Format("%s %s", CleanText("."), obj__year)
 
             def obj_date(self):
                 return datetime.date(int(self.obj._year) + 1, 1, 1)

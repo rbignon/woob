@@ -22,4 +22,4 @@ from .browser import PhpBB
 from .module import PhpBBModule
 
 
-__all__ = ['PhpBB', 'PhpBBModule']
+__all__ = ["PhpBB", "PhpBBModule"]

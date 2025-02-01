@@ -54,14 +54,10 @@ def rib2iban(rib: str) -> str:
     return str(IBAN.from_bban("FR", rib))
 
 
-@deprecated(
-    version="3.8", reason="Use :attr:`schwifty.BBAN.national_checksum_digits` instead."
-)
+@deprecated(version="3.8", reason="Use :attr:`schwifty.BBAN.national_checksum_digits` instead.")
 def find_rib_checksum(bank: str, counter: str, account: str) -> int:
     return int(
-        BBAN.from_components(
-            "FR", bank_code=bank, branch_code=counter, account_code=account
-        ).national_checksum_digits
+        BBAN.from_components("FR", bank_code=bank, branch_code=counter, account_code=account).national_checksum_digits
     )
 
 

@@ -28,12 +28,21 @@ from .base import _NO_DEFAULT, Filter, FilterError, ItemNotFound, _Filter, _Sele
 from .standard import CleanText
 
 
-__all__ = ['CSS', 'XPath', 'XPathNotFound', 'AttributeNotFound',
-           'Attr', 'Link', 'AbsoluteLink',
-           'CleanHTML', 'FormValue', 'HasElement',
-           'TableCell', 'ColumnNotFound',
-           'ReplaceEntities',
-           ]
+__all__ = [
+    "CSS",
+    "XPath",
+    "XPathNotFound",
+    "AttributeNotFound",
+    "Attr",
+    "Link",
+    "AbsoluteLink",
+    "CleanHTML",
+    "FormValue",
+    "HasElement",
+    "TableCell",
+    "ColumnNotFound",
+    "ReplaceEntities",
+]
 
 
 class XPathNotFound(ItemNotFound):
@@ -57,6 +66,7 @@ class CSS(_Selector):
 
     will take the text of all ``<div>`` having CSS class "main".
     """
+
     def select(self, selector, item):
         ret = item.cssselect(selector)
         if isinstance(ret, list):
@@ -68,8 +78,8 @@ class CSS(_Selector):
 
 
 class XPath(_Selector):
-    """Select HTML elements with a XPath selector
-    """
+    """Select HTML elements with a XPath selector"""
+
     pass
 
 
@@ -102,11 +112,13 @@ class Attr(Filter):
         """
 
         try:
-            return '%s' % el[0].attrib[self.attr]
+            return "%s" % el[0].attrib[self.attr]
         except IndexError:
-            return self.default_or_raise(XPathNotFound('Unable to find element %s' % self.selector))
+            return self.default_or_raise(XPathNotFound("Unable to find element %s" % self.selector))
         except KeyError:
-            return self.default_or_raise(AttributeNotFound('Element %s does not have attribute %s' % (el[0], self.attr)))
+            return self.default_or_raise(
+                AttributeNotFound("Element %s does not have attribute %s" % (el[0], self.attr))
+            )
 
 
 class Link(Attr):
@@ -117,12 +129,12 @@ class Link(Attr):
     """
 
     def __init__(self, selector=None, default=_NO_DEFAULT):
-        super(Link, self).__init__(selector, 'href', default=default)
+        super(Link, self).__init__(selector, "href", default=default)
 
 
 class AbsoluteLink(Link):
-    """Get the absolute link URI of an element.
-    """
+    """Get the absolute link URI of an element."""
+
     def __call__(self, item):
         ret = super(AbsoluteLink, self).__call__(item)
         if ret:
@@ -148,7 +160,7 @@ class CleanHTML(Filter):
     @debug()
     def filter(self, txt):
         if isinstance(txt, (tuple, list)):
-            return ' '.join([self.clean(item, self.options) for item in txt])
+            return " ".join([self.clean(item, self.options) for item in txt])
         return self.clean(txt, self.options)
 
     @classmethod
@@ -176,55 +188,66 @@ class FormValue(Filter):
         try:
             el = el[0]
         except IndexError:
-            return self.default_or_raise(XPathNotFound('Unable to find element %s' % self.selector))
-        if el.tag == 'input':
+            return self.default_or_raise(XPathNotFound("Unable to find element %s" % self.selector))
+        if el.tag == "input":
             # checkboxes or radios
-            if el.attrib.get('type') in ('radio', 'checkbox'):
-                return 'checked' in el.attrib
+            if el.attrib.get("type") in ("radio", "checkbox"):
+                return "checked" in el.attrib
             # regular text input
-            elif el.attrib.get('type', '') in ('', 'text', 'email', 'search', 'tel', 'url', 'password', 'hidden', 'color'):
+            elif el.attrib.get("type", "") in (
+                "",
+                "text",
+                "email",
+                "search",
+                "tel",
+                "url",
+                "password",
+                "hidden",
+                "color",
+            ):
                 try:
-                    return str(el.attrib['value'])
+                    return str(el.attrib["value"])
                 except KeyError:
-                    return self.default_or_raise(AttributeNotFound('Element %s does not have attribute value' % el))
+                    return self.default_or_raise(AttributeNotFound("Element %s does not have attribute value" % el))
             # numeric input
-            elif el.attrib.get('type', '') in ('number', 'range'):
+            elif el.attrib.get("type", "") in ("number", "range"):
                 try:
-                    if '.' in el.attrib.get('step', ''):
+                    if "." in el.attrib.get("step", ""):
 
-                        return Decimal(el.attrib['value'])
+                        return Decimal(el.attrib["value"])
                     else:
-                        return int(el.attrib['value'])
+                        return int(el.attrib["value"])
                 except KeyError:
-                    return self.default_or_raise(AttributeNotFound('Element %s does not have attribute value' % el))
+                    return self.default_or_raise(AttributeNotFound("Element %s does not have attribute value" % el))
             # datetime input
             try:
-                if el.attrib.get('type', '') == 'date':
-                    return datetime.datetime.strptime(el.attrib['value'], '%Y-%m-%d').date()
-                elif el.attrib.get('type', '') == 'time':
-                    return datetime.datetime.strptime(el.attrib['value'], '%H:%M').time()
-                elif el.attrib.get('type', '') == 'datetime-local':
-                    return datetime.datetime.strptime(el.attrib['value'], '%Y-%m-%dT%H:%M')
+                if el.attrib.get("type", "") == "date":
+                    return datetime.datetime.strptime(el.attrib["value"], "%Y-%m-%d").date()
+                elif el.attrib.get("type", "") == "time":
+                    return datetime.datetime.strptime(el.attrib["value"], "%H:%M").time()
+                elif el.attrib.get("type", "") == "datetime-local":
+                    return datetime.datetime.strptime(el.attrib["value"], "%Y-%m-%dT%H:%M")
             except KeyError:
-                return self.default_or_raise(AttributeNotFound('Element %s does not have attribute value' % el))
+                return self.default_or_raise(AttributeNotFound("Element %s does not have attribute value" % el))
             else:
-                raise UnrecognizedElement('Element %s is not recognized' % el)
-        elif el.tag == 'textarea':
+                raise UnrecognizedElement("Element %s is not recognized" % el)
+        elif el.tag == "textarea":
             return str(el.text)
-        elif el.tag == 'select':
-            options = el.xpath('.//option[@selected]')
+        elif el.tag == "select":
+            options = el.xpath(".//option[@selected]")
             # default is the first one
             if len(options) == 0:
-                options = el.xpath('.//option[1]')
-            return '\n'.join(str(o.text) for o in options)
+                options = el.xpath(".//option[1]")
+            return "\n".join(str(o.text) for o in options)
         else:
-            raise UnrecognizedElement('Element %s is not recognized' % el)
+            raise UnrecognizedElement("Element %s is not recognized" % el)
 
 
 class HasElement(Filter):
     """
     Returns `yesvalue` if the `selector` finds elements, `novalue` otherwise.
     """
+
     def __init__(self, selector, yesvalue=True, novalue=False):
         super(HasElement, self).__init__(selector, default=novalue)
         self.yesvalue = yesvalue
@@ -233,13 +256,14 @@ class HasElement(Filter):
     def filter(self, value):
         if value:
             return self.yesvalue
-        return self.default_or_raise(FilterError('No default value'))
+        return self.default_or_raise(FilterError("No default value"))
 
 
 class ReplaceEntities(CleanText):
     """
     Filter to replace HTML entities like "&eacute;" or "&#x42;" with their unicode counterpart.
     """
+
     def filter(self, data):
         txt = super(ReplaceEntities, self).filter(data)
         return unescape(txt)
@@ -272,15 +296,15 @@ class TableCell(_Filter):
     """
 
     def __init__(self, *names, **kwargs):
-        support_th = kwargs.pop('support_th', False)
-        kwargs.pop('colspan', True)
+        support_th = kwargs.pop("support_th", False)
+        kwargs.pop("colspan", True)
         super(TableCell, self).__init__(**kwargs)
         self.names = names
 
         if support_th:
-            self.td = '(./th | ./td)[%s]'
+            self.td = "(./th | ./td)[%s]"
         else:
-            self.td = './td[%s]'
+            self.td = "./td[%s]"
 
     def __call__(self, item):
         # New behavior, handling colspans > 1
@@ -301,6 +325,6 @@ class TableCell(_Filter):
                         # Thus for compat return empty
                         return []
 
-                    current_col += int(ret[0].attrib.get('colspan', 1))
+                    current_col += int(ret[0].attrib.get("colspan", 1))
 
-        return self.default_or_raise(ColumnNotFound('Unable to find column %s' % ' or '.join(self.names)))
+        return self.default_or_raise(ColumnNotFound("Unable to find column %s" % " or ".join(self.names)))

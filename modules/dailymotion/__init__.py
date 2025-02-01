@@ -1,4 +1,4 @@
 from .module import DailymotionModule
 
 
-__all__ = ['DailymotionModule']
+__all__ = ["DailymotionModule"]

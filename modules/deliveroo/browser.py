@@ -27,11 +27,11 @@ from .pages import DocumentsPage, LoginPage, ProfilePage
 
 
 class DeliverooBrowser(LoginBrowser, StatesMixin):
-    BASEURL = 'https://deliveroo.fr'
+    BASEURL = "https://deliveroo.fr"
 
-    login = URL(r'/fr/login', LoginPage)
-    profile = URL(r'/fr/account$', ProfilePage)
-    documents = URL(r'https://consumer-ow-api.deliveroo.com/orderapp/v1/users/(?P<subid>.*)/orders', DocumentsPage)
+    login = URL(r"/fr/login", LoginPage)
+    profile = URL(r"/fr/account$", ProfilePage)
+    documents = URL(r"https://consumer-ow-api.deliveroo.com/orderapp/v1/users/(?P<subid>.*)/orders", DocumentsPage)
 
     def do_login(self):
         # clear cookies to avoid 307 on login request
@@ -42,30 +42,30 @@ class DeliverooBrowser(LoginBrowser, StatesMixin):
         self.login.go()
         csrf_token = self.page.get_csrf_token()
         verif_email = {
-            'email_address': self.username,
+            "email_address": self.username,
         }
 
         response_validity_email = self.open(
-            'https://consumer-ow-api.deliveroo.com/orderapp/v1/check-email',
+            "https://consumer-ow-api.deliveroo.com/orderapp/v1/check-email",
             json=verif_email,
-            headers={'x-csrf-token': csrf_token},
+            headers={"x-csrf-token": csrf_token},
         )
 
-        if response_validity_email.json().get('registered') is False:
-            raise BrowserIncorrectPassword('The account does not exist')
+        if response_validity_email.json().get("registered") is False:
+            raise BrowserIncorrectPassword("The account does not exist")
 
         try:
             self.location(
-                '/fr/auth/login',
-                json={'email': self.username, 'password': self.password},
-                headers={'x-csrf-token': csrf_token}
+                "/fr/auth/login",
+                json={"email": self.username, "password": self.password},
+                headers={"x-csrf-token": csrf_token},
             )
         except ClientError as error:
             # if the status_code is 423, the user must change their password
             if error.response.status_code == 423:
-                raise ActionNeeded(error.response.json().get('msg'))
+                raise ActionNeeded(error.response.json().get("msg"))
             elif error.response.status_code == 401:
-                raise BrowserIncorrectPassword(error.response.json().get('msg'))
+                raise BrowserIncorrectPassword(error.response.json().get("msg"))
             raise
 
     @need_login
@@ -76,8 +76,8 @@ class DeliverooBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_documents(self, subscription):
-        headers = {'authorization': 'Bearer %s' % self.session.cookies['consumer_auth_token']}
-        self.documents.go(subid=subscription.id, params={'limit': 25, 'offset': 0}, headers=headers)
+        headers = {"authorization": "Bearer %s" % self.session.cookies["consumer_auth_token"]}
+        self.documents.go(subid=subscription.id, params={"limit": 25, "offset": 0}, headers=headers)
         assert self.documents.is_here()
 
         return self.page.get_documents(subid=subscription.id, baseurl=self.BASEURL)

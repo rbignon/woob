@@ -20,4 +20,4 @@
 from .module import ArteModule
 
 
-__all__ = ['ArteModule']
+__all__ = ["ArteModule"]

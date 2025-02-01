@@ -26,16 +26,16 @@ from woob.tools.backend import Module
 from .browser import ParisKiwiBrowser
 
 
-__all__ = ['ParisKiwiModule']
+__all__ = ["ParisKiwiModule"]
 
 
 class ParisKiwiModule(Module, CapCalendarEvent):
-    NAME = 'pariskiwi'
-    DESCRIPTION = u'ParisKiwi website'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "pariskiwi"
+    DESCRIPTION = "ParisKiwi website"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = ParisKiwiBrowser
 
@@ -48,12 +48,12 @@ class ParisKiwiModule(Module, CapCalendarEvent):
 
     def list_events(self, date_from, date_to=None):
         for d in self.browser.list_events_all():
-            if date_from and d['date'] < date_from:
+            if date_from and d["date"] < date_from:
                 continue
-            if date_to and d['date'] > date_to:
+            if date_to and d["date"] > date_to:
                 break
 
-            event = self.get_event(d['id'])
+            event = self.get_event(d["id"])
             if event:
                 yield event
 
@@ -64,26 +64,26 @@ class ParisKiwiModule(Module, CapCalendarEvent):
         return self._make_event(d)
 
     def _make_event(self, d):
-        event = BaseCalendarEvent(d['id'])
-        event.city = u'Paris'
-        event.url = d['url']
-        event.start_date = d['datetime']
-        event.end_date = datetime.combine(d['datetime'].date(), time.max)
-        event.summary = d['summary']
+        event = BaseCalendarEvent(d["id"])
+        event.city = "Paris"
+        event.url = d["url"]
+        event.start_date = d["datetime"]
+        event.end_date = datetime.combine(d["datetime"].date(), time.max)
+        event.summary = d["summary"]
         event.category = CATEGORIES.CONCERT
-        event.description = d['description']
+        event.description = d["description"]
         event.status = STATUS.CONFIRMED
         event.transp = TRANSP.OPAQUE
-        if 'price' in d:
-            event.price = d['price']
-        if 'address' in d:
-            event.location = d['address']
+        if "price" in d:
+            event.price = d["price"]
+        if "address" in d:
+            event.location = d["address"]
         return event
 
     def _make_false_event(self):
-        event = BaseCalendarEvent('0')
+        event = BaseCalendarEvent("0")
         event.start_date = event.end_date = datetime.utcfromtimestamp(0)
-        event.summary = u'NON EXISTING EVENT'
+        event.summary = "NON EXISTING EVENT"
         event.status = STATUS.CANCELLED
         event.category = CATEGORIES.CONCERT
         event.transp = TRANSP.OPAQUE

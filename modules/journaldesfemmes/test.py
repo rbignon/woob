@@ -23,10 +23,10 @@ from woob.tools.test import BackendTest
 
 
 class JournaldesfemmesTest(BackendTest):
-    MODULE = 'journaldesfemmes'
+    MODULE = "journaldesfemmes"
 
     def test_recipe(self):
-        recipes = list(itertools.islice(self.backend.iter_recipes('fondue'), 0, 20))
+        recipes = list(itertools.islice(self.backend.iter_recipes("fondue"), 0, 20))
         self.assertGreater(len(recipes), 0)
         for recipe in recipes:
             self.assertTrue(recipe.id)

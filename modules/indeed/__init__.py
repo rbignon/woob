@@ -21,4 +21,4 @@
 from .module import IndeedModule
 
 
-__all__ = ['IndeedModule']
+__all__ = ["IndeedModule"]

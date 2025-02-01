@@ -22,21 +22,27 @@ import pytest
 from woob.tools.capabilities.bank.sortcode import canonicalize_sort_code_account_number
 
 
-@pytest.mark.parametrize('inp,outp', (
-    ('12-34-56 01234567', '12345601234567'),
-    ('12345601234567', '12345601234567'),
-    ('  12-34-56 0123 4567  ', '12345601234567'),
-))
+@pytest.mark.parametrize(
+    "inp,outp",
+    (
+        ("12-34-56 01234567", "12345601234567"),
+        ("12345601234567", "12345601234567"),
+        ("  12-34-56 0123 4567  ", "12345601234567"),
+    ),
+)
 def test_canonicalize(inp, outp):
     assert canonicalize_sort_code_account_number(inp) == outp
 
 
-@pytest.mark.parametrize('inp', (
-    '12-34-56',
-    '12-34-56 1234-5678',
-    '123456',
-    '12345A12345678',
-))
+@pytest.mark.parametrize(
+    "inp",
+    (
+        "12-34-56",
+        "12-34-56 1234-5678",
+        "123456",
+        "12345A12345678",
+    ),
+)
 def test_canonicalize_invalid(inp):
     with pytest.raises(ValueError):
         canonicalize_sort_code_account_number(inp)

@@ -24,25 +24,25 @@ from woob.tools.value import Value
 from .browser import PeertubeBrowser
 
 
-__all__ = ['PeertubeModule']
+__all__ = ["PeertubeModule"]
 
 
 class PeertubeModule(Module, CapVideo):
-    NAME = 'peertube'
-    DESCRIPTION = 'Peertube'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "peertube"
+    DESCRIPTION = "Peertube"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     CONFIG = BackendConfig(
-        Value('url', label='Base URL of the PeerTube instance'),
+        Value("url", label="Base URL of the PeerTube instance"),
     )
 
     BROWSER = PeertubeBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['url'].get())
+        return self.create_browser(self.config["url"].get())
 
     def get_video(self, id):
         return self.browser.get_video(id)
@@ -53,9 +53,9 @@ class PeertubeModule(Module, CapVideo):
                 yield video
 
     def fill_video(self, obj, fields):
-        if set(('url', 'size')) & set(fields):
+        if set(("url", "size")) & set(fields):
             self.browser.get_video(obj.id, obj)
-        if 'thumbnail' in fields and obj.thumbnail:
+        if "thumbnail" in fields and obj.thumbnail:
             obj.thumbnail.data = self.browser.open(obj.thumbnail.url).content
 
     OBJECTS = {

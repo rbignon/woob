@@ -42,14 +42,14 @@ def merge_hooks(request_hooks, session_hooks):
 
     Backport from request so we can use it in wheezy
     """
-    if session_hooks is None or session_hooks.get('response') == []:
+    if session_hooks is None or session_hooks.get("response") == []:
         return request_hooks
 
-    if request_hooks is None or request_hooks.get('response') == []:
+    if request_hooks is None or request_hooks.get("response") == []:
         return session_hooks
 
     ret = {}
-    for (k, v) in request_hooks.items():
+    for k, v in request_hooks.items():
         if v is not None:
             ret[k] = set(v).union(session_hooks.get(k, []))
 
@@ -119,11 +119,9 @@ class FuturesSession(WoobSession):
             executor = ThreadPoolExecutor(max_workers=max_workers)
             # set connection pool size equal to max_workers if needed
             if max_workers > DEFAULT_POOLSIZE:
-                adapter_kwargs = dict(pool_connections=max_workers,
-                                      pool_maxsize=max_workers,
-                                      max_retries=max_retries)
-                self.mount('https://', adapter_class(**adapter_kwargs))
-                self.mount('http://', adapter_class(**adapter_kwargs))
+                adapter_kwargs = dict(pool_connections=max_workers, pool_maxsize=max_workers, max_retries=max_retries)
+                self.mount("https://", adapter_class(**adapter_kwargs))
+                self.mount("http://", adapter_class(**adapter_kwargs))
 
         self.executor = executor
 
@@ -138,16 +136,17 @@ class FuturesSession(WoobSession):
         In all cases, it will call the `callback` parameter and return its
         result when the request has been processed.
         """
-        if 'async' in kwargs:
+        if "async" in kwargs:
             import warnings
-            warnings.warn('Please use is_async instead of async.', DeprecationWarning)
-            kwargs['is_async'] = kwargs['async']
-            del kwargs['async']
+
+            warnings.warn("Please use is_async instead of async.", DeprecationWarning)
+            kwargs["is_async"] = kwargs["async"]
+            del kwargs["async"]
 
         sup = super(FuturesSession, self).send
 
-        callback = kwargs.pop('callback', lambda future, response: response)
-        is_async = kwargs.pop('is_async', False)
+        callback = kwargs.pop("callback", lambda future, response: response)
+        is_async = kwargs.pop("is_async", False)
 
         def func(*args, **kwargs):
             resp = sup(*args, **kwargs)
@@ -155,7 +154,7 @@ class FuturesSession(WoobSession):
 
         if is_async:
             if not self.executor:
-                raise ImportError('Please install python3-concurrent.futures')
+                raise ImportError("Please install python3-concurrent.futures")
             return self.executor.submit(func, *args, **kwargs)
 
         return func(*args, **kwargs)

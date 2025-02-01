@@ -25,16 +25,16 @@ from woob.tools.backend import Module
 from .browser import InaBrowser
 
 
-__all__ = ['InaModule']
+__all__ = ["InaModule"]
 
 
 class InaModule(Module, CapVideo, CapAudio):
-    NAME = 'ina'
-    MAINTAINER = u'Christophe Benz'
-    EMAIL = 'christophe.benz@gmail.com'
-    VERSION = '3.7'
-    DESCRIPTION = 'INA French TV video archives'
-    LICENSE = 'AGPLv3+'
+    NAME = "ina"
+    MAINTAINER = "Christophe Benz"
+    EMAIL = "christophe.benz@gmail.com"
+    VERSION = "3.7"
+    DESCRIPTION = "INA French TV video archives"
+    LICENSE = "AGPLv3+"
     BROWSER = InaBrowser
 
     def get_video(self, _id):
@@ -44,17 +44,17 @@ class InaModule(Module, CapVideo, CapAudio):
         return self.browser.search_videos(pattern)
 
     def fill_media(self, media, fields):
-        if fields != ['thumbnail'] and fields != ['url']:
+        if fields != ["thumbnail"] and fields != ["url"]:
             # if we don't want only the thumbnail, we probably want also every fields
             if isinstance(media, BaseVideo):
                 media = self.browser.get_video(media.id, media)
             else:
                 _id = BaseAudio.decode_id(media.id)
                 media = self.browser.get_audio(_id, media)
-        if 'url' in fields and not media.url:
+        if "url" in fields and not media.url:
             _id = BaseAudio.decode_id(media.id) if isinstance(media, BaseAudio) else media.id
             media.url = self.browser.get_media_url(_id)
-        if 'thumbnail' in fields and media.thumbnail:
+        if "thumbnail" in fields and media.thumbnail:
             media.thumbnail.data = self.browser.open(media.thumbnail.url).content
         return media
 

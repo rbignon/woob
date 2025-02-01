@@ -21,14 +21,32 @@ from woob.exceptions import BrowserIncorrectPassword
 
 from .account import CapCredentialsCheck
 from .base import (
-    BaseObject, BoolField, Currency, DecimalField, DeprecatedFieldWarning, Enum, Field, StringField, UserError, empty,
+    BaseObject,
+    BoolField,
+    Currency,
+    DecimalField,
+    DeprecatedFieldWarning,
+    Enum,
+    Field,
+    StringField,
+    UserError,
+    empty,
     find_object,
 )
 from .collection import CapCollection
 from .date import DateField
 
 
-__all__ = ['SubscriptionNotFound', 'DocumentNotFound', 'DocumentTypes', 'Detail', 'Document', 'Bill', 'Subscription', 'CapDocument']
+__all__ = [
+    "SubscriptionNotFound",
+    "DocumentNotFound",
+    "DocumentTypes",
+    "Detail",
+    "Document",
+    "Bill",
+    "Subscription",
+    "CapDocument",
+]
 
 
 class SubscriptionNotFound(UserError):
@@ -36,7 +54,7 @@ class SubscriptionNotFound(UserError):
     Raised when a subscription is not found.
     """
 
-    def __init__(self, msg='Subscription not found'):
+    def __init__(self, msg="Subscription not found"):
         super(SubscriptionNotFound, self).__init__(msg)
 
 
@@ -45,89 +63,96 @@ class DocumentNotFound(UserError):
     Raised when a document is not found.
     """
 
-    def __init__(self, msg='Document not found'):
+    def __init__(self, msg="Document not found"):
         super(DocumentNotFound, self).__init__(msg)
 
 
 class DocumentTypes:
-    RIB = 'RIB'
+    RIB = "RIB"
     """French bank account identification document"""
 
-    STATEMENT = 'statement'
+    STATEMENT = "statement"
     """Bank statement"""
 
-    CONTRACT = 'contract'
+    CONTRACT = "contract"
     """Contract between organisation and subscriber"""
 
-    CERTIFICATE = 'certificate'
+    CERTIFICATE = "certificate"
     """Certificate from the organisation to the subscriber"""
 
-    NOTICE = 'notice'
+    NOTICE = "notice"
     """Notice from the organisation to the subscriber"""
 
-    REPORT = 'report'
+    REPORT = "report"
     """Informative report"""
 
-    BILL = 'bill'
+    BILL = "bill"
     """Bill"""
 
-    KIID = 'kiid'
+    KIID = "kiid"
     """Key Investor Information Document"""
 
-    IDENTITY = 'identity'
+    IDENTITY = "identity"
     """Identity document (e.g. national identity card, driving licence, etc...)"""
 
-    PAYSLIP = 'payslip'
+    PAYSLIP = "payslip"
     """Payslip"""
 
-    OTHER = 'other'
+    OTHER = "other"
 
 
 class Detail(BaseObject, Currency):
     """
     Detail of a subscription
     """
-    label =     StringField('label of the detail line')
-    infos =     StringField('information')
-    datetime =  DateField('date information')
-    price =     DecimalField('Total price, taxes included')
-    vat =       DecimalField('Value added Tax')
-    currency =  StringField('Currency', default=None)
-    quantity =  DecimalField('Number of units consumed')
-    unit =      StringField('Unit of the consumption')
+
+    label = StringField("label of the detail line")
+    infos = StringField("information")
+    datetime = DateField("date information")
+    price = DecimalField("Total price, taxes included")
+    vat = DecimalField("Value added Tax")
+    currency = StringField("Currency", default=None)
+    quantity = DecimalField("Number of units consumed")
+    unit = StringField("Unit of the consumption")
 
 
 class Document(BaseObject):
     """
     Document.
     """
-    date =          DateField('The day the document has been sent to the subscriber')
-    format =        StringField('file format of the document')
-    label =         StringField('label of document')
-    type =          StringField('type of document')
-    transactions =  Field('List of transaction ID related to the document', list, default=[])
-    has_file =      BoolField('Boolean to set if file is available', default=True)
-    number =        StringField('Number of the document (if present and meaningful for user)')
+
+    date = DateField("The day the document has been sent to the subscriber")
+    format = StringField("file format of the document")
+    label = StringField("label of document")
+    type = StringField("type of document")
+    transactions = Field("List of transaction ID related to the document", list, default=[])
+    has_file = BoolField("Boolean to set if file is available", default=True)
+    number = StringField("Number of the document (if present and meaningful for user)")
 
     def __repr__(self):
-        return '<%s id=%r label=%r date=%r>' % (type(self).__name__, self.id, self.label, self.date)
+        return "<%s id=%r label=%r date=%r>" % (type(self).__name__, self.id, self.label, self.date)
 
 
 class Bill(Document, Currency):
     """
     Bill.
     """
-    total_price =   DecimalField('Price to pay')
-    currency =      StringField('Currency', default=None)
-    vat =           DecimalField('VAT included in the price')
-    pre_tax_price = DecimalField('Price without the VAT or other taxes')
-    duedate =       DateField('The day the bill must be paid')
-    startdate =     DateField('The first day the bill applies to')
-    finishdate =    DateField('The last day the bill applies to')
+
+    total_price = DecimalField("Price to pay")
+    currency = StringField("Currency", default=None)
+    vat = DecimalField("VAT included in the price")
+    pre_tax_price = DecimalField("Price without the VAT or other taxes")
+    duedate = DateField("The day the bill must be paid")
+    startdate = DateField("The first day the bill applies to")
+    finishdate = DateField("The last day the bill applies to")
 
     def __repr__(self):
-        return '<%s id=%r label=%r date=%r total_price=%r>' % (
-            type(self).__name__, self.id, self.label, self.date, self.total_price
+        return "<%s id=%r label=%r date=%r total_price=%r>" % (
+            type(self).__name__,
+            self.id,
+            self.label,
+            self.date,
+            self.total_price,
         )
 
     # compatibility properties
@@ -135,7 +160,8 @@ class Bill(Document, Currency):
     def price(self):
         warnings.warn(
             'Field "price" is deprecated, use "total_price" field instead.',
-            DeprecatedFieldWarning, stacklevel=3,
+            DeprecatedFieldWarning,
+            stacklevel=3,
         )
 
         if empty(self.total_price):
@@ -146,7 +172,8 @@ class Bill(Document, Currency):
     def price(self, value):
         warnings.warn(
             'Field "price" is deprecated, use "total_price" field instead.',
-            DeprecatedFieldWarning, stacklevel=3,
+            DeprecatedFieldWarning,
+            stacklevel=3,
         )
         if empty(value):
             self.total_price = value
@@ -164,7 +191,8 @@ class Bill(Document, Currency):
     def income(self):
         warnings.warn(
             'Field "income" is deprecated, use "total_price" field instead.',
-            DeprecatedFieldWarning, stacklevel=3,
+            DeprecatedFieldWarning,
+            stacklevel=3,
         )
 
         if empty(self.total_price):
@@ -175,7 +203,8 @@ class Bill(Document, Currency):
     def income(self, value):
         warnings.warn(
             'Field "income" is deprecated, use "total_price" field instead.',
-            DeprecatedFieldWarning, stacklevel=3,
+            DeprecatedFieldWarning,
+            stacklevel=3,
         )
 
         if empty(self.total_price):
@@ -199,14 +228,15 @@ class Subscription(BaseObject):
     """
     Subscription to a service.
     """
-    label =         StringField('label of subscription')
-    subscriber =    StringField('Subscriber name or identifier (for companies)')
-    validity =      DateField('End validity date of the subscription (if any)')
-    renewdate =     DateField('Reset date of consumption, for time based subscription (monthly, yearly, etc)')
-    is_fake =       BoolField("Set True if website doesn't provide a real subscription", default=False)
+
+    label = StringField("label of subscription")
+    subscriber = StringField("Subscriber name or identifier (for companies)")
+    validity = DateField("End validity date of the subscription (if any)")
+    renewdate = DateField("Reset date of consumption, for time based subscription (monthly, yearly, etc)")
+    is_fake = BoolField("Set True if website doesn't provide a real subscription", default=False)
 
     def __repr__(self):
-        return '<%s id=%r label=%r>' % (type(self).__name__, self.id, self.label)
+        return "<%s id=%r label=%r>" % (type(self).__name__, self.id, self.label)
 
 
 class CapDocument(CapCollection, CapCredentialsCheck):
@@ -223,7 +253,7 @@ class CapDocument(CapCollection, CapCredentialsCheck):
         has a browser, execute its do_login if it has one and then see if no error pertaining to the creds is raised.
         If any other unexpected error occurs, we don't know whether the creds are correct or not.
         """
-        if getattr(self, 'BROWSER', None) is None:
+        if getattr(self, "BROWSER", None) is None:
             raise NotImplementedError()
 
         try:
@@ -306,7 +336,7 @@ class CapDocument(CapCollection, CapCredentialsCheck):
         if not isinstance(id, Document):
             id = self.get_document(id)
 
-        if id.format == 'pdf':
+        if id.format == "pdf":
             return self.download_document(id)
         else:
             raise NotImplementedError()
@@ -433,23 +463,23 @@ class DocumentCategory(Enum):
         document_categories = {DocumentCategory.ENERGY}
     """
 
-    ADMINISTRATIVE = 'Administrative'
-    BANK_INSURANCE = 'Bank & Insurance'
-    BILLING = 'Billing'
-    BUSINESS = 'Business'
-    ENERGY = 'Energy Provider'
-    FOOD = 'Food'
-    INTERNET_TELEPHONY = 'Internet & Telephony'
-    LEISURE = 'Leisure'
-    OTHER = 'Other'
-    REAL_ESTATE = 'Real estate'
-    SAFE_DEPOSIT_BOX = 'Safe deposit box'
+    ADMINISTRATIVE = "Administrative"
+    BANK_INSURANCE = "Bank & Insurance"
+    BILLING = "Billing"
+    BUSINESS = "Business"
+    ENERGY = "Energy Provider"
+    FOOD = "Food"
+    INTERNET_TELEPHONY = "Internet & Telephony"
+    LEISURE = "Leisure"
+    OTHER = "Other"
+    REAL_ESTATE = "Real estate"
+    SAFE_DEPOSIT_BOX = "Safe deposit box"
     """The Safe Deposit Box category concerns website whose purpose is to store
     official and sensitive documents such as proof of identity or wage slip,
     filed by companies and other legal entities."""
-    SHOPPING = 'Shopping'
-    SOFTWARE = 'Software'
-    TAX = 'Tax'
-    TOURISM = 'Tourism'
-    TRANSPORT = 'Transport'
-    WATER = 'Water Provider'
+    SHOPPING = "Shopping"
+    SOFTWARE = "Software"
+    TAX = "Tax"
+    TOURISM = "Tourism"
+    TRANSPORT = "Transport"
+    WATER = "Water Provider"

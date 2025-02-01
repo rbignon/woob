@@ -35,31 +35,27 @@ def parse_from_timestamp(date, **kwargs):
 
 class DocumentsPage(LoggedPage, JsonPage):
     def has_documents(self):
-        return bool(self.doc['donnees']['edocumentDto']['listCleReleveDto'])
+        return bool(self.doc["donnees"]["edocumentDto"]["listCleReleveDto"])
 
     @method
     class iter_documents(DictElement):
-        item_xpath = 'donnees/edocumentDto/listCleReleveDto'
+        item_xpath = "donnees/edocumentDto/listCleReleveDto"
 
         class item(ItemElement):
             klass = Document
 
-            obj_id = Format('%s_%s', Env('subid'), Dict('referenceTechniqueEncode'))
+            obj_id = Format("%s_%s", Env("subid"), Dict("referenceTechniqueEncode"))
             obj_label = Format(
-                '%s au %s',
-                CleanText(Dict('labelReleve')),
-                Eval(lambda x: x.strftime('%d/%m/%Y'), Field('date'))
+                "%s au %s", CleanText(Dict("labelReleve")), Eval(lambda x: x.strftime("%d/%m/%Y"), Field("date"))
             )
-            obj_date = Date(CleanText(Dict('dateArrete')), parse_func=parse_from_timestamp)
+            obj_date = Date(CleanText(Dict("dateArrete")), parse_func=parse_from_timestamp)
             obj_type = DocumentTypes.STATEMENT
-            obj_format = 'pdf'
+            obj_format = "pdf"
             # this url is stateful and has to be called when we are on
             # the right page with the right range of 3 months
             # else we get a 302 to /page-indisponible
             obj_url = BrowserURL(
-                'pdf_page',
-                id_tech=Dict('idTechniquePrestation'),
-                ref_tech=Dict('referenceTechniqueEncode')
+                "pdf_page", id_tech=Dict("idTechniquePrestation"), ref_tech=Dict("referenceTechniqueEncode")
             )
 
 

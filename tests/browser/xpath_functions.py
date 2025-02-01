@@ -26,13 +26,15 @@ class HasClassTest(TestCase):
     def setUp(self):
         HTMLPage.setup_xpath_functions()
 
-        self.root = fromstring('''
+        self.root = fromstring(
+            """
             <a>
                 <b class="one first text">I</b>
                 <b class="two text">LOVE</b>
                 <b class="three text">CSS</b>
             </a>
-            ''')
+            """
+        )
 
     def test_that_has_class_return_expected_result(self):
         assert len(self.root.xpath('//b[has-class("text")]')) == 3
@@ -46,7 +48,8 @@ class TestDistinctValues(TestCase):
     def setUp(self):
         HTMLPage.setup_xpath_functions()
 
-        self.identity = fromstring('''
+        self.identity = fromstring(
+            """
             <body>
                 <div id="identity">
                     <span id="firstname">Isaac</span>
@@ -75,20 +78,18 @@ class TestDistinctValues(TestCase):
                 <a id="Foundation’s Edge" class="book-3" href="#">Foundation's Edge</a>
                 </div>
             </body>
-        ''')
+        """
+        )
 
     def test_that_values_are_successfully_distinct(self):
-        assert (
-            self.identity.xpath('distinct-values(//div[@id="identity"]//span[@id="lastname"]/text())') == ['Asimov']
-        )
-        assert self.identity.xpath('distinct-values(//span[@id="firstname"]/text())') == ['Isaac']
-        assert self.identity.xpath('distinct-values(//a[@class="book-1"]/text())') == ['Foundation']
+        assert self.identity.xpath('distinct-values(//div[@id="identity"]//span[@id="lastname"]/text())') == ["Asimov"]
+        assert self.identity.xpath('distinct-values(//span[@id="firstname"]/text())') == ["Isaac"]
+        assert self.identity.xpath('distinct-values(//a[@class="book-1"]/text())') == ["Foundation"]
 
     def test_that_distinct_inexistent_values_return_empty_value(self):
         assert self.identity.xpath('distinct-values(//a[@class="book-4"]/text())') == []
 
     def test_that_different_values_are_successfully_returns_as_is(self):
-        assert (
-            set(self.identity.xpath('distinct-values(//a[@class="book-3"]/text())'))
-            == set(["Foundation's Edge", 'Second Foundation'])
+        assert set(self.identity.xpath('distinct-values(//a[@class="book-3"]/text())')) == set(
+            ["Foundation's Edge", "Second Foundation"]
         )

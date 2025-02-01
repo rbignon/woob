@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest
 
 
 class VlilleTest(BackendTest):
-    MODULE = 'vlille'
+    MODULE = "vlille"
 
     def test_vlille(self):
         _ = list(self.backend.iter_gauges())

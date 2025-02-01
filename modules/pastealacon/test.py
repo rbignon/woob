@@ -24,32 +24,32 @@ from woob.tools.test import BackendTest, skip_without_config
 
 
 class PastealaconTest(BackendTest):
-    MODULE = 'pastealacon'
+    MODULE = "pastealacon"
 
     def _get_paste(self, _id):
         # html method
         p = self.backend.get_paste(_id)
-        self.backend.fillobj(p, ['title'])
-        assert p.title == u'ouiboube'
-        assert p.page_url.startswith('http://paste.alacon.org/')
-        assert u'héhéhé' in p.contents
+        self.backend.fillobj(p, ["title"])
+        assert p.title == "ouiboube"
+        assert p.page_url.startswith("http://paste.alacon.org/")
+        assert "héhéhé" in p.contents
         assert p.public is True
 
         # raw method
         p = self.backend.get_paste(_id)
-        self.backend.fillobj(p, ['contents'])
+        self.backend.fillobj(p, ["contents"])
         assert p.title is NotLoaded
         assert p.page_url is None
-        assert u'héhéhé' in p.contents
+        assert "héhéhé" in p.contents
         assert p.public is True
 
     @skip_without_config()
     def test_post(self):
-        p = self.backend.new_paste(None, title=u'ouiboube', contents=u'Woob Test héhéhé')
-        self.backend.post_paste(p, max_age=3600*24)
+        p = self.backend.new_paste(None, title="ouiboube", contents="Woob Test héhéhé")
+        self.backend.post_paste(p, max_age=3600 * 24)
         assert p.id
-        self.backend.fill_paste(p, ['title'])
-        assert p.title == 'ouiboube'
+        self.backend.fill_paste(p, ["title"])
+        assert p.title == "ouiboube"
         assert p.id in p.page_url
         assert p.public is True
 
@@ -57,40 +57,42 @@ class PastealaconTest(BackendTest):
         self._get_paste(p.id)
 
         # same but from the full URL
-        self._get_paste('http://paste.alacon.org/'+p.id)
+        self._get_paste("http://paste.alacon.org/" + p.id)
 
     def test_spam(self):
-        p = self.backend.new_paste(None, title=u'viagra', contents=u'http://example.com/')
+        p = self.backend.new_paste(None, title="viagra", contents="http://example.com/")
         with self.assertRaises(Exception) as cm:
             self.backend.post_paste(p)
             self.assertEqual(cm.message, "Detected as spam and unable to handle the captcha")
 
     def test_notfound(self):
-        for _id in ('424242424242424242424242424242424242',
-                    'http://paste.alacon.org/424242424242424242424242424242424242'):
+        for _id in (
+            "424242424242424242424242424242424242",
+            "http://paste.alacon.org/424242424242424242424242424242424242",
+        ):
             # html method
             p = self.backend.get_paste(_id)
-            self.assertRaises(PasteNotFound, self.backend.fillobj, p, ['title'])
+            self.assertRaises(PasteNotFound, self.backend.fillobj, p, ["title"])
 
             # raw method
             p = self.backend.get_paste(_id)
-            self.assertRaises(PasteNotFound, self.backend.fillobj, p, ['contents'])
+            self.assertRaises(PasteNotFound, self.backend.fillobj, p, ["contents"])
 
     def test_checkurl(self):
         # call with an URL we can't handle with this backend
-        assert self.backend.get_paste('http://pastebin.com/nJG9ZFG8') is None
+        assert self.backend.get_paste("http://pastebin.com/nJG9ZFG8") is None
         # same even with correct domain (IDs are numeric)
-        assert self.backend.get_paste('http://paste.alacon.org/nJG9ZFG8') is None
-        assert self.backend.get_paste('nJG9ZFG8') is None
+        assert self.backend.get_paste("http://paste.alacon.org/nJG9ZFG8") is None
+        assert self.backend.get_paste("nJG9ZFG8") is None
 
     def test_can_post(self):
-        assert 0 == self.backend.can_post(u'hello', public=False)
-        assert 1 <= self.backend.can_post(u'hello', public=True)
-        assert 0 == self.backend.can_post(u'hello', public=True, max_age=600)
-        assert 1 <= self.backend.can_post(u'hello', public=True, max_age=3600*24)
-        assert 1 <= self.backend.can_post(u'hello', public=True, max_age=3600*24*3)
-        assert 1 <= self.backend.can_post(u'hello', public=True, max_age=False)
-        assert 1 <= self.backend.can_post(u'hello', public=None, max_age=False)
-        assert 1 <= self.backend.can_post(u'hello', public=True, max_age=3600*24*40)
-        assert 1 <= self.backend.can_post(u'héhé', public=True)
-        assert 0 == self.backend.can_post(u'hello ♥', public=True)
+        assert 0 == self.backend.can_post("hello", public=False)
+        assert 1 <= self.backend.can_post("hello", public=True)
+        assert 0 == self.backend.can_post("hello", public=True, max_age=600)
+        assert 1 <= self.backend.can_post("hello", public=True, max_age=3600 * 24)
+        assert 1 <= self.backend.can_post("hello", public=True, max_age=3600 * 24 * 3)
+        assert 1 <= self.backend.can_post("hello", public=True, max_age=False)
+        assert 1 <= self.backend.can_post("hello", public=None, max_age=False)
+        assert 1 <= self.backend.can_post("hello", public=True, max_age=3600 * 24 * 40)
+        assert 1 <= self.backend.can_post("héhé", public=True)
+        assert 0 == self.backend.can_post("hello ♥", public=True)

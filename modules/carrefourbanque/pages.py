@@ -39,16 +39,16 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 
 class CarrefourBanqueKeyboard(object):
     symbols = {
-        '0': '11100000001111100000000011100000000000110000010000010000011100001000001110000000001111000000000111100000000011111000000001111100000000111100000000011111000000001111000000000111100000000001110000000000111000011000001000001100000000001111000000000111110000000111',
-        '1': '11111110001111111110000111111110000011111110000001111100000000111110000000011111000000001111100010000111110011000011111111100001111111110000111111111000011111111100001111111110000111111111000011111111100001111111110000111111111000011111111100001111111111111111',
-        '2': '11000000011111000000000011000000000001100001110000011011111100001111111110000111111111000011111111100011111111100001111111100001111111100000111111100000111111100000111111100000111111110000111111110000111111110000000000001000000000000100000000000011111111111111',
-        '3': '11000000001110000000000011000000000000110011111000011111111100001111111110000111111111000111111110000011110000000011111000000001111110000000011111111110000111111111000011111111110001111111110000101111111000010000000000001000000000001100000000001111111111111111',
-        '4': '11111110000011111111000001111111000000111111000000011111000000001111100010000111100001000011100001100001100001110000110001111000010000111100001000111110000100000000000000000000000000000000000000011111111000011111111100001111111110000111111111000011111111111111',
-        '5': '10000000000111000000000011100000000001110001111111110000111111111000011111111100001111111110000000000111000000000001100000000000011111111000001111111110000111111111100011111111110001111111110000101111110000010000000000011000000000001100000000011111111111111111',
-        '6': '11110000000111110000000011110000000001110000011111111000111111111000011111111100001111111110001000000111000000000001100000000000010000011100001000011111000100011111100010000111110001000011111000100001111000011000000000011110000000001111100000011111111111111111',
-        '7': '00000000000000000000000000000000000000011111111100001111111100001111111110000111111111000011111111000011111111100001111111100001111111110000111111110000111111111000011111111000011111111100001111111100000111111110000111111110000011111111000011111111111101111111',
-        '8': '11100000001111000000000001100000000000100001111100000000111110000000011111000010000111000011000000000001110000000011111000000000111000000000001000001100000000001111100000001111111000000011111100000001111100000000000000000100000000000111000000000111111111111111',
-        '9': '11100000001111000000000011100000000000100001111000000000111110000000111111000000011111100000000111110000000011110000000000000000001000000000000110000000100011111111100001111111110000111111110000111111110000011000000000011100000000011110000000111111111111111111',
+        "0": "11100000001111100000000011100000000000110000010000010000011100001000001110000000001111000000000111100000000011111000000001111100000000111100000000011111000000001111000000000111100000000001110000000000111000011000001000001100000000001111000000000111110000000111",
+        "1": "11111110001111111110000111111110000011111110000001111100000000111110000000011111000000001111100010000111110011000011111111100001111111110000111111111000011111111100001111111110000111111111000011111111100001111111110000111111111000011111111100001111111111111111",
+        "2": "11000000011111000000000011000000000001100001110000011011111100001111111110000111111111000011111111100011111111100001111111100001111111100000111111100000111111100000111111100000111111110000111111110000111111110000000000001000000000000100000000000011111111111111",
+        "3": "11000000001110000000000011000000000000110011111000011111111100001111111110000111111111000111111110000011110000000011111000000001111110000000011111111110000111111111000011111111110001111111110000101111111000010000000000001000000000001100000000001111111111111111",
+        "4": "11111110000011111111000001111111000000111111000000011111000000001111100010000111100001000011100001100001100001110000110001111000010000111100001000111110000100000000000000000000000000000000000000011111111000011111111100001111111110000111111111000011111111111111",
+        "5": "10000000000111000000000011100000000001110001111111110000111111111000011111111100001111111110000000000111000000000001100000000000011111111000001111111110000111111111100011111111110001111111110000101111110000010000000000011000000000001100000000011111111111111111",
+        "6": "11110000000111110000000011110000000001110000011111111000111111111000011111111100001111111110001000000111000000000001100000000000010000011100001000011111000100011111100010000111110001000011111000100001111000011000000000011110000000001111100000011111111111111111",
+        "7": "00000000000000000000000000000000000000011111111100001111111100001111111110000111111111000011111111000011111111100001111111100001111111110000111111110000111111111000011111111000011111111100001111111100000111111110000111111110000011111111000011111111111101111111",
+        "8": "11100000001111000000000001100000000000100001111100000000111110000000011111000010000111000011000000000001110000000011111000000000111000000000001000001100000000001111100000001111111000000011111100000001111100000000000000000100000000000111000000000111111111111111",
+        "9": "11100000001111000000000011100000000000100001111000000000111110000000111111000000011111100000000111110000000011110000000000000000001000000000000110000000100011111111100001111111110000111111110000111111110000011000000000011100000000011110000000111111111111111111",
     }
 
     def __init__(self, data_code):
@@ -56,7 +56,7 @@ class CarrefourBanqueKeyboard(object):
 
         for code, data in data_code.items():
             img = Image.open(BytesIO(data))
-            img = img.convert('RGB')
+            img = img.convert("RGB")
             matrix = img.load()
             s = ""
             # The digit is only displayed in the center of image
@@ -92,9 +92,9 @@ class CarrefourBanqueKeyboard(object):
         return result
 
     def get_string_code(self, string):
-        code = ''
+        code = ""
         for c in string:
-            code += self.get_symbol_code(c) + '-'
+            code += self.get_symbol_code(c) + "-"
         return code
 
 
@@ -109,7 +109,7 @@ class LoginPage(HTMLPage):
         # so that SCA can be detected ahead. That makes lxml crash because
         # some redirections are totally blank page
         if not len(data):
-            data = b'<html></html>'
+            data = b"<html></html>"
         return super(LoginPage, self).build_doc(data)
 
     def on_load(self):
@@ -118,24 +118,24 @@ class LoginPage(HTMLPage):
         and there will be nothing on body except a meta tag with robot name
         """
         try:
-            attr = Attr('head/meta', 'name')(self.doc)
+            attr = Attr("head/meta", "name")(self.doc)
         except (AttributeNotFound, XPathNotFound):  # XPathNotFound for blank pages cases
             # website have identify us as a human ;)
             return
 
         # sometimes robots is uppercase and there is an iframe
         # sometimes it's lowercase and there is a script
-        if attr == 'ROBOTS':
-            self.browser.location(Attr('//iframe', 'src')(self.doc))
-        elif attr == 'robots':
-            self.browser.location(Attr('//script', 'src')(self.doc))
+        if attr == "ROBOTS":
+            self.browser.location(Attr("//iframe", "src")(self.doc))
+        elif attr == "robots":
+            self.browser.location(Attr("//script", "src")(self.doc))
 
     def enter_login(self, username):
         form = self.get_form(nr=1)
-        form['name'] = username
-        form['op'] = 'Valider'
-        form['cpass'] = ''
-        form.pop('form_number')
+        form["name"] = username
+        form["op"] = "Valider"
+        form["cpass"] = ""
+        form.pop("form_number")
         form.submit()
 
     def get_message_if_old_login(self):
@@ -147,22 +147,22 @@ class LoginPage(HTMLPage):
     def enter_password(self, password):
         data_code = {}
         for img in self.doc.xpath('//img[@class="digit"]'):
-            data_code[img.attrib['data-code']] = base64.b64decode(re.search(r'base64,(.*)', img.attrib['src']).group(1))
+            data_code[img.attrib["data-code"]] = base64.b64decode(re.search(r"base64,(.*)", img.attrib["src"]).group(1))
         codestring = CarrefourBanqueKeyboard(data_code).get_string_code(password)
 
         form = self.get_form(nr=1)
-        form['pass'] = '*' * len(password)
-        form['cpass'] = codestring
-        form['op'] = 'Me+connecter'
-        form.pop('form_number')  # don't remember me
+        form["pass"] = "*" * len(password)
+        form["cpass"] = codestring
+        form["op"] = "Me+connecter"
+        form.pop("form_number")  # don't remember me
 
         form.submit(allow_redirects=False)
 
     def get_dsp2_auth_code(self):
         return Regexp(
-            CleanText('//script[contains(text(), "popin_dsp2")]', replace=[('-', '_')]),
+            CleanText('//script[contains(text(), "popin_dsp2")]', replace=[("-", "_")]),
             r'"popin_dsp2":"(\w+)"',
-            default=''
+            default="",
         )(self.doc)
 
 
@@ -186,36 +186,34 @@ class IncapsulaResourcePage(HTMLPage):
         self.is_javascript = None
 
     def on_load(self):
-        self.is_javascript = 'html' not in CleanText('*')(self.doc)
+        self.is_javascript = "html" not in CleanText("*")(self.doc)
 
     def get_recaptcha_site_key(self):
-        return Attr('//div[@class="g-recaptcha"]', 'data-sitekey')(self.doc)
+        return Attr('//div[@class="g-recaptcha"]', "data-sitekey")(self.doc)
 
 
 class Transaction(FrenchTransaction):
-    PATTERNS = [(re.compile(r'^(?P<text>.*?) (?P<dd>\d{2})/(?P<mm>\d{2})$'), FrenchTransaction.TYPE_CARD)]
+    PATTERNS = [(re.compile(r"^(?P<text>.*?) (?P<dd>\d{2})/(?P<mm>\d{2})$"), FrenchTransaction.TYPE_CARD)]
 
 
 class item_account_generic(ItemElement):
     """Generic accounts properties for Carrefour homepage"""
+
     klass = Account
 
     def obj_balance(self):
         balance = CleanDecimal.French('.//div[@class="catre_col_one"]/h3')(self)
-        if Field('type')(self) in (Account.TYPE_LOAN, ):
+        if Field("type")(self) in (Account.TYPE_LOAN,):
             return -balance
         return balance
 
     obj_currency = Currency('.//div[@class="catre_col_one"]/h3')
     obj_label = CleanText('.//div[@class="right_col_wrapper"]/h2')
-    obj_id = Regexp(
-        CleanText('.//p[contains(text(), "N°")]'),
-        r'N°\s+(\d+)'
-    )
-    obj_number = Field('id')
+    obj_id = Regexp(CleanText('.//p[contains(text(), "N°")]'), r"N°\s+(\d+)")
+    obj_number = Field("id")
 
     def obj_url(self):
-        acc_number = Field('id')(self)
+        acc_number = Field("id")(self)
         xpath_link = '//li[contains(., "{acc_number}")]/ul/li/a'.format(acc_number=acc_number)
         return Link(xpath_link)(self)
 
@@ -224,7 +222,7 @@ class iter_history_generic(Transaction.TransactionsElement):
     head_xpath = '//div[*[contains(text(), "opérations")]]/table//thead/tr/th'
     item_xpath = '//div[*[contains(text(), "opérations")]]/table/tbody/tr[td]'
 
-    col_debittype = 'Mode'
+    col_debittype = "Mode"
 
     def next_page(self):
         next_page = Link('//a[contains(text(), "précédentes")]', default=None)(self)
@@ -233,17 +231,17 @@ class iter_history_generic(Transaction.TransactionsElement):
 
     class item(Transaction.TransactionElement):
         def obj_type(self):
-            if len(self.el.xpath('./td')) <= 3:
+            if len(self.el.xpath("./td")) <= 3:
                 return Transaction.TYPE_BANK
-            col = TableCell('debittype', default=None)
+            col = TableCell("debittype", default=None)
             if col(self):
                 debittype = CleanText(col)(self)
-                if debittype == 'Différé':
+                if debittype == "Différé":
                     return Transaction.TYPE_DEFERRED_CARD
             return Transaction.TYPE_CARD
 
         def condition(self):
-            return TableCell('raw')(self)
+            return TableCell("raw")(self)
 
 
 class HomePage(LoggedPage, HTMLPage):
@@ -254,15 +252,11 @@ class HomePage(LoggedPage, HTMLPage):
         class item(item_account_generic):
             obj_type = Account.TYPE_LOAN
             obj_label = CleanText('.//div[@class="block_pret block_synthproduct"]/h2')
-            obj_id = Regexp(
-                CleanText('.//p[contains(text(), "Réf. dossier")]'),
-                r'Réf. dossier :\s+(\d+)'
-            )
+            obj_id = Regexp(CleanText('.//p[contains(text(), "Réf. dossier")]'), r"Réf. dossier :\s+(\d+)")
             obj_currency = Currency('.//span[contains(., "Restants à rembourser")]//following-sibling::span')
 
             obj_balance = CleanDecimal.French(
-                './/span[contains(., "Restants à rembourser")]//following-sibling::span',
-                sign='-'
+                './/span[contains(., "Restants à rembourser")]//following-sibling::span', sign="-"
             )
 
     @method
@@ -299,7 +293,7 @@ class HomePage(LoggedPage, HTMLPage):
 
                 if empty(total_amount) or empty(available_amount):
                     return NotAvailable
-                return - (total_amount - available_amount)
+                return -(total_amount - available_amount)
 
     @method
     class iter_saving_accounts(ListElement):  # livrets
@@ -321,16 +315,12 @@ class HomePage(LoggedPage, HTMLPage):
 
             def obj_balance(self):
                 val = CleanDecimal.French(
-                    './/span[contains(., "Montant")]//following-sibling::span',
-                    default=NotAvailable
+                    './/span[contains(., "Montant")]//following-sibling::span', default=NotAvailable
                 )(self)
                 if val is not NotAvailable:
                     return val
                 val = CleanDecimal.French(
-                    Regexp(
-                        CleanText('.//div[@class="catre_col_one"]/h3'),
-                        r'([\d ,]+€)'
-                    ),
+                    Regexp(CleanText('.//div[@class="catre_col_one"]/h3'), r"([\d ,]+€)"),
                 )(self)
                 return val
 
@@ -345,15 +335,15 @@ class HomePage(LoggedPage, HTMLPage):
             obj_currency = Currency('.//span[contains(., "Montant")]//following-sibling::span')
 
             def obj_url(self):
-                acc_number = Field('id')(self)
-                xpath_link = (
-                    '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "opérations")]'
-                ).format(acc_number=acc_number)
+                acc_number = Field("id")(self)
+                xpath_link = ('//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "opérations")]').format(
+                    acc_number=acc_number
+                )
                 return Link(xpath_link)(self)
 
             def obj__life_investments(self):
                 xpath_link = '//li[contains(., "{acc_number}")]/ul/li/a[contains(text(), "Solde")]'.format(
-                    acc_number=Field('id')(self)
+                    acc_number=Field("id")(self)
                 )
                 return Link(xpath_link)(self)
 
@@ -380,20 +370,20 @@ class LifeHistoryInvestmentsPage(TransactionsPage):
         item_xpath = '//table[@id="assets"]/tbody/tr'
         head_xpath = '//table[@id="assets"]/thead/tr[1]/th'
 
-        col_label = 'Fonds'
-        col_quantity = 'Nombre de parts'
-        col_unitvalue = 'Valeur part'
-        col_valuation = 'Total'
-        col_portfolio_share = 'Répartition'
+        col_label = "Fonds"
+        col_quantity = "Nombre de parts"
+        col_unitvalue = "Valeur part"
+        col_valuation = "Total"
+        col_portfolio_share = "Répartition"
 
         class item(ItemElement):
             klass = Investment
 
-            obj_label = CleanText(TableCell('label'))
-            obj_quantity = MyDecimal(TableCell('quantity'))
-            obj_unitvalue = MyDecimal(TableCell('unitvalue'))
-            obj_valuation = MyDecimal(TableCell('valuation'))
-            obj_portfolio_share = Eval(lambda x: x / 100, MyDecimal(TableCell('portfolio_share')))
+            obj_label = CleanText(TableCell("label"))
+            obj_quantity = MyDecimal(TableCell("quantity"))
+            obj_unitvalue = MyDecimal(TableCell("unitvalue"))
+            obj_valuation = MyDecimal(TableCell("valuation"))
+            obj_portfolio_share = Eval(lambda x: x / 100, MyDecimal(TableCell("portfolio_share")))
 
 
 class LoanHistoryPage(TransactionsPage):
@@ -403,20 +393,20 @@ class LoanHistoryPage(TransactionsPage):
 class CardHistoryPage(TransactionsPage):
 
     def get_previous_date(self):
-        return Attr('//a[@id="op_precedente"]', 'date_recup', default=None)(self.doc)
+        return Attr('//a[@id="op_precedente"]', "date_recup", default=None)(self.doc)
 
 
 class CardHistoryJsonPage(LoggedPage, JsonPage):
 
     def get_previous_date(self):
-        return Dict('str_datePrecedente', default=None)(self.doc)
+        return Dict("str_datePrecedente", default=None)(self.doc)
 
     def get_last_timestamp(self):
         # if we don't get the date_recup timestamp value in the html
         # we get the timestampOperation timestamp of the last transactions returned by the API
-        all_tr = Dict('tab_historique', default=[])(self.doc)
+        all_tr = Dict("tab_historique", default=[])(self.doc)
         if all_tr:
-            return all_tr[-1]['timestampOperation']
+            return all_tr[-1]["timestampOperation"]
         else:
             return None
 
@@ -431,38 +421,35 @@ class CardHistoryJsonPage(LoggedPage, JsonPage):
         #   {"1": {'date': '...', 'label': '...', 'amount': '...'}, "2": {'date': '...', 'label': '...', 'amount': '...'}}
         #
         # this function converts the response to the good format if needed
-        if isinstance(self.doc['tab_historique'], dict):
-            self.doc['tab_historique'] = sorted(
-                self.doc['tab_historique'].values(),
-                key=lambda x: x['timestampOperation'],
-                reverse=True
+        if isinstance(self.doc["tab_historique"], dict):
+            self.doc["tab_historique"] = sorted(
+                self.doc["tab_historique"].values(), key=lambda x: x["timestampOperation"], reverse=True
             )
 
-        elif self.doc['tab_historique'] is None:
+        elif self.doc["tab_historique"] is None:
             # No transaction available, set value to empty dict
             # instead of null since we need an iterable
-            self.doc['tab_historique'] = {}
+            self.doc["tab_historique"] = {}
 
     @method
     class iter_history(DictElement):
-        item_xpath = 'tab_historique'
+        item_xpath = "tab_historique"
 
         class item(ItemElement):
             klass = Transaction
 
             def obj_date(self):
                 return datetime.datetime.strptime(
-                    CleanText(Dict('timestampOperation'))(self),
-                    "%Y-%m-%d-%H.%M.%S.%f"
+                    CleanText(Dict("timestampOperation"))(self), "%Y-%m-%d-%H.%M.%S.%f"
                 ).date()
 
-            obj_rdate = Date(CleanText(Dict('date')), dayfirst=True)
-            obj_raw = CleanText(Dict('label'))
-            obj_amount = CleanDecimal.French(Dict('amount'))
+            obj_rdate = Date(CleanText(Dict("date")), dayfirst=True)
+            obj_raw = CleanText(Dict("label"))
+            obj_amount = CleanDecimal.French(Dict("amount"))
 
             def obj_type(self):
-                debittype = Dict('mode')
-                if debittype(self) == 'Différé':
+                debittype = Dict("mode")
+                if debittype(self) == "Différé":
                     return Transaction.TYPE_DEFERRED_CARD
                 else:
                     return Transaction.TYPE_CARD

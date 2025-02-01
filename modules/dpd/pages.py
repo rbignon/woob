@@ -35,6 +35,7 @@ STATUSES = {
 class SearchPage(JsonPage):
     def build_doc(self, text):
         from woob.tools.json import json
+
         return json.loads(text[1:-1])
 
     def get_info(self, _id):
@@ -48,9 +49,8 @@ class SearchPage(JsonPage):
         events = self.doc.get("TrackingStatusJSON", {}).get("statusInfos", [])
         p.history = [self.build_event(i, data) for i, data in enumerate(events)]
         p.status = self.guess_status(
-            self.doc.get("TrackingStatusJSON", {}).
-            get("shipmentInfo", {}).
-            get("deliveryStatus"))
+            self.doc.get("TrackingStatusJSON", {}).get("shipmentInfo", {}).get("deliveryStatus")
+        )
         p.info = p.history[-1].activity
         return p
 

@@ -23,4 +23,4 @@
 from .module import AXABanqueModule
 
 
-__all__ = ['AXABanqueModule']
+__all__ = ["AXABanqueModule"]

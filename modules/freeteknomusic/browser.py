@@ -24,21 +24,21 @@ from .pages import FolderPage
 
 
 class FreeteknomusicBrowser(PagesBrowser):
-    BASEURL = 'http://archive.freeteknomusic.org/'
+    BASEURL = "http://archive.freeteknomusic.org/"
 
-    folder = URL('/', FolderPage)
+    folder = URL("/", FolderPage)
 
     def ls_content(self, split_path):
-        self.location('/' + '/'.join(split_path))
+        self.location("/" + "/".join(split_path))
         for el in self.page.iter_dirs():
             yield el
         for el in self.page.iter_files():
             yield el
 
     def get_file(self, id):
-        split_path = id.split('/')[:-1]
-        self.location('/' + '/'.join(split_path))
-        id = 'audio.%s' % id
+        split_path = id.split("/")[:-1]
+        self.location("/" + "/".join(split_path))
+        id = "audio.%s" % id
         for el in self.page.iter_files():
             if el.id == id:
                 return el

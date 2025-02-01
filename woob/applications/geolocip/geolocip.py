@@ -19,23 +19,28 @@ from woob.capabilities.geolocip import CapGeolocIp
 from woob.tools.application.repl import ReplApplication
 
 
-__all__ = ['AppGeolocIP']
+__all__ = ["AppGeolocIP"]
 
 
 class AppGeolocIP(ReplApplication):
-    APPNAME = 'geolocip'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2010-YEAR Romain Bignon'
+    APPNAME = "geolocip"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2010-YEAR Romain Bignon"
     DESCRIPTION = "Console application allowing to geolocalize IP addresses."
     SHORT_DESCRIPTION = "geolocalize IP addresses"
     CAPS = CapGeolocIp
 
     def main(self, argv):
         if len(argv) < 2:
-            print('Syntax: %s ipaddr' % argv[0], file=self.stderr)
+            print("Syntax: %s ipaddr" % argv[0], file=self.stderr)
             return 2
 
-        for location in self.do('get_location', argv[1]):
+        for location in self.do("get_location", argv[1]):
             if location.lt and location.lg:
-                location.osmlink = 'https://www.openstreetmap.org/?mlat=%s&mlon=%s#map=13/%s/%s' % (location.lt, location.lg, location.lt, location.lg)
+                location.osmlink = "https://www.openstreetmap.org/?mlat=%s&mlon=%s#map=13/%s/%s" % (
+                    location.lt,
+                    location.lg,
+                    location.lt,
+                    location.lg,
+                )
             self.format(location)

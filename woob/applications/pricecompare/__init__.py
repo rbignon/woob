@@ -1,4 +1,4 @@
 from .pricecompare import AppPriceCompare
 
 
-__all__ = ['AppPriceCompare']
+__all__ = ["AppPriceCompare"]

@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import SerebiiBrowser
 
 
-__all__ = ['SerebiiModule']
+__all__ = ["SerebiiModule"]
 
 
 class SerebiiModule(Module, CapRPG):
-    NAME = 'serebii'
-    DESCRIPTION = 'This website collects any data about Pokémon games.'
-    MAINTAINER = 'Célande Adrien'
-    EMAIL = 'celande.adrien@gmail.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "serebii"
+    DESCRIPTION = "This website collects any data about Pokémon games."
+    MAINTAINER = "Célande Adrien"
+    EMAIL = "celande.adrien@gmail.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = SerebiiBrowser
 

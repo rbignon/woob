@@ -58,18 +58,18 @@ def is_isin_valid(isin):
 
     if not isinstance(isin, str):
         return False
-    if not re.match(r'^[A-Z]{2}[A-Z0-9]{9}\d$', isin):
+    if not re.match(r"^[A-Z]{2}[A-Z0-9]{9}\d$", isin):
         return False
 
-    isin_in_digits = ''.join(str(ord(x) - ord('A') + 10) if not x.isdigit() else x for x in isin[:-1])
+    isin_in_digits = "".join(str(ord(x) - ord("A") + 10) if not x.isdigit() else x for x in isin[:-1])
     key = isin[-1:]
-    result = ''
+    result = ""
     for k, val in enumerate(isin_in_digits[::-1], start=1):
         if k % 2 == 0:
-            result = ''.join((result, val))
+            result = "".join((result, val))
         else:
-            result = ''.join((result, str(int(val)*2)))
-    return str(sum(int(x) for x in result) + int(key))[-1] == '0'
+            result = "".join((result, str(int(val) * 2)))
+    return str(sum(int(x) for x in result) + int(key))[-1] == "0"
 
 
 def create_french_liquidity(valuation):
@@ -77,7 +77,7 @@ def create_french_liquidity(valuation):
     Automatically fills a liquidity investment with label, code and code_type.
     """
     if isinstance(valuation, Decimal) and valuation < 0:
-        getLogger('%s.create_French_liquidity' % __name__).warning("Liquidity has a negative value")
+        getLogger("%s.create_French_liquidity" % __name__).warning("Liquidity has a negative value")
     liquidity = Investment()
     liquidity.label = "Liquidités"
     liquidity.code = "XX-liquidity"
@@ -90,6 +90,7 @@ def create_french_liquidity(valuation):
 # and Investment.code_type without having to declare
 # obj_code() and obj_code_type() methods in each module
 
+
 class FormatError(FilterError):
     pass
 
@@ -98,17 +99,19 @@ class IsinCode(Filter):
     """
     Returns the input only if it is a valid ISIN code.
     """
+
     @debug()
     def filter(self, code):
         if is_isin_valid(code):
             return code
-        return self.default_or_raise(FormatError('%r is not a valid ISIN code, no default value was set.' % code))
+        return self.default_or_raise(FormatError("%r is not a valid ISIN code, no default value was set." % code))
 
 
 class IsinType(Filter):
     """
     Returns Investment.CODE_TYPE_ISIN if the input is a valid ISIN code.
     """
+
     @debug()
     def filter(self, code):
         if is_isin_valid(code):

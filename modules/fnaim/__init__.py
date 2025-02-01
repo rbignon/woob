@@ -21,4 +21,4 @@
 from .module import FnaimModule
 
 
-__all__ = ['FnaimModule']
+__all__ = ["FnaimModule"]

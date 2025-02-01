@@ -23,10 +23,10 @@ from woob.tools.test import BackendTest
 
 
 class BtmonTest(BackendTest):
-    MODULE = 'btmon'
+    MODULE = "btmon"
 
     def test_torrent(self):
-        torrents = list(self.backend.iter_torrents('spiderman'))
+        torrents = list(self.backend.iter_torrents("spiderman"))
         assert len(torrents) > 0
         for torrent in torrents:
             assert torrent.id

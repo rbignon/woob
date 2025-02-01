@@ -37,7 +37,7 @@ class BasePage(HTMLPage):
         # correspond to the current page using the URL; we're better
         # off parsing the arguments right away.
         self.params = dict(parse_qsl(urlparse(self.url).query))
-        self.page_id = self.params.get('pag')
+        self.page_id = self.params.get("pag")
 
         # To check if the user is logged in, we want to check whether
         # the box at the top contains "Connecté : <username>" instead
@@ -53,14 +53,14 @@ class BasePage(HTMLPage):
 class HiddenFormPage(BasePage):
     def is_here(self):
         try:
-            self.get_form(name='frm_ccp')
+            self.get_form(name="frm_ccp")
         except FormNotFound:
             return False
         else:
             return True
 
     def submit_hidden_form(self):
-        form = self.get_form(name='frm_ccp')
+        form = self.get_form(name="frm_ccp")
         form.submit()
 
 
@@ -80,11 +80,11 @@ class HomePage(BasePage):
 
 class LoginPage(BasePage):
     def is_here(self):
-        if self.page_id != 'connexion':
+        if self.page_id != "connexion":
             return False
 
         try:
-            self.get_form(name='frm_ccp')
+            self.get_form(name="frm_ccp")
         except FormNotFound:
             return True
         else:
@@ -92,8 +92,8 @@ class LoginPage(BasePage):
 
     def do_login(self, username, password):
         form = self.get_form('//form[@name="frm"]')
-        form['lgt'] = username
-        form['pwt'] = password
+        form["lgt"] = username
+        form["pwt"] = password
         form.submit()
 
 
@@ -102,15 +102,18 @@ class LoginCallbackPage(HTMLPage):
     REFRESH_MAX = 3
 
     def get_error_message(self):
-        return CleanText(
-            '//div[@class="g0" and contains(@style, "background-image")]',
-            default='',
-        ) or None
+        return (
+            CleanText(
+                '//div[@class="g0" and contains(@style, "background-image")]',
+                default="",
+            )
+            or None
+        )
 
 
 class TodoPage(BasePage):
     def is_here(self):
-        return self.page_id == 'cid506_todo'
+        return self.page_id == "cid506_todo"
 
     def is_incomplete(self):
         """
@@ -138,24 +141,21 @@ class TodoPage(BasePage):
                 # Parse the identifier from the URL, to be safe.
                 url = naive_deobfuscate(
                     Regexp(
-                        Attr('.', 'onclick'),
+                        Attr(".", "onclick"),
                         r"ccp\('([a-z0-9]+)'",
                     )(self.el),
-                ).replace('&amp;', '&')
+                ).replace("&amp;", "&")
 
                 params = dict(parse_qsl(urlparse(url).query))
-                self.env['id'] = params['idm']
+                self.env["id"] = params["idm"]
 
-            obj_id = Format('aut%s', Env('id'))
+            obj_id = Format("aut%s", Env("id"))
             obj_solved_status = PicrossSolvedStatus.UNSOLVED
 
 
 class PuzzleListPage(BasePage):
     def is_here(self):
-        return (
-            self.page_id in ('cid506_picross', 'cid506_picross_new')
-            and 'idd' in self.params
-        )
+        return self.page_id in ("cid506_picross", "cid506_picross_new") and "idd" in self.params
 
     @pagination
     @method
@@ -169,23 +169,23 @@ class PuzzleListPage(BasePage):
             full_page = Regexp(
                 CleanText(
                     '//div[@class="z000"]//span[@class="t5"]',
-                    default='',
+                    default="",
                 ),
-                r'(\d+/\d+)',
+                r"(\d+/\d+)",
                 default=None,
             )(self.el)
 
             if full_page is None:
                 return
 
-            current_page, last_page = map(int, full_page.split('/'))
+            current_page, last_page = map(int, full_page.split("/"))
             if current_page >= last_page:
                 return
 
             # We want to get the page after.
             parsed_url = urlparse(self.page.url)
             parsed_params = dict(parse_qsl(parsed_url.query))
-            parsed_params['npa'] = str(current_page + 1)
+            parsed_params["npa"] = str(current_page + 1)
 
             return parsed_url._replace(
                 query=urlencode(parsed_params, doseq=True),
@@ -200,14 +200,14 @@ class PuzzleListPage(BasePage):
                 # instead of the default 'unsolved' icon.
                 custom_style = Attr(
                     './div[@class="g0"]',
-                    'style',
+                    "style",
                     default=None,
                 )(self.el)
                 solved_status = PicrossSolvedStatus.UNSOLVED
                 if custom_style is not None:
                     solved_status = PicrossSolvedStatus.SOLVED
 
-                queried_status = self.env['queried_solved_status']
+                queried_status = self.env["queried_solved_status"]
                 if queried_status not in (
                     PicrossSolvedStatus.UNKNOWN,
                     solved_status,
@@ -215,26 +215,26 @@ class PuzzleListPage(BasePage):
                     return False
 
                 # Store the solved status for later computing.
-                self.env['solved_status'] = solved_status
+                self.env["solved_status"] = solved_status
                 return True
 
             def parse(self, el):
                 # Get the picross identifier from the link to it.
                 url = naive_deobfuscate(
                     Regexp(
-                        Attr('.//b[1]/a', 'onclick'),
+                        Attr(".//b[1]/a", "onclick"),
                         r"ccp\('([a-z0-9]+)'",
                     )(el),
-                ).replace('&amp;', '&')
+                ).replace("&amp;", "&")
 
                 params = dict(parse_qsl(urlparse(url).query))
-                if 'idm' not in params:
+                if "idm" not in params:
                     raise AssertionError("Could not get the puzzle's id.")
 
-                self.env['id'] = params['idm'].lstrip('r')
+                self.env["id"] = params["idm"].lstrip("r")
 
-            obj_id = Format('aut%s', Env('id'))
-            obj_solved_status = Env('solved_status')
+            obj_id = Format("aut%s", Env("id"))
+            obj_solved_status = Env("solved_status")
 
 
 class DailyPicrossListPage(BasePage):
@@ -244,7 +244,7 @@ class DailyPicrossListPage(BasePage):
     """
 
     def is_here(self):
-        if self.page_id not in ('cid506_daily', 'cid506'):
+        if self.page_id not in ("cid506_daily", "cid506"):
             # "cid506_daily" is the direct page.
             # "cid506" is the general page.
             # The first may lead to an error message page.
@@ -268,8 +268,7 @@ class DailyPicrossListPage(BasePage):
         :return: Whether the puzzle is solved or not.
         """
         for daily_puzzle_name_el in self.doc.xpath(
-            '(//div[@class="d1"]/div[@class="d2"]/div[@class="z000"]'
-            + f'/div[@class="g0"])[{n}]',
+            '(//div[@class="d1"]/div[@class="d2"]/div[@class="z000"]' + f'/div[@class="g0"])[{n}]',
         ):
             # By default, the icon is set by CSS. However, when a picross
             # has been resolved, the "style" HTML attribute is set to
@@ -302,7 +301,7 @@ class PuzzlePage(BasePage):
                 r'const e506a = "([^"]+)"',
             )(self.doc)
 
-            if self.pattern == '%':
+            if self.pattern == "%":
                 raise PicrossNotFound()
 
         # We want to store the full identifier of the puzzle here in order
@@ -310,18 +309,18 @@ class PuzzlePage(BasePage):
         self.puzzle_id = None
         if not self.solved:
             self.puzzle_id = Format(
-                '%s%s',
-                Attr('//form[@name="frm"]/input[@name="idtableau"]', 'value'),
-                Attr('//form[@name="frm"]/input[@name="idligne"]', 'value'),
+                "%s%s",
+                Attr('//form[@name="frm"]/input[@name="idtableau"]', "value"),
+                Attr('//form[@name="frm"]/input[@name="idligne"]', "value"),
             )(self.doc)
 
     def is_here(self):
         # There is one exception to this, for premium accounts only: the
         # "2 Picross du jour" page, which we have to catch.
-        if self.page_id == 'cid506_daily_picross':
+        if self.page_id == "cid506_daily_picross":
             return True
 
-        if self.page_id != 'cid506':
+        if self.page_id != "cid506":
             return False
 
         for title_el in self.doc.xpath("//h1"):
@@ -343,10 +342,10 @@ class PuzzlePage(BasePage):
         for replay_el in self.doc.xpath('//a[.="Rejouer ce picross"]'):
             url = naive_deobfuscate(
                 Regexp(
-                    Attr('.', 'onclick'),
+                    Attr(".", "onclick"),
                     r"ccp\('([a-z0-9]+)'",
                 )(replay_el),
-            ).replace('&amp;', '&')
+            ).replace("&amp;", "&")
 
             self.browser.location(url)
             return
@@ -359,10 +358,10 @@ class PuzzlePage(BasePage):
             return not self.page.solved
 
         def parse(self, el):
-            self.env['id'] = self.page.puzzle_id
+            self.env["id"] = self.page.puzzle_id
 
-            if self.page.params.get('idm') not in (None, '', 'r'):
-                self.env['url'] = self.page.url
+            if self.page.params.get("idm") not in (None, "", "r"):
+                self.env["url"] = self.page.url
 
             def get_line(raw_value):
                 """
@@ -374,24 +373,24 @@ class PuzzlePage(BasePage):
 
                 if not raw_value:
                     return ()  # '0'
-                return tuple(map(int, raw_value.split('/')))
+                return tuple(map(int, raw_value.split("/")))
 
-            columns, lines = self.page.pattern.split('%')
-            self.env['columns'] = list(map(get_line, columns.split('_')))
-            self.env['lines'] = list(map(get_line, lines.split('_')))
+            columns, lines = self.page.pattern.split("%")
+            self.env["columns"] = list(map(get_line, columns.split("_")))
+            self.env["lines"] = list(map(get_line, lines.split("_")))
 
             # To check if we are on replay, we want to look at the
             # identifier in the URL.
-            idm = self.page.params.get('idm')
-            self.env['is_replay'] = bool(idm and idm.startswith('r'))
+            idm = self.page.params.get("idm")
+            self.env["is_replay"] = bool(idm and idm.startswith("r"))
 
-        obj_id = Env('id')
-        obj_url = Env('url', default=None)
-        obj_lines = Env('lines')
-        obj_columns = Env('columns')
+        obj_id = Env("id")
+        obj_url = Env("url", default=None)
+        obj_lines = Env("lines")
+        obj_columns = Env("columns")
 
         obj_solved_status = Map(
-            Env('is_replay'),
+            Env("is_replay"),
             {
                 False: PicrossSolvedStatus.UNSOLVED,
                 True: PicrossSolvedStatus.SOLVED,
@@ -423,16 +422,14 @@ class PuzzlePage(BasePage):
         #
         # Here, we'll just consider the 'player' has placed every block
         # from up to down, left to right (occidental fashion, heck yeah).
-        moves = '_/' + '/'.join(
-            f'{x:02d}{y:02d}{"cb"[c == "x"]}11'
-            for y, line in enumerate(solution.lines)
-            for x, c in enumerate(line)
+        moves = "_/" + "/".join(
+            f'{x:02d}{y:02d}{"cb"[c == "x"]}11' for y, line in enumerate(solution.lines) for x, c in enumerate(line)
         )
 
         form = self.get_form('//form[@name="frm"]')
-        form['histo'] = moves
-        form['aide'] = '0'
-        form['fini'] = '1'
+        form["histo"] = moves
+        form["aide"] = "0"
+        form["fini"] = "1"
         form.submit()
 
 

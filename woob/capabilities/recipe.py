@@ -20,22 +20,22 @@ from .base import BaseObject, Capability, Field, IntField, StringField
 from .image import BaseImage
 
 
-__all__ = ['CapRecipe', 'Recipe', 'Comment']
+__all__ = ["CapRecipe", "Recipe", "Comment"]
 
 
 class Comment(BaseObject):
-    author = StringField('Author of the comment')
-    rate = StringField('Rating')
-    text = StringField('Comment')
+    author = StringField("Author of the comment")
+    rate = StringField("Rating")
+    text = StringField("Comment")
 
     def __str__(self):
-        result = ''
+        result = ""
         if self.author:
-            result += 'author: %s, ' % self.author
+            result += "author: %s, " % self.author
         if self.rate:
-            result += 'note: %s, ' % self.rate
+            result += "note: %s, " % self.rate
         if self.text:
-            result += 'comment: %s' % self.text
+            result += "comment: %s" % self.text
         return result
 
 
@@ -43,18 +43,19 @@ class Recipe(BaseObject):
     """
     Recipe object.
     """
-    title =             StringField('Title of the recipe')
-    author =            StringField('Author name of the recipe')
-    picture =           Field('Picture of the dish', BaseImage)
-    short_description = StringField('Short description of a recipe')
-    nb_person =         Field('The recipe was made for this amount of persons', list)
-    preparation_time =  IntField('Preparation time of the recipe in minutes')
-    cooking_time =      IntField('Cooking time of the recipe in minutes')
-    ingredients =       Field('Ingredient list necessary for the recipe', list)
-    instructions =      StringField('Instruction step list of the recipe')
-    comments =          Field('User comments about the recipe', list)
 
-    def __init__(self, id='', title='', url=None):
+    title = StringField("Title of the recipe")
+    author = StringField("Author name of the recipe")
+    picture = Field("Picture of the dish", BaseImage)
+    short_description = StringField("Short description of a recipe")
+    nb_person = Field("The recipe was made for this amount of persons", list)
+    preparation_time = IntField("Preparation time of the recipe in minutes")
+    cooking_time = IntField("Cooking time of the recipe in minutes")
+    ingredients = Field("Ingredient list necessary for the recipe", list)
+    instructions = StringField("Instruction step list of the recipe")
+    comments = Field("User comments about the recipe", list)
+
+    def __init__(self, id="", title="", url=None):
         super(Recipe, self).__init__(id, url)
         self.title = title
 

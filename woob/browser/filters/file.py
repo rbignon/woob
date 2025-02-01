@@ -28,7 +28,7 @@ from woob.tools.misc import NO_DEFAULT
 from .base import debug
 
 
-__all__ = ['MimeType', 'FileExtension']
+__all__ = ["MimeType", "FileExtension"]
 
 
 class MimeType(CleanText):
@@ -39,6 +39,7 @@ class MimeType(CleanText):
     :param default: The default MIME type to be returned when the file type is not recognized.
     :type default: Any, optional
     """
+
     @debug()
     def filter(self, txt: str) -> Any:
         """
@@ -58,23 +59,21 @@ class MimeType(CleanText):
         txt = super().filter(txt)
 
         if empty(txt):
-            return self.default_or_raise(FormatError(f'Unable to parse {txt}'))
+            return self.default_or_raise(FormatError(f"Unable to parse {txt}"))
         # The 'mimetypes.guess_type()' function requires a valid
         # file name with an extension (file_name.extension)
         # to determine the MIME type. It may not handle inputs without a dot ('pdf'),
         # or with a dot but no name ('.pdf').
-        if txt.startswith('.'):
+        if txt.startswith("."):
             # .pdf
-            txt = f'dummy_filename{txt}'
-        if '.' not in txt:
+            txt = f"dummy_filename{txt}"
+        if "." not in txt:
             # pdf
-            txt = f'dummy_filename.{txt}'
+            txt = f"dummy_filename.{txt}"
 
         mime_type, _ = mimetypes.guess_type(txt)
         if not mime_type:
-            return self.default_or_raise(
-                FormatError(f'MIME type not recognized for file: {txt}')
-            )
+            return self.default_or_raise(FormatError(f"MIME type not recognized for file: {txt}"))
         return mime_type
 
 
@@ -119,21 +118,19 @@ class FileExtension(CleanText):
         """
         txt = super().filter(txt)
         if empty(txt):
-            return self.default_or_raise(FormatError(f'Unable to parse {txt}'))
+            return self.default_or_raise(FormatError(f"Unable to parse {txt}"))
 
-        if len(txt.split('.')) > 2:
-            extension = '.'.join(txt.split('.')[-2:])
+        if len(txt.split(".")) > 2:
+            extension = ".".join(txt.split(".")[-2:])
         else:
             _, extension = splitext(txt)
             if not extension:
-                return self.default_or_raise(FormatError(f'Extension not recognized: {txt}'))
-            extension = extension.strip('.')
+                return self.default_or_raise(FormatError(f"Extension not recognized: {txt}"))
+            extension = extension.strip(".")
 
         if self.validate_mime:
             try:
                 MimeType().filter(extension)
             except FormatError:
-                return self.default_or_raise(FormatError(
-                    f'MIME type not recognized for the extension {extension}')
-                )
+                return self.default_or_raise(FormatError(f"MIME type not recognized for the extension {extension}"))
         return extension

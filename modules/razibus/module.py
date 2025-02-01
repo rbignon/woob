@@ -27,57 +27,61 @@ from .browser import RazibusBrowser
 from .calendar import RazibusCalendarEvent
 
 
-__all__ = ['RazibusModule']
+__all__ = ["RazibusModule"]
 
 
 class RazibusModule(Module, CapCalendarEvent):
-    NAME = 'razibus'
-    DESCRIPTION = u'site annonçant les évènements attendus par les punks a chiens'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "razibus"
+    DESCRIPTION = "site annonçant les évènements attendus par les punks a chiens"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
     ASSOCIATED_CATEGORIES = [CATEGORIES.CONCERT]
     BROWSER = RazibusBrowser
 
-    region_choices = OrderedDict([(k, u'%s' % (v)) for k, v in sorted({
-        '': u'-- Indifférent --',
-        'Alsace': u'Alsace',
-        'Aquitaine': u'Aquitaine',
-        'Auvergne': u'Auvergne',
-        'Basse-Normandie': u'Basse-Normandie',
-        'Bourgogne': u'Bourgogne',
-        'Bretagne': u'Bretagne',
-        'Centre': u'Centre',
-        'Champagne-Ardenne': u'Champagne-Ardenne',
-        'Franche-Comte': u'Franche-Comté',
-        'Haute-Normandie': u'Haute-Normandie',
-        'Ile-de-France': u'Île-de-France',
-        'Languedoc-Roussillon': u'Languedoc-Roussillon',
-        'Limousin': u'Limousin',
-        'Lorraine': u'Lorraine',
-        'Midi-Pyrenees': u'Midi-Pyrénées',
-        'Nord-Pas-de-Calais': u'Nord-Pas-de-Calais',
-        'Pays-de-la-Loire': u'Pays de la Loire',
-        'Picardie': u'Picardie',
-        'Poitou-Charentes': u'Poitou-Charentes',
-        'PACA': u'PACA',
-        'Rhone-Alpes': u'Rhône-Alpes',
-        'Belgique': u'Belgique',
-        'Suisse': u'Suisse',
-    }.items())])
+    region_choices = OrderedDict(
+        [
+            (k, "%s" % (v))
+            for k, v in sorted(
+                {
+                    "": "-- Indifférent --",
+                    "Alsace": "Alsace",
+                    "Aquitaine": "Aquitaine",
+                    "Auvergne": "Auvergne",
+                    "Basse-Normandie": "Basse-Normandie",
+                    "Bourgogne": "Bourgogne",
+                    "Bretagne": "Bretagne",
+                    "Centre": "Centre",
+                    "Champagne-Ardenne": "Champagne-Ardenne",
+                    "Franche-Comte": "Franche-Comté",
+                    "Haute-Normandie": "Haute-Normandie",
+                    "Ile-de-France": "Île-de-France",
+                    "Languedoc-Roussillon": "Languedoc-Roussillon",
+                    "Limousin": "Limousin",
+                    "Lorraine": "Lorraine",
+                    "Midi-Pyrenees": "Midi-Pyrénées",
+                    "Nord-Pas-de-Calais": "Nord-Pas-de-Calais",
+                    "Pays-de-la-Loire": "Pays de la Loire",
+                    "Picardie": "Picardie",
+                    "Poitou-Charentes": "Poitou-Charentes",
+                    "PACA": "PACA",
+                    "Rhone-Alpes": "Rhône-Alpes",
+                    "Belgique": "Belgique",
+                    "Suisse": "Suisse",
+                }.items()
+            )
+        ]
+    )
 
-    CONFIG = BackendConfig(Value('region', label=u'Region', choices=region_choices, default=''))
+    CONFIG = BackendConfig(Value("region", label="Region", choices=region_choices, default=""))
 
     def create_default_browser(self):
-        region = self.config['region'].get()
+        region = self.config["region"].get()
         return self.create_browser(region)
 
     def search_events(self, query):
-        return self.browser.list_events(query.start_date,
-                                        query.end_date,
-                                        query.city,
-                                        query.categories)
+        return self.browser.list_events(query.start_date, query.end_date, query.city, query.categories)
 
     def get_event(self, _id):
         return self.browser.get_event(_id)

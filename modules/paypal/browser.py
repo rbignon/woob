@@ -27,52 +27,74 @@ from woob.browser.url import URL
 from woob.exceptions import BrowserHTTPError, BrowserIncorrectPassword, BrowserUnavailable
 
 from .pages import (
-    AccountPage, ErrorPage, HistoryDetailsPage, HomePage, InfoPage, LandingPage, LoginPage, OldWebsitePage,
-    PartHistoryPage, ProHistoryPage, PromoPage, UselessPage,
+    AccountPage,
+    ErrorPage,
+    HistoryDetailsPage,
+    HomePage,
+    InfoPage,
+    LandingPage,
+    LoginPage,
+    OldWebsitePage,
+    PartHistoryPage,
+    ProHistoryPage,
+    PromoPage,
+    UselessPage,
 )
 
 
-__all__ = ['Paypal']
+__all__ = ["Paypal"]
 
 
 class Paypal(LoginBrowser):
-    BASEURL = 'https://www.paypal.com'
+    BASEURL = "https://www.paypal.com"
 
-    login = URL(r'https://\w+\.paypal\.com/signin.*',
-                r'/cgi-bin/webscr\?cmd=_login-submit.+$',
-                '/fr/webapps/mpp/home', LoginPage)
-    landing = URL('/home',
-                  r'/(?!myaccount)\w+/home', # locale home
-                  r'/$', LandingPage)
-    useless = URL(r'/cgi-bin/webscr\?cmd=_login-processing.+$',
-                  r'/cgi-bin/webscr\?cmd=_account.*$',
-                  r'/cgi-bin/webscr\?cmd=_login-done.+$',
-                  UselessPage)
-    info = URL('/fr/merchantsignup/personalInfo', InfoPage)
-    home = URL(r'.*/cgi-bin/webscr\?cmd=_home&country_lang.x=true$',
-               r'https://\w+.paypal.com/webapps/business/\?country_lang.x=true',
-               r'https://\w+.paypal.com/myaccount/\?nav=0.0',
-               r'https://\w+.paypal.com/webapps/business/\?nav=0.0',
-               r'https://\w+.paypal.com/myaccount/$',
-               r'/businessexp/summary.*',
-               r'/myaccount/?\?country_lang.x=true',
-               '/businessexp/fees/interchange-fees',
-               '/mep/dashboard',
-               '/myaccount/home',
-               HomePage)
-    error = URL('/auth/validatecaptcha$', ErrorPage)
-    history_details = URL(r'https://\w+\.paypal\.com/cgi-bin/webscr\?cmd=_history-details-from-hub&id=[\-A-Z0-9]+$',
-                          r'https://\w+\.paypal\.com/myaccount/transaction/details/[\-A-Z0-9]+$',
-                          HistoryDetailsPage)
-    promo = URL(r'https://www\.paypal\.com/fr/webapps/mpp/clickthru/paypal-app-promo-2.*',
-                '/fr/webapps/mpp/clickthru.*', PromoPage)
-    account = URL('https://www.paypal.com/myaccount/money',
-                  'https://www.paypal.com/businessexp/money',
-                  'https://www.paypal.com/webapps/business/money', AccountPage)
-    pro_history = URL(r'https://\w+\.paypal\.com/businessexp/transactions/activity\?.*',
-                      ProHistoryPage)
-    part_history = URL(r'https://\w+\.paypal\.com/myaccount/(activity|transactions)/.*', PartHistoryPage)
-    old_website = URL('https://paypalmanager.paypal.com/login.do', OldWebsitePage)
+    login = URL(
+        r"https://\w+\.paypal\.com/signin.*",
+        r"/cgi-bin/webscr\?cmd=_login-submit.+$",
+        "/fr/webapps/mpp/home",
+        LoginPage,
+    )
+    landing = URL("/home", r"/(?!myaccount)\w+/home", r"/$", LandingPage)  # locale home
+    useless = URL(
+        r"/cgi-bin/webscr\?cmd=_login-processing.+$",
+        r"/cgi-bin/webscr\?cmd=_account.*$",
+        r"/cgi-bin/webscr\?cmd=_login-done.+$",
+        UselessPage,
+    )
+    info = URL("/fr/merchantsignup/personalInfo", InfoPage)
+    home = URL(
+        r".*/cgi-bin/webscr\?cmd=_home&country_lang.x=true$",
+        r"https://\w+.paypal.com/webapps/business/\?country_lang.x=true",
+        r"https://\w+.paypal.com/myaccount/\?nav=0.0",
+        r"https://\w+.paypal.com/webapps/business/\?nav=0.0",
+        r"https://\w+.paypal.com/myaccount/$",
+        r"/businessexp/summary.*",
+        r"/myaccount/?\?country_lang.x=true",
+        "/businessexp/fees/interchange-fees",
+        "/mep/dashboard",
+        "/myaccount/home",
+        HomePage,
+    )
+    error = URL("/auth/validatecaptcha$", ErrorPage)
+    history_details = URL(
+        r"https://\w+\.paypal\.com/cgi-bin/webscr\?cmd=_history-details-from-hub&id=[\-A-Z0-9]+$",
+        r"https://\w+\.paypal\.com/myaccount/transaction/details/[\-A-Z0-9]+$",
+        HistoryDetailsPage,
+    )
+    promo = URL(
+        r"https://www\.paypal\.com/fr/webapps/mpp/clickthru/paypal-app-promo-2.*",
+        "/fr/webapps/mpp/clickthru.*",
+        PromoPage,
+    )
+    account = URL(
+        "https://www.paypal.com/myaccount/money",
+        "https://www.paypal.com/businessexp/money",
+        "https://www.paypal.com/webapps/business/money",
+        AccountPage,
+    )
+    pro_history = URL(r"https://\w+\.paypal\.com/businessexp/transactions/activity\?.*", ProHistoryPage)
+    part_history = URL(r"https://\w+\.paypal\.com/myaccount/(activity|transactions)/.*", PartHistoryPage)
+    old_website = URL("https://paypalmanager.paypal.com/login.do", OldWebsitePage)
 
     TIMEOUT = 180.0
 
@@ -87,34 +109,34 @@ class Paypal(LoginBrowser):
         assert isinstance(self.password, str)
 
         if not self.login.is_here():
-            self.location('/signin/')
+            self.location("/signin/")
 
         response = self.open(self.page.get_script_url())
         token, csrf, key, value, sessionID, cookie = self.page.get_token_and_csrf(response.text)
 
-        self.session.cookies.update({'xppcts': cookie})
+        self.session.cookies.update({"xppcts": cookie})
         data = {}
-        data['ads_token_js'] = token
-        data['_csrf'] = csrf
-        data['_sessionID'] = sessionID
+        data["ads_token_js"] = token
+        data["_csrf"] = csrf
+        data["_sessionID"] = sessionID
         data[key] = value
-        res = self.open('/auth/verifychallenge', data=data)
-        if not 'OK' in res.text:
-            raise BrowserUnavailable('Challenge failed')
+        res = self.open("/auth/verifychallenge", data=data)
+        if not "OK" in res.text:
+            raise BrowserUnavailable("Challenge failed")
 
         res = self.page.login(self.username, self.password)
 
-        if 'LoginFailed' in res.text or 'Sorry, we can\'t log you in' in res.text or self.error.is_here():
+        if "LoginFailed" in res.text or "Sorry, we can't log you in" in res.text or self.error.is_here():
             raise BrowserIncorrectPassword()
 
-        if '/auth/validatecaptcha' in res.text:
-            raise BrowserUnavailable('captcha')
+        if "/auth/validatecaptcha" in res.text:
+            raise BrowserUnavailable("captcha")
 
-        self.location('/')
+        self.location("/")
         if self.old_website.is_here():
-            self.location('https://www.paypal.com/businessexp/summary')
+            self.location("https://www.paypal.com/businessexp/summary")
         if self.login.is_here() or self.landing.is_here():
-            raise BrowserUnavailable('login failed')
+            raise BrowserUnavailable("login failed")
         self.detect_account_type()
 
     def detect_account_type(self):
@@ -136,23 +158,24 @@ class Paypal(LoginBrowser):
 
     @need_login
     def get_personal_history(self, account):
-        s = self.BEGINNING.strftime('%Y-%m-%d')
-        e = datetime.date.today().strftime('%Y-%m-%d')
-        data = {'transactionType':  'ALL',
-                'timeFrame':        '90',
-                'nextPageToken':    '',
-                'freeTextSearch':   '',
-                'startDate':        s,
-                'endDate':          e,
-               }
+        s = self.BEGINNING.strftime("%Y-%m-%d")
+        e = datetime.date.today().strftime("%Y-%m-%d")
+        data = {
+            "transactionType": "ALL",
+            "timeFrame": "90",
+            "nextPageToken": "",
+            "freeTextSearch": "",
+            "startDate": s,
+            "endDate": e,
+        }
         # The response is sometimes not the one we expect.
         exc = None
         for i in range(3):
             try:
                 self.location(
-                    'https://www.paypal.com/myaccount/activity/filter?%s',
+                    "https://www.paypal.com/myaccount/activity/filter?%s",
                     params=data,
-                    headers={'Accept' : 'application/json, text/javascript, */*; q=0.01'}
+                    headers={"Accept": "application/json, text/javascript, */*; q=0.01"},
                 )
                 if self.page.transaction_left():
                     return self.page.iter_transactions(account)
@@ -176,22 +199,25 @@ class Paypal(LoginBrowser):
                 p = self.download_history(start, end)
                 transactions = []
                 # Iter on each page
-                while self.location("https://www.paypal.com/businessexp/transactions/activity", \
-                                    params=p).page.transaction_left():
-                    p['next_page_token'] = self.page.get_next_page_token()
+                while self.location(
+                    "https://www.paypal.com/businessexp/transactions/activity", params=p
+                ).page.transaction_left():
+                    p["next_page_token"] = self.page.get_next_page_token()
                     for t in self.page.iter_transactions(account):
                         transactions.append(t)
-                    if not p['next_page_token']:
+                    if not p["next_page_token"]:
                         break
                 return transactions if len(transactions) else iter([])
 
-            assert step_max <= 365*2  # PayPal limitations as of 2014-06-16
+            assert step_max <= 365 * 2  # PayPal limitations as of 2014-06-16
             try:
-                for i in self.smart_fetch(beginning=self.BEGINNING,
-                                        end=datetime.date.today(),
-                                        step_min=step_min,
-                                        step_max=step_max,
-                                        fetch_fn=fetch_fn):
+                for i in self.smart_fetch(
+                    beginning=self.BEGINNING,
+                    end=datetime.date.today(),
+                    step_min=step_min,
+                    step_max=step_max,
+                    fetch_fn=fetch_fn,
+                ):
                     yield i
             except BrowserHTTPError:
                 self.logger.warning("Paypal timeout")
@@ -210,11 +236,11 @@ class Paypal(LoginBrowser):
             if len(chunk) > 40:
                 # If there're too much transactions in current period, decrease
                 # the period.
-                step = max(step_min, step/FACTOR)
+                step = max(step_min, step / FACTOR)
             else:
                 # If there's no transactions, or only a bit, in current period,
                 # increase the period.
-                step = min(step_max, step*FACTOR)
+                step = min(step_max, step * FACTOR)
             for trans in chunk:
                 yield trans
 
@@ -224,17 +250,18 @@ class Paypal(LoginBrowser):
         However, it is not normalized, and sometimes the download is refused
         and sent later by mail.
         """
-        params = {'transactiontype': "ALL_TRANSACTIONS",
-                  'currency': "ALL_TRANSACTIONS_CURRENCY",
-                  'limit': "",
-                  'archive': "ACTIVE_TRANSACTIONS",
-                  'fromdate_year': start.year,
-                  'fromdate_month': start.month-1, # Months are from 0 to 11.
-                  'fromdate_day': start.day,
-                  'todate_year': end.year,
-                  'todate_month': end.month-1,
-                  'todate_day': end.day
-                 }
+        params = {
+            "transactiontype": "ALL_TRANSACTIONS",
+            "currency": "ALL_TRANSACTIONS_CURRENCY",
+            "limit": "",
+            "archive": "ACTIVE_TRANSACTIONS",
+            "fromdate_year": start.year,
+            "fromdate_month": start.month - 1,  # Months are from 0 to 11.
+            "fromdate_day": start.day,
+            "todate_year": end.year,
+            "todate_month": end.month - 1,
+            "todate_day": end.day,
+        }
         return params
 
     def transfer(self, from_id, to_id, amount, reason=None):

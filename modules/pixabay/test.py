@@ -22,14 +22,14 @@ from woob.tools.test import BackendTest
 
 
 class PixabayTest(BackendTest):
-    MODULE = 'pixabay'
+    MODULE = "pixabay"
 
     def test_search(self):
-        it = self.backend.search_image('flower')
+        it = self.backend.search_image("flower")
         img = next(it)
         assert img
         assert img.title
-        assert self.backend.fillobj(img, ['data'])
+        assert self.backend.fillobj(img, ["data"])
         assert len(img.data)
 
         img = next(it)

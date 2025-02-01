@@ -34,10 +34,10 @@ class MonsterDate(Filter):
         now = datetime.now()
         number = re.search(r"\d+", date)
         if number:
-            if 'heures' in date:
+            if "heures" in date:
                 date = now - timedelta(hours=int(number.group(0)))
                 return datetime.combine(date, time())
-            elif 'jour' in date:
+            elif "jour" in date:
                 date = now - timedelta(days=int(number.group(0)))
                 return datetime.combine(date, time())
         else:
@@ -51,23 +51,20 @@ class AdvSearchPage(HTMLPage):
         item_xpath = '//div[@id="SearchResults"]/section[@data-jobid]'
 
         def next_page(self):
-            page = Regexp(CleanText('//a[@data-action="fetch"]/@href', default=''),
-                          r'.*page=(\d*)', default=None)(self)
+            page = Regexp(CleanText('//a[@data-action="fetch"]/@href', default=""), r".*page=(\d*)", default=None)(self)
             if page:
-                return BrowserURL('adv_search', search=Env('search'), page=int(page))(self)
+                return BrowserURL("adv_search", search=Env("search"), page=int(page))(self)
 
         class item(ItemElement):
             klass = BaseJobAdvert
 
-            obj_id = CleanText('./@data-jobid')
-            obj_society_name = CleanText('./div/div/div[@class="company"]',
-                                         default=NotAvailable)
-            obj_title = CleanText('./div/div/header/h2[@class="title"]/a',
-                                  default=NotAvailable)
-            obj_publication_date = DateTime(CleanText('./div/div[has-class("meta")]/time/@datetime'),
-                                            default=NotAvailable)
-            obj_place = CleanText('./div/div/div[@class="location"]',
-                                  default=NotAvailable)
+            obj_id = CleanText("./@data-jobid")
+            obj_society_name = CleanText('./div/div/div[@class="company"]', default=NotAvailable)
+            obj_title = CleanText('./div/div/header/h2[@class="title"]/a', default=NotAvailable)
+            obj_publication_date = DateTime(
+                CleanText('./div/div[has-class("meta")]/time/@datetime'), default=NotAvailable
+            )
+            obj_place = CleanText('./div/div/div[@class="location"]', default=NotAvailable)
 
 
 class AdvertPage(HTMLPage):
@@ -75,12 +72,10 @@ class AdvertPage(HTMLPage):
     class get_job_advert(ItemElement):
         klass = BaseJobAdvert
 
-        obj_id = Env('_id')
-        obj_url = BrowserURL('advert', _id=Env('_id'))
+        obj_id = Env("_id")
+        obj_url = BrowserURL("advert", _id=Env("_id"))
         obj_title = CleanText('//h1[@class="title"]')
-        obj_description = Format('%s\n%s',
-                                 CleanHTML('//div[@id="JobDescription"]'),
-                                 CleanText('//dl'))
+        obj_description = Format("%s\n%s", CleanHTML('//div[@id="JobDescription"]'), CleanText("//dl"))
         obj_contract_type = CleanText('(//dl/dt[text()="Type de contrat"]/following-sibling::dd)[1]')
         obj_society_name = CleanText('//div[@data-jsux="aboutCompany"]/div/dl/dd')
         obj_place = CleanText('//h2[@class="subtitle"]')
@@ -92,7 +87,7 @@ class ExpiredAdvert(HTMLPage):
     class get_job_advert(ItemElement):
         klass = BaseJobAdvert
 
-        obj_id = Env('_id')
-        obj_url = BrowserURL('expired_advert', _id=Env('_id'))
+        obj_id = Env("_id")
+        obj_url = BrowserURL("expired_advert", _id=Env("_id"))
         obj_title = CleanText('//div[@role="alert"]')
         obj_description = CleanText('//div[@role="alert"]')

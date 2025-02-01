@@ -21,4 +21,4 @@
 from .module import TransilienModule
 
 
-__all__ = ['TransilienModule']
+__all__ = ["TransilienModule"]

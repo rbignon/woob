@@ -28,50 +28,64 @@ from woob.browser.filters.standard import QueryValue
 from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.messages import CantSendMessage
 from woob.exceptions import (
-    ActionNeeded, BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned, OTPSentType, SentOTPQuestion,
+    ActionNeeded,
+    BrowserIncorrectPassword,
+    BrowserUnavailable,
+    BrowserUserBanned,
+    OTPSentType,
+    SentOTPQuestion,
 )
 from woob.tools.decorators import retry
 
 from .pages import (
-    CredentialsPage, CsrfPage, ErrorPage, LoginPage, LoginRSCPage, MainPage, OfferPage, OptionsPage, OtpPage, PdfPage,
-    ProfilePage, ProvidersPage, SessionPage,
+    CredentialsPage,
+    CsrfPage,
+    ErrorPage,
+    LoginPage,
+    LoginRSCPage,
+    MainPage,
+    OfferPage,
+    OptionsPage,
+    OtpPage,
+    PdfPage,
+    ProfilePage,
+    ProvidersPage,
+    SessionPage,
 )
 
 
-__all__ = ['Freemobile']
+__all__ = ["Freemobile"]
 
 
 class Freemobile(TwoFactorBrowser):
-    BASEURL = 'https://mobile.free.fr'
+    BASEURL = "https://mobile.free.fr"
 
     # 2 following URLs have same value but a is_here is defined in LoginPage and MainPage
-    login_page = URL(r'/account/v2/login', LoginPage)
-    login_rsc_page = URL(r'/account/v2/login', LoginRSCPage)
-    main_page = URL(r'/account/$', MainPage)
-    logoutpage = URL(r'/account/\?logout=user', LoginPage)
-    pdfpage = URL(r'/account/conso-et-factures\?facture=pdf', PdfPage)
-    profile = URL(r'/account/mes-informations', ProfilePage)
-    offerpage = URL(r'/account/mon-offre', OfferPage)
-    optionspage = URL(r'/account/mes-options', OptionsPage)
-    sendAPI = URL(r'https://smsapi.free-mobile.fr/sendmsg\?user=(?P<username>)&pass=(?P<apikey>)&msg=(?P<msg>)')
-    error_page = URL(r'/err/oups.html', ErrorPage)
-    csrf_token = URL(r'/account/v2/api/auth/csrf', CsrfPage)
-    providers = URL(r'/account/v2/api/auth/providers', ProvidersPage)
-    credentials = URL(r'/XXXXXXXXXXX', CredentialsPage)
-    sessionpage = URL(r'/account/v2/api/auth/session', SessionPage)
-    otpemailpage = URL(r'/account/v2/otp.*', OtpPage)
+    login_page = URL(r"/account/v2/login", LoginPage)
+    login_rsc_page = URL(r"/account/v2/login", LoginRSCPage)
+    main_page = URL(r"/account/$", MainPage)
+    logoutpage = URL(r"/account/\?logout=user", LoginPage)
+    pdfpage = URL(r"/account/conso-et-factures\?facture=pdf", PdfPage)
+    profile = URL(r"/account/mes-informations", ProfilePage)
+    offerpage = URL(r"/account/mon-offre", OfferPage)
+    optionspage = URL(r"/account/mes-options", OptionsPage)
+    sendAPI = URL(r"https://smsapi.free-mobile.fr/sendmsg\?user=(?P<username>)&pass=(?P<apikey>)&msg=(?P<msg>)")
+    error_page = URL(r"/err/oups.html", ErrorPage)
+    csrf_token = URL(r"/account/v2/api/auth/csrf", CsrfPage)
+    providers = URL(r"/account/v2/api/auth/providers", ProvidersPage)
+    credentials = URL(r"/XXXXXXXXXXX", CredentialsPage)
+    sessionpage = URL(r"/account/v2/api/auth/session", SessionPage)
+    otpemailpage = URL(r"/account/v2/otp.*", OtpPage)
 
-    __states__ = (
-        'otp_id',
-    )
+    __states__ = ("otp_id",)
 
     def __init__(self, config, *args, **kwargs):
         super().__init__(config, *args, **kwargs)
-        self.otp_code = config['otp_code'].get()
-        self.force_twofa_type_email = config['force_twofa_type_email'].get()
+        self.otp_code = config["otp_code"].get()
+        self.force_twofa_type_email = config["force_twofa_type_email"].get()
 
         self.AUTHENTICATION_METHODS = {
-            'otp_code': self.handle_otp,
+            "otp_code": self.handle_otp,
         }
 
     def clear_init_cookies(self):
@@ -89,87 +103,91 @@ class Freemobile(TwoFactorBrowser):
     def handle_otp(self):
         error = None
         csrf_token = self.get_csrf_token()
-        self.logger.debug('csrf_token: %s', csrf_token)
+        self.logger.debug("csrf_token: %s", csrf_token)
         try:
-            self.credentials.go(data={
-                "codeOtp": self.otp_code,
-                "otpId": self.otp_id,
-                "redirect": "false",
-                "isTrusted": "true",
-                "csrfToken": csrf_token,
-                "callbackUrl": 'https://mobile.free.fr/account/v2/otp',
-                "json": "true",
-            })
+            self.credentials.go(
+                data={
+                    "codeOtp": self.otp_code,
+                    "otpId": self.otp_id,
+                    "redirect": "false",
+                    "isTrusted": "true",
+                    "csrfToken": csrf_token,
+                    "callbackUrl": "https://mobile.free.fr/account/v2/otp",
+                    "json": "true",
+                }
+            )
             error = self.page.get_error()
         except ClientError as e:
             if e.response.status_code == 401:
-                self.logger.debug('e.response.text: %s', e.response.text)
+                self.logger.debug("e.response.text: %s", e.response.text)
                 if not e.response.text:
                     raise BrowserIncorrectPassword()
                 json_payload = json.loads(e.response.text)
-                if json_payload and ('url' in json_payload):
-                    error = QueryValue(None, 'error', default=None).filter(json_payload['url'])
+                if json_payload and ("url" in json_payload):
+                    error = QueryValue(None, "error", default=None).filter(json_payload["url"])
             else:
                 raise
 
         if error:
-            self.login_page.go(headers={'RSC': '1'})
+            self.login_page.go(headers={"RSC": "1"})
             error_message = self.page.get_error()
-            self.logger.debug('error_message: %s', error_message)
-            if error_message == '$undefined':
+            self.logger.debug("error_message: %s", error_message)
+            if error_message == "$undefined":
                 error_message = None
-            if error == 'INVALID_OTP':
+            if error == "INVALID_OTP":
                 raise BrowserIncorrectPassword(error_message)
             raise BrowserUnavailable(error_message)
 
     def init_login(self):
         auth_provider = self.get_auth_provider()
-        self.logger.debug('auth_provider: %s', auth_provider)
+        self.logger.debug("auth_provider: %s", auth_provider)
         csrf_token = self.get_csrf_token()
-        self.logger.debug('csrf_token: %s', csrf_token)
+        self.logger.debug("csrf_token: %s", csrf_token)
         self.credentials.urls = [auth_provider.get("callbackUrl")]
         error = None
         try:
-            self.credentials.go(data={
-                "username": self.username,
-                "password": self.password,
-                "redirect": "false",
-                "csrfToken": csrf_token,
-                "callbackUrl": self.login_page.build(),
-                "json": "true",
-            })
+            self.credentials.go(
+                data={
+                    "username": self.username,
+                    "password": self.password,
+                    "redirect": "false",
+                    "csrfToken": csrf_token,
+                    "callbackUrl": self.login_page.build(),
+                    "json": "true",
+                }
+            )
             error = self.page.get_error()
         except ClientError as e:
             if e.response.status_code == 401:
-                self.logger.debug('e.response.text: %s', e.response.text)
+                self.logger.debug("e.response.text: %s", e.response.text)
                 if not e.response.text:
                     raise BrowserIncorrectPassword()
                 json_payload = json.loads(e.response.text)
-                if json_payload and ('url' in json_payload):
-                    error = QueryValue(None, 'error', default=None).filter(json_payload['url'])
+                if json_payload and ("url" in json_payload):
+                    error = QueryValue(None, "error", default=None).filter(json_payload["url"])
             else:
                 raise
 
-        self.logger.debug('error: %s', error)
+        self.logger.debug("error: %s", error)
 
         if error:
-            self.login_page.go(headers={'RSC': '1'})
+            self.login_page.go(headers={"RSC": "1"})
             error_message = self.page.get_error()
-            self.logger.debug('error_message: %s', error_message)
-            if error_message == '$undefined':
+            self.logger.debug("error_message: %s", error_message)
+            if error_message == "$undefined":
                 error_message = error
-            if error == 'ACCOUNT_BLOCKED':
+            if error == "ACCOUNT_BLOCKED":
                 raise BrowserUserBanned(error_message)
-            elif error == 'INVALID_CREDENTIALS':
+            elif error == "INVALID_CREDENTIALS":
                 raise BrowserIncorrectPassword(error_message)
             raise BrowserUnavailable(error_message)
 
         self.sessionpage.go()
 
         twofa_type = self.page.get_2fa_type()
-        self.logger.debug('twofa_type: %s', twofa_type)
+        self.logger.debug("twofa_type: %s", twofa_type)
         self.otp_id = self.page.get_otp_id()
-        self.logger.debug('otp_id: %s', self.otp_id)
+        self.logger.debug("otp_id: %s", self.otp_id)
 
         medium_type = None
 
@@ -189,32 +207,34 @@ class Freemobile(TwoFactorBrowser):
             if self.force_twofa_type_email:
                 self.otpemailpage.go(
                     data={},
-                    headers={'Accept': 'text/x-component', 'Next-Action': '24ab75ac416eb221418d55a14ba7c79ad34bea7d'},
+                    headers={"Accept": "text/x-component", "Next-Action": "24ab75ac416eb221418d55a14ba7c79ad34bea7d"},
                     json=[self.username],
                 )
                 self.otp_id = self.page.get_otp_id()
                 self.otpemailpage.go(
-                    params={'otpId': self.otp_id},
-                    headers={'Accept': 'text/x-component', 'RSC': '1'},
+                    params={"otpId": self.otp_id},
+                    headers={"Accept": "text/x-component", "RSC": "1"},
                 )
                 medium_type = OTPSentType.EMAIL
 
         if not medium_type:
             if twofa_type and self.otp_id:
                 medium_type = OTPSentType.UNKNOWN
-                if twofa_type == 'sms':
+                if twofa_type == "sms":
                     medium_type = OTPSentType.SMS
-                elif twofa_type == 'email':
+                elif twofa_type == "email":
                     medium_type = OTPSentType.EMAIL
 
         if medium_type:
-            raise SentOTPQuestion(field_name='otp_code', medium_type=medium_type, message='Please type the OTP you received')
+            raise SentOTPQuestion(
+                field_name="otp_code", medium_type=medium_type, message="Please type the OTP you received"
+            )
 
     @retry(BrowserUnavailable)
     def send_credentials(self):
         self.page.login(self.username, self.password)
         if self.error_page.is_here():
-            self.logger.warning('We are on error_page, we retry')
+            self.logger.warning("We are on error_page, we retry")
             self.session.cookies.clear()
             self.login_page.go()
             raise BrowserUnavailable()
@@ -234,12 +254,12 @@ class Freemobile(TwoFactorBrowser):
         self.offerpage.stay_or_go()
         if self.login_page.is_here():
             error = self.page.get_error()
-            if 'restreint suite à un impayé' in error:
+            if "restreint suite à un impayé" in error:
                 raise ActionNeeded(error)
-            elif 'Vous ne pouvez pas avoir accès à cette page' in error:
+            elif "Vous ne pouvez pas avoir accès à cette page" in error:
                 raise BrowserUnavailable(error)
             elif error:
-                raise AssertionError('Unexpected error at subscription: %s' % error)
+                raise AssertionError("Unexpected error at subscription: %s" % error)
 
         if self.main_page.is_here():
             msg = self.page.get_information_message()
@@ -292,23 +312,16 @@ class Freemobile(TwoFactorBrowser):
         if username:
             username = username[0]
         else:
-            raise CantSendMessage(
-                'Cannot fetch own number.'
-            )
+            raise CantSendMessage("Cannot fetch own number.")
 
         self.login_page.go(params={"switch-user": username})
         self.optionspage.go()
 
         api_key = self.page.get_api_key()
         if not api_key:
-            raise CantSendMessage(
-                'Cannot fetch API key for this account, is option enabled?'
-            )
+            raise CantSendMessage("Cannot fetch API key for this account, is option enabled?")
 
-        self.sendAPI.go(
-            username=username, apikey=api_key,
-            msg=message.content
-        )
+        self.sendAPI.go(username=username, apikey=api_key, msg=message.content)
 
     @need_login
     def get_profile(self):

@@ -10,8 +10,8 @@ from pathlib import Path
 from asttokens import ASTTokens
 
 
-mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))
-Checker = mod['Checker']
+mod = runpy.run_path(str(Path(__file__).with_name("checkerlib.py")))
+Checker = mod["Checker"]
 
 # these are ok:
 #   {1: 2, 3: 4}
@@ -74,11 +74,11 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
         has_nl = False
         for idx in range(last_elt_token.index + 1, node.last_token.index):
             if all_tokens[idx].type == tokenize.OP:
-                if all_tokens[idx].string == ',':
+                if all_tokens[idx].string == ",":
                     assert not has_comma
                     has_comma = True
                 else:
-                    assert all_tokens[idx].string == ')'
+                    assert all_tokens[idx].string == ")"
 
             elif all_tokens[idx].type == tokenize.NL:
                 has_nl = True
@@ -89,12 +89,12 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
 
         if not has_comma:
             self.add_error(
-                'expected a comma after element',
+                "expected a comma after element",
                 line=last_elt_token.end[0],
             )
         elif not has_nl:
             self.add_error(
-                'expected end of line between comma and literal end',
+                "expected end of line between comma and literal end",
                 line=last_elt_token.end[0],
             )
 
@@ -105,14 +105,14 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
         if getattr(node, attr)[0]:
             first_elt_token = getattr(node, attr)[0].first_token
         else:
-            assert isinstance(node, ast.Dict) and attr == 'keys', "None node should only be in dict keys"
+            assert isinstance(node, ast.Dict) and attr == "keys", "None node should only be in dict keys"
             # a None node in ast.Dict.keys happens in case of **mapping
             # use the tokens of the value then, nevermind the "**" tokens
             first_elt_token = node.values[0].first_token
 
         if first_elt_token.start[0] == node.first_token.start[0]:
             self.add_error(
-                'first element should start on a new line',
+                "first element should start on a new line",
                 line=first_elt_token.start[0],
             )
 
@@ -123,30 +123,30 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
         self.visit_simple_container(node)
 
     def visit_simple_container(self, node):
-        self.check_trailing(node, 'elts')
-        self.check_first_indent(node, 'elts')
+        self.check_trailing(node, "elts")
+        self.check_first_indent(node, "elts")
         self.generic_visit(node)
 
     def visit_List(self, node):
-        assert node.first_token.string == '['
-        assert node.last_token.string == ']'
+        assert node.first_token.string == "["
+        assert node.last_token.string == "]"
         self.visit_simple_container(node)
 
     def visit_Set(self, node):
-        assert node.first_token.string == '{'
-        assert node.last_token.string == '}'
+        assert node.first_token.string == "{"
+        assert node.last_token.string == "}"
         self.visit_simple_container(node)
 
     def visit_Dict(self, node):
-        assert node.first_token.string == '{'
-        assert node.last_token.string == '}'
+        assert node.first_token.string == "{"
+        assert node.last_token.string == "}"
 
-        self.check_trailing(node, 'values')
-        self.check_first_indent(node, 'keys')
+        self.check_trailing(node, "values")
+        self.check_first_indent(node, "keys")
         self.generic_visit(node)
 
     def visit_Call(self, node):
-        assert node.last_token.string == ')'
+        assert node.last_token.string == ")"
 
         self.generic_visit(node)
 
@@ -158,17 +158,17 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
         # for call "(foo)(bar)", node.func.last_token is "foo"
         # after callable_last, there must be only this:
         #   (COMMENT? NL)* RPAR* (COMMENT? NL)* LPAR
-        for token in self.tokens[callable_last.index + 1:]:
+        for token in self.tokens[callable_last.index + 1 :]:
             if token.type == tokenize.OP:
-                if token.string == '(':
+                if token.string == "(":
                     open_paren = token
                     break
 
-                assert token.string == ')'
+                assert token.string == ")"
             else:
                 assert token.type in (tokenize.NL, tokenize.COMMENT)
         else:
-            raise AssertionError('could not find opening paren')
+            raise AssertionError("could not find opening paren")
 
         if open_paren.start[0] == node.last_token.start[0]:
             # '(' and ')' on the same line
@@ -180,44 +180,42 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
             assert node.keywords
             # here we go again, the keyword is just a string, no .token attribute
 
-            for token in self.tokens[open_paren.index + 1:]:
+            for token in self.tokens[open_paren.index + 1 :]:
                 if token.type == tokenize.NAME:
                     param_first_token = token
                     break
                 elif token.type == tokenize.OP:
-                    assert token.string == '**' and not node.keywords[0].arg
+                    assert token.string == "**" and not node.keywords[0].arg
                     param_first_token = token
                     break
                 assert token.type in (tokenize.NL, tokenize.COMMENT)
             else:
-                raise AssertionError('could not find first keyword')
+                raise AssertionError("could not find first keyword")
 
         if open_paren.start[0] == param_first_token.start[0]:
             # allow compact multiline call if single parameter
             # e.g. "foo([\n1,\n2,\n])"
-            if (
-                len(node.args) == 1 and not node.keywords
-                and node.last_token.end[0] == node.args[0].last_token.end[0]
-            ):
+            if len(node.args) == 1 and not node.keywords and node.last_token.end[0] == node.args[0].last_token.end[0]:
                 return
             elif (
-                len(node.keywords) == 1 and not node.args
+                len(node.keywords) == 1
+                and not node.args
                 and node.last_token.end[0] == node.keywords[0].value.last_token.end[0]
             ):
                 return
 
             self.add_error(
-                'first param should start on a new line',
+                "first param should start on a new line",
                 line=param_first_token.start[0],
             )
 
     def visit_ImportFrom(self, node):
-        assert node.first_token.string == 'from'  # asttokens bug
-        proc = SetTokensOnImport(node, self.tokens[node.first_token.index:node.last_token.index + 1])
+        assert node.first_token.string == "from"  # asttokens bug
+        proc = SetTokensOnImport(node, self.tokens[node.first_token.index : node.last_token.index + 1])
         proc.process()
 
         # TODO reimplement using tokens only, we don't really need the AST for imports
-        self.check_trailing(node, 'names')
+        self.check_trailing(node, "names")
 
     def visit_JoinedStr(self, node):
         # TODO implement checking of f-strings instead of bypassing them
@@ -232,19 +230,19 @@ class TrailingCommaVerifier(Checker, ast.NodeVisitor):
 
 
 class Tokens:
-    Matcher = namedtuple('Matcher', ('type', 'string'))
+    Matcher = namedtuple("Matcher", ("type", "string"))
     # string = None means whatever string
 
-    FROM = Matcher(tokenize.NAME, 'from')
-    IMPORT = Matcher(tokenize.NAME, 'import')
-    AS = Matcher(tokenize.NAME, 'as')
+    FROM = Matcher(tokenize.NAME, "from")
+    IMPORT = Matcher(tokenize.NAME, "import")
+    AS = Matcher(tokenize.NAME, "as")
     ANY_NAME = Matcher(tokenize.NAME, None)
 
-    DOT = Matcher(tokenize.OP, '.')
-    COMMA = Matcher(tokenize.OP, ',')
-    OPEN = Matcher(tokenize.OP, '(')
-    CLOSE = Matcher(tokenize.OP, ')')
-    STAR = Matcher(tokenize.OP, '*')
+    DOT = Matcher(tokenize.OP, ".")
+    COMMA = Matcher(tokenize.OP, ",")
+    OPEN = Matcher(tokenize.OP, "(")
+    CLOSE = Matcher(tokenize.OP, ")")
+    STAR = Matcher(tokenize.OP, "*")
 
 
 class RuleBase:
@@ -324,7 +322,7 @@ class SetTokensOnImport(RuleBase):
             # "from foo import bar" and related forms
             self.do_from_import()
         else:
-            raise AssertionError('nothing was probed')
+            raise AssertionError("nothing was probed")
 
     def do_basic_import(self):
         self.do_module_as()
@@ -388,10 +386,10 @@ class SetTokensOnImport(RuleBase):
             self.match(Tokens.ANY_NAME)
 
 
-args = mod['parser'].parse_args()
+args = mod["parser"].parse_args()
 
 exit_code = 0
-for file in mod['files_to_check'](args):
+for file in mod["files_to_check"](args):
     verifier = TrailingCommaVerifier(file)
     if not verifier.check():
         exit_code = 1

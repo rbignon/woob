@@ -28,7 +28,11 @@ from woob.capabilities.bank import Account
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import (
-    AppValidation, AppValidationCancelled, AppValidationExpired, BrowserIncorrectPassword, BrowserUserBanned,
+    AppValidation,
+    AppValidationCancelled,
+    AppValidationExpired,
+    BrowserIncorrectPassword,
+    BrowserUserBanned,
     NotImplementedWebsite,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -36,11 +40,31 @@ from woob.tools.captcha.virtkeyboard import VirtKeyboardError
 from woob.tools.decorators import retry
 
 from .pages import (
-    AccountHistoryPage, AccountsPage, AllianzInvestmentPage, AmundiInvestmentsPage, AuthenticateFailsPage,
-    AxaInvestmentApiPage, AxaInvestmentPage, BNPInvestmentApiPage, BNPInvestmentPage, ConfigPage, CprInvestmentPage,
-    CprPerformancePage, EcofiInvestmentPage, EEInvestmentPage, EEProductInvestmentPage, EpsensInvestmentPage,
-    EresInvestmentPage, ESAccountsPage, InvestmentDetailPage, InvestmentPerformancePage, LoginPage, MFAStatusPage,
-    OlisnetInvestmentPage, SGGestionInvestmentPage, SGGestionPerformancePage,
+    AccountHistoryPage,
+    AccountsPage,
+    AllianzInvestmentPage,
+    AmundiInvestmentsPage,
+    AuthenticateFailsPage,
+    AxaInvestmentApiPage,
+    AxaInvestmentPage,
+    BNPInvestmentApiPage,
+    BNPInvestmentPage,
+    ConfigPage,
+    CprInvestmentPage,
+    CprPerformancePage,
+    EcofiInvestmentPage,
+    EEInvestmentPage,
+    EEProductInvestmentPage,
+    EpsensInvestmentPage,
+    EresInvestmentPage,
+    ESAccountsPage,
+    InvestmentDetailPage,
+    InvestmentPerformancePage,
+    LoginPage,
+    MFAStatusPage,
+    OlisnetInvestmentPage,
+    SGGestionInvestmentPage,
+    SGGestionPerformancePage,
 )
 
 
@@ -50,70 +74,70 @@ class AmundiBrowser(TwoFactorBrowser):
     HAS_CREDENTIALS_ONLY = True
     STATE_DURATION = 10
 
-    login = URL(r'public/login/virtualKeyboard', LoginPage)
-    mfa_status = URL(r'/public/individu/push\?jti=(?P<mfa_id>)', MFAStatusPage)
-    config_page = URL(r'public/config', ConfigPage)
-    authenticate_fails = URL(r'public/authenticateFails', AuthenticateFailsPage)
-    accounts = URL(r'api/individu/dispositifsMulti\?flagUrlFicheFonds=true&codeLangueIso2=fr', AccountsPage)
+    login = URL(r"public/login/virtualKeyboard", LoginPage)
+    mfa_status = URL(r"/public/individu/push\?jti=(?P<mfa_id>)", MFAStatusPage)
+    config_page = URL(r"public/config", ConfigPage)
+    authenticate_fails = URL(r"public/authenticateFails", AuthenticateFailsPage)
+    accounts = URL(r"api/individu/dispositifsMulti\?flagUrlFicheFonds=true&codeLangueIso2=fr", AccountsPage)
     account_history = URL(
-        r'api/individu/operations\?valeurExterne=false&filtreStatutModeExclusion=false&statut=CPTA',
+        r"api/individu/operations\?valeurExterne=false&filtreStatutModeExclusion=false&statut=CPTA",
         AccountHistoryPage,
     )
 
     # Amundi.fr investments
-    amundi_investments = URL(r'https://www.amundi.fr/fr_part/product/view', AmundiInvestmentsPage)
+    amundi_investments = URL(r"https://www.amundi.fr/fr_part/product/view", AmundiInvestmentsPage)
     # EEAmundi browser investments
     ee_investments = URL(
-        r'https://www.amundi-ee.com/part/home_fp&partner=PACTEO_SYS',
-        r'https://funds.amundi-ee.com/productsheet/open/',
+        r"https://www.amundi-ee.com/part/home_fp&partner=PACTEO_SYS",
+        r"https://funds.amundi-ee.com/productsheet/open/",
         EEInvestmentPage,
     )
-    performance_details = URL(r'https://(.*)/ezjscore/call(.*)_tab_2', InvestmentPerformancePage)
-    investment_details = URL(r'https://(.*)/ezjscore/call(.*)_tab_5', InvestmentDetailPage)
+    performance_details = URL(r"https://(.*)/ezjscore/call(.*)_tab_2", InvestmentPerformancePage)
+    investment_details = URL(r"https://(.*)/ezjscore/call(.*)_tab_5", InvestmentDetailPage)
     # EEAmundi product investments
-    ee_product_investments = URL(r'https://www.amundi-ee.com/product', EEProductInvestmentPage)
+    ee_product_investments = URL(r"https://www.amundi-ee.com/product", EEProductInvestmentPage)
     # Allianz GI investments
-    allianz_investments = URL(r'https://fr.allianzgi.com', AllianzInvestmentPage)
+    allianz_investments = URL(r"https://fr.allianzgi.com", AllianzInvestmentPage)
     # Eres investments
-    eres_investments = URL(r'https://www.eres-group.com/eres/new_fiche_fonds.php', EresInvestmentPage)
+    eres_investments = URL(r"https://www.eres-group.com/eres/new_fiche_fonds.php", EresInvestmentPage)
     # CPR asset management investments
-    cpr_investments = URL(r'https://www.cpr-am.fr/particuliers/product/view', CprInvestmentPage)
-    cpr_performance = URL(r'https://www.cpr-am.fr/particuliers/ezjscore', CprPerformancePage)
+    cpr_investments = URL(r"https://www.cpr-am.fr/particuliers/product/view", CprInvestmentPage)
+    cpr_performance = URL(r"https://www.cpr-am.fr/particuliers/ezjscore", CprPerformancePage)
     # BNP Paribas Epargne Retraite Entreprises
     bnp_investments = URL(
-        r'https://www.epargne-retraite-entreprises.bnpparibas.com/entreprises/fonds',
-        r'https://www.epargne-retraite-entreprises.bnpparibas.com/epargnants/fonds',
+        r"https://www.epargne-retraite-entreprises.bnpparibas.com/entreprises/fonds",
+        r"https://www.epargne-retraite-entreprises.bnpparibas.com/epargnants/fonds",
         BNPInvestmentPage,
     )
     bnp_investment_api = URL(
-        r'https://www.epargne-retraite-entreprises.bnpparibas.com/api2/funds/overview/(?P<fund_id>.*)',
+        r"https://www.epargne-retraite-entreprises.bnpparibas.com/api2/funds/overview/(?P<fund_id>.*)",
         BNPInvestmentApiPage,
     )
     # AXA investments
-    axa_investments = URL(r'https://(.*).axa-im.fr/fonds', AxaInvestmentPage)
+    axa_investments = URL(r"https://(.*).axa-im.fr/fonds", AxaInvestmentPage)
     axa_inv_api_redirection = URL(
-        r'https://(?P<space>.*).axa-im.fr/o/fundscenter/api/funds/detail/header/fr_FR/(?P<fund_id>.*)',
+        r"https://(?P<space>.*).axa-im.fr/o/fundscenter/api/funds/detail/header/fr_FR/(?P<fund_id>.*)",
         AxaInvestmentApiPage,
     )
     axa_inv_api = URL(
-        r'https://(?P<space>.*).axa-im.fr/o/fundscenter/api/funds/detail/(?P<api_fund_id>.*)/performance/table/cumulative/fr_FR',
+        r"https://(?P<space>.*).axa-im.fr/o/fundscenter/api/funds/detail/(?P<api_fund_id>.*)/performance/table/cumulative/fr_FR",
         AxaInvestmentApiPage,
     )
     # Epsens investments
-    epsens_investments = URL(r'https://www.epsens.com/information-financiere', EpsensInvestmentPage)
+    epsens_investments = URL(r"https://www.epsens.com/information-financiere", EpsensInvestmentPage)
     # Ecofi investments
-    ecofi_investments = URL(r'http://www.ecofi.fr/fr/fonds/dynamis-solidaire', EcofiInvestmentPage)
+    ecofi_investments = URL(r"http://www.ecofi.fr/fr/fonds/dynamis-solidaire", EcofiInvestmentPage)
     # Société Générale gestion investments
     sg_gestion_investments = URL(
-        r'https://www.societegeneralegestion.fr/psSGGestionEntr/productsheet/view/idvm',
+        r"https://www.societegeneralegestion.fr/psSGGestionEntr/productsheet/view/idvm",
         SGGestionInvestmentPage,
     )
     sg_gestion_performance = URL(
-        r'https://www.societegeneralegestion.fr/psSGGestionEntr/ezjscore/call',
+        r"https://www.societegeneralegestion.fr/psSGGestionEntr/ezjscore/call",
         SGGestionPerformancePage,
     )
     # olisnet investments
-    olisnet_investments = URL(r'https://ims.olisnet.com/extranet/(?P<action>).*', OlisnetInvestmentPage)
+    olisnet_investments = URL(r"https://ims.olisnet.com/extranet/(?P<action>).*", OlisnetInvestmentPage)
 
     def __init__(self, config, *args, **kwargs):
         super().__init__(config, *args, **kwargs)
@@ -123,10 +147,10 @@ class AmundiBrowser(TwoFactorBrowser):
         self.token_header = None
 
         self.AUTHENTICATION_METHODS = {
-            'resume': self.handle_polling,
+            "resume": self.handle_polling,
         }
 
-        self.__states__ = ('has_mfa', 'mfa_id', 'token_header')
+        self.__states__ = ("has_mfa", "mfa_id", "token_header")
 
     def locate_browser(self, state):
         if not self.token_header:
@@ -139,11 +163,8 @@ class AmundiBrowser(TwoFactorBrowser):
         try:
             super().locate_browser(state)
         except ClientError as e:
-            if (
-                e.response.status_code == 401
-                and e.response.json()['message'] == 'WEB Authentication Required'
-            ):
-                self.location(state['url'], headers=self.token_header)
+            if e.response.status_code == 401 and e.response.json()["message"] == "WEB Authentication Required":
+                self.location(state["url"], headers=self.token_header)
             else:
                 raise
 
@@ -175,24 +196,26 @@ class AmundiBrowser(TwoFactorBrowser):
         self.authenticate_fails.go(json={"username": self.username})
         connexion_status = self.response.json()
         if connexion_status == 3:
-            raise BrowserUserBanned('Votre compte a été temporairement bloqué pour des raisons de sécurité (3 tentatives successives erronées).')
+            raise BrowserUserBanned(
+                "Votre compte a été temporairement bloqué pour des raisons de sécurité (3 tentatives successives erronées)."
+            )
 
         # Hardcoded website_key because the HTML containing it is dynamically generated by JS
-        website_key = '6LdBGWYUAAAAAK-5wpJNH0u1RrtIBVZI2xh1mixt'
+        website_key = "6LdBGWYUAAAAAK-5wpJNH0u1RrtIBVZI2xh1mixt"
         website_url = self.BASEURL
-        captcha_response = self.config['captcha_response'].get()
+        captcha_response = self.config["captcha_response"].get()
         if not captcha_response:
             raise RecaptchaV2Question(website_key=website_key, website_url=website_url)
 
         data = {
-            'site': 'm1st',
-            'username': self.username,
-            'password': self.password,
-            'captcha': captcha_response,
-            'uuid': uuid,
-            'platform': 'web',
-            'country': '',
-            'city': '',
+            "site": "m1st",
+            "username": self.username,
+            "password": self.password,
+            "captcha": captcha_response,
+            "uuid": uuid,
+            "platform": "web",
+            "country": "",
+            "city": "",
         }
 
         try:
@@ -206,18 +229,18 @@ class AmundiBrowser(TwoFactorBrowser):
                     + "Veuillez cliquer sur la notification de votre téléphone mobile pour valider l’accès à votre espace personnel."
                 )
 
-            if 'epargnant' not in self.page.get_current_domain():
+            if "epargnant" not in self.page.get_current_domain():
                 # Able only to handle subspaces behind domains 'epargnant.amundi or epargnant.cal-els'
                 # TODO: handle amundi-ee.com/account website
                 raise NotImplementedWebsite()
 
             self.has_mfa = False
-            self.token_header = {'X-noee-authorization': token}
+            self.token_header = {"X-noee-authorization": token}
         except ClientError as e:
             if e.response.status_code == 401:
-                message = e.response.json().get('message', '')
+                message = e.response.json().get("message", "")
                 # Wrong username
-                if 'problem on profile for' in message.lower():
+                if "problem on profile for" in message.lower():
                     raise BrowserIncorrectPassword(message)
 
             # No other way to know if we have a wrong password
@@ -233,7 +256,7 @@ class AmundiBrowser(TwoFactorBrowser):
             except ClientError as error:
                 if error.response.status_code == 403:  # no message
                     raise AppValidationCancelled()
-                raise AssertionError('Unhandled error during mfa')
+                raise AssertionError("Unhandled error during mfa")
 
             else:
                 token = self.page.get_token()
@@ -241,11 +264,11 @@ class AmundiBrowser(TwoFactorBrowser):
                     time.sleep(3)
                     continue
 
-                if 'epargnant' not in self.page.get_current_domain():
+                if "epargnant" not in self.page.get_current_domain():
                     # Able only to handle subspaces behind domains 'epargnant.amundi or epargnant.cal-els'
                     # TODO: handle amundi-ee.com/account website
                     raise NotImplementedWebsite()
-                self.token_header = {'X-noee-authorization': token}
+                self.token_header = {"X-noee-authorization": token}
                 return
 
         raise AppValidationExpired()
@@ -280,14 +303,16 @@ class AmundiBrowser(TwoFactorBrowser):
             for master_account in master_accounts_list:
                 # Case 2: The account has a master account but both of them got a positive balance.
                 # We need to remove "Piloté" or "Libre" from the master account label.
-                if all((
-                    account._master_id == master_account._id_dispositif,
-                    account.balance > 0,
-                    master_account.balance > 0,
-                    ('Piloté' in account.label and 'Libre' in master_account.label)
-                    or ('Piloté' in master_account.label and 'Libre' in account.label),
-                )):
-                    master_account.label = re.sub(r' Piloté| Libre', '', master_account.label)
+                if all(
+                    (
+                        account._master_id == master_account._id_dispositif,
+                        account.balance > 0,
+                        master_account.balance > 0,
+                        ("Piloté" in account.label and "Libre" in master_account.label)
+                        or ("Piloté" in master_account.label and "Libre" in account.label),
+                    )
+                ):
+                    master_account.label = re.sub(r" Piloté| Libre", "", master_account.label)
 
                 # Case 3: The account has a master.
                 if account.balance > 0 and account._master_id == master_account._id_dispositif:
@@ -315,7 +340,7 @@ class AmundiBrowser(TwoFactorBrowser):
         self.accounts.go(headers=self.token_header)
         company_name = self.page.get_company_name()
         if empty(company_name):
-            self.logger.warning('Could not find the company name for these accounts.')
+            self.logger.warning("Could not find the company name for these accounts.")
 
         accounts = list(self.page.iter_accounts(username=self.username))
 
@@ -325,11 +350,13 @@ class AmundiBrowser(TwoFactorBrowser):
         # transfer his history in the active linked account.
         for account in accounts:
             # We only retrieve link of PEE accounts with null balances.
-            if all((
-                account._code_dispositif_lie,
-                account.balance == 0,
-                account.type == Account.TYPE_PEE,
-            )):
+            if all(
+                (
+                    account._code_dispositif_lie,
+                    account.balance == 0,
+                    account.type == Account.TYPE_PEE,
+                )
+            ):
                 for acc in accounts:
                     if acc.balance > 0 and account._code_dispositif_lie == acc.id:
                         acc._linked_accounts.append(account.id)
@@ -341,30 +368,30 @@ class AmundiBrowser(TwoFactorBrowser):
     @need_login
     def iter_investment(self, account):
         if account.balance == 0:
-            self.logger.info('Account %s has a null balance, no investment available.', account.label)
+            self.logger.info("Account %s has a null balance, no investment available.", account.label)
             return
         self.accounts.stay_or_go(headers=self.token_header)
 
         ignored_urls = (
-            'www.sggestion-ede.com/product',  # Going there leads to a 404
-            'www.assetmanagement.hsbc.com',  # Information not accessible
+            "www.sggestion-ede.com/product",  # Going there leads to a 404
+            "www.assetmanagement.hsbc.com",  # Information not accessible
         )
 
         handled_urls = (
-            'www.amundi.fr/fr_part',  # AmundiInvestmentsPage
-            'funds.amundi-ee.com/productsheet',  # EEInvestmentDetailPage & EEInvestmentPerformancePage
-            'www.amundi-ee.com/part/home_fp',  # EEInvestmentDetailPage & EEInvestmentPerformancePage
-            'www.amundi-ee.com/product',  # EEProductInvestmentPage
-            'fr.allianzgi.com/fr-fr',  # AllianzInvestmentPage
-            'www.eres-group.com/eres',  # EresInvestmentPage
-            'www.cpr-am.fr/particuliers/product',  # CprInvestmentPage
-            'www.epargne-retraite-entreprises.bnpparibas.com',  # BNPInvestmentPage
-            'axa-im.fr/fonds',  # AxaInvestmentPage
-            'www.epsens.com/information-financiere',  # EpsensInvestmentPage
-            'www.ecofi.fr/fr/fonds/dynamis-solidaire',  # EcofiInvestmentPage
-            'www.societegeneralegestion.fr',  # SGGestionInvestmentPage
-            'https://ims.olisnet.com/extranet',  # OlisnetInvestmentPage
-            'www.labanquepostale-am.fr/fr/nos-fonds',  # BPESInvestmentDetailsPage
+            "www.amundi.fr/fr_part",  # AmundiInvestmentsPage
+            "funds.amundi-ee.com/productsheet",  # EEInvestmentDetailPage & EEInvestmentPerformancePage
+            "www.amundi-ee.com/part/home_fp",  # EEInvestmentDetailPage & EEInvestmentPerformancePage
+            "www.amundi-ee.com/product",  # EEProductInvestmentPage
+            "fr.allianzgi.com/fr-fr",  # AllianzInvestmentPage
+            "www.eres-group.com/eres",  # EresInvestmentPage
+            "www.cpr-am.fr/particuliers/product",  # CprInvestmentPage
+            "www.epargne-retraite-entreprises.bnpparibas.com",  # BNPInvestmentPage
+            "axa-im.fr/fonds",  # AxaInvestmentPage
+            "www.epsens.com/information-financiere",  # EpsensInvestmentPage
+            "www.ecofi.fr/fr/fonds/dynamis-solidaire",  # EcofiInvestmentPage
+            "www.societegeneralegestion.fr",  # SGGestionInvestmentPage
+            "https://ims.olisnet.com/extranet",  # OlisnetInvestmentPage
+            "www.labanquepostale-am.fr/fr/nos-fonds",  # BPESInvestmentDetailsPage
         )
 
         def aggregate_investments(investments):
@@ -391,7 +418,7 @@ class AmundiBrowser(TwoFactorBrowser):
                     else:
                         if not any(url in inv._details_url for url in ignored_urls):
                             # Not need to raise warning if the URL is already known and ignored
-                            self.logger.warning('Investment details on URL %s are not handled yet.', inv._details_url)
+                            self.logger.warning("Investment details on URL %s are not handled yet.", inv._details_url)
                         inv.asset_category = NotAvailable
                         inv.recommended_period = NotAvailable
                 yield inv
@@ -402,7 +429,7 @@ class AmundiBrowser(TwoFactorBrowser):
             for sub_account in account._sub_accounts:
                 account_ids.append(sub_account.id)
                 if sub_account.balance == 0:
-                    self.logger.info('Account %s has a null balance, no investment available.', sub_account.label)
+                    self.logger.info("Account %s has a null balance, no investment available.", sub_account.label)
                     continue
 
                 investments.extend(list(iter_investment_from_account(sub_account)))
@@ -421,7 +448,7 @@ class AmundiBrowser(TwoFactorBrowser):
             self.location(inv._details_url)
         except (ServerError, BrowserHTTPNotFound):
             # Some URLs return a 500 or a 404 even on the website
-            self.logger.warning('Details are not available for this investment.')
+            self.logger.warning("Details are not available for this investment.")
             inv.asset_category = NotAvailable
             inv.recommended_period = NotAvailable
             return inv
@@ -434,8 +461,8 @@ class AmundiBrowser(TwoFactorBrowser):
         # Pages with asset_category & perfomance
         if self.axa_investments.is_here():
             params = self.page.get_redirection_params()
-            fund_id = re.search(r'(\d+)', self.url.split('-')[-1]).group(1)
-            space = re.search(r'https:\/\/(\w+).axa', self.url).group(1)
+            fund_id = re.search(r"(\d+)", self.url.split("-")[-1]).group(1)
+            space = re.search(r"https:\/\/(\w+).axa", self.url).group(1)
             self.axa_inv_api_redirection.go(space=space, fund_id=fund_id, params=params)
 
             self.page.get_asset_category(obj=inv)
@@ -446,19 +473,18 @@ class AmundiBrowser(TwoFactorBrowser):
             self.page.fill_investment(obj=inv)
 
         # Pages with asset category & recommended period
-        elif any((
-            self.eres_investments.is_here(),
-            self.ee_product_investments.is_here(),
-            self.epsens_investments.is_here(),
-            self.ecofi_investments.is_here(),
-        )):
+        elif any(
+            (
+                self.eres_investments.is_here(),
+                self.ee_product_investments.is_here(),
+                self.epsens_investments.is_here(),
+                self.ecofi_investments.is_here(),
+            )
+        ):
             self.page.fill_investment(obj=inv)
 
         # Particular cases
-        elif (
-            self.ee_investments.is_here()
-            or self.amundi_investments.is_here()
-        ):
+        elif self.ee_investments.is_here() or self.amundi_investments.is_here():
             if self.ee_investments.is_here():
                 inv.recommended_period = self.page.get_recommended_period()
             details_url = self.page.get_details_url()
@@ -478,10 +504,7 @@ class AmundiBrowser(TwoFactorBrowser):
                     if complete_performance_history:
                         inv.performance_history = complete_performance_history
 
-        elif (
-            self.sg_gestion_investments.is_here()
-            or self.cpr_investments.is_here()
-        ):
+        elif self.sg_gestion_investments.is_here() or self.cpr_investments.is_here():
             # Fetch asset category & recommended period
             self.page.fill_investment(obj=inv)
             # Fetch all performances on the details page
@@ -497,21 +520,21 @@ class AmundiBrowser(TwoFactorBrowser):
             fund_id = self.page.get_fund_id()
             if fund_id:
                 # Specify the 'Accept' header otherwise the server returns WSDL instead of JSON
-                self.bnp_investment_api.go(fund_id=fund_id, headers={'Accept': 'application/json'})
+                self.bnp_investment_api.go(fund_id=fund_id, headers={"Accept": "application/json"})
                 self.page.fill_investment(obj=inv)
             else:
-                self.logger.warning('Could not fetch the fund_id for BNP investment %s.', inv.label)
+                self.logger.warning("Could not fetch the fund_id for BNP investment %s.", inv.label)
                 inv.asset_category = NotAvailable
                 inv.recommended_period = NotAvailable
 
         elif self.olisnet_investments.is_here():
             graph_id = self.page.get_graph_id()
-            self.olisnet_investments.go(action='benchmark.jsp')
+            self.olisnet_investments.go(action="benchmark.jsp")
             inv.performance_history[5] = self.page.get_performance()
 
             for year in (1, 3):
-                self.olisnet_investments.go(action='duree.jsp', params={'cs': graph_id, 'duree': f'{year}a'})
-                self.olisnet_investments.go(action='benchmark.jsp')
+                self.olisnet_investments.go(action="duree.jsp", params={"cs": graph_id, "duree": f"{year}a"})
+                self.olisnet_investments.go(action="benchmark.jsp")
                 inv.performance_history[year] = self.page.get_performance()
 
         return inv
@@ -519,7 +542,7 @@ class AmundiBrowser(TwoFactorBrowser):
     @need_login
     def iter_pockets(self, account):
         if account.balance == 0:
-            self.logger.info('Account %s has a null balance, no pocket available.', account.label)
+            self.logger.info("Account %s has a null balance, no pocket available.", account.label)
             return
 
         self.accounts.stay_or_go(headers=self.token_header)
@@ -563,33 +586,33 @@ class AmundiBrowser(TwoFactorBrowser):
 
 class EEAmundi(AmundiBrowser):
     # Careful if you modify the BASEURL, also verify Amundi's Children modules
-    BASEURL = 'https://epargnant.amundi-ee.com/'
+    BASEURL = "https://epargnant.amundi-ee.com/"
 
 
 class TCAmundi(AmundiBrowser):
     # Careful if you modify the BASEURL, also verify Amundi's Children modules
-    BASEURL = 'https://epargnant.amundi-tc.com/'
+    BASEURL = "https://epargnant.amundi-tc.com/"
 
 
 class CAAmundi(AmundiBrowser):
     # Careful if you modify the BASEURL, also verify Amundi's Children modules
-    BASEURL = 'https://epargnant.amundi-ca-assurances.com/'
+    BASEURL = "https://epargnant.amundi-ca-assurances.com/"
 
 
 class ESAmundi(AmundiBrowser):
     # Careful if you modify the BASEURL, also verify Amundi's Children modules
-    BASEURL = 'https://www.amundi-ee.com/account/'
+    BASEURL = "https://www.amundi-ee.com/account/"
 
-    keyboard = URL(r'public/virtualKeyboard', LoginPage)
-    login = URL(r'public/authenticate', LoginPage)
+    keyboard = URL(r"public/virtualKeyboard", LoginPage)
+    login = URL(r"public/authenticate", LoginPage)
     accounts = URL(
-        r'api/individu/positionsFonds\?inclurePositionVide=false&flagUrlFicheFonds=true',
+        r"api/individu/positionsFonds\?inclurePositionVide=false&flagUrlFicheFonds=true",
         ESAccountsPage,
     )
 
     @retry(VirtKeyboardError, delay=0)
     def get_vk_password(self):
-        """ Transform password to vk_password
+        """Transform password to vk_password
 
         Vk image is sent in base64.
         For each keyboard the numbers are formatted in a unique style.
@@ -605,7 +628,7 @@ class ESAmundi(AmundiBrowser):
         return keyboard, vk_password
 
     def do_login(self):
-        captcha_response = self.config['captcha_response'].get()
+        captcha_response = self.config["captcha_response"].get()
         if not captcha_response:
             self.go_home()
             self.config_page.go()
@@ -615,10 +638,10 @@ class ESAmundi(AmundiBrowser):
         keyboard, vk_password = self.get_vk_password()
 
         json_data = {
-            'captcha': captcha_response,
-            'idKeyboard': keyboard['id'],
-            'password': vk_password,
-            'username': self.username,
+            "captcha": captcha_response,
+            "idKeyboard": keyboard["id"],
+            "password": vk_password,
+            "username": self.username,
         }
         try:
             self.login.go(json=json_data)
@@ -628,4 +651,4 @@ class ESAmundi(AmundiBrowser):
                 raise BrowserIncorrectPassword()
             raise
 
-        self.token_header = {'X-noee-authorization': self.page.get_token()}
+        self.token_header = {"X-noee-authorization": self.page.get_token()}

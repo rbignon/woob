@@ -21,4 +21,4 @@
 from .module import RATPModule
 
 
-__all__ = ['RATPModule']
+__all__ = ["RATPModule"]

@@ -28,65 +28,79 @@ from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bank import Account
 from woob.capabilities.base import empty
 from woob.exceptions import (
-    ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable, OTPSentType,
+    ActionNeeded,
+    ActionType,
+    AuthMethodNotImplemented,
+    BrowserIncorrectPassword,
+    BrowserUnavailable,
+    OTPSentType,
     SentOTPQuestion,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 
 from .pages import (
-    AccountDetailsPage, AccountDetailsPageBis, AccountsPage, HistoryPage, HomePage, LifeInsurancePage,
-    LifeInsurancePageInvestmentsDetails, LoginPage, ProfilePage, RibPage, RootPage, WPSAccountsPage, WPSPortalPage,
+    AccountDetailsPage,
+    AccountDetailsPageBis,
+    AccountsPage,
+    HistoryPage,
+    HomePage,
+    LifeInsurancePage,
+    LifeInsurancePageInvestmentsDetails,
+    LoginPage,
+    ProfilePage,
+    RibPage,
+    RootPage,
+    WPSAccountsPage,
+    WPSPortalPage,
 )
 
 
-__all__ = ['GanPatrimoineBrowser']
+__all__ = ["GanPatrimoineBrowser"]
 
 
 class GanPatrimoineBrowser(TwoFactorBrowser):
     HAS_CREDENTIALS_ONLY = True
 
-    root_page = URL(r'/$', RootPage)
-    login = URL(r'https://authentification.(?P<website>.*).fr/auth/realms', LoginPage)
-    home = URL(r'/front', HomePage)
-    accounts = URL(r'api/ecli/dossierclient/api/v2/contrats', AccountsPage)
-    account_details = URL(r'/api/v1/contrats/(?P<account_id>.*)', AccountDetailsPage)
-    account_details_bis = URL(r'/api/ecli/dossierclient/api/v1/contrats/(?P<account_id>.*)', AccountDetailsPageBis)
-    history = URL(r'/api/ecli/vie/historique', HistoryPage)
-    profile_page = URL(r'/api/v1/utilisateur', ProfilePage)
-    wps_dashboard = URL(r'/wps/myportal/TableauDeBord', WPSAccountsPage)
-    rib_page = URL(r'/wps/myportal/.*/res/id=QCPDetailRib.jsp', RibPage)
-    wps_portal = URL('/wps/myportal/!ut/', WPSPortalPage)
+    root_page = URL(r"/$", RootPage)
+    login = URL(r"https://authentification.(?P<website>.*).fr/auth/realms", LoginPage)
+    home = URL(r"/front", HomePage)
+    accounts = URL(r"api/ecli/dossierclient/api/v2/contrats", AccountsPage)
+    account_details = URL(r"/api/v1/contrats/(?P<account_id>.*)", AccountDetailsPage)
+    account_details_bis = URL(r"/api/ecli/dossierclient/api/v1/contrats/(?P<account_id>.*)", AccountDetailsPageBis)
+    history = URL(r"/api/ecli/vie/historique", HistoryPage)
+    profile_page = URL(r"/api/v1/utilisateur", ProfilePage)
+    wps_dashboard = URL(r"/wps/myportal/TableauDeBord", WPSAccountsPage)
+    rib_page = URL(r"/wps/myportal/.*/res/id=QCPDetailRib.jsp", RibPage)
+    wps_portal = URL("/wps/myportal/!ut/", WPSPortalPage)
 
     # URLs for some life insurance contracts are on a different website
-    LIFE_INSURANCE_URL = 'https://www.contrat-groupe-ganassurances.fr'
+    LIFE_INSURANCE_URL = "https://www.contrat-groupe-ganassurances.fr"
     life_insurances_private = URL(
-        r'/lib/aspx/EspacePrive/Salarie/TableauDeBord.aspx',
-        LifeInsurancePage,
-        base='LIFE_INSURANCE_URL'
+        r"/lib/aspx/EspacePrive/Salarie/TableauDeBord.aspx", LifeInsurancePage, base="LIFE_INSURANCE_URL"
     )
     life_insurances_details = URL(
-        r'/lib/aspx/EspacePrive/Salarie/Retraite_UC/Epargne.aspx\?ct=',
+        r"/lib/aspx/EspacePrive/Salarie/Retraite_UC/Epargne.aspx\?ct=",
         LifeInsurancePageInvestmentsDetails,
-        base='LIFE_INSURANCE_URL'
+        base="LIFE_INSURANCE_URL",
     )
 
     def __init__(self, website, *args, **kwargs):
         super(GanPatrimoineBrowser, self).__init__(*args, **kwargs)
         self.website = website
-        self.BASEURL = 'https://espaceclient.%s.fr' % website
+        self.BASEURL = "https://espaceclient.%s.fr" % website
         self.has_otp = False
 
         self.AUTHENTICATION_METHODS = {
-            'otp_sms': self.handle_sms,
+            "otp_sms": self.handle_sms,
         }
 
     def handle_sms(self):
         self.page.post_2fa_form(self.otp_sms)
         if self.login.is_here():
             if self.page.has_strong_authentication():
-                raise BrowserIncorrectPassword(bad_fields='otp_sms')
-            raise AssertionError('Unexpected error at login')
+                raise BrowserIncorrectPassword(bad_fields="otp_sms")
+            raise AssertionError("Unexpected error at login")
 
     def init_login(self):
         if self.has_otp:
@@ -98,10 +112,10 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
             self.location(self.BASEURL)
         except Timeout:
             # We assume that the website is under maintenance/down
-            raise BrowserUnavailable('Espace client indisponible')
+            raise BrowserUnavailable("Espace client indisponible")
 
         if self.root_page.is_here() and self.page.is_website_unavailable():
-            raise BrowserUnavailable('Espace client indisponible')
+            raise BrowserUnavailable("Espace client indisponible")
 
         # This part is necessary for a child module with a different login URL.
         if not self.login.is_here():
@@ -116,7 +130,7 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
                 # SMS is already send, we can't stop it
                 self.has_otp = True
                 raise SentOTPQuestion(
-                    'otp_sms',
+                    "otp_sms",
                     medium_type=OTPSentType.SMS,
                     medium_label=self.page.get_otp_phone_number(),
                     message=self.page.get_otp_message(),
@@ -129,34 +143,35 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
                 # that send the SMS directly without asking.
                 raise AuthMethodNotImplemented()
 
-            if any((
-                'Identifiant ou mot de passe incorrect' in error_message,
-                '3 essais infructueux' in error_message,
-            )):
+            if any(
+                (
+                    "Identifiant ou mot de passe incorrect" in error_message,
+                    "3 essais infructueux" in error_message,
+                )
+            ):
                 raise BrowserIncorrectPassword(error_message)
 
-            if 'Vous devez vous connecter avec votre numéro client' in error_message:
-                raise BrowserIncorrectPassword(error_message, bad_fields=['login'])
+            if "Vous devez vous connecter avec votre numéro client" in error_message:
+                raise BrowserIncorrectPassword(error_message, bad_fields=["login"])
 
-            unavailable_error = re.compile(
-                'Erreur inattendue|Problème technique'
-            )
+            unavailable_error = re.compile("Erreur inattendue|Problème technique")
             if unavailable_error.search(error_message):
                 raise BrowserUnavailable()
 
-            if 'Erreur de connexion' in error_message and self.page.is_wrongpass():
+            if "Erreur de connexion" in error_message and self.page.is_wrongpass():
                 raise BrowserIncorrectPassword()
 
-            if 'Connexion non autorisée' in error_message:
+            if "Connexion non autorisée" in error_message:
                 raise ActionNeeded(error_message)
 
-            if 'Oups ! Numéro de mobile absent' in error_message:
+            if "Oups ! Numéro de mobile absent" in error_message:
                 raise ActionNeeded(
-                    locale="fr-FR", message="Votre espace client requiert l'ajout d'un numéro de téléphone",
+                    locale="fr-FR",
+                    message="Votre espace client requiert l'ajout d'un numéro de téléphone",
                     action_type=ActionType.ENABLE_MFA,
                 )
 
-            assert False, 'Unhandled error at login: %s' % error_message
+            assert False, "Unhandled error at login: %s" % error_message
 
     @need_login
     def iter_accounts(self):
@@ -168,12 +183,14 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
             except HTTPNotFound:
                 # Some accounts have no available detail on the new website,
                 # the server then returns a 404 error
-                self.logger.warning('No available detail for account n°%s on the new website, it will be skipped.', account.id)
+                self.logger.warning(
+                    "No available detail for account n°%s on the new website, it will be skipped.", account.id
+                )
                 continue
 
             # We must deal with different account categories differently
             # because the JSON content depends on the account category.
-            if account._category == 'compte bancaire':
+            if account._category == "compte bancaire":
                 self.page.fill_account(obj=account)
                 # JSON of checking accounts may contain deferred cards
                 for card in self.page.iter_cards():
@@ -181,13 +198,13 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
                     card._url = account._url
                     yield card
 
-            elif account._category in ('epargne bancaire', 'compte titres', 'certificat mutualiste'):
+            elif account._category in ("epargne bancaire", "compte titres", "certificat mutualiste"):
                 self.page.fill_account(obj=account)
 
-            elif account._category == 'crédit':
+            elif account._category == "crédit":
                 self.page.fill_loan(obj=account)
 
-            elif account._category in ('epargne', 'retraite'):
+            elif account._category in ("epargne", "retraite"):
                 self.page.fill_wealth_account(obj=account)
                 if account.balance and self.page.has_investments():
                     # Some life insurances have no investments
@@ -217,24 +234,26 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
                         # Since it takes time to access this space, we fetch investments and history for later.
                         account._investments = list(self.page.iter_investments())
 
-            elif account._category == 'autre':
+            elif account._category == "autre":
                 # This category contains PEE and PERP accounts for example.
                 # They may contain investments.
                 self.page.fill_wealth_account(obj=account)
 
             else:
-                self.logger.warning('Category %s is not handled yet, account n°%s will be skipped.', account._category, account.id)
+                self.logger.warning(
+                    "Category %s is not handled yet, account n°%s will be skipped.", account._category, account.id
+                )
                 continue
 
             if empty(account.balance):
-                self.logger.warning('Could not fetch the balance for account n°%s, it will be skipped.', account.id)
+                self.logger.warning("Could not fetch the balance for account n°%s, it will be skipped.", account.id)
                 continue
 
             yield account
 
     @need_login
     def iter_investment(self, account):
-        if account._category not in ('epargne', 'retraite', 'autre'):
+        if account._category not in ("epargne", "retraite", "autre"):
             return
 
         return account._investments
@@ -242,19 +261,19 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
     @need_login
     def iter_history(self, account):
         param_categories = {
-            'Compte bancaire': 'COMPTE_COURANT',
-            'Epargne bancaire': 'EPARGNE',
-            'Retraite': 'RETRAITE',
-            'Epargne': 'EPARGNE',
-            'Crédit': 'CREDIT',
-            'Carte': 'CARTE',
-            'Compte titres': 'COMPTE_TITRES',
-            'Certificat mutualiste': 'C_MUTUALISTE',
-            'Autre': 'AUTRE',
+            "Compte bancaire": "COMPTE_COURANT",
+            "Epargne bancaire": "EPARGNE",
+            "Retraite": "RETRAITE",
+            "Epargne": "EPARGNE",
+            "Crédit": "CREDIT",
+            "Carte": "CARTE",
+            "Compte titres": "COMPTE_TITRES",
+            "Certificat mutualiste": "C_MUTUALISTE",
+            "Autre": "AUTRE",
         }
 
         if account._category not in param_categories:
-            self.logger.warning('History is not yet handled for category %s.', account._category)
+            self.logger.warning("History is not yet handled for category %s.", account._category)
             return
 
         if account._url:
@@ -262,14 +281,14 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
                 self.location(account._url)
                 if self.wps_dashboard.is_here():
                     detail_url = self.page.get_account_history_url(account.id)
-                    self.location(detail_url, data='')
+                    self.location(detail_url, data="")
                     for tr in self.page.iter_history(account_id=account.id):
                         yield tr
         else:
 
             params = {
-                'identifiantContrat': account.id.lower(),
-                'familleProduit': param_categories[account._category],
+                "identifiantContrat": account.id.lower(),
+                "familleProduit": param_categories[account._category],
             }
             try:
                 self.history.go(params=params)
@@ -288,7 +307,7 @@ class GanPatrimoineBrowser(TwoFactorBrowser):
             self.location(account._url)
             if self.wps_dashboard.is_here():
                 detail_url = self.page.get_account_history_url(account.id[-6:])
-                self.location(detail_url, data='')
+                self.location(detail_url, data="")
                 for tr in self.page.iter_card_history():
                     yield tr
 

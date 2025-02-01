@@ -31,16 +31,16 @@ from woob.capabilities.bill import Bill, Subscription
 class LoginPage(JsonPage):
     @property
     def logged(self):
-        if self.doc['data'].get('need_double_auth'):
+        if self.doc["data"].get("need_double_auth"):
             return False
-        return self.doc['result'] == 'success'
+        return self.doc["result"] == "success"
 
     @property
     def has_otp(self):
-        return self.doc['data']['default_method']
+        return self.doc["data"]["default_method"]
 
     def get_error(self):
-        return self.doc['error']['description']
+        return self.doc["error"]["description"]
 
 
 class SubscriptionsPage(LoggedPage, JsonPage):
@@ -48,40 +48,40 @@ class SubscriptionsPage(LoggedPage, JsonPage):
     class get_subscription(ItemElement):
         klass = Subscription
 
-        obj_id = Eval(str, Dict('data/current_account_id'))
-        obj_subscriber = Dict('data/display_name')
-        obj_label = Dict('data/display_name')
+        obj_id = Eval(str, Dict("data/current_account_id"))
+        obj_subscriber = Dict("data/display_name")
+        obj_label = Dict("data/display_name")
 
 
 class DocumentsPage(LoggedPage, JsonPage):
     @pagination
     @method
     class iter_documents(DictElement):
-        item_xpath = 'data'
+        item_xpath = "data"
 
         def next_page(self):
             doc = self.page.doc
-            current_page = int(doc['page'])
-            if current_page >= doc['pages']:
+            current_page = int(doc["page"])
+            if current_page >= doc["pages"]:
                 return
 
             params = {
-                'ajax': 'true',
-                'order_by': 'name',
-                'order_for[name]': 'asc',
-                'page': current_page + 1,
-                'per_page': '100',
+                "ajax": "true",
+                "order_by": "name",
+                "order_for[name]": "asc",
+                "page": current_page + 1,
+                "per_page": "100",
             }
-            return self.page.browser.documents.build(subid=self.env['subid'], params=params)
+            return self.page.browser.documents.build(subid=self.env["subid"], params=params)
 
         class item(ItemElement):
             klass = Bill
 
-            obj_number = Dict('document/id')
-            obj_id = Format('%s_%s', Env('subid'), obj_number)
-            obj_date = Eval(datetime.fromtimestamp, Dict('created_at'))
-            obj_label = Format('Facture %s', obj_number)
-            obj_url = Dict('document/href')
-            obj_total_price = CleanDecimal.SI(Dict('amount/amount_incl_tax'))
-            obj_currency = Currency(Dict('amount/currency_code'))
-            obj_format = 'pdf'
+            obj_number = Dict("document/id")
+            obj_id = Format("%s_%s", Env("subid"), obj_number)
+            obj_date = Eval(datetime.fromtimestamp, Dict("created_at"))
+            obj_label = Format("Facture %s", obj_number)
+            obj_url = Dict("document/href")
+            obj_total_price = CleanDecimal.SI(Dict("amount/amount_incl_tax"))
+            obj_currency = Currency(Dict("amount/currency_code"))
+            obj_format = "pdf"

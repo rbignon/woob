@@ -39,7 +39,7 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import FacebookBrowser, HappnBrowser
 
 
-__all__ = ['HappnModule']
+__all__ = ["HappnModule"]
 
 
 class ProfilesWalker(Optimization):
@@ -48,12 +48,12 @@ class ProfilesWalker(Optimization):
         self._sched = sched
         self._storage = storage
         self._browser = browser
-        self._logger = getLogger('walker', browser.logger)
+        self._logger = getLogger("walker", browser.logger)
         self._last_position_update = None
 
         self._view_cron = None
 
-        self._location = geopy.Point(map(float, location.split(',')))
+        self._location = geopy.Point(map(float, location.split(",")))
         self._max_distance = int(distance)
 
     def start(self):
@@ -75,41 +75,52 @@ class ProfilesWalker(Optimization):
         try:
             n = 0
             for user in self._browser.find_users():
-                if user['notifier']['my_relation'] > 0:
+                if user["notifier"]["my_relation"] > 0:
                     continue
 
-                self._browser.accept(user['notifier']['id'])
-                self._logger.info('Liked %s (%s at %s)',
-                                  user['notifier']['first_name'],
-                                  user['notifier']['job'],
-                                  user['notifier']['workplace'])
+                self._browser.accept(user["notifier"]["id"])
+                self._logger.info(
+                    "Liked %s (%s at %s)",
+                    user["notifier"]["first_name"],
+                    user["notifier"]["job"],
+                    user["notifier"]["workplace"],
+                )
                 n += 1
                 if n > 10:
                     break
 
-            if n == 0 and (self._last_position_update is None or self._last_position_update + datetime.timedelta(minutes=20) < datetime.datetime.now()):
-                self._logger.info('No more new profiles, updating position...')
+            if n == 0 and (
+                self._last_position_update is None
+                or self._last_position_update + datetime.timedelta(minutes=20) < datetime.datetime.now()
+            ):
+                self._logger.info("No more new profiles, updating position...")
 
-                d = geopy.distance.geodesic(kilometers=random()*self._max_distance)
+                d = geopy.distance.geodesic(kilometers=random() * self._max_distance)
                 pos = d.destination(point=self._location, bearing=randint(0, 360))
                 try:
                     pos = self._browser.set_position(pos.latitude, pos.longitude)
                 except BrowserHTTPError:
-                    self._logger.warning('Unable to update position for now, it will be retried later.')
-                    self._logger.warning('NB: don\'t be afraid, happn only allows to update position every 20 minutes.')
+                    self._logger.warning("Unable to update position for now, it will be retried later.")
+                    self._logger.warning("NB: don't be afraid, happn only allows to update position every 20 minutes.")
                 else:
-                    self._logger.info('You are now here: https://www.google.com/maps/place//@%s,%s,17z', pos['latitude'], pos['longitude'])
+                    self._logger.info(
+                        "You are now here: https://www.google.com/maps/place//@%s,%s,17z",
+                        pos["latitude"],
+                        pos["longitude"],
+                    )
                     self._last_position_update = datetime.datetime.now()
 
             for thread in self._browser.get_threads():
-                other_name = ''
-                for user in thread['participants']:
-                    if user['user']['id'] != self._browser.my_id:
-                        other_name = user['user']['first_name']
+                other_name = ""
+                for user in thread["participants"]:
+                    if user["user"]["id"] != self._browser.my_id:
+                        other_name = user["user"]["first_name"]
 
-                if len(thread['messages']) == 0 and parse_date(thread['creation_date']) < (datetime.datetime.now(tzlocal()) - relativedelta(hours=1)):
-                    self._browser.post_message(thread['id'], u'Coucou %s :)' % other_name)
-                    self._logger.info(u'Welcome message sent to %s' % other_name)
+                if len(thread["messages"]) == 0 and parse_date(thread["creation_date"]) < (
+                    datetime.datetime.now(tzlocal()) - relativedelta(hours=1)
+                ):
+                    self._browser.post_message(thread["id"], "Coucou %s :)" % other_name)
+                    self._logger.info("Welcome message sent to %s" % other_name)
         finally:
             if self._view_cron is not None:
                 self._view_cron = self._sched.schedule(60, self.view_profile)
@@ -122,92 +133,106 @@ class HappnContact(Contact):
             try:
                 s = section[arg]
             except KeyError:
-                s = section[arg] = ProfileNode(arg, arg.capitalize().replace('_', ' '), OrderedDict(), flags=ProfileNode.SECTION)
+                s = section[arg] = ProfileNode(
+                    arg, arg.capitalize().replace("_", " "), OrderedDict(), flags=ProfileNode.SECTION
+                )
             section = s.value
 
         key = args[-2]
         value = args[-1]
-        section[key] = ProfileNode(key, key.capitalize().replace('_', ' '), value)
+        section[key] = ProfileNode(key, key.capitalize().replace("_", " "), value)
 
     def __init__(self, info):
         status = Contact.STATUS_OFFLINE
-        last_seen = parse_date(info['modification_date'])
+        last_seen = parse_date(info["modification_date"])
         if last_seen >= datetime.datetime.now(tzlocal()) - datetime.timedelta(minutes=30):
             status = Contact.STATUS_ONLINE
 
-        super(HappnContact, self).__init__(info['id'], info['first_name'], status)
+        super(HappnContact, self).__init__(info["id"], info["first_name"], status)
 
-        self.summary = info['about']
-        for photo in info['profiles']:
-            self.set_photo(photo['id'], url=photo['url'])
-        self.status_msg = u'Last seen at %s' % last_seen.strftime('%Y-%m-%d %H:%M:%S')
+        self.summary = info["about"]
+        for photo in info["profiles"]:
+            self.set_photo(photo["id"], url=photo["url"])
+        self.status_msg = "Last seen at %s" % last_seen.strftime("%Y-%m-%d %H:%M:%S")
         self.url = NotAvailable
 
         self.profile = OrderedDict()
 
-        self.set_profile('info', 'id', info['id'])
+        self.set_profile("info", "id", info["id"])
         try:
-            self.set_profile('info', 'full_name', info['fb']['name'])
+            self.set_profile("info", "full_name", info["fb"]["name"])
         except KeyError:
-            self.set_profile('info', 'full_name', ' '.join([info['first_name'] or '', info['last_name'] or '']).strip())
-        if 'fb' in info:
-            self.set_profile('info', 'facebook', info['fb']['link'])
-            self.set_profile('facebook', 'likes', 'interests', ', '.join(info['fb']['likes']))
-            for name, content in info['fb']['infos'].items():
-                self.set_profile('facebook', 'infos', name, content)
-        if info.get('twitter_id') is not None:
-            self.set_profile('info', 'twitter', info['twitter_id'])
-        self.set_profile('stats', 'accepted', info['is_accepted'])
-        self.set_profile('stats', 'charmed', info['is_charmed'])
-        self.set_profile('stats', 'unread_conversations', info['unread_conversations'])
-        if info['last_meet_position'] is not None:
-            self.set_profile('geoloc', 'last_meet',
-                             'https://www.google.com/maps/place//@%s,%s,17z' % (info['last_meet_position']['lat'],
-                                                                                info['last_meet_position']['lon']))
-        if info['distance'] is not None:
-            self.set_profile('geoloc', 'distance', '%.2f km' % (info['distance']/1000.0))
-        self.set_profile('details', 'gender', info['gender'])
-        self.set_profile('details', 'age', '%s yo' % info['age'])
-        self.set_profile('details', 'birthday', info['birth_date'])
-        self.set_profile('details', 'job', info['job'])
-        self.set_profile('details', 'company', info['workplace'])
-        self.set_profile('details', 'school', info['school'])
-        if info['matching_preferences'] is not None:
-            self.set_profile('settings', 'age_min', '%s yo' % info['matching_preferences']['age_min'])
-            self.set_profile('settings', 'age_max', '%s yo' % info['matching_preferences']['age_max'])
-            self.set_profile('settings', 'distance', '%s m' % info['matching_preferences']['distance'])
-            self.set_profile('settings', 'female', info['matching_preferences']['female'])
-            self.set_profile('settings', 'male', info['matching_preferences']['male'])
+            self.set_profile("info", "full_name", " ".join([info["first_name"] or "", info["last_name"] or ""]).strip())
+        if "fb" in info:
+            self.set_profile("info", "facebook", info["fb"]["link"])
+            self.set_profile("facebook", "likes", "interests", ", ".join(info["fb"]["likes"]))
+            for name, content in info["fb"]["infos"].items():
+                self.set_profile("facebook", "infos", name, content)
+        if info.get("twitter_id") is not None:
+            self.set_profile("info", "twitter", info["twitter_id"])
+        self.set_profile("stats", "accepted", info["is_accepted"])
+        self.set_profile("stats", "charmed", info["is_charmed"])
+        self.set_profile("stats", "unread_conversations", info["unread_conversations"])
+        if info["last_meet_position"] is not None:
+            self.set_profile(
+                "geoloc",
+                "last_meet",
+                "https://www.google.com/maps/place//@%s,%s,17z"
+                % (info["last_meet_position"]["lat"], info["last_meet_position"]["lon"]),
+            )
+        if info["distance"] is not None:
+            self.set_profile("geoloc", "distance", "%.2f km" % (info["distance"] / 1000.0))
+        self.set_profile("details", "gender", info["gender"])
+        self.set_profile("details", "age", "%s yo" % info["age"])
+        self.set_profile("details", "birthday", info["birth_date"])
+        self.set_profile("details", "job", info["job"])
+        self.set_profile("details", "company", info["workplace"])
+        self.set_profile("details", "school", info["school"])
+        if info["matching_preferences"] is not None:
+            self.set_profile("settings", "age_min", "%s yo" % info["matching_preferences"]["age_min"])
+            self.set_profile("settings", "age_max", "%s yo" % info["matching_preferences"]["age_max"])
+            self.set_profile("settings", "distance", "%s m" % info["matching_preferences"]["distance"])
+            self.set_profile("settings", "female", info["matching_preferences"]["female"])
+            self.set_profile("settings", "male", info["matching_preferences"]["male"])
 
 
 class HappnModule(Module, CapMessages, CapMessagesPost, CapDating, CapContact):
-    NAME = 'happn'
-    DESCRIPTION = u'Happn dating mobile application'
-    MAINTAINER = u'Roger Philibert'
-    EMAIL = 'roger.philibert@gmail.com'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
-    CONFIG = BackendConfig(Value('username',                label='Facebook email'),
-                           ValueBackendPassword('password', label='Facebook password'),
-                           Value('location',                label='Location (example: 49.6008457,6.129709)'),
-                           Value('distance',                label='Distance (in km) around your location you\'re walking'))
+    NAME = "happn"
+    DESCRIPTION = "Happn dating mobile application"
+    MAINTAINER = "Roger Philibert"
+    EMAIL = "roger.philibert@gmail.com"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
+    CONFIG = BackendConfig(
+        Value("username", label="Facebook email"),
+        ValueBackendPassword("password", label="Facebook password"),
+        Value("location", label="Location (example: 49.6008457,6.129709)"),
+        Value("distance", label="Distance (in km) around your location you're walking"),
+    )
 
     BROWSER = HappnBrowser
-    STORAGE = {'contacts': {},
-              }
+    STORAGE = {
+        "contacts": {},
+    }
 
     def create_default_browser(self):
         facebook = self.create_browser(klass=FacebookBrowser)
-        facebook.login(self.config['username'].get(),
-                       self.config['password'].get())
+        facebook.login(self.config["username"].get(), self.config["password"].get())
         return self.create_browser(facebook)
 
     # ---- CapDating methods -----------------------
 
     def init_optimizations(self):
-        self.add_optimization('PROFILE_WALKER', ProfilesWalker(self.woob.scheduler, self.storage, self.browser,
-                                                               self.config['location'].get(),
-                                                               self.config['distance'].get()))
+        self.add_optimization(
+            "PROFILE_WALKER",
+            ProfilesWalker(
+                self.woob.scheduler,
+                self.storage,
+                self.browser,
+                self.config["location"].get(),
+                self.config["distance"].get(),
+            ),
+        )
 
     # ---- CapMessages methods ---------------------
 
@@ -216,12 +241,12 @@ class HappnModule(Module, CapMessages, CapMessagesPost, CapDating, CapContact):
 
     def iter_threads(self):
         for thread in self.browser.get_threads():
-            t = Thread(thread['id'])
+            t = Thread(thread["id"])
             t.flags = Thread.IS_DISCUSSION
-            for user in thread['participants']:
-                if user['user']['id'] != self.browser.my_id:
-                    t.title = u'Discussion with %s' % user['user']['first_name']
-            t.date = parse_date(thread['modification_date'])
+            for user in thread["participants"]:
+                if user["user"]["id"] != self.browser.my_id:
+                    t.title = "Discussion with %s" % user["user"]["first_name"]
+            t.date = parse_date(thread["modification_date"])
             yield t
 
     def get_thread(self, thread):
@@ -230,41 +255,43 @@ class HappnModule(Module, CapMessages, CapMessagesPost, CapDating, CapContact):
             thread.flags = Thread.IS_DISCUSSION
 
         info = self.browser.get_thread(thread.id)
-        for user in info['participants']:
-            if user['user']['id'] == self.browser.my_id:
-                me = HappnContact(user['user'])
+        for user in info["participants"]:
+            if user["user"]["id"] == self.browser.my_id:
+                me = HappnContact(user["user"])
             else:
-                other = HappnContact(user['user'])
+                other = HappnContact(user["user"])
 
-        thread.title = u'Discussion with %s' % other.name
+        thread.title = "Discussion with %s" % other.name
 
-        contact = self.storage.get('contacts', thread.id, default={'lastmsg_date': '1970-01-01T01:01:01+00:00'})
+        contact = self.storage.get("contacts", thread.id, default={"lastmsg_date": "1970-01-01T01:01:01+00:00"})
 
         child = None
 
-        for msg in info['messages']:
+        for msg in info["messages"]:
             flags = 0
-            if parse_date(contact['lastmsg_date']) < parse_date(msg['creation_date']):
+            if parse_date(contact["lastmsg_date"]) < parse_date(msg["creation_date"]):
                 flags = Message.IS_UNREAD
 
-            if msg['sender']['id'] == me.id:
+            if msg["sender"]["id"] == me.id:
                 sender = me
                 receiver = other
             else:
                 sender = other
                 receiver = me
 
-            msg = Message(thread=thread,
-                          id=msg['id'],
-                          title=thread.title,
-                          sender=sender.name,
-                          receivers=[receiver.name],
-                          date=parse_date(msg['creation_date']),
-                          content=msg['message'],
-                          children=[],
-                          parent=None,
-                          signature=sender.get_text(),
-                          flags=flags)
+            msg = Message(
+                thread=thread,
+                id=msg["id"],
+                title=thread.title,
+                sender=sender.name,
+                receivers=[receiver.name],
+                date=parse_date(msg["creation_date"]),
+                content=msg["message"],
+                children=[],
+                parent=None,
+                signature=sender.get_text(),
+                flags=flags,
+            )
 
             if child:
                 msg.children.append(child)
@@ -282,10 +309,10 @@ class HappnModule(Module, CapMessages, CapMessagesPost, CapDating, CapContact):
                     yield message
 
     def set_message_read(self, message):
-        contact = self.storage.get('contacts', message.thread.id, default={'lastmsg_date': '1970-01-01T01:01:01+00:00'})
-        if parse_date(contact['lastmsg_date']) < message.date:
-            contact['lastmsg_date'] = str(message.date)
-            self.storage.set('contacts', message.thread.id, contact)
+        contact = self.storage.get("contacts", message.thread.id, default={"lastmsg_date": "1970-01-01T01:01:01+00:00"})
+        if parse_date(contact["lastmsg_date"]) < message.date:
+            contact["lastmsg_date"] = str(message.date)
+            self.storage.set("contacts", message.thread.id, contact)
             self.storage.save()
 
     # ---- CapMessagesPost methods ---------------------
@@ -301,5 +328,6 @@ class HappnModule(Module, CapMessages, CapMessagesPost, CapDating, CapContact):
         info = self.browser.get_contact(contact_id)
         return HappnContact(info)
 
-    OBJECTS = {Thread: fill_thread,
-              }
+    OBJECTS = {
+        Thread: fill_thread,
+    }

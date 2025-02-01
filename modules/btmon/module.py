@@ -25,16 +25,16 @@ from woob.tools.backend import Module
 from .browser import BtmonBrowser
 
 
-__all__ = ['BtmonModule']
+__all__ = ["BtmonModule"]
 
 
 class BtmonModule(Module, CapTorrent):
-    NAME = 'btmon'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'eneiluj@posteo.net'
-    VERSION = '3.7'
-    DESCRIPTION = 'BTMon BitTorrent database'
-    LICENSE = 'AGPLv3+'
+    NAME = "btmon"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "eneiluj@posteo.net"
+    VERSION = "3.7"
+    DESCRIPTION = "BTMon BitTorrent database"
+    LICENSE = "AGPLv3+"
     BROWSER = BtmonBrowser
 
     def get_torrent(self, id):
@@ -49,10 +49,10 @@ class BtmonModule(Module, CapTorrent):
         return resp.content
 
     def iter_torrents(self, pattern):
-        return self.browser.iter_torrents(quote_plus(pattern.encode('utf-8')))
+        return self.browser.iter_torrents(quote_plus(pattern.encode("utf-8")))
 
     def fill_torrent(self, torrent, fields):
-        if 'description' in fields:
+        if "description" in fields:
             tor = self.get_torrent(torrent.id)
             torrent.description = tor.description
             torrent.magnet = tor.magnet
@@ -60,6 +60,4 @@ class BtmonModule(Module, CapTorrent):
             torrent.url = tor.url
         return torrent
 
-    OBJECTS = {
-        Torrent:fill_torrent
-    }
+    OBJECTS = {Torrent: fill_torrent}

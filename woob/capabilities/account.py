@@ -20,11 +20,19 @@ from __future__ import annotations
 from typing import List
 
 from .base import (
-    BaseObject, Capability, Field, IntField, NotAvailableType, NotLoaded, NotLoadedType, StringField, UserError,
+    BaseObject,
+    Capability,
+    Field,
+    IntField,
+    NotAvailableType,
+    NotLoaded,
+    NotLoadedType,
+    StringField,
+    UserError,
 )
 
 
-__all__ = ['AccountRegisterError', 'Account', 'StatusField', 'CapAccount', 'CapCredentialsCheck']
+__all__ = ["AccountRegisterError", "Account", "StatusField", "CapAccount", "CapCredentialsCheck"]
 
 
 class AccountRegisterError(UserError):
@@ -37,15 +45,12 @@ class Account(BaseObject):
     """
     Describe an account and its properties.
     """
-    login =         StringField('Login')
-    password =      StringField('Password')
-    properties =    Field('List of key/value properties', dict)
 
-    def __init__(
-        self,
-        id: str = '',
-        url: str | NotLoadedType | NotAvailableType = NotLoaded
-    ):
+    login = StringField("Login")
+    password = StringField("Password")
+    properties = Field("List of key/value properties", dict)
+
+    def __init__(self, id: str = "", url: str | NotLoadedType | NotAvailableType = NotLoaded):
         super().__init__(id, url)
 
 
@@ -53,27 +58,23 @@ class StatusField(BaseObject):
     """
     Field of an account staeobjectus.
     """
-    FIELD_TEXT    = 0x001     # the value is a long text
-    FIELD_HTML    = 0x002     # the value is HTML formated
 
-    key =           StringField('Key')
-    label =         StringField('Label')
-    value =         StringField('Value')
-    flags =         IntField('Flags')
+    FIELD_TEXT = 0x001  # the value is a long text
+    FIELD_HTML = 0x002  # the value is HTML formated
+
+    key = StringField("Key")
+    label = StringField("Label")
+    value = StringField("Value")
+    flags = IntField("Flags")
 
     def __init__(
-        self,
-        key: str,
-        label: str,
-        value: str,
-        flags: int = 0,
-        url: str | NotLoadedType | NotAvailableType = NotLoaded
+        self, key: str, label: str, value: str, flags: int = 0, url: str | NotLoadedType | NotAvailableType = NotLoaded
     ):
         super().__init__(key, url)
-        self.__setattr__('key', key)
-        self.__setattr__('label', label)
-        self.__setattr__('value', value)
-        self.__setattr__('flags', flags)
+        self.__setattr__("key", key)
+        self.__setattr__("label", label)
+        self.__setattr__("value", value)
+        self.__setattr__("flags", flags)
 
 
 class CapAccount(Capability):
@@ -85,6 +86,7 @@ class CapAccount(Capability):
                                       If the value remains None, woob considers
                                       that :func:`register_account` isn't supported.
     """
+
     ACCOUNT_REGISTER_PROPERTIES = None
 
     @staticmethod

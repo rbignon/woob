@@ -24,9 +24,9 @@ from .pages import MeteoPage
 
 
 class RATPBrowser(PagesBrowser):
-    BASEURL = u'https://www.ratp.fr'
+    BASEURL = "https://www.ratp.fr"
 
-    meteo = URL(u'/meteo', MeteoPage)
+    meteo = URL("/meteo", MeteoPage)
 
     def list_gauges(self):
         """
@@ -40,4 +40,4 @@ class RATPBrowser(PagesBrowser):
         Get current status of a sensor.
         """
         self.meteo.go()
-        return self.page.fetch_status(line=sensor.replace(u'_sensor', ''))
+        return self.page.fetch_status(line=sensor.replace("_sensor", ""))

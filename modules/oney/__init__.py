@@ -20,4 +20,4 @@
 from .module import OneyModule
 
 
-__all__ = ['OneyModule']
+__all__ = ["OneyModule"]

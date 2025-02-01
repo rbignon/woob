@@ -23,18 +23,18 @@ from woob.browser import URL, PagesBrowser
 from .pages import TranslatePage
 
 
-__all__ = ['WordReferenceBrowser']
+__all__ = ["WordReferenceBrowser"]
 
 
 class WordReferenceBrowser(PagesBrowser):
-    BASEURL = 'https://www.wordreference.com/'
-    translation_page = URL('(?P<sl>[a-z]{2})(?P<tl>[a-z]{2})/(?P<pattern>.*)', TranslatePage)
+    BASEURL = "https://www.wordreference.com/"
+    translation_page = URL("(?P<sl>[a-z]{2})(?P<tl>[a-z]{2})/(?P<pattern>.*)", TranslatePage)
 
     def translate(self, source, to, text):
         """
         translate 'text' from 'source' language to 'to' language
         """
 
-        return self.translation_page.go(sl=source.encode('utf-8'),
-                                        tl=to.encode('utf-8'),
-                                        pattern=text.encode('utf-8')).get_translation()
+        return self.translation_page.go(
+            sl=source.encode("utf-8"), tl=to.encode("utf-8"), pattern=text.encode("utf-8")
+        ).get_translation()

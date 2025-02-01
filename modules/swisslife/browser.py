@@ -25,50 +25,67 @@ from woob.capabilities.bank.wealth import Investment, Per, PerVersion, Pocket
 from woob.capabilities.base import NotAvailable, empty
 from woob.capabilities.captcha import RecaptchaV2Question
 from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidationExpired, BrowserHTTPError, BrowserHTTPNotFound, BrowserIncorrectPassword,
-    BrowserUnavailable, BrowserUserBanned, OTPSentType, SentOTPQuestion,
+    ActionNeeded,
+    ActionType,
+    AppValidationExpired,
+    BrowserHTTPError,
+    BrowserHTTPNotFound,
+    BrowserIncorrectPassword,
+    BrowserUnavailable,
+    BrowserUserBanned,
+    OTPSentType,
+    SentOTPQuestion,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
 
 from .pages import (
-    AccountDetailPage, AccountsPage, AccountVieEuroPage, AccountVieUCCODetailPage, AccountVieUCCOPage, AccountVieUCPage,
-    AuthenticationPage, BankAccountDetailPage, BankAccountTransactionsPage, HandleSMSPage, InvestmentPage,
-    MaintenancePage, PhoneNumber, ProfilePage,
+    AccountDetailPage,
+    AccountsPage,
+    AccountVieEuroPage,
+    AccountVieUCCODetailPage,
+    AccountVieUCCOPage,
+    AccountVieUCPage,
+    AuthenticationPage,
+    BankAccountDetailPage,
+    BankAccountTransactionsPage,
+    HandleSMSPage,
+    InvestmentPage,
+    MaintenancePage,
+    PhoneNumber,
+    ProfilePage,
 )
 
 
 class SwisslifeBrowser(TwoFactorBrowser):
     phone_number = URL(
-        r'/api/v4/nest/personne/mfa/getPhoneNumberAndApporteur\?tokenCaptcha=(?P<tokenCaptcha>.*)',
-        PhoneNumber
+        r"/api/v4/nest/personne/mfa/getPhoneNumberAndApporteur\?tokenCaptcha=(?P<tokenCaptcha>.*)", PhoneNumber
     )
-    send_sms_page = URL(r'/api/v4/nest/personne/mfa/sendMfaSmsOtp')
-    handle_sms_page = URL(r'/api/v4/nest/personne/mfa/checkMfaOtp', HandleSMSPage)
-    authenticate = URL(r'/api/v3/authenticate', AuthenticationPage)
-    profile = URL(r'/api/v3/personne', ProfilePage)
-    accounts = URL(r'/api/v3/contrat/home', AccountsPage)
-    investment = URL(r'/api/v3/contrat/.*/encours.*', InvestmentPage)
-    bank_account_detail = URL(r'/api/v3/contrat/detail/(?P<id>.*)', BankAccountDetailPage)
+    send_sms_page = URL(r"/api/v4/nest/personne/mfa/sendMfaSmsOtp")
+    handle_sms_page = URL(r"/api/v4/nest/personne/mfa/checkMfaOtp", HandleSMSPage)
+    authenticate = URL(r"/api/v3/authenticate", AuthenticationPage)
+    profile = URL(r"/api/v3/personne", ProfilePage)
+    accounts = URL(r"/api/v3/contrat/home", AccountsPage)
+    investment = URL(r"/api/v3/contrat/.*/encours.*", InvestmentPage)
+    bank_account_detail = URL(r"/api/v3/contrat/detail/(?P<id>.*)", BankAccountDetailPage)
     bank_account_transactions = URL(
-        r'/api/v3/contrat/operationListe/(?P<account_id>.+)/(?P<index>\d+)/(?P<size>\d+)$',
-        BankAccountTransactionsPage
+        r"/api/v3/contrat/operationListe/(?P<account_id>.+)/(?P<index>\d+)/(?P<size>\d+)$", BankAccountTransactionsPage
     )
-    account_vie_ucco_detail = URL(r'/api/v3/contrat/.*/operations.*', AccountVieUCCODetailPage)
-    account_vie_ucco = URL(r'/api/v3/contrat/(?P<id>.*)\?typeContrat=ADHERENT', AccountVieUCCOPage)
+    account_vie_ucco_detail = URL(r"/api/v3/contrat/.*/operations.*", AccountVieUCCODetailPage)
+    account_vie_ucco = URL(r"/api/v3/contrat/(?P<id>.*)\?typeContrat=ADHERENT", AccountVieUCCOPage)
     account_detail = URL(
-        r'/api/v3/contrat/(?P<id>.*)',
-        r'/api/v3/contrat/(?P<id>.*)/encours\?codeProfil=(?P<profile_type>.*)',
-        AccountDetailPage
+        r"/api/v3/contrat/(?P<id>.*)",
+        r"/api/v3/contrat/(?P<id>.*)/encours\?codeProfil=(?P<profile_type>.*)",
+        AccountDetailPage,
     )
-    account_vie_euro = URL(r'/api/v3/contratVieEuro/(?P<id>.*)', AccountVieEuroPage)
-    account_vie_uc = URL(r'/api/v3/contratVieucEntreprise/.*', AccountVieUCPage)
+    account_vie_euro = URL(r"/api/v3/contratVieEuro/(?P<id>.*)", AccountVieEuroPage)
+    account_vie_uc = URL(r"/api/v3/contratVieucEntreprise/.*", AccountVieUCPage)
 
-    maintenance = URL(r'/api/v3/authenticate', MaintenancePage)
+    maintenance = URL(r"/api/v3/authenticate", MaintenancePage)
 
     HAS_CREDENTIALS_ONLY = True
 
-    __states__ = ('mfauuid',)
+    __states__ = ("mfauuid",)
 
     def __init__(self, config, domain, *args, **kwargs):
         super(SwisslifeBrowser, self).__init__(config, *args, **kwargs)
@@ -77,29 +94,29 @@ class SwisslifeBrowser(TwoFactorBrowser):
         # use to bypass captcha and sca for 90 days
         self.mfauuid = None
 
-        self.BASEURL = 'https://%s' % (domain if '.' in domain else 'myswisslife.fr')
-        self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
-        self.session.headers['Accept'] = 'application/json, text/javascript, */*; q=0.01'
+        self.BASEURL = "https://%s" % (domain if "." in domain else "myswisslife.fr")
+        self.session.headers["X-Requested-With"] = "XMLHttpRequest"
+        self.session.headers["Accept"] = "application/json, text/javascript, */*; q=0.01"
 
         self.AUTHENTICATION_METHODS = {
-            'sms': self.handle_sms,
+            "sms": self.handle_sms,
         }
 
     @retry(ReadTimeout)
     def do_authentication(self, data):
-        cookies = {'mfaUuid': self.mfauuid}
+        cookies = {"mfaUuid": self.mfauuid}
         # Retry needed to avoid random timeouts while trying to login on '/api/v3/authenticate'
-        self.location('/api/v3/authenticate', data=data, cookies=cookies)
+        self.location("/api/v3/authenticate", data=data, cookies=cookies)
 
     def init_login(self):
         try:
-            data = {'username': self.username, 'password': self.password, 'media': 'web', 'rememberMe': 'true'}
+            data = {"username": self.username, "password": self.password, "media": "web", "rememberMe": "true"}
             self.do_authentication(data)
             # handle case with captcha and SMS SCA
             # the else case : no Captcha/SCA
-            captcha_response = self.config['captcha_response'].get()
+            captcha_response = self.config["captcha_response"].get()
             if captcha_response:
-                self.phone_number.go(tokenCaptcha=captcha_response, method='POST')
+                self.phone_number.go(tokenCaptcha=captcha_response, method="POST")
                 # check for SMS SCA
                 if self.phone_number.is_here():
                     if self.page.phone_is_valid():
@@ -110,28 +127,30 @@ class SwisslifeBrowser(TwoFactorBrowser):
                     # else case : phone not valid (message generated by js)
                     raise ActionNeeded(
                         locale="fr-FR",
-                        message='Nous ne pouvons pas vous adresser le code confidentiel pour accéder à votre compte. '
-                        + 'Nous vous invitons à contacter votre service client au 09 74 75 76 76.',
+                        message="Nous ne pouvons pas vous adresser le code confidentiel pour accéder à votre compte. "
+                        + "Nous vous invitons à contacter votre service client au 09 74 75 76 76.",
                         action_type=ActionType.CONTACT,
                     )
 
             elif self.page.is_captcha():
                 raise RecaptchaV2Question(
-                    website_key='6LdAI0AUAAAAALk4lT524tHE-J9fgJ0ofbVuN8lH',
-                    website_url='https://myswisslife.fr/connection/login'
+                    website_key="6LdAI0AUAAAAALk4lT524tHE-J9fgJ0ofbVuN8lH",
+                    website_url="https://myswisslife.fr/connection/login",
                 )
 
         except ClientError as e:
             if e.response.status_code == 401:
                 # e.response.text only contains one line like this one for wrongpass 'global.message.IdmdpIncorrect'.
-                if 'compteBloque' in e.response.text:
-                    raise BrowserUserBanned('Pour des raisons de sécurité, votre compte est suspendu durant 48 h.')
-                elif 'IdmdpIncorrect' in e.response.text:
-                    raise BrowserIncorrectPassword('Votre identifiant utilisateur est inconnu ou votre mot de passe est incorrect.')
-                AssertionError(f'Unhandled login error: {e.response.text}')
+                if "compteBloque" in e.response.text:
+                    raise BrowserUserBanned("Pour des raisons de sécurité, votre compte est suspendu durant 48 h.")
+                elif "IdmdpIncorrect" in e.response.text:
+                    raise BrowserIncorrectPassword(
+                        "Votre identifiant utilisateur est inconnu ou votre mot de passe est incorrect."
+                    )
+                AssertionError(f"Unhandled login error: {e.response.text}")
             raise
         except ServerError as e:
-            error = e.response.json().get('error')
+            error = e.response.json().get("error")
             if error:
                 raise BrowserUnavailable()
             raise
@@ -141,19 +160,19 @@ class SwisslifeBrowser(TwoFactorBrowser):
             raise BrowserUnavailable(self.page.get_error_message())
 
     def send_sms(self):
-        self.send_sms_page.go(method='POST')
+        self.send_sms_page.go(method="POST")
 
         raise SentOTPQuestion(
-            'sms',
+            "sms",
             medium_type=OTPSentType.SMS,
-            message=f'Veuillez entrer le code reçu au numéro : {self.phone_number}',
+            message=f"Veuillez entrer le code reçu au numéro : {self.phone_number}",
         )
 
     def handle_sms(self):
         try:
-            self.handle_sms_page.go(json={'otp': self.sms, 'rememberMfa': 'true'})
+            self.handle_sms_page.go(json={"otp": self.sms, "rememberMfa": "true"})
         except ClientError as e:
-            if e.response.status_code == 401 and 'AuthentifieSessionExpire' in e.response.text:
+            if e.response.status_code == 401 and "AuthentifieSessionExpire" in e.response.text:
                 raise AppValidationExpired()
             raise
 
@@ -162,7 +181,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
                 raise BrowserUserBanned()
             raise BrowserIncorrectPassword()
 
-        self.mfauuid = self.session.cookies.get('mfaUuid')
+        self.mfauuid = self.session.cookies.get("mfaUuid")
 
     @need_login
     def go_to_account(self, account):
@@ -181,15 +200,15 @@ class SwisslifeBrowser(TwoFactorBrowser):
                         raise BrowserUnavailable()
                 else:
                     return True
-            self.logger.warning('Server Error: could not fetch the details for account %s.', account.label)
+            self.logger.warning("Server Error: could not fetch the details for account %s.", account.label)
         except ClientError as e:
             # Some accounts return 403 forbidden and don't appear on the website
             if e.response.status_code == 403:
-                self.logger.warning('Client Error: could not fetch the details for account %s.', account.label)
+                self.logger.warning("Client Error: could not fetch the details for account %s.", account.label)
             raise
         except BrowserHTTPNotFound:
             # Some accounts return 404 with an error message on the website
-            self.logger.warning('404 Error: could not fetch the details for account %s.', account.label)
+            self.logger.warning("404 Error: could not fetch the details for account %s.", account.label)
         else:
             return True
 
@@ -205,7 +224,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
             raise BrowserUnavailable()
 
         if not self.page.has_accounts():
-            self.logger.warning('Could not find any account')
+            self.logger.warning("Could not find any account")
             return
 
         bank_accounts = self.page.iter_bank_accounts()
@@ -227,12 +246,14 @@ class SwisslifeBrowser(TwoFactorBrowser):
                 # Sometimes the account URL works but it lands on a page with a status and error message.
                 # The account has no balance and no info on the website, we do not fetch it.
                 continue
-            if any((
-                self.account_detail.is_here(),
-                self.account_vie_euro.is_here(),
-                self.account_vie_ucco.is_here(),
-                self.account_vie_uc.is_here(),
-            )):
+            if any(
+                (
+                    self.account_detail.is_here(),
+                    self.account_vie_euro.is_here(),
+                    self.account_vie_ucco.is_here(),
+                    self.account_vie_uc.is_here(),
+                )
+            ):
                 self.page.fill_account(obj=account)
                 if account.type == Account.TYPE_UNKNOWN:
                     if not empty(account._fiscality_type):
@@ -251,9 +272,9 @@ class SwisslifeBrowser(TwoFactorBrowser):
                     per._is_bank_account = account._is_bank_account
                     per._is_market_account = account._is_market_account
 
-                    if 'PER INDIVIDUEL' in per.label.upper():
+                    if "PER INDIVIDUEL" in per.label.upper():
                         per.version = PerVersion.PERIN
-                    elif 'PER ENTREPRISE' in per.label.upper():
+                    elif "PER ENTREPRISE" in per.label.upper():
                         per.version = PerVersion.PERCOL
 
                     # No information concerning the PER provider_type
@@ -270,7 +291,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
 
     def create_euro_fund(self, account):
         inv = Investment()
-        inv.label = 'FONDS EN EUROS'
+        inv.label = "FONDS EN EUROS"
         inv.valuation = account.balance
         inv.code = NotAvailable
         inv.code_type = NotAvailable
@@ -308,7 +329,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
                 except ClientError as e:
                     # Some accounts return 403 forbidden and don't appear on the website
                     if e.response.status_code == 403:
-                        self.logger.warning('Client Error: could not fetch investments for account %s.', account.label)
+                        self.logger.warning("Client Error: could not fetch investments for account %s.", account.label)
                         continue
                     else:
                         raise
@@ -323,13 +344,10 @@ class SwisslifeBrowser(TwoFactorBrowser):
 
         # not the best way but those names are generated with js
         natures = {
-            'UC': 'Unités de compte',
-            'DV': 'Fonds en Euros',
+            "UC": "Unités de compte",
+            "DV": "Fonds en Euros",
         }
-        profiles = {
-            'AP': 'sous allocation pilotée',
-            'LIBRE': 'sous allocation libre'
-        }
+        profiles = {"AP": "sous allocation pilotée", "LIBRE": "sous allocation libre"}
 
         pockets = []
         # for now, we create a pocket for each investment
@@ -337,7 +355,7 @@ class SwisslifeBrowser(TwoFactorBrowser):
             pocket = Pocket()
             nature = natures.get(inv._nature)
             if nature:
-                pocket.label = ('%s %s' % (nature, profiles.get(inv._profile_type, ""))).strip()
+                pocket.label = ("%s %s" % (nature, profiles.get(inv._profile_type, ""))).strip()
             pocket.amount = inv.valuation
             pocket.quantity = inv.quantity
             pocket.availability_date = NotAvailable
@@ -377,18 +395,20 @@ class SwisslifeBrowser(TwoFactorBrowser):
         elif not account.url:
             raise NotImplementedError()
         # Article 39 accounts history
-        elif 'contratVieucEntreprise' in account.url:
+        elif "contratVieucEntreprise" in account.url:
             # This key param seems to be hardcoded for this type of contract
-            params = {'natureCodes': 'A02A,A02B,A02D,A02T,B03A,B03C,B03I,B03R,B03S,B03T,C06A,C06J,C06L,C06M,C06S,C06P,C06B'}
-            self.location('/api/v3/contratVieucEntreprise/operations/%s' % account.id, params=params)
+            params = {
+                "natureCodes": "A02A,A02B,A02D,A02T,B03A,B03C,B03I,B03R,B03S,B03T,C06A,C06J,C06L,C06M,C06S,C06P,C06B"
+            }
+            self.location("/api/v3/contratVieucEntreprise/operations/%s" % account.id, params=params)
             for tr in sorted_transactions(self.page.iter_history()):
                 yield tr
-        elif 'contratVieEuro' in account.url:
+        elif "contratVieEuro" in account.url:
             # If there are no transactions, the request will fail
             try:
-                self.location(account.url + '/primesPayees')
+                self.location(account.url + "/primesPayees")
             except (BrowserHTTPError, BrowserHTTPNotFound):
-                self.logger.warning('Could not access history for account %s', account.id)
+                self.logger.warning("Could not access history for account %s", account.id)
             else:
                 for tr in sorted_transactions(self.page.iter_history()):
                     yield tr

@@ -23,16 +23,16 @@ from woob.tools.test import BackendTest
 
 
 class OpensubtitlesTest(BackendTest):
-    MODULE = 'opensubtitles'
+    MODULE = "opensubtitles"
 
     def test_subtitle(self):
         lsub = []
-        subtitles = self.backend.iter_subtitles('fr', 'spiderman')
+        subtitles = self.backend.iter_subtitles("fr", "spiderman")
         for i in range(5):
             subtitle = next(subtitles)
             lsub.append(subtitle)
-            assert subtitle.url.startswith('https')
-        assert (len(lsub) > 0)
+            assert subtitle.url.startswith("https")
+        assert len(lsub) > 0
 
         # get the file of a random sub
         if len(lsub):

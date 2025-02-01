@@ -26,16 +26,16 @@ from woob.capabilities.subtitle import Subtitle
 
 
 class SearchPage(HTMLPage):
-    """ Page which contains results as a list of movies
-    """
+    """Page which contains results as a list of movies"""
+
     @pagination
     @method
     class iter_subtitles(TableElement):
         head_xpath = '//div[has-class("table-responsive")]/table/thead/tr/th'
         item_xpath = '//tr[has-class("subtitle-entry")]'
 
-        col_cd = u'# CDs'
-        col_language = u'Language'
+        col_cd = "# CDs"
+        col_language = "Language"
 
         next_page = AbsoluteLink('//ul[has-class("pagination")]/li[has-class("next")]/a', default=None)
 
@@ -43,10 +43,10 @@ class SearchPage(HTMLPage):
             klass = Subtitle
 
             obj_name = CleanText('.//td/a[@alt="Subtitles\' page"]')
-            obj_nb_cd = Type(CleanText(TableCell('cd')), type=int)
-            obj_language = CleanText(TableCell('language'))
+            obj_nb_cd = Type(CleanText(TableCell("cd")), type=int)
+            obj_language = CleanText(TableCell("language"))
             obj_url = AbsoluteLink('.//td/div[has-class("pull-left")]/a[@alt="Download subtitles."]')
-            obj_id = Regexp(Field('url'), r'/(-*\w*)/download$', r'\1')
+            obj_id = Regexp(Field("url"), r"/(-*\w*)/download$", r"\1")
 
 
 class SubtitlePage(HTMLPage):
@@ -56,13 +56,13 @@ class SubtitlePage(HTMLPage):
 
         obj_id = CleanText('//div[has-class("col-md-3")]/table[has-class("table-condensed")]/tr[1]/td')
         obj_language = Regexp(
-            CleanText(
-                Attr('//div[has-class("col-md-3")]/table[has-class("table-condensed")]/tr/td/a/span', 'class')
-            ),
-            r'-(\w*)$', r'\1'
+            CleanText(Attr('//div[has-class("col-md-3")]/table[has-class("table-condensed")]/tr/td/a/span', "class")),
+            r"-(\w*)$",
+            r"\1",
         )
         obj_name = CleanText('//div[has-class("clearfix")]/table[has-class("table-condensed")]/tr[1]/td/a')
 
         def obj_url(self):
-            return urljoin(self.page.browser.BASEURL,
-                           CleanText(Attr('//form[has-class("download-form")]', 'action'))(self))
+            return urljoin(
+                self.page.browser.BASEURL, CleanText(Attr('//form[has-class("download-form")]', "action"))(self)
+            )

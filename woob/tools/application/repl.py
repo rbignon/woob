@@ -41,10 +41,7 @@ from .pretty import colored
 from .results import ResultsCondition, ResultsConditionError
 
 
-__all__ = [
-    'NotEnoughArguments', 'TooManyArguments', 'ArgSyntaxError',
-    'ReplApplication'
-]
+__all__ = ["NotEnoughArguments", "TooManyArguments", "ArgSyntaxError", "ReplApplication"]
 
 
 class NotEnoughArguments(Exception):
@@ -64,22 +61,21 @@ class ReplOptionParser(OptionParser):
         if not formatter:
             formatter = self.formatter
 
-        return '%s\n%s' % (formatter.format_commands(self.commands),
-                           OptionParser.format_option_help(self, formatter))
+        return "%s\n%s" % (formatter.format_commands(self.commands), OptionParser.format_option_help(self, formatter))
 
 
 class ReplOptionFormatter(IndentedHelpFormatter):
     def format_commands(self, commands):
-        s = ''
+        s = ""
         for section, cmds in commands.items():
             if len(cmds) == 0:
                 continue
             if len(s) > 0:
-                s += '\n'
-            s += '%s Commands:\n' % section
+                s += "\n"
+            s += "%s Commands:\n" % section
             for c in cmds:
-                c = c.split('\n')[0]
-                s += '    %s\n' % c
+                c = c.split("\n")[0]
+                s += "    %s\n" % c
         return s
 
 
@@ -97,9 +93,10 @@ def defaultcount(default_count=10):
 
         inner.__doc__ = f.__doc__
         assert inner.__doc__ is not None, "A command must have a docstring"
-        inner.__doc__ += '\nDefault is limited to %s results.' % default_count
+        inner.__doc__ += "\nDefault is limited to %s results." % default_count
 
         return inner
+
     return deco
 
 
@@ -108,35 +105,38 @@ class ReplApplication(ConsoleApplication, Cmd):
     Base application class for Repl applications.
     """
 
-    SYNOPSIS =  'Usage: %prog [-dqv] [-b backends] [-cnfs] [command [arguments..]]\n'
-    SYNOPSIS += '       %prog [--help] [--version]'
+    SYNOPSIS = "Usage: %prog [-dqv] [-b backends] [-cnfs] [command [arguments..]]\n"
+    SYNOPSIS += "       %prog [--help] [--version]"
     DISABLE_REPL = False
 
     EXTRA_FORMATTERS = {}
-    DEFAULT_FORMATTER = 'multiline'
+    DEFAULT_FORMATTER = "multiline"
     COMMANDS_FORMATTERS = {}
 
     COLLECTION_OBJECTS = tuple()
     """Objects to allow in do_ls / do_cd"""
 
-    woob_commands = {'backends', 'condition', 'count', 'formatter', 'logging', 'select', 'quit', 'ls', 'cd', 'storage'}
-    hidden_commands = {'EOF'}
+    woob_commands = {"backends", "condition", "count", "formatter", "logging", "select", "quit", "ls", "cd", "storage"}
+    hidden_commands = {"EOF"}
 
     def __init__(self):
         super().__init__(ReplOptionParser(self.SYNOPSIS, version=self._get_optparse_version()))
 
-        copyright = self.COPYRIGHT.replace('YEAR', '%d' % datetime.today().year)
-        self.intro = '\n'.join(('Welcome to %s v%s' % (colored(self.APPNAME, attrs=['bold']), self.VERSION),
-                                '',
-                                copyright,
-                                'This program is free software: you can redistribute it and/or modify',
-                                'it under the terms of the GNU Lesser General Public License as published by',
-                                'the Free Software Foundation, either version 3 of the License, or',
-                                '(at your option) any later version.',
-                                '',
-                                'Type "help" to display available commands.',
-                                '',
-                                ))
+        copyright = self.COPYRIGHT.replace("YEAR", "%d" % datetime.today().year)
+        self.intro = "\n".join(
+            (
+                "Welcome to %s v%s" % (colored(self.APPNAME, attrs=["bold"]), self.VERSION),
+                "",
+                copyright,
+                "This program is free software: you can redistribute it and/or modify",
+                "it under the terms of the GNU Lesser General Public License as published by",
+                "the Free Software Foundation, either version 3 of the License, or",
+                "(at your option) any later version.",
+                "",
+                'Type "help" to display available commands.',
+                "",
+            )
+        )
         self.formatters_loader = FormattersLoader()
         for key, klass in self.EXTRA_FORMATTERS.items():
             self.formatters_loader.register_formatter(key, klass)
@@ -147,20 +147,29 @@ class ReplApplication(ConsoleApplication, Cmd):
         self._parser.commands = commands_help
         self._parser.formatter = ReplOptionFormatter()
 
-        results_options = OptionGroup(self._parser, 'Results Options')
-        results_options.add_option('-c', '--condition', help='filter result items to display given a boolean expression. See CONDITION section for the syntax')
-        results_options.add_option('-n', '--count', type='int',
-                                   help='limit number of results (from each backends)')
-        results_options.add_option('-s', '--select', help='select result item keys to display (comma separated)')
+        results_options = OptionGroup(self._parser, "Results Options")
+        results_options.add_option(
+            "-c",
+            "--condition",
+            help="filter result items to display given a boolean expression. See CONDITION section for the syntax",
+        )
+        results_options.add_option("-n", "--count", type="int", help="limit number of results (from each backends)")
+        results_options.add_option("-s", "--select", help="select result item keys to display (comma separated)")
         self._parser.add_option_group(results_options)
 
-        formatting_options = OptionGroup(self._parser, 'Formatting Options')
+        formatting_options = OptionGroup(self._parser, "Formatting Options")
         available_formatters = self.formatters_loader.get_available_formatters()
-        formatting_options.add_option('-f', '--formatter', choices=available_formatters,
-                                      help='select output formatter (%s)' % ', '.join(available_formatters))
-        formatting_options.add_option('--no-header', dest='no_header', action='store_true', help='do not display header')
-        formatting_options.add_option('--no-keys', dest='no_keys', action='store_true', help='do not display item keys')
-        formatting_options.add_option('-O', '--outfile', dest='outfile', help='file to export result')
+        formatting_options.add_option(
+            "-f",
+            "--formatter",
+            choices=available_formatters,
+            help="select output formatter (%s)" % ", ".join(available_formatters),
+        )
+        formatting_options.add_option(
+            "--no-header", dest="no_header", action="store_true", help="do not display header"
+        )
+        formatting_options.add_option("--no-keys", dest="no_keys", action="store_true", help="do not display item keys")
+        formatting_options.add_option("-O", "--outfile", dest="outfile", help="file to export result")
         self._parser.add_option_group(formatting_options)
 
         self._interactive = False
@@ -182,9 +191,9 @@ class ReplApplication(ConsoleApplication, Cmd):
         # self.prompt = self.BOLD + '%s> ' % self.APPNAME + self.NC
         if len(self.working_path.get()):
             wp_enc = str(self.working_path)
-            self.prompt = '%s:%s> ' % (self.APPNAME, wp_enc)
+            self.prompt = "%s:%s> " % (self.APPNAME, wp_enc)
         else:
-            self.prompt = '%s> ' % (self.APPNAME)
+            self.prompt = "%s> " % (self.APPNAME)
 
     def change_path(self, split_path):
         self.working_path.location(split_path)
@@ -214,28 +223,29 @@ class ReplApplication(ConsoleApplication, Cmd):
         except BackendNotGiven as e:
             backend_name = None
             while not backend_name:
-                print('This command works with an unique backend. Availables:')
+                print("This command works with an unique backend. Availables:")
                 for index, (name, backend) in enumerate(e.backends):
                     print(
-                        '%s) %s%s' % (
-                            colored('%2d' % (index + 1), 'white', attrs=['bold']),
-                            colored('%-20s' % name, 'magenta', attrs=['bold']),
-                            colored(backend.DESCRIPTION, 'green')
+                        "%s) %s%s"
+                        % (
+                            colored("%2d" % (index + 1), "white", attrs=["bold"]),
+                            colored("%-20s" % name, "magenta", attrs=["bold"]),
+                            colored(backend.DESCRIPTION, "green"),
                         )
                     )
 
                 i = self.ask('Select a backend to proceed with "%s"' % id)
                 if not i.isdigit():
                     if i not in dict(e.backends):
-                        print('Error: %s is not a valid backend' % i, file=self.stderr)
+                        print("Error: %s is not a valid backend" % i, file=self.stderr)
                         continue
                     backend_name = i
                 else:
                     i = int(i)
                     if i < 0 or i > len(e.backends):
-                        print('Error: %s is not a valid choice' % i, file=self.stderr)
+                        print("Error: %s is not a valid choice" % i, file=self.stderr)
                         continue
-                    backend_name = e.backends[i-1][0]
+                    backend_name = e.backends[i - 1][0]
 
             return id, backend_name
 
@@ -253,17 +263,17 @@ class ReplApplication(ConsoleApplication, Cmd):
                         return None
                     else:
                         if callable(actual_method):
-                            obj, = self.do('fillobj', obj, fields, backends=backend)
+                            (obj,) = self.do("fillobj", obj, fields, backends=backend)
                             return obj
                         else:
                             return None
                 except UserError as e:
-                    self.bcall_error_handler(backend, e, '')
+                    self.bcall_error_handler(backend, e, "")
 
         _id, backend_name = self.parse_id(_id)
         kargs = {}
         if caps is not None:
-            kargs = {'caps': caps}
+            kargs = {"caps": caps}
         backend_names = (backend_name,) if backend_name is not None else self.enabled_backends
 
         # if backend's service returns several objects, try to find the one
@@ -299,7 +309,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         if len(self.objects) > 0:
             return self.objects
         elif method is not None:
-            kwargs['backends'] = self.enabled_backends
+            kwargs["backends"] = self.enabled_backends
             for _object in self.do(method, *args, **kwargs):
                 self.add_object(_object)
             return self.objects
@@ -319,8 +329,8 @@ class ReplApplication(ConsoleApplication, Cmd):
     def main(self, argv):
         cmd_args = argv[1:]
         if cmd_args:
-            cmd_line = ' '.join(cmd_args)
-            cmds = cmd_line.split(';')
+            cmd_line = " ".join(cmd_args)
+            cmds = cmd_line.split(";")
             for cmd in cmds:
                 ret = self.onecmd(cmd)
                 if ret:
@@ -335,13 +345,13 @@ class ReplApplication(ConsoleApplication, Cmd):
                 pass
             else:
                 # Remove '-' from delims
-                readline.set_completer_delims(readline.get_completer_delims().replace('-', ''))
+                readline.set_completer_delims(readline.get_completer_delims().replace("-", ""))
 
-                history_filepath = os.path.join(self.woob.workdir, '%s_history' % self.APPNAME)
+                history_filepath = os.path.join(self.woob.workdir, "%s_history" % self.APPNAME)
                 if self.OLD_APPNAME:
                     # compatibility for old, non-woob names
                     history_filepath = self._get_preferred_path(
-                        history_filepath, os.path.join(self.woob.workdir, '%s_history' % self.OLD_APPNAME)
+                        history_filepath, os.path.join(self.woob.workdir, "%s_history" % self.OLD_APPNAME)
                     )
                 try:
                     readline.read_history_file(history_filepath)
@@ -350,9 +360,12 @@ class ReplApplication(ConsoleApplication, Cmd):
 
                 def savehist():
                     readline.write_history_file(history_filepath)
+
                 atexit.register(savehist)
 
-            self.intro += '\nLoaded backends: %s\n' % ', '.join(sorted(backend.name for backend in self.woob.iter_backends()))
+            self.intro += "\nLoaded backends: %s\n" % ", ".join(
+                sorted(backend.name for backend in self.woob.iter_backends())
+            )
             self._interactive = True
             self.cmdloop()
 
@@ -360,17 +373,17 @@ class ReplApplication(ConsoleApplication, Cmd):
         """
         Call Woob.do(), passing count and selected fields given by user.
         """
-        backends = kwargs.pop('backends', None)
+        backends = kwargs.pop("backends", None)
         if backends is None:
-            kwargs['backends'] = []
+            kwargs["backends"] = []
             for backend in self.enabled_backends:
                 actual_function = getattr(backend, function, None) if isinstance(function, str) else function
 
                 if callable(actual_function):
-                    kwargs['backends'].append(backend)
+                    kwargs["backends"].append(backend)
         else:
-            kwargs['backends'] = backends
-        fields = kwargs.pop('fields', self.selected_fields)
+            kwargs["backends"] = backends
+        fields = kwargs.pop("fields", self.selected_fields)
         if not fields and fields != []:
             fields = self.selected_fields
 
@@ -380,7 +393,10 @@ class ReplApplication(ConsoleApplication, Cmd):
             missing_fields = set(self.formatter.MANDATORY_FIELDS) - set(fields)
             # If a mandatory field is not selected, do not use the customized formatter
             if missing_fields:
-                print('Warning: you do not select enough mandatory fields for the formatter. Fallback to another. Hint: use option -f', file=self.stderr)
+                print(
+                    "Warning: you do not select enough mandatory fields for the formatter. Fallback to another. Hint: use option -f",
+                    file=self.stderr,
+                )
                 self.formatter = self.formatters_loader.build_formatter(ReplApplication.DEFAULT_FORMATTER)
 
         if self.formatter.DISPLAYED_FIELDS is not None:
@@ -390,7 +406,10 @@ class ReplApplication(ConsoleApplication, Cmd):
                 missing_fields = set(fields) - set(self.formatter.DISPLAYED_FIELDS + self.formatter.MANDATORY_FIELDS)
             # If a selected field is not displayed, do not use the customized formatter
             if missing_fields:
-                print('Warning: some selected fields will not be displayed by the formatter. Fallback to another. Hint: use option -f', file=self.stderr)
+                print(
+                    "Warning: some selected fields will not be displayed by the formatter. Fallback to another. Hint: use option -f",
+                    file=self.stderr,
+                )
                 self.formatter = self.formatters_loader.build_formatter(ReplApplication.DEFAULT_FORMATTER)
 
         return self.woob.do(self._do_complete, self.options.count, fields, function, *args, **kwargs)
@@ -421,7 +440,7 @@ class ReplApplication(ConsoleApplication, Cmd):
             # It should be a dict because when non-empty, it will contain HTTP
             # headers for legal PSD2 AIS/PIS authentication.
             for backend in self.enabled_backends:
-                key = 'request_information'
+                key = "request_information"
                 if key in backend.config and backend.config[key].get() is None:
                     backend.config[key].set({})
 
@@ -440,15 +459,15 @@ class ReplApplication(ConsoleApplication, Cmd):
                         v = self.ask(field)
                         backend.config[field.id].set(v)
                 elif isinstance(error, BrowserRedirect):
-                    print('Open this URL in a browser:')
+                    print("Open this URL in a browser:")
                     print(error.url)
                     print()
-                    value = self.ask('Please enter the final URL')
-                    backend.config['auth_uri'].set(value)
+                    value = self.ask("Please enter the final URL")
+                    backend.config["auth_uri"].set(value)
                 elif isinstance(error, DecoupledValidation):
                     print(error.message)
                     # FIXME we should reset this value, in case another DecoupledValidation occurs
-                    key = 'resume'
+                    key = "resume"
                     if key in backend.config:
                         backend.config[key].set(True)
                 else:
@@ -461,7 +480,7 @@ class ReplApplication(ConsoleApplication, Cmd):
             if backends:
                 # There is at least one backend on which we can retry, do it
                 # only on this ones.
-                kwargs['backends'] = backends
+                kwargs["backends"] = backends
                 try:
                     for obj in self._do_and_retry(*args, **kwargs):
                         yield obj
@@ -484,9 +503,9 @@ class ReplApplication(ConsoleApplication, Cmd):
             raise ArgSyntaxError(str(e))
 
         if nb < len(args):
-            raise TooManyArguments('Command takes at most %d arguments' % nb)
+            raise TooManyArguments("Command takes at most %d arguments" % nb)
         if req_n is not None and (len(args) < req_n):
-            raise NotEnoughArguments('Command needs %d arguments' % req_n)
+            raise NotEnoughArguments("Command needs %d arguments" % req_n)
 
         if len(args) < nb:
             args += tuple(None for i in range(nb - len(args)))
@@ -509,10 +528,10 @@ class ReplApplication(ConsoleApplication, Cmd):
         cmd, arg, ignored = super().parseline(line)
 
         if cmd is not None:
-            names = set(name for name in self.get_names() if name.startswith('do_'))
+            names = set(name for name in self.get_names() if name.startswith("do_"))
 
-            if 'do_' + cmd not in names:
-                long = set(name for name in names if name.startswith('do_' + cmd))
+            if "do_" + cmd not in names:
+                long = set(name for name in names if name.startswith("do_" + cmd))
                 # if more than one result, ambiguous command, do nothing (error will display suggestions)
                 if len(long) == 1:
                     cmd = long.pop()[3:]
@@ -538,20 +557,20 @@ class ReplApplication(ConsoleApplication, Cmd):
             except CallErrors as e:
                 return self.bcall_errors_handler(e)
             except BackendNotGiven as e:
-                print('Error: %s' % str(e), file=self.stderr)
+                print("Error: %s" % str(e), file=self.stderr)
                 return os.EX_DATAERR
             except NotEnoughArguments as e:
-                print('Error: not enough arguments. %s' % str(e), file=self.stderr)
+                print("Error: not enough arguments. %s" % str(e), file=self.stderr)
                 return os.EX_USAGE
             except TooManyArguments as e:
-                print('Error: too many arguments. %s' % str(e), file=self.stderr)
+                print("Error: too many arguments. %s" % str(e), file=self.stderr)
                 return os.EX_USAGE
             except ArgSyntaxError as e:
-                print('Error: invalid arguments. %s' % str(e), file=self.stderr)
+                print("Error: invalid arguments. %s" % str(e), file=self.stderr)
                 return os.EX_USAGE
             except (KeyboardInterrupt, EOFError):
                 # ^C during a command process doesn't exit application.
-                print('\nAborted.')
+                print("\nAborted.")
                 return signal.SIGINT + 128
         finally:
             self.flush()
@@ -567,9 +586,9 @@ class ReplApplication(ConsoleApplication, Cmd):
         print('Unknown command: "%s"' % line, file=self.stderr)
         cmd, arg, ignore = super().parseline(line)
         if cmd is not None:
-            names = set(name[3:] for name in self.get_names() if name.startswith('do_' + cmd))
+            names = set(name[3:] for name in self.get_names() if name.startswith("do_" + cmd))
             if len(names) > 0:
-                print('Do you mean: %s?' % ', '.join(names), file=self.stderr)
+                print("Do you mean: %s?" % ", ".join(names), file=self.stderr)
         return os.EX_USAGE
 
     def completenames(self, text, *ignored):
@@ -578,21 +597,21 @@ class ReplApplication(ConsoleApplication, Cmd):
     def _shell_completion_items(self):
         items = super()._shell_completion_items()
         items.update(
-            set(self.completenames('')) -
-            set(('debug', 'condition', 'count', 'formatter', 'logging', 'select', 'quit')))
+            set(self.completenames("")) - set(("debug", "condition", "count", "formatter", "logging", "select", "quit"))
+        )
         return items
 
     def path_completer(self, arg):
         dirname = os.path.dirname(arg)
         try:
-            children = os.listdir(dirname or '.')
+            children = os.listdir(dirname or ".")
         except OSError:
             return ()
         l = []
         for child in children:
             path = os.path.join(dirname, child)
             if os.path.isdir(path):
-                child += '/'
+                child += "/"
             l.append(child)
         return l
 
@@ -618,8 +637,8 @@ class ReplApplication(ConsoleApplication, Cmd):
         except IndexError:
             return None
         else:
-            if match[-1] != '/':
-                return '%s ' % match
+            if match[-1] != "/":
+                return "%s " % match
             return match
 
     # -- errors management -------------
@@ -645,9 +664,9 @@ class ReplApplication(ConsoleApplication, Cmd):
         self.set_formatter(self.DEFAULT_FORMATTER)
 
         if self.options.select:
-            self.selected_fields = self.options.select.split(',')
+            self.selected_fields = self.options.select.split(",")
         else:
-            self.selected_fields = ['$direct']
+            self.selected_fields = ["$direct"]
 
         if self.options.count is not None:
             self._is_default_count = False
@@ -664,36 +683,36 @@ class ReplApplication(ConsoleApplication, Cmd):
 
     def get_command_help(self, command, short=False):
         try:
-            func = getattr(self, 'do_' + command)
+            func = getattr(self, "do_" + command)
         except AttributeError:
             return None
 
         doc = func.__doc__
         assert doc is not None, "A command must have a docstring"
 
-        lines = [line.strip() for line in doc.strip().split('\n')]
+        lines = [line.strip() for line in doc.strip().split("\n")]
         if not lines[0].startswith(command):
-            lines = [command, ''] + lines
+            lines = [command, ""] + lines
 
         if short:
             return lines[0]
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def get_commands_doc(self):
-        names = set(name for name in self.get_names() if name.startswith('do_'))
+        names = set(name for name in self.get_names() if name.startswith("do_"))
         appname = self.APPNAME.capitalize()
-        d = OrderedDict(((appname, []), ('Woob', [])))
+        d = OrderedDict(((appname, []), ("Woob", [])))
 
         for name in sorted(names):
             cmd = name[3:]
-            if cmd in self.hidden_commands.union(self.woob_commands).union(['help']):
+            if cmd in self.hidden_commands.union(self.woob_commands).union(["help"]):
                 continue
 
             d[appname].append(self.get_command_help(cmd))
         if not self.DISABLE_REPL:
             for cmd in self.woob_commands:
-                d['Woob'].append(self.get_command_help(cmd))
+                d["Woob"].append(self.get_command_help(cmd))
 
         return d
 
@@ -719,45 +738,45 @@ class ReplApplication(ConsoleApplication, Cmd):
         List commands, or get information about a command.
         """
         if arg:
-            cmd_names = set(name[3:] for name in self.get_names() if name.startswith('do_'))
+            cmd_names = set(name[3:] for name in self.get_names() if name.startswith("do_"))
             if arg in cmd_names:
                 command_help = self.get_command_help(arg)
                 if command_help is None:
                     logging.warning('Command "%s" is undocumented' % arg)
                 else:
-                    lines = command_help.split('\n')
-                    lines[0] = '%s%s%s' % (self.BOLD, lines[0], self.NC)
-                    self.stdout.write('%s\n' % '\n'.join(lines))
+                    lines = command_help.split("\n")
+                    lines[0] = "%s%s%s" % (self.BOLD, lines[0], self.NC)
+                    self.stdout.write("%s\n" % "\n".join(lines))
             else:
                 print('Unknown command: "%s"' % arg, file=self.stderr)
         else:
             cmds = self._parser.formatter.format_commands(self._parser.commands)
-            self.stdout.write('%s\n' % cmds)
+            self.stdout.write("%s\n" % cmds)
             self.stdout.write('Type "help <command>" for more info about a command.\n')
         return 2
 
     def complete_backends(self, text, line, begidx, endidx):
         choices = []
-        commands = ['enable', 'disable', 'only', 'list', 'add', 'register', 'edit', 'remove', 'list-modules']
+        commands = ["enable", "disable", "only", "list", "add", "register", "edit", "remove", "list-modules"]
         available_backends_names = set(backend.name for backend in self.woob.iter_backends())
         enabled_backends_names = set(backend.name for backend in self.enabled_backends)
 
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) == 2:
             choices = commands
         elif len(args) >= 3:
-            if args[1] == 'enable':
+            if args[1] == "enable":
                 choices = sorted(available_backends_names - enabled_backends_names)
-            elif args[1] == 'only':
+            elif args[1] == "only":
                 choices = sorted(available_backends_names)
-            elif args[1] == 'disable':
+            elif args[1] == "disable":
                 choices = sorted(enabled_backends_names)
-            elif args[1] in ('add', 'register') and len(args) == 3:
+            elif args[1] in ("add", "register") and len(args) == 3:
                 for name, module in sorted(self.woob.repositories.get_all_modules_info(self.CAPS).items()):
                     choices.append(name)
-            elif args[1] == 'edit':
+            elif args[1] == "edit":
                 choices = sorted(available_backends_names)
-            elif args[1] == 'remove':
+            elif args[1] == "remove":
                 choices = sorted(available_backends_names)
 
         return choices
@@ -774,41 +793,41 @@ class ReplApplication(ConsoleApplication, Cmd):
         """
         args = line.split()
         if len(args) != 2:
-            self.do_help('storage')
+            self.do_help("storage")
             return 1
 
         try:
             backend = self.woob.get_backend(args[1])
         except KeyError:
-            print('No such backend: {args[1]}', file=self.stderr)
+            print("No such backend: {args[1]}", file=self.stderr)
             return 1
 
-        if args[0] == 'cat':
+        if args[0] == "cat":
             storage = backend.storage.get()
-            print(yaml.dump(storage), end='')
+            print(yaml.dump(storage), end="")
 
             return 0
 
-        if args[0] == 'edit':
+        if args[0] == "edit":
             storage = backend.storage.get()
-            output = self.acquire_input(yaml.dump(storage), suffix='.yml')
+            output = self.acquire_input(yaml.dump(storage), suffix=".yml")
 
             storage = yaml.safe_load(output)
 
             backend.storage.set(storage)
             backend.storage.save()
 
-            print(f'Storage for backend {backend.name} has been saved.')
+            print(f"Storage for backend {backend.name} has been saved.")
             return 0
 
-        if args[0] == 'flush':
+        if args[0] == "flush":
             backend.storage.set({})
             backend.storage.save()
 
-            print(f'Storage for backend {backend.name} has been flushed.')
+            print(f"Storage for backend {backend.name} has been flushed.")
             return 0
 
-        print(f'Action not found: {args[0]}', file=self.stderr)
+        print(f"Action not found: {args[0]}", file=self.stderr)
         return 1
 
     def do_backends(self, line):
@@ -832,63 +851,68 @@ class ReplApplication(ConsoleApplication, Cmd):
         if line:
             args = line.split()
         else:
-            args = ['list']
+            args = ["list"]
 
         action = args[0]
         given_backend_names = args[1:]
 
         for backend_name in given_backend_names:
-            if action in ('add', 'register'):
+            if action in ("add", "register"):
                 minfo = self.woob.repositories.get_module_info(backend_name)
                 if minfo is None:
                     print('Module "%s" does not exist.' % backend_name, file=self.stderr)
                     return 1
                 else:
                     if not minfo.has_caps(self.CAPS):
-                        print('Module "%s" is not supported by this application => skipping.' % backend_name, file=self.stderr)
+                        print(
+                            'Module "%s" is not supported by this application => skipping.' % backend_name,
+                            file=self.stderr,
+                        )
                         return 1
             else:
                 if backend_name not in [backend.name for backend in self.woob.iter_backends()]:
                     print('Backend "%s" does not exist => skipping.' % backend_name, file=self.stderr)
                     return 1
 
-        if action in ('enable', 'disable', 'only', 'add', 'register', 'edit', 'remove'):
+        if action in ("enable", "disable", "only", "add", "register", "edit", "remove"):
             if not given_backend_names:
-                print('Please give at least a backend name.', file=self.stderr)
+                print("Please give at least a backend name.", file=self.stderr)
                 return 2
 
         given_backends = set(backend for backend in self.woob.iter_backends() if backend.name in given_backend_names)
 
-        if action == 'enable':
+        if action == "enable":
             for backend in given_backends:
                 self.enabled_backends.add(backend)
-        elif action == 'disable':
+        elif action == "disable":
             for backend in given_backends:
                 try:
                     self.enabled_backends.remove(backend)
                 except KeyError:
-                    print('%s is not enabled' % backend.name, file=self.stderr)
-        elif action == 'only':
+                    print("%s is not enabled" % backend.name, file=self.stderr)
+        elif action == "only":
             self.enabled_backends = set()
             for backend in given_backends:
                 self.enabled_backends.add(backend)
-        elif action == 'list':
+        elif action == "list":
             enabled_backends_names = set(backend.name for backend in self.enabled_backends)
-            disabled_backends_names = set(backend.name for backend in self.woob.iter_backends()) - enabled_backends_names
-            print('Enabled: %s' % ', '.join(enabled_backends_names))
+            disabled_backends_names = (
+                set(backend.name for backend in self.woob.iter_backends()) - enabled_backends_names
+            )
+            print("Enabled: %s" % ", ".join(enabled_backends_names))
             if len(disabled_backends_names) > 0:
-                print('Disabled: %s' % ', '.join(disabled_backends_names))
-        elif action == 'add':
+                print("Disabled: %s" % ", ".join(disabled_backends_names))
+        elif action == "add":
             for name in given_backend_names:
                 instname = self.add_backend(name, name)
                 if instname:
                     self.load_backends(names=[instname])
-        elif action == 'register':
+        elif action == "register":
             for name in given_backend_names:
                 instname = self.register_backend(name)
                 if isinstance(instname, str):
                     self.load_backends(names=[instname])
-        elif action == 'edit':
+        elif action == "edit":
             for backend in given_backends:
                 enabled = backend in self.enabled_backends
                 self.unload_backends(names=[backend.name])
@@ -896,31 +920,32 @@ class ReplApplication(ConsoleApplication, Cmd):
                 for newb in self.load_backends(names=[backend.name]).values():
                     if not enabled:
                         self.enabled_backends.remove(newb)
-        elif action == 'remove':
+        elif action == "remove":
             for backend in given_backends:
                 self.woob.backends_config.remove_backend(backend.name)
                 self.unload_backends(backend.name)
-        elif action == 'list-modules':
+        elif action == "list-modules":
             modules = []
-            print('Modules list:')
+            print("Modules list:")
             for name, info in sorted(self.woob.repositories.get_all_modules_info().items()):
                 if not self.is_module_loadable(info):
                     continue
                 modules.append(name)
-                loaded = ' '
+                loaded = " "
                 for bi in self.woob.iter_backends():
                     if bi.NAME == name:
-                        if loaded == ' ':
-                            loaded = 'X'
-                        elif loaded == 'X':
+                        if loaded == " ":
+                            loaded = "X"
+                        elif loaded == "X":
                             loaded = 2
                         else:
                             loaded += 1
                 print(
-                    '[%s] %s%s' % (
-                        colored(str(loaded), attrs=['bold']),
-                        colored('%-20s' % name, 'magenta', attrs=['bold']),
-                        colored(info.description, 'green')
+                    "[%s] %s%s"
+                    % (
+                        colored(str(loaded), attrs=["bold"]),
+                        colored("%-20s" % name, "magenta", attrs=["bold"]),
+                        colored(info.description, "green"),
                     )
                 )
 
@@ -929,11 +954,14 @@ class ReplApplication(ConsoleApplication, Cmd):
             return 1
 
         if len(self.enabled_backends) == 0:
-            print('Warning: no more backends are loaded. %s is probably unusable.' % self.APPNAME.capitalize(), file=self.stderr)
+            print(
+                "Warning: no more backends are loaded. %s is probably unusable." % self.APPNAME.capitalize(),
+                file=self.stderr,
+            )
 
     def complete_logging(self, text, line, begidx, endidx):
-        levels = ('debug', 'info', 'warning', 'error', 'quiet', 'default')
-        args = line.split(' ')
+        levels = ("debug", "info", "warning", "error", "quiet", "default")
+        args = line.split(" ")
         if len(args) == 2:
             return levels
         return ()
@@ -950,12 +978,12 @@ class ReplApplication(ConsoleApplication, Cmd):
         """
         args = self.parse_command_args(line, 1, 0)
         levels = (
-            ('debug',   logging.DEBUG),
-            ('info',    logging.INFO),
-            ('warning', logging.WARNING),
-            ('error',   logging.ERROR),
-            ('quiet',   logging.ERROR),
-            ('default', logging.WARNING),
+            ("debug", logging.DEBUG),
+            ("info", logging.INFO),
+            ("warning", logging.WARNING),
+            ("error", logging.ERROR),
+            ("quiet", logging.ERROR),
+            ("default", logging.WARNING),
         )
 
         if not args[0]:
@@ -964,7 +992,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                 if logging.root.level == level:
                     current = label
                     break
-            print('Current level: %s' % current)
+            print("Current level: %s" % current)
             return
 
         levels = dict(levels)
@@ -972,7 +1000,7 @@ class ReplApplication(ConsoleApplication, Cmd):
             level = levels[args[0]]
         except KeyError:
             print('Level "%s" does not exist.' % args[0], file=self.stderr)
-            print('Availables: %s' % ' '.join(levels), file=self.stderr)
+            print("Availables: %s" % " ".join(levels), file=self.stderr)
             return 2
         else:
             logging.root.setLevel(level)
@@ -990,17 +1018,17 @@ class ReplApplication(ConsoleApplication, Cmd):
         """
         line = line.strip()
         if line:
-            if line == 'off':
+            if line == "off":
                 self.condition = None
             else:
                 try:
                     self.condition = ResultsCondition(line)
                 except ResultsConditionError as e:
-                    print('%s' % e, file=self.stderr)
+                    print("%s" % e, file=self.stderr)
                     return 2
         else:
             if self.condition is None:
-                print('No condition is set.')
+                print("No condition is set.")
             else:
                 print(str(self.condition))
 
@@ -1016,7 +1044,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         """
         line = line.strip()
         if line:
-            if line == 'off':
+            if line == "off":
                 self.options.count = None
                 self._is_default_count = False
             else:
@@ -1034,26 +1062,26 @@ class ReplApplication(ConsoleApplication, Cmd):
                         self._is_default_count = False
         else:
             if self.options.count is None:
-                print('Counting disabled.')
+                print("Counting disabled.")
             else:
                 print(self.options.count)
 
     def complete_formatter(self, text, line, *ignored):
         formatters = self.formatters_loader.get_available_formatters()
-        commands = ['list', 'option'] + formatters
-        options = ['header', 'keys']
-        option_values = ['on', 'off']
+        commands = ["list", "option"] + formatters
+        options = ["header", "keys"]
+        option_values = ["on", "off"]
 
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) == 2:
             return commands
-        if args[1] == 'option':
+        if args[1] == "option":
             if len(args) == 3:
                 return options
             if len(args) == 4:
                 return option_values
         elif args[1] in formatters:
-            return list(set(name[3:] for name in self.get_names() if name.startswith('do_')))
+            return list(set(name[3:] for name in self.get_names() if name.startswith("do_")))
 
     def do_formatter(self, line):
         """
@@ -1074,26 +1102,26 @@ class ReplApplication(ConsoleApplication, Cmd):
         """
         args = line.strip().split()
         if args:
-            if args[0] == 'list':
-                print(', '.join(self.formatters_loader.get_available_formatters()))
-            elif args[0] == 'option':
+            if args[0] == "list":
+                print(", ".join(self.formatters_loader.get_available_formatters()))
+            elif args[0] == "option":
                 if len(args) > 1:
                     if len(args) == 2:
-                        if args[1] == 'header':
-                            print('off' if self.options.no_header else 'on')
-                        elif args[1] == 'keys':
-                            print('off' if self.options.no_keys else 'on')
+                        if args[1] == "header":
+                            print("off" if self.options.no_header else "on")
+                        elif args[1] == "keys":
+                            print("off" if self.options.no_keys else "on")
                     else:
-                        if args[2] not in ('on', 'off'):
+                        if args[2] not in ("on", "off"):
                             print('Invalid value "%s". Please use "on" or "off" values.' % args[2], file=self.stderr)
                             return 2
                         else:
-                            if args[1] == 'header':
-                                self.options.no_header = True if args[2] == 'off' else False
-                            elif args[1] == 'keys':
-                                self.options.no_keys = True if args[2] == 'off' else False
+                            if args[1] == "header":
+                                self.options.no_header = True if args[2] == "off" else False
+                            elif args[1] == "keys":
+                                self.options.no_keys = True if args[2] == "off" else False
                 else:
-                    print('Don\'t know which option to set. Available options: header, keys.', file=self.stderr)
+                    print("Don't know which option to set. Available options: header, keys.", file=self.stderr)
                     return 2
             else:
                 if args[0] in self.formatters_loader.get_available_formatters():
@@ -1103,11 +1131,15 @@ class ReplApplication(ConsoleApplication, Cmd):
                         self.commands_formatters = {}
                         self.DEFAULT_FORMATTER = self.set_formatter(args[0])
                 else:
-                    print('Formatter "%s" is not available.\n'
-                          'Available formatters: %s.' % (args[0], ', '.join(self.formatters_loader.get_available_formatters())), file=self.stderr)
+                    print(
+                        'Formatter "%s" is not available.\n'
+                        "Available formatters: %s."
+                        % (args[0], ", ".join(self.formatters_loader.get_available_formatters())),
+                        file=self.stderr,
+                    )
                     return 1
         else:
-            print('Default formatter: %s' % self.DEFAULT_FORMATTER)
+            print("Default formatter: %s" % self.DEFAULT_FORMATTER)
             for key, klass in self.commands_formatters.items():
                 print('Command "%s": %s' % (key, klass))
 
@@ -1126,7 +1158,7 @@ class ReplApplication(ConsoleApplication, Cmd):
             split = line.split()
             self.selected_fields = split
         else:
-            print(' '.join(self.selected_fields))
+            print(" ".join(self.selected_fields))
 
     # First sort in alphabetical of backend
     # Second, sort with ID
@@ -1151,16 +1183,16 @@ class ReplApplication(ConsoleApplication, Cmd):
         only = False
         sort = True
 
-        if '-U' in line.strip().partition(' '):
-            path = line.strip().partition(' ')[-1]
+        if "-U" in line.strip().partition(" "):
+            path = line.strip().partition(" ")[-1]
             sort = False
 
-        if '-d' in line.strip().partition(' '):
+        if "-d" in line.strip().partition(" "):
             path = None
-            only = line.strip().partition(' ')[-1]
+            only = line.strip().partition(" ")[-1]
 
         if path:
-            for _path in path.split('/'):
+            for _path in path.split("/"):
                 # We have an argument, let's ch to the directory before the ls
                 self.working_path.cd1(_path)
 
@@ -1191,7 +1223,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                 self._format_obj(obj, only)
 
         if path:
-            for _path in path.split('/'):
+            for _path in path.split("/"):
                 # Let's go back to the parent directory
                 self.working_path.up()
         else:
@@ -1215,7 +1247,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         return to_return
 
     def _format_obj(self, obj, only):
-        if only is False or not hasattr(obj, 'id') or obj.id in only:
+        if only is False or not hasattr(obj, "id") or obj.id in only:
             self.cached_format(obj)
 
     def do_cd(self, line):
@@ -1228,16 +1260,19 @@ class ReplApplication(ConsoleApplication, Cmd):
         """
         if not len(line.strip()):
             self.working_path.home()
-        elif line.strip() == '..':
+        elif line.strip() == "..":
             self.working_path.up()
         else:
             self.working_path.cd1(line)
 
             collections = []
             try:
-                for res in self.do('get_collection', objs=self.COLLECTION_OBJECTS,
-                                   split_path=self.working_path.get(),
-                                   caps=CapCollection):
+                for res in self.do(
+                    "get_collection",
+                    objs=self.COLLECTION_OBJECTS,
+                    split_path=self.working_path.get(),
+                    caps=CapCollection,
+                ):
                     if res:
                         collections.append(res)
             except CallErrors as errors:
@@ -1258,12 +1293,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         split_path = self.working_path.get()
 
         try:
-            for res in self._do_and_retry(
-                'iter_resources',
-                objs=objs,
-                split_path=split_path,
-                caps=CapCollection
-            ):
+            for res in self._do_and_retry("iter_resources", objs=objs, split_path=split_path, caps=CapCollection):
                 yield res
         except CallErrors as errors:
             self.bcall_errors_handler(errors, CollectionNotFound)
@@ -1292,9 +1322,9 @@ class ReplApplication(ConsoleApplication, Cmd):
         :rtype: str
         """
         if default is None:
-            default = '{id}-{title}.{ext}'
+            default = "{id}-{title}.{ext}"
         if dest is None:
-            dest = '.'
+            dest = "."
         if os.path.isdir(dest):
             dest = os.path.join(dest, default)
 
@@ -1303,18 +1333,19 @@ class ReplApplication(ConsoleApplication, Cmd):
             if hasattr(obj, field):
                 value = getattr(obj, field)
                 if empty(value):
-                    value = 'unknown'
-                return re.sub('[?:/]', '-', '%s' % value)
+                    value = "unknown"
+                return re.sub("[?:/]", "-", "%s" % value)
             else:
                 return m.group(0)
-        return re.sub(r'\{(.+?)\}', repl, dest)
+
+        return re.sub(r"\{(.+?)\}", repl, dest)
 
     # for cd & ls
     def complete_path(self, text, line, begidx, endidx):
         directories = set()
         if len(self.working_path.get()):
-            directories.add('..')
-        mline = line.partition(' ')[2]
+            directories.add("..")
+        mline = line.partition(" ")[2]
         offs = len(mline) - len(text)
 
         # refresh only if needed
@@ -1346,7 +1377,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         try:
             self.formatter = self.formatters_loader.build_formatter(name)
         except FormatterLoadError as e:
-            print('%s' % e, file=self.stderr)
+            print("%s" % e, file=self.stderr)
             if self.DEFAULT_FORMATTER == name:
                 self.DEFAULT_FORMATTER = ReplApplication.DEFAULT_FORMATTER
             print('Falling back to "%s".' % (self.DEFAULT_FORMATTER), file=self.stderr)
@@ -1372,13 +1403,13 @@ class ReplApplication(ConsoleApplication, Cmd):
         self.add_object(obj)
         alias = None
         if self.interactive:
-            alias = '%s' % len(self.objects)
+            alias = "%s" % len(self.objects)
         self.format(obj, alias=alias)
 
     def parse_fields(self, fields):
-        if '$direct' in fields:
+        if "$direct" in fields:
             return []
-        if '$full' in fields:
+        if "$full" in fields:
             return None
         return fields
 
@@ -1389,7 +1420,7 @@ class ReplApplication(ConsoleApplication, Cmd):
         except FieldNotFound as e:
             print(e, file=self.stderr)
         except MandatoryFieldsNotFound as e:
-            print('%s Hint: select missing fields or use another formatter (ex: multiline).' % e, file=self.stderr)
+            print("%s Hint: select missing fields or use another formatter (ex: multiline)." % e, file=self.stderr)
 
     def flush(self):
         self.formatter.flush()
@@ -1406,11 +1437,12 @@ class ReplApplication(ConsoleApplication, Cmd):
         app = AppDebug()
         locs = dict(application=self, woob=self.woob)
         if len(self.woob.backend_instances):
-            locs['backend'] = next(iter(self.woob.backend_instances.values()))
-            locs['browser'] = locs['backend'].browser
+            locs["backend"] = next(iter(self.woob.backend_instances.values()))
+            locs["browser"] = locs["backend"].browser
 
-        banner = ('Woob debug shell\n\nAvailable variables:\n'
-                  + '\n'.join(['  %s: %s' % (k, v) for k, v in locs.items()]))
+        banner = "Woob debug shell\n\nAvailable variables:\n" + "\n".join(
+            ["  %s: %s" % (k, v) for k, v in locs.items()]
+        )
 
         funcs = [app.ipython, app.bpython, app.python]
         app.launch(funcs, locs, banner)

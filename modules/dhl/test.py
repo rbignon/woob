@@ -23,7 +23,7 @@ from woob.tools.test import BackendTest
 
 
 class DHLTest(BackendTest):
-    MODULE = 'dhl'
+    MODULE = "dhl"
 
     def test_dhl(self):
         self.assertRaises(ParcelNotFound, self.backend.get_parcel_tracking, "foo")

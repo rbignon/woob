@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest, SkipTest
 
 
 class FeedlyTest(BackendTest):
-    MODULE = 'feedly'
+    MODULE = "feedly"
 
     def test_login(self):
         if self.backend.browser.username:
@@ -34,7 +34,7 @@ class FeedlyTest(BackendTest):
 
     def test_feedly(self):
         self.backend.browser.username = None
-        l1 = list(self.backend.iter_resources(None, ['Technologie', 'Korben']))
+        l1 = list(self.backend.iter_resources(None, ["Technologie", "Korben"]))
         assert len(l1)
         thread = self.backend.get_thread(l1[0].id)
         assert len(thread.root.content)

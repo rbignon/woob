@@ -21,4 +21,4 @@
 from .module import FeedlyModule
 
 
-__all__ = ['FeedlyModule']
+__all__ = ["FeedlyModule"]

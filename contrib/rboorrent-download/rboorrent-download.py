@@ -39,7 +39,7 @@ class RboorrentDownload(object):
         magnet = self.get_magnet(torrent)
         buf = "d10:magnet-uri%d:%se" % (len(magnet), magnet)
         try:
-            with open(dest, 'w') as f:
+            with open(dest, "w") as f:
                 f.write(buf)
         except IOError as e:
             print('Unable to write "%s": %s' % (dest, e.message))
@@ -50,7 +50,7 @@ class RboorrentDownload(object):
             buf = self.backend.get_torrent_file(torrent.id)
             if buf:
                 try:
-                    with open(dest, 'w') as f:
+                    with open(dest, "w") as f:
                         f.write(buf)
                 except IOError as e:
                     print('Unable to write "%s": %s' % (dest, e))

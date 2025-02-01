@@ -22,15 +22,15 @@ from woob.tools.backend import Module
 from .browser import AumagasinBrowser
 
 
-__all__ = ['AumagasinModule']
+__all__ = ["AumagasinModule"]
 
 
 class AumagasinModule(Module, CapDirectory):
-    NAME = 'aumagasin'
-    DESCRIPTION = 'Liste des magasins de France'
-    MAINTAINER = 'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'LGPLv3+'
+    NAME = "aumagasin"
+    DESCRIPTION = "Liste des magasins de France"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "LGPLv3+"
 
     BROWSER = AumagasinBrowser
 

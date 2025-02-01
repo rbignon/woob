@@ -26,19 +26,19 @@ from woob_modules.creditdunord.module import CreditDuNordModule
 from .browser import KolbBrowser
 
 
-__all__ = ['KolbModule']
+__all__ = ["KolbModule"]
 
 
 class KolbModule(CreditDuNordModule, CapBankWealth, CapProfile):
-    NAME = 'kolb'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DEPENDENCIES = ('creditdunord',)
-    DESCRIPTION = 'Banque Kolb'
-    LICENSE = 'LGPLv3+'
+    NAME = "kolb"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DEPENDENCIES = ("creditdunord",)
+    DESCRIPTION = "Banque Kolb"
+    LICENSE = "LGPLv3+"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', regexp=r'\d+', masked=False),
-        ValueBackendPassword('password', label='Code confidentiel', regexp=r'\d{6}'),
+        ValueBackendPassword("login", label="Identifiant", regexp=r"\d+", masked=False),
+        ValueBackendPassword("password", label="Code confidentiel", regexp=r"\d{6}"),
     )
     BROWSER = KolbBrowser

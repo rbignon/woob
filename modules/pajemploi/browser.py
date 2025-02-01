@@ -23,49 +23,64 @@ from woob.capabilities.bill import Subscription
 from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
-    AjaxDetailSocialInfoPage, CotisationsDownloadPage, DeclarationDetailPage, DeclarationListPage, DeclarationSetupPage,
-    EmployeesPage, ErrorMaintenancePage, HomePage, LoginPage, MonthlyReportDownloadPage, PayslipDownloadPage,
-    RegistrationRecordDownloadPage, TaxCertificatesPage,
+    AjaxDetailSocialInfoPage,
+    CotisationsDownloadPage,
+    DeclarationDetailPage,
+    DeclarationListPage,
+    DeclarationSetupPage,
+    EmployeesPage,
+    ErrorMaintenancePage,
+    HomePage,
+    LoginPage,
+    MonthlyReportDownloadPage,
+    PayslipDownloadPage,
+    RegistrationRecordDownloadPage,
+    TaxCertificatesPage,
 )
 
 
 class PajemploiBrowser(LoginBrowser):
     BASEURL = "https://www.pajemploi.urssaf.fr"
 
-    logout                       = URL(r"/pajeweb/j_spring_security_logout$",
-                                       r"/pajeweb/quit.htm$")
+    logout = URL(r"/pajeweb/j_spring_security_logout$", r"/pajeweb/quit.htm$")
 
-    login                        = URL(r"/pajeweb/logindec\.htm$",
-                                       r"/info/accueil.html$",
-                                       r"/portail/accueil.html$",
-                                       r"/pajewebinfo/cms/sites/pajewebinfo/accueil.html$",
-                                       r"/pajeweb/connect.htm$",
-                                       r"/pajeweb/home.jsp$", LoginPage)
+    login = URL(
+        r"/pajeweb/logindec\.htm$",
+        r"/info/accueil.html$",
+        r"/portail/accueil.html$",
+        r"/pajewebinfo/cms/sites/pajewebinfo/accueil.html$",
+        r"/pajeweb/connect.htm$",
+        r"/pajeweb/home.jsp$",
+        LoginPage,
+    )
 
-    homepage                     = URL(r"/info/accueil.html$",
-                                       r"/portail/accueil.html$",
-                                       r"/pajewebinfo/cms/sites/pajewebinfo/accueil.html$",
-                                       r"/pajeweb/connect.htm$",
-                                       r"/pajeweb/home.jsp$", HomePage)
+    homepage = URL(
+        r"/info/accueil.html$",
+        r"/portail/accueil.html$",
+        r"/pajewebinfo/cms/sites/pajewebinfo/accueil.html$",
+        r"/pajeweb/connect.htm$",
+        r"/pajeweb/home.jsp$",
+        HomePage,
+    )
 
-    employees                    = URL(r"/pajeweb/listesala/gerersala.htm$", EmployeesPage)
+    employees = URL(r"/pajeweb/listesala/gerersala.htm$", EmployeesPage)
 
-    tax_certificates             = URL(r"/pajeweb/atfirecap.htm$", TaxCertificatesPage)
+    tax_certificates = URL(r"/pajeweb/atfirecap.htm$", TaxCertificatesPage)
 
-    declaration_setup            = URL(r"/pajeweb/listeVSssl.jsp$", DeclarationSetupPage)
-    declaration_list             = URL(r"/pajeweb/ajaxlistevs.jsp$", DeclarationListPage)
-    declaration_detail           = URL(r"/pajeweb/recapitulatifPrestationFiltre.htm$", DeclarationDetailPage)
-    payslip_download             = URL(r"/pajeweb/paje_bulletinsalaire.pdf\?ref=(?P<refdoc>.*)", PayslipDownloadPage)
-    monthly_report_download      = URL(r"/pajeweb/decla/saisie/afficherReleveMensuel.htm$", MonthlyReportDownloadPage)
+    declaration_setup = URL(r"/pajeweb/listeVSssl.jsp$", DeclarationSetupPage)
+    declaration_list = URL(r"/pajeweb/ajaxlistevs.jsp$", DeclarationListPage)
+    declaration_detail = URL(r"/pajeweb/recapitulatifPrestationFiltre.htm$", DeclarationDetailPage)
+    payslip_download = URL(r"/pajeweb/paje_bulletinsalaire.pdf\?ref=(?P<refdoc>.*)", PayslipDownloadPage)
+    monthly_report_download = URL(r"/pajeweb/decla/saisie/afficherReleveMensuel.htm$", MonthlyReportDownloadPage)
     registration_record_download = URL(r"/pajeweb/afficherCertificat.htm$", RegistrationRecordDownloadPage)
-    cotisations_download         = URL(r"/pajeweb/paje_decomptecotiempl.pdf?ref=(?P<refdoc>.*)", CotisationsDownloadPage)
-    ajax_detail_social_info      = URL(r'/pajeweb/ajaxdetailvs.jsp$', AjaxDetailSocialInfoPage)
-    error_maintenance            = URL(r'/pajeweb/logindec.htm', ErrorMaintenancePage)
+    cotisations_download = URL(r"/pajeweb/paje_decomptecotiempl.pdf?ref=(?P<refdoc>.*)", CotisationsDownloadPage)
+    ajax_detail_social_info = URL(r"/pajeweb/ajaxdetailvs.jsp$", AjaxDetailSocialInfoPage)
+    error_maintenance = URL(r"/pajeweb/logindec.htm", ErrorMaintenancePage)
 
     def do_login(self):
         self.session.cookies.clear()
         self.login.go()
-        self.page.login(self.username, self.password, 'XXXXX')
+        self.page.login(self.username, self.password, "XXXXX")
         if not self.page.logged:
             raise BrowserIncorrectPassword()
 
@@ -109,12 +124,9 @@ class PajemploiBrowser(LoginBrowser):
                 yield doc
 
     def download_document(self, document):
-        if (
-            hasattr(document, "_need_refresh_previous_page")
-            and document._need_refresh_previous_page
-        ):
+        if hasattr(document, "_need_refresh_previous_page") and document._need_refresh_previous_page:
             document._previous_page.go(data=document._previous_data)
         data = {}
-        if hasattr(document, '_ref'):
+        if hasattr(document, "_ref"):
             data["ref"] = document._ref
         return self.open(document.url, data=data).content

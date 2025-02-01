@@ -1,4 +1,4 @@
 from .module import PiratebayModule
 
 
-__all__ = ['PiratebayModule']
+__all__ = ["PiratebayModule"]

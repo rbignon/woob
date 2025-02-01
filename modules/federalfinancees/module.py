@@ -27,23 +27,23 @@ from woob_modules.s2e.module import S2eModule
 from .browser import FederalFinanceESBrowser
 
 
-__all__ = ['FederalFinanceESModule']
+__all__ = ["FederalFinanceESModule"]
 
 
 class FederalFinanceESModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
-    NAME = 'federalfinancees'
-    DESCRIPTION = 'Federal Finance Épargne Salariale'
-    MAINTAINER = 'Christophe Francois'
-    EMAIL = 'christophe.francois@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('s2e',)
+    NAME = "federalfinancees"
+    DESCRIPTION = "Federal Finance Épargne Salariale"
+    MAINTAINER = "Christophe Francois"
+    EMAIL = "christophe.francois@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("s2e",)
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe', regexp=r'^(\d{6})$'),
-        Value('otp', label='Code unique temporaire', default=''),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Mot de passe", regexp=r"^(\d{6})$"),
+        Value("otp", label="Code unique temporaire", default=""),
+        ValueTransient("request_information"),
     )
 
     BROWSER = FederalFinanceESBrowser

@@ -1,4 +1,4 @@
 from .module import LyricsplanetModule
 
 
-__all__ = ['LyricsplanetModule']
+__all__ = ["LyricsplanetModule"]

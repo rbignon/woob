@@ -23,4 +23,4 @@
 from .module import EdfparticulierModule
 
 
-__all__ = ['EdfparticulierModule']
+__all__ = ["EdfparticulierModule"]

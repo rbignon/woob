@@ -27,12 +27,12 @@ from .pages import Cities, HousingPage, NeighborhoodPage, ResultsPage
 
 
 class BieniciBrowser(PagesBrowser):
-    BASEURL = 'https://www.bienici.com'
+    BASEURL = "https://www.bienici.com"
 
-    cities = URL(r'https://res.bienici.com/suggest.json\?q=(?P<zipcode>.+)', Cities)
-    results = URL(r'/realEstateAds.json\?filters=(?P<filters>.+)', ResultsPage)
-    housing = URL(r'/realEstateAd.json\?id=(?P<housing_id>.*)', HousingPage)
-    neighborhood = URL(r'/neighborhoodStatsById.json\?id=(?P<id_polygon>.*)', NeighborhoodPage)
+    cities = URL(r"https://res.bienici.com/suggest.json\?q=(?P<zipcode>.+)", Cities)
+    results = URL(r"/realEstateAds.json\?filters=(?P<filters>.+)", ResultsPage)
+    housing = URL(r"/realEstateAd.json\?id=(?P<housing_id>.*)", HousingPage)
+    neighborhood = URL(r"/neighborhoodStatsById.json\?id=(?P<id_polygon>.*)", NeighborhoodPage)
 
     def get_cities(self, pattern):
         return self.cities.go(zipcode=pattern).get_city()
@@ -47,34 +47,32 @@ class BieniciBrowser(PagesBrowser):
             return []
 
         filters = {
-            'size': 100,
-            'page': 1,
-            'resultsPerPage': 24,
-            'maxAuthorizedResults': 2400,
-            'sortBy': "relevance",
-            'sortOrder': "desc",
-            'onTheMarket': [True],
-            'showAllModels': False,
-            "zoneIdsByTypes": {
-                'zoneIds': []
-            },
-            'propertyType': []
+            "size": 100,
+            "page": 1,
+            "resultsPerPage": 24,
+            "maxAuthorizedResults": 2400,
+            "sortBy": "relevance",
+            "sortOrder": "desc",
+            "onTheMarket": [True],
+            "showAllModels": False,
+            "zoneIdsByTypes": {"zoneIds": []},
+            "propertyType": [],
         }
 
         dict_query = query.to_dict()
-        if dict_query['area_min']:
-            filters['minArea'] = dict_query['area_min']
+        if dict_query["area_min"]:
+            filters["minArea"] = dict_query["area_min"]
 
-        if dict_query['area_max']:
-            filters['maxArea'] = dict_query['area_max']
+        if dict_query["area_max"]:
+            filters["maxArea"] = dict_query["area_max"]
 
-        if dict_query['cost_min']:
-            filters['minPrice'] = dict_query['cost_min']
+        if dict_query["cost_min"]:
+            filters["minPrice"] = dict_query["cost_min"]
 
-        if dict_query['cost_max']:
-            filters['maxPrice'] = dict_query['cost_max']
+        if dict_query["cost_max"]:
+            filters["maxPrice"] = dict_query["cost_max"]
 
-        filters['filterType'] = TRANSACTION_TYPE[dict_query['type']]
+        filters["filterType"] = TRANSACTION_TYPE[dict_query["type"]]
         if query.type == POSTS_TYPES.VIAGER:
             filters["isLifeAnnuitySaleOnly"] = True
         elif query.type == POSTS_TYPES.SALE:
@@ -82,11 +80,11 @@ class BieniciBrowser(PagesBrowser):
         elif query.type == POSTS_TYPES.FURNISHED_RENT:
             filters["isFurnished"] = True
 
-        for housing_type in dict_query['house_types']:
-            filters['propertyType'] += HOUSE_TYPES_LABELS[housing_type]
+        for housing_type in dict_query["house_types"]:
+            filters["propertyType"] += HOUSE_TYPES_LABELS[housing_type]
 
-        for city in dict_query['cities']:
-            filters['zoneIdsByTypes']['zoneIds'].append(city.id)
+        for city in dict_query["cities"]:
+            filters["zoneIdsByTypes"]["zoneIds"].append(city.id)
 
         return self.results.go(filters=json.dumps(filters)).get_housings()
 

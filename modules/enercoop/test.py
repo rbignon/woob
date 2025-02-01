@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class EnercoopTest(BackendTest):
-    MODULE = 'enercoop'
+    MODULE = "enercoop"
 
     def test_subs(self):
         subs = list(self.backend.iter_subscription())
@@ -42,7 +42,7 @@ class EnercoopTest(BackendTest):
 
     def test_gauge(self):
         # for now, only one gauge is returned, update the test when more are implemented
-        gauge, = list(self.backend.iter_gauges())
+        (gauge,) = list(self.backend.iter_gauges())
         sensors = list(self.backend.iter_sensors(gauge.id))
 
         # TODO update if max power sensors are implemented
@@ -52,10 +52,7 @@ class EnercoopTest(BackendTest):
         assert sensors[0].unit == "kWh"
         assert sensors[0].gaugeid == gauge.id
 
-        measures = [
-            measure
-            for _, measure in zip(range(10), self.backend.iter_gauge_history(sensors[0].id))
-        ]
+        measures = [measure for _, measure in zip(range(10), self.backend.iter_gauge_history(sensors[0].id))]
         assert len(measures)
         assert any(measure.level > 0 for measure in measures)
         assert len(set(measure.date for measure in measures)) == len(measures)

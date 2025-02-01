@@ -28,16 +28,16 @@ class OrangeCaptchaHandler(object):
             symbol = self.get_symbol_from_image_data(image_data)
             best_indication, best_index = self.get_best_indication(symbol)
             self.fingerprints[value] = {
-                'value': value,
-                'symbol': symbol,
-                'best_indication': best_indication,
-                'best_index': best_index,
+                "value": value,
+                "symbol": symbol,
+                "best_indication": best_indication,
+                "best_index": best_index,
             }
 
     @staticmethod
     def get_symbol_from_image_data(image_data):
         img = Image.open(BytesIO(image_data))
-        img = img.convert('RGB')
+        img = img.convert("RGB")
 
         small_image = img.resize((10, 10))
 
@@ -88,15 +88,15 @@ class OrangeCaptchaHandler(object):
             good_key = None
 
             if indication in cache.keys():
-                good_key = cache[indication]['value']
-                best_indication = cache[indication]['best_indication']
-                best_index = cache[indication]['best_index']
+                good_key = cache[indication]["value"]
+                best_indication = cache[indication]["best_indication"]
+                best_index = cache[indication]["best_index"]
             else:
                 for key, value in self.fingerprints.items():
-                    if value['best_indication'] == indication and value['best_index'] > best_index:
+                    if value["best_indication"] == indication and value["best_index"] > best_index:
                         cache[indication] = value
-                        best_index = value['best_index']
-                        best_indication = value['best_indication']
+                        best_index = value["best_index"]
+                        best_indication = value["best_indication"]
                         good_key = key
 
             if not good_key:
@@ -111,12 +111,12 @@ class OrangeCaptchaHandler(object):
                 # ELSE
                 #     improve matching algorithm to have a better matching,
                 #     but in that case DO NOT FORGET to rebuild all symbols
-                self.logger.error('best_indication: %s best_index: %d', best_indication, best_index)
+                self.logger.error("best_indication: %s best_index: %d", best_indication, best_index)
                 raise BrowserUnavailable()
             elif best_index < 95:
                 # there is a small chance image is not what we think it is, but not sure at all
                 # take the chance anyway
-                self.logger.warning('best_indication: %s best_index: %d', best_indication, best_index)
+                self.logger.warning("best_indication: %s best_index: %d", best_indication, best_index)
 
             captcha_response.append(good_key)
 
@@ -130,23 +130,23 @@ class CaptchaPage(HTMLPage):
             return
 
         script = scripts[0]
-        value = re.search(r'config: (.*),', script.text).group(1)
+        value = re.search(r"config: (.*),", script.text).group(1)
         data = json.loads(value)
 
         urls = {}
-        for row in data['rows']:
+        for row in data["rows"]:
             for col in row:
-                url = 'https:' + col['data']
-                urls[col['value']] = url
+                url = "https:" + col["data"]
+                urls[col["value"]] = url
 
         return {
-            'indications': data['indications'],
-            'urls': urls,
+            "indications": data["indications"],
+            "urls": urls,
         }
 
     def download_images(self, data_captcha):
         images = {}
-        for key, url in data_captcha['urls'].items():
+        for key, url in data_captcha["urls"].items():
             images[key] = self.browser.open(url).content
 
         return images

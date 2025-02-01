@@ -25,16 +25,16 @@ from woob.tools.backend import Module
 from .browser import XHamsterBrowser
 
 
-__all__ = ['XHamsterModule']
+__all__ = ["XHamsterModule"]
 
 
 class XHamsterModule(Module, CapVideo):
-    NAME = 'xhamster'
-    DESCRIPTION = 'xhamster website'
-    MAINTAINER = 'Roger Philibert'
-    EMAIL = 'roger.philibert@gmail.com'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "xhamster"
+    DESCRIPTION = "xhamster website"
+    MAINTAINER = "Roger Philibert"
+    EMAIL = "roger.philibert@gmail.com"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = XHamsterBrowser
 
@@ -47,10 +47,10 @@ class XHamsterModule(Module, CapVideo):
         return self.browser.do_search(pattern)
 
     def fill_video(self, obj, fields):
-        if 'url' in fields:
+        if "url" in fields:
             new = self.browser.get_video(obj.id)
             obj.url = new.url
-        if 'thumbnail' in fields:
+        if "thumbnail" in fields:
             r = self.browser.open(obj.thumbnail.url)
             obj.thumbnail.data = r.content
 

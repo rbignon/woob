@@ -25,11 +25,11 @@ from woob.tools.value import Value
 
 
 class AgendadulibreTest(BackendTest):
-    MODULE = 'agendadulibre'
+    MODULE = "agendadulibre"
 
     def setUp(self):
         if not self.is_backend_configured():
-            self.backend.config['region'] = Value(value='https://www.agendadulibre.org')
+            self.backend.config["region"] = Value(value="https://www.agendadulibre.org")
 
     def test_agendadulibre(self):
         l = list(self.backend.list_events(datetime.now()))

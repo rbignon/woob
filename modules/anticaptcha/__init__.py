@@ -21,4 +21,4 @@
 from .module import AnticaptchaModule
 
 
-__all__ = ['AnticaptchaModule']
+__all__ = ["AnticaptchaModule"]

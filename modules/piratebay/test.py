@@ -24,11 +24,11 @@ from woob.tools.test import BackendTest
 
 
 class PiratebayTest(BackendTest):
-    MODULE = 'piratebay'
+    MODULE = "piratebay"
 
     def test_torrent(self):
         # try something popular so we sometimes get a magnet-only torrent
-        torrents = list(self.backend.iter_torrents('ubuntu linux'))
+        torrents = list(self.backend.iter_torrents("ubuntu linux"))
         if len(torrents):
             torrent = choice(torrents)
             full_torrent = self.backend.get_torrent(torrent.id)
@@ -39,5 +39,5 @@ class PiratebayTest(BackendTest):
             try:
                 assert self.backend.get_torrent_file(torrent.id)
             except MagnetOnly as e:
-                assert e.magnet.startswith('magnet:')
+                assert e.magnet.startswith("magnet:")
                 assert e.magnet == full_torrent.magnet

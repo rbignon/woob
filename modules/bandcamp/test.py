@@ -21,28 +21,28 @@ from woob.tools.test import BackendTest
 
 
 class BandcampTest(BackendTest):
-    MODULE = 'bandcamp'
+    MODULE = "bandcamp"
 
     def test_search_audio(self):
-        file = next(self.backend.search_audio('la nuit des sales bêtes'))
-        self.assertEqual('audio.degelite.la-nuit-des-sales-b-tes', file.id)
+        file = next(self.backend.search_audio("la nuit des sales bêtes"))
+        self.assertEqual("audio.degelite.la-nuit-des-sales-b-tes", file.id)
         assert file.duration
-        self.assertEqual('la nuit des sales bêtes', file.title.lower())
-        self.assertEqual('casio judiciaire', file.author.lower())
+        self.assertEqual("la nuit des sales bêtes", file.title.lower())
+        self.assertEqual("casio judiciaire", file.author.lower())
         assert file.url
-        self.assertEqual('audio/mpeg', self.backend.browser.open(file.url, stream=True).headers['content-type'])
+        self.assertEqual("audio/mpeg", self.backend.browser.open(file.url, stream=True).headers["content-type"])
 
     def test_search_album(self):
-        album = next(self.backend.search_album('disco quake'))
-        assert album.id.startswith('album.')
-        self.assertEqual('202project', album.author.lower())
-        self.assertEqual('disco quake', album.title.lower())
+        album = next(self.backend.search_album("disco quake"))
+        assert album.id.startswith("album.")
+        self.assertEqual("202project", album.author.lower())
+        self.assertEqual("disco quake", album.title.lower())
         self.assertEqual(12, len(album.tracks_list))
-        self.assertEqual('https://202project.bandcamp.com/album/disco-quake', album.url)
+        self.assertEqual("https://202project.bandcamp.com/album/disco-quake", album.url)
 
     def test_get(self):
-        album = self.backend.get_album('album.casiojudiciaire.d-mo')
+        album = self.backend.get_album("album.casiojudiciaire.d-mo")
         assert album
 
-        file = self.backend.get_audio('audio.casiojudiciaire.travaux-pubiques')
+        file = self.backend.get_audio("audio.casiojudiciaire.travaux-pubiques")
         assert file

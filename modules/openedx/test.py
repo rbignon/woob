@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class OpenEDXTest(BackendTest):
-    MODULE = 'openedx'
+    MODULE = "openedx"
 
     def test_openedx(self):
         thread = next(self.backend.iter_threads())

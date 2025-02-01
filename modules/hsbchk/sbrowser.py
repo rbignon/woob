@@ -29,12 +29,12 @@ from .pages.login import LoginPage
 
 
 class LoginBrowser(SeleniumBrowser):
-    BASEURL = 'https://www.hsbc.com.hk/'
+    BASEURL = "https://www.hsbc.com.hk/"
 
     app_gone = False
 
-    preconnection =      URL(r'https://www.ebanking.hsbc.com.hk/1/2/logon?LANGTAG=en&COUNTRYTAG=US', LoginPage)
-    login =           URL(r'https://www.security.online-banking.hsbc.com.hk/gsa/SaaS30Resource/*', LoginPage)
+    preconnection = URL(r"https://www.ebanking.hsbc.com.hk/1/2/logon?LANGTAG=en&COUNTRYTAG=US", LoginPage)
+    login = URL(r"https://www.security.online-banking.hsbc.com.hk/gsa/SaaS30Resource/*", LoginPage)
 
     def __init__(self, username, password, secret, *args, **kwargs):
         super(LoginBrowser, self).__init__(*args, **kwargs)
@@ -46,7 +46,7 @@ class LoginBrowser(SeleniumBrowser):
 
     def _build_capabilities(self):
         capa = super(LoginBrowser, self)._build_capabilities()
-        capa['marionette'] = True
+        capa["marionette"] = True
         return capa
 
     def load_state(self, state):

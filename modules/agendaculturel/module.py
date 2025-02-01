@@ -26,37 +26,34 @@ from .browser import AgendaculturelBrowser
 from .calendar import AgendaculturelEvent
 
 
-__all__ = ['AgendaculturelModule']
+__all__ = ["AgendaculturelModule"]
 
 
 class AgendaculturelModule(Module, CapCalendarEvent):
-    NAME = 'agendaculturel'
-    DESCRIPTION = u'agendaculturel website'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "agendaculturel"
+    DESCRIPTION = "agendaculturel website"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
     ASSOCIATED_CATEGORIES = [CATEGORIES.CONCERT, CATEGORIES.THEATRE, CATEGORIES.EXPO, CATEGORIES.AUTRE, CATEGORIES.FEST]
     BROWSER = AgendaculturelBrowser
 
-    CONFIG = BackendConfig(Value('place', label='Default place'))
+    CONFIG = BackendConfig(Value("place", label="Default place"))
 
     def create_default_browser(self):
-        return self.create_browser(self.config['place'].get())
+        return self.create_browser(self.config["place"].get())
 
     def get_event(self, _id):
         return self.browser.get_event(_id)
 
     def list_events(self, date_from, date_to=None):
-        default_place = self.config['place'].get()
+        default_place = self.config["place"].get()
         return self.browser.list_events(default_place, date_from, date_to)
 
     def search_events(self, query):
         if self.has_matching_categories(query):
-            return self.browser.list_events(query.city,
-                                            query.start_date,
-                                            query.end_date,
-                                            query.categories)
+            return self.browser.list_events(query.city, query.start_date, query.end_date, query.categories)
 
     def fill_obj(self, event, fields):
         return self.browser.get_event(event.id, event)

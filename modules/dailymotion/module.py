@@ -28,54 +28,55 @@ from woob.tools.value import Value
 from .browser import DailymotionBrowser
 
 
-__all__ = ['DailymotionModule']
+__all__ = ["DailymotionModule"]
 
 
 class DailymotionModule(Module, CapVideo, CapCollection):
-    NAME = 'dailymotion'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = 'Dailymotion video streaming website'
-    LICENSE = 'AGPLv3+'
+    NAME = "dailymotion"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "Dailymotion video streaming website"
+    LICENSE = "AGPLv3+"
     BROWSER = DailymotionBrowser
 
-    resolution_choice = OrderedDict([(k, u'%s (%s)' % (v, k)) for k, v in sorted({
-        u'480': u'480p',
-        u'240': u'240p',
-        u'380': u'380p',
-        u'720': u'720p',
-        u'1080': u'1080p'
-    }.items())])
+    resolution_choice = OrderedDict(
+        [
+            (k, "%s (%s)" % (v, k))
+            for k, v in sorted({"480": "480p", "240": "240p", "380": "380p", "720": "720p", "1080": "1080p"}.items())
+        ]
+    )
 
-    format_choice = [u'm3u8', u'mp4']
+    format_choice = ["m3u8", "mp4"]
 
-    CONFIG = BackendConfig(Value('resolution', label=u'Resolution', choices=resolution_choice),
-                           Value('format', label=u'Format', choices=format_choice))
+    CONFIG = BackendConfig(
+        Value("resolution", label="Resolution", choices=resolution_choice),
+        Value("format", label="Format", choices=format_choice),
+    )
 
-    SORTBY = ['relevance', 'rated', 'visited', None]
+    SORTBY = ["relevance", "rated", "visited", None]
 
     def create_default_browser(self):
-        resolution = self.config['resolution'].get()
-        format = self.config['format'].get()
+        resolution = self.config["resolution"].get()
+        format = self.config["format"].get()
         return self.create_browser(resolution=resolution, format=format)
 
     def get_video(self, _id):
-        m = re.match(r'http://[w\.]*dailymotion\.com/video/(.*)', _id)
+        m = re.match(r"http://[w\.]*dailymotion\.com/video/(.*)", _id)
         if m:
             _id = m.group(1)
 
-        if not _id.startswith('http'):
+        if not _id.startswith("http"):
             return self.browser.get_video(_id)
 
     def search_videos(self, pattern, sortby=CapVideo.SEARCH_RELEVANCE, nsfw=False):
         return self.browser.search_videos(pattern, self.SORTBY[sortby])
 
     def fill_video(self, video, fields):
-        if fields != ['thumbnail']:
+        if fields != ["thumbnail"]:
             # if we don't want only the thumbnail, we probably want also every fields
             video = self.browser.get_video(video.id, video)
-        if 'thumbnail' in fields and video.thumbnail:
+        if "thumbnail" in fields and video.thumbnail:
             video.thumbnail.data = self.browser.open(video.thumbnail.url).content
         return video
 
@@ -83,16 +84,16 @@ class DailymotionModule(Module, CapVideo, CapCollection):
         if BaseVideo in objs:
             collection = self.get_collection(objs, split_path)
             if collection.path_level == 0:
-                yield self.get_collection(objs, [u'latest'])
-            if collection.split_path == [u'latest']:
+                yield self.get_collection(objs, ["latest"])
+            if collection.split_path == ["latest"]:
                 for video in self.browser.latest_videos():
                     yield video
 
     def validate_collection(self, objs, collection):
         if collection.path_level == 0:
             return
-        if BaseVideo in objs and collection.split_path == [u'latest']:
-            collection.title = u'Latest Dailymotion videos'
+        if BaseVideo in objs and collection.split_path == ["latest"]:
+            collection.title = "Latest Dailymotion videos"
             return
         raise CollectionNotFound(collection.split_path)
 

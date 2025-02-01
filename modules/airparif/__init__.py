@@ -21,4 +21,4 @@
 from .module import AirparifModule
 
 
-__all__ = ['AirparifModule']
+__all__ = ["AirparifModule"]

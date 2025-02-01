@@ -23,17 +23,17 @@ from woob.tools.backend import Module
 from .browser import NectarineBrowser
 
 
-__all__ = ['NectarineModule']
+__all__ = ["NectarineModule"]
 
 
 class NectarineModule(Module, CapRadio, CapCollection):
-    NAME = 'nectarine'
-    MAINTAINER = u'Thomas Lecavelier'
-    EMAIL = 'thomas-weboob@lecavelier.name'
-    VERSION = '3.7'
-    DESCRIPTION = u'Nectarine Demoscene Radio'
+    NAME = "nectarine"
+    MAINTAINER = "Thomas Lecavelier"
+    EMAIL = "thomas-weboob@lecavelier.name"
+    VERSION = "3.7"
+    DESCRIPTION = "Nectarine Demoscene Radio"
     # License of your module
-    LICENSE = 'AGPLv3+'
+    LICENSE = "AGPLv3+"
 
     BROWSER = NectarineBrowser
 
@@ -61,7 +61,7 @@ class NectarineModule(Module, CapRadio, CapCollection):
         return None
 
     def fill_radio(self, radio, fields):
-        if 'current' in fields:
+        if "current" in fields:
             return self.get_radio(radio.id)
         return radio
 

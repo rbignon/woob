@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import JournaldesfemmesBrowser
 
 
-__all__ = ['JournaldesfemmesModule']
+__all__ = ["JournaldesfemmesModule"]
 
 
 class JournaldesfemmesModule(Module, CapRecipe):
-    NAME = 'journaldesfemmes'
-    DESCRIPTION = 'journaldesfemmes website'
-    MAINTAINER = 'Phyks (Lucas Verney)'
-    EMAIL = 'phyks@phyks.me'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "journaldesfemmes"
+    DESCRIPTION = "journaldesfemmes website"
+    MAINTAINER = "Phyks (Lucas Verney)"
+    EMAIL = "phyks@phyks.me"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = JournaldesfemmesBrowser
 
@@ -58,10 +58,10 @@ class JournaldesfemmesModule(Module, CapRecipe):
         return self.browser.search_recipes(pattern)
 
     def fill_recipe(self, recipe, fields):
-        if 'nb_person' in fields or 'instructions' in fields:
+        if "nb_person" in fields or "instructions" in fields:
             recipe = self.browser.get_recipe(recipe.id, recipe)
 
-        if 'comments' in fields:
+        if "comments" in fields:
             recipe.comments = list(self.browser.get_comments(recipe.id))
 
         return recipe

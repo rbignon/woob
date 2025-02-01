@@ -21,4 +21,4 @@
 from .module import BlogspotModule
 
 
-__all__ = ['BlogspotModule']
+__all__ = ["BlogspotModule"]

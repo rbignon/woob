@@ -25,28 +25,28 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import RobloxBrowser
 
 
-__all__ = ['RobloxModule']
+__all__ = ["RobloxModule"]
 
 
 class RobloxModule(Module, CapBankWealth, CapProfile):
-    NAME = 'roblox'
-    DESCRIPTION = 'Roblox'
-    MAINTAINER = 'Thomas Touhey'
-    EMAIL = 'thomas@touhey.fr'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "roblox"
+    DESCRIPTION = "Roblox"
+    MAINTAINER = "Thomas Touhey"
+    EMAIL = "thomas@touhey.fr"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     CONFIG = BackendConfig(
         ValueBackendPassword(
-            'login',
-            label='Identifiant / E-mail / Téléphone',
+            "login",
+            label="Identifiant / E-mail / Téléphone",
             masked=False,
         ),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('otp_email', regexp=r'^\d{6}$'),
-        ValueTransient('otp_authenticator', regexp=r'^\d{6}$'),
-        ValueTransient('captcha_response'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("otp_email", regexp=r"^\d{6}$"),
+        ValueTransient("otp_authenticator", regexp=r"^\d{6}$"),
+        ValueTransient("captcha_response"),
+        ValueTransient("request_information"),
     )
 
     BROWSER = RobloxBrowser

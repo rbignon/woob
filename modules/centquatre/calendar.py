@@ -26,4 +26,4 @@ class CentQuatreEvent(BaseCalendarEvent):
         self.sequence = 1
         self.transp = TRANSP.TRANSPARENT
         self.status = STATUS.CONFIRMED
-        self.timezone = u'Europe/Paris'
+        self.timezone = "Europe/Paris"

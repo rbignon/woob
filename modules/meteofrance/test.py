@@ -22,21 +22,21 @@ from woob.tools.test import BackendTest
 
 
 class MeteoFranceTest(BackendTest):
-    MODULE = 'meteofrance'
+    MODULE = "meteofrance"
 
     def test_meteofrance(self):
-        cities = list(self.backend.iter_city_search('paris'))
+        cities = list(self.backend.iter_city_search("paris"))
         self.assertTrue(len(cities) > 0)
 
         city = cities[0]
         current = self.backend.get_current(city.id)
         self.assertTrue(current.temp.value > -20 and current.temp.value < 50)
 
-        current2 = self.backend.get_current('béthune')
+        current2 = self.backend.get_current("béthune")
         self.assertTrue(current2.temp.value > -20 and current2.temp.value < 50)
 
         forecasts = list(self.backend.iter_forecast(city.id))
         self.assertTrue(len(forecasts) > 0)
 
-        forecast2 = list(self.backend.iter_forecast('blagnac'))
+        forecast2 = list(self.backend.iter_forecast("blagnac"))
         self.assertTrue(len(forecast2) > 0)

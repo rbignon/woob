@@ -26,7 +26,14 @@ from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, WrongCaptcha
 from woob.tools.decorators import retry
 
 from .pages import (
-    AccountsPage, AuthorizePage, HomePage, JsAppPage, JsParamsPage, JsUserPage, LoginPage, TransactionsPage,
+    AccountsPage,
+    AuthorizePage,
+    HomePage,
+    JsAppPage,
+    JsParamsPage,
+    JsUserPage,
+    LoginPage,
+    TransactionsPage,
 )
 
 
@@ -41,29 +48,29 @@ def need_login(func):
 
 
 class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
-    BASEURL = 'https://app-container.eu.edenred.io'
+    BASEURL = "https://app-container.eu.edenred.io"
 
-    ACCESS_TOKEN_URI = 'https://sso.eu.edenred.io/connect/token'
+    ACCESS_TOKEN_URI = "https://sso.eu.edenred.io/connect/token"
 
-    redirect_uri = 'https://www.myedenred.fr/connect'
+    redirect_uri = "https://www.myedenred.fr/connect"
 
-    home = URL(r'https://myedenred.fr/$', HomePage)
-    login = URL(r'https://sso.eu.edenred.io/login', LoginPage)
-    accounts = URL(r'/v1/users/(?P<username>.+)/cards', AccountsPage)
+    home = URL(r"https://myedenred.fr/$", HomePage)
+    login = URL(r"https://sso.eu.edenred.io/login", LoginPage)
+    accounts = URL(r"/v1/users/(?P<username>.+)/cards", AccountsPage)
     transactions = URL(
-        r'/v1/users/(?P<username>.+)/accounts/(?P<card_class>.*)-(?P<account_ref>\d+)/operations',
+        r"/v1/users/(?P<username>.+)/accounts/(?P<card_class>.*)-(?P<account_ref>\d+)/operations",
         TransactionsPage,
     )
-    params_js = URL(r'https://www.myedenred.fr/js/parameters.(?P<random_str>\w+).js', JsParamsPage)
-    app_js = URL(r'https://www.myedenred.fr/js/app.(?P<random_str>\w+).js', JsAppPage)
-    connexion_js = URL(r'https://myedenred.fr/js/connexion.(?P<random_str>\w+).js', JsUserPage)
-    authorize = URL(r'https://sso.eu.edenred.io/connect/authorize', AuthorizePage)
+    params_js = URL(r"https://www.myedenred.fr/js/parameters.(?P<random_str>\w+).js", JsParamsPage)
+    app_js = URL(r"https://www.myedenred.fr/js/app.(?P<random_str>\w+).js", JsAppPage)
+    connexion_js = URL(r"https://myedenred.fr/js/connexion.(?P<random_str>\w+).js", JsUserPage)
+    authorize = URL(r"https://sso.eu.edenred.io/connect/authorize", AuthorizePage)
 
     def __init__(self, config, *args, **kwargs):
         super(MyedenredBrowser, self).__init__(*args, **kwargs)
 
-        self.username = config['login'].get()
-        self.password = config['password'].get()
+        self.username = config["login"].get()
+        self.password = config["password"].get()
         self.config = config
 
         self._fetch_auth_parameters()
@@ -71,11 +78,11 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
     @retry(BrowserUnavailable)
     def _fetch_auth_parameters(self):
         self.home.go()
-        params_random_str = self.page.get_href_randomstring('parameters')
-        app_random_str = self.page.get_href_randomstring('app')
+        params_random_str = self.page.get_href_randomstring("parameters")
+        app_random_str = self.page.get_href_randomstring("app")
 
         self.app_js.go(random_str=app_random_str)
-        connexion_random_str = self.page.get_js_randomstring('connexion')
+        connexion_random_str = self.page.get_js_randomstring("connexion")
 
         self.params_js.go(random_str=params_random_str)
         js_parameters = self.page.get_json_content()
@@ -83,28 +90,28 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
         self.connexion_js.go(random_str=connexion_random_str)
         connexion_js = self.page.get_json_content()
 
-        self.client_id = js_parameters['EDCId']
-        self.client_secret = js_parameters['EDCSecret']
-        self.x_client_id = js_parameters['ClientId']
-        self.x_client_secret = js_parameters['ClientSecret']
-        self.nonce = connexion_js['nonce']
-        self.response_type = connexion_js['response_type']
-        self.SCOPE = connexion_js['scope']
-        self.ui_locales = connexion_js['ui_locales']
-        self.code_challenge_method = connexion_js['code_challenge_method']
+        self.client_id = js_parameters["EDCId"]
+        self.client_secret = js_parameters["EDCSecret"]
+        self.x_client_id = js_parameters["ClientId"]
+        self.x_client_secret = js_parameters["ClientSecret"]
+        self.nonce = connexion_js["nonce"]
+        self.response_type = connexion_js["response_type"]
+        self.SCOPE = connexion_js["scope"]
+        self.ui_locales = connexion_js["ui_locales"]
+        self.code_challenge_method = connexion_js["code_challenge_method"]
 
     def build_authorization_parameters(self):
         params = {
-            'acr_values': 'tenant:fr-ben',
-            'client_id': self.client_id,
-            'code_challenge': self.pkce_challenge,
-            'code_challenge_method': self.code_challenge_method,
-            'nonce': self.nonce,
-            'redirect_uri': self.redirect_uri,
-            'response_type': self.response_type,
-            'scope': self.SCOPE,
-            'state': '',
-            'ui_locales': self.ui_locales,
+            "acr_values": "tenant:fr-ben",
+            "client_id": self.client_id,
+            "code_challenge": self.pkce_challenge,
+            "code_challenge_method": self.code_challenge_method,
+            "nonce": self.nonce,
+            "redirect_uri": self.redirect_uri,
+            "response_type": self.response_type,
+            "scope": self.SCOPE,
+            "state": "",
+            "ui_locales": self.ui_locales,
         }
         return params
 
@@ -115,22 +122,22 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
         self.authorize.go(params=self.build_authorization_parameters())
         website_key = self.page.get_recaptcha_site_key()
 
-        if not self.config['captcha_response'].get() and website_key:
+        if not self.config["captcha_response"].get() and website_key:
             raise RecaptchaV2Question(website_key=website_key, website_url=self.url)
 
         form = self.page.get_login_form()
-        form['Username'] = self.username
-        form['Password'] = self.password
-        form['g-recaptcha-response'] = self.config['captcha_response'].get()
+        form["Username"] = self.username
+        form["Password"] = self.password
+        form["g-recaptcha-response"] = self.config["captcha_response"].get()
         form.submit()
 
         if self.login.is_here():
             message = self.page.get_error_message()
-            if 'Couple Email' in message:
+            if "Couple Email" in message:
                 raise BrowserIncorrectPassword(message)
-            elif 'validation du captcha' in message:
+            elif "validation du captcha" in message:
                 raise WrongCaptchaResponse()
-            elif 'compte est verrouillé' in message:
+            elif "compte est verrouillé" in message:
                 raise ActionNeeded(message)
             raise AssertionError('Unhandled error at login: "%s".' % message)
 
@@ -139,16 +146,16 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
 
     def build_access_token_parameters(self, values):
         return {
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-            'code': values['code'],
-            'code_verifier': self.pkce_verifier,
-            'grant_type': 'authorization_code',
-            'redirect_uri': self.redirect_uri,
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "code": values["code"],
+            "code_verifier": self.pkce_verifier,
+            "grant_type": "authorization_code",
+            "redirect_uri": self.redirect_uri,
         }
 
     def do_token_request(self, data):
-        return self.open(self.ACCESS_TOKEN_URI, data=data, headers={'X-request-id': 'token'})
+        return self.open(self.ACCESS_TOKEN_URI, data=data, headers={"X-request-id": "token"})
 
     def use_refresh_token(self):
         data = self.build_refresh_token_parameters()
@@ -167,12 +174,12 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
             self.update_token(auth_response)
 
     def build_request(self, *args, **kwargs):
-        headers = kwargs.setdefault('headers', {})
+        headers = kwargs.setdefault("headers", {})
         super(OAuth2PKCEMixin, self).build_request(*args, **kwargs)
         if self.access_token:
-            headers['X-Client-Id'] = self.x_client_id
-            headers['X-Client-Secret'] = self.x_client_secret
-            headers['X-request-id'] = 'edg_call'
+            headers["X-Client-Id"] = self.x_client_id
+            headers["X-Client-Secret"] = self.x_client_secret
+            headers["X-request-id"] = "edg_call"
         return super(MyedenredBrowser, self).build_request(*args, **kwargs)
 
     @need_login
@@ -196,19 +203,15 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
                     card_class=account._card_class,
                     account_ref=account._account_ref,
                     params={
-                        'page_index': page_index,
-                        'page_size': page_size,
-                    }
+                        "page_index": page_index,
+                        "page_size": page_size,
+                    },
                 )
             except ServerError as e:
                 # If page size is too much high the server may answer with a strange 500 containing a success json:
                 # '{"meta": {"status": "failed", "messages": [{"code": 200, "level": "info", "text": "OK"}]}}'
                 # We do not try to decode it to keep it simple and check its content as string
-                if not (
-                    e.response.status_code == 500
-                    and b"200" in e.response.content
-                    and b"OK" in e.response.content
-                ):
+                if not (e.response.status_code == 500 and b"200" in e.response.content and b"OK" in e.response.content):
                     # Not an exception because of our pagination
                     raise
 
@@ -233,7 +236,7 @@ class MyedenredBrowser(OAuth2PKCEMixin, PagesBrowser):
                 )
                 continue
 
-            nb_transactions = len(self.page.doc['data'])
+            nb_transactions = len(self.page.doc["data"])
             for tr in self.page.iter_transactions():
                 fetched_transactions += 1
                 yield tr

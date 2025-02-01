@@ -25,26 +25,26 @@ from woob.tools.value import ValueBackendPassword
 from .browser import HSBCHK
 
 
-__all__ = ['HSBCHKModule']
+__all__ = ["HSBCHKModule"]
 
 
 class HSBCHKModule(Module, CapBankWealth):
-    NAME = 'hsbchk'
-    MAINTAINER = u'sinopsysHK'
-    EMAIL = 'sinofwd@gmail.com'
-    VERSION = '3.7'
-    LICENSE = 'LGPLv3+'
-    DESCRIPTION = 'HSBC Hong Kong'
-    CONFIG = BackendConfig(ValueBackendPassword('login',      label='User identifier', masked=False),
-                           ValueBackendPassword('password',   label='Password'),
-                           ValueBackendPassword('secret',     label=u'Memorable answer'))
+    NAME = "hsbchk"
+    MAINTAINER = "sinopsysHK"
+    EMAIL = "sinofwd@gmail.com"
+    VERSION = "3.7"
+    LICENSE = "LGPLv3+"
+    DESCRIPTION = "HSBC Hong Kong"
+    CONFIG = BackendConfig(
+        ValueBackendPassword("login", label="User identifier", masked=False),
+        ValueBackendPassword("password", label="Password"),
+        ValueBackendPassword("secret", label="Memorable answer"),
+    )
     BROWSER = HSBCHK
 
     def create_default_browser(self):
         return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get(),
-            self.config['secret'].get()
+            self.config["login"].get(), self.config["password"].get(), self.config["secret"].get()
         )
 
     def iter_accounts(self):

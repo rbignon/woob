@@ -37,15 +37,15 @@ class DocumentsPage(LoggedPage, JsonPage):
                 return
 
             params = get_url_params(self.page.browser.url)
-            start = int(params['start'])
-            end = int(params['end'])
+            start = int(params["start"])
+            end = int(params["end"])
             diff = end - start
 
             end = start
             start -= diff
 
-            params['start'] = str(start)
-            params['end'] = str(end)
+            params["start"] = str(start)
+            params["end"] = str(end)
 
             return self.page.browser.documents_page.build(params=params)
 
@@ -53,16 +53,16 @@ class DocumentsPage(LoggedPage, JsonPage):
             klass = Document
 
             def obj_id(self):
-                _id = CleanText(Dict('id'))(self)
+                _id = CleanText(Dict("id"))(self)
                 # this id may be very long, we encode it to make sure it's not too big
-                val = sha256(_id.encode('utf-8')).hexdigest()
-                return Env('subid')(self) + '_' + val
+                val = sha256(_id.encode("utf-8")).hexdigest()
+                return Env("subid")(self) + "_" + val
 
-            obj_label = CleanText(Dict('fileName'))
+            obj_label = CleanText(Dict("fileName"))
             obj_type = DocumentTypes.STATEMENT
-            obj_date = FromTimestamp(Dict('creationDateTimestamp'), millis=True)
-            obj_format = 'pdf'
-            obj__download_id = CleanText(Dict('id'))
+            obj_date = FromTimestamp(Dict("creationDateTimestamp"), millis=True)
+            obj_format = "pdf"
+            obj__download_id = CleanText(Dict("id"))
 
 
 class PdfPage(RawPage):

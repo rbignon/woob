@@ -26,7 +26,7 @@ from woob.tools.date import parse_date
 from woob.tools.json import json
 
 
-__all__ = ('video_info',)
+__all__ = ("video_info",)
 
 
 def video_info(url):
@@ -36,28 +36,28 @@ def video_info(url):
     :rtype: :class:`woob.capabilities.video.Video`
     """
 
-    ytdl = which('yt-dlp') or which('youtube-dl')
+    ytdl = which("yt-dlp") or which("youtube-dl")
     if ytdl is None:
-        raise Exception('Please install youtube-dl')
+        raise Exception("Please install youtube-dl")
 
     try:
-        j = json.loads(subprocess.check_output([ytdl, '-J', url]))
+        j = json.loads(subprocess.check_output([ytdl, "-J", url]))
     except subprocess.CalledProcessError:
         return None
 
     v = BaseVideo(id=url)
-    v.title = str(j.get('title')) if j.get('title') else NotAvailable
-    v.ext = str(j.get('ext')) if j.get('ext') else NotAvailable
-    v.description = str(j.get('description')) if j.get('description') else NotAvailable
-    v.url = str(j['url'])
-    v.duration = timedelta(seconds=j.get('duration')) if j.get('duration') else NotAvailable
-    v.author = str(j.get('uploader')) if j.get('uploader') else NotAvailable
-    v.rating = j.get('average_rating') or NotAvailable
+    v.title = str(j.get("title")) if j.get("title") else NotAvailable
+    v.ext = str(j.get("ext")) if j.get("ext") else NotAvailable
+    v.description = str(j.get("description")) if j.get("description") else NotAvailable
+    v.url = str(j["url"])
+    v.duration = timedelta(seconds=j.get("duration")) if j.get("duration") else NotAvailable
+    v.author = str(j.get("uploader")) if j.get("uploader") else NotAvailable
+    v.rating = j.get("average_rating") or NotAvailable
 
-    if j.get('thumbnail'):
-        v.thumbnail = Thumbnail(str(j['thumbnail']))
+    if j.get("thumbnail"):
+        v.thumbnail = Thumbnail(str(j["thumbnail"]))
 
-    d = j.get('upload_date', j.get('release_date'))
+    d = j.get("upload_date", j.get("release_date"))
     if d:
         v.date = parse_date(d)
 

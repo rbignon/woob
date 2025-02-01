@@ -29,25 +29,22 @@ from woob.capabilities.bill import Document, DocumentTypes
 class StatementsPage(LoggedPage, JsonPage):
     @method
     class iter_documents(DictElement):
-        item_xpath = '*/statementsMetadata'
+        item_xpath = "*/statementsMetadata"
 
         class item(ItemElement):
             klass = Document
 
             obj_type = DocumentTypes.STATEMENT
-            obj_format = 'pdf'
+            obj_format = "pdf"
 
-            obj_id = Format('%s.%s', Env('subscription'), Dict('id'))
+            obj_id = Format("%s.%s", Env("subscription"), Dict("id"))
 
             def obj_date(self):
                 # does the "day" key actually exist?
-                return datetime.date(self.el['year'], self.el['month'], self.el.get('day', 1))
+                return datetime.date(self.el["year"], self.el["month"], self.el.get("day", 1))
 
-            obj_label = Format('%s', obj_date)
+            obj_label = Format("%s", obj_date)
 
             obj_url = BrowserURL(
-                'statement_dl',
-                account_uid=Env('subscription'),
-                year=Dict('year'),
-                month=Dict('month')
+                "statement_dl", account_uid=Env("subscription"), year=Dict("year"), month=Dict("month")
             )

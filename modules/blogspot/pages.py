@@ -30,8 +30,8 @@ from woob.capabilities.messages import Message
 
 class DatePage(RawPage):
     def get_articles(self):
-        data = literal_eval(re.search(r',(\{.*\})\);', self.doc.decode('utf-8')).group(1))
-        return data['posts']
+        data = literal_eval(re.search(r",(\{.*\})\);", self.doc.decode("utf-8")).group(1))
+        return data["posts"]
 
 
 class IndexPage(HTMLPage):

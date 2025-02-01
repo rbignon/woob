@@ -26,38 +26,35 @@ from .pages import DocumentsPage, LandingPage, SubscriptionPage, YearsPage
 
 class MyURL(URL):
     def go(self, *args, **kwargs):
-        if not kwargs.get('json'):
-            kwargs['json'] = {}
+        if not kwargs.get("json"):
+            kwargs["json"] = {}
         # because this URL is always supposed to be called like a POST,
         # with a application/json Content-Type, or else it crash
         return super(MyURL, self).go(*args, **kwargs)
 
 
 class EnsapBrowser(LoginBrowser):
-    BASEURL = 'https://ensap.gouv.fr'
+    BASEURL = "https://ensap.gouv.fr"
 
-    landing = URL(r'/$', LandingPage)
-    subscription = MyURL(r'/prive/initialiserhabilitation/v1', SubscriptionPage)
-    years = URL(r'/prive/listeranneeremunerationpaie/v1', YearsPage)
-    documents = URL(r'/prive/remunerationpaie/v1\?annee=(?P<year>\d+)', DocumentsPage)
-    document_download = URL(r'/prive/telechargerremunerationpaie/v1\?documentUuid=(?P<doc_uuid>.*)')
+    landing = URL(r"/$", LandingPage)
+    subscription = MyURL(r"/prive/initialiserhabilitation/v1", SubscriptionPage)
+    years = URL(r"/prive/listeranneeremunerationpaie/v1", YearsPage)
+    documents = URL(r"/prive/remunerationpaie/v1\?annee=(?P<year>\d+)", DocumentsPage)
+    document_download = URL(r"/prive/telechargerremunerationpaie/v1\?documentUuid=(?P<doc_uuid>.*)")
 
     def do_login(self):
-        data = {
-            'identifiant': self.username,
-            'secret': self.password
-        }
+        data = {"identifiant": self.username, "secret": self.password}
         # this header is mandatory, to avoid receiving an ugly html page,
         # which doesn't tells us if we are logged in or not
-        headers = {'accept': 'application/json'}
-        self.location('/authentification', data=data, headers=headers)
+        headers = {"accept": "application/json"}
+        self.location("/authentification", data=data, headers=headers)
         if not self.page.logged:
             message = self.page.get_message()
             # message could be "Indentifiant ou mot de passe érroné", yes Indentifiant
             # write dentifiant in case they fix their misspelling
-            if 'dentifiant ou mot de passe' in message:
+            if "dentifiant ou mot de passe" in message:
                 raise BrowserIncorrectPassword(message)
-            raise AssertionError('Unhandled error at login: %s' % message)
+            raise AssertionError("Unhandled error at login: %s" % message)
 
     @need_login
     def iter_subscription(self):

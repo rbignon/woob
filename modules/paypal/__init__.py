@@ -21,4 +21,4 @@
 from .module import PaypalModule
 
 
-__all__ = ['PaypalModule']
+__all__ = ["PaypalModule"]

@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class ThemisBanqueTest(BackendTest):
-    MODULE = 'themisbanque'
+    MODULE = "themisbanque"
 
     def test_themisbanque(self):
         raise NotImplementedError()

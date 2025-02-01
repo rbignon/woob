@@ -1,4 +1,4 @@
 from .module import ParolesmusiqueModule
 
 
-__all__ = ['ParolesmusiqueModule']
+__all__ = ["ParolesmusiqueModule"]

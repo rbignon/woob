@@ -30,55 +30,56 @@ from .pages import InvestmentsPage, ProfilePage, WalletPage, WebsiteKeyPage
 
 # TODO implement documents
 
-class WiseedBrowser(LoginBrowser, StatesMixin):
-    BASEURL = 'https://www.wiseed.com'
 
-    home = URL(r'/$')
-    login = URL(r'/api/auth/signin')
-    key_js = URL(r'/client/RecaptchaForm\.(?P<recaptcha_form>\w*)\.js', WebsiteKeyPage)
-    refresh = URL(r'/api/auth/refreshtoken')
-    wallet = URL(r'/api/accounts/me/wallet', WalletPage)
-    investments = URL(r'/api/accounts/me/investments', InvestmentsPage)
-    profile = URL(r'/api/accounts/me', ProfilePage)
+class WiseedBrowser(LoginBrowser, StatesMixin):
+    BASEURL = "https://www.wiseed.com"
+
+    home = URL(r"/$")
+    login = URL(r"/api/auth/signin")
+    key_js = URL(r"/client/RecaptchaForm\.(?P<recaptcha_form>\w*)\.js", WebsiteKeyPage)
+    refresh = URL(r"/api/auth/refreshtoken")
+    wallet = URL(r"/api/accounts/me/wallet", WalletPage)
+    investments = URL(r"/api/accounts/me/investments", InvestmentsPage)
+    profile = URL(r"/api/accounts/me", ProfilePage)
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        super(WiseedBrowser, self).__init__(config['login'].get(), config['password'].get(), *args, **kwargs)
+        super(WiseedBrowser, self).__init__(config["login"].get(), config["password"].get(), *args, **kwargs)
 
     def do_login(self):
-        if self.session.cookies.get('refresh_token'):
+        if self.session.cookies.get("refresh_token"):
             # Since we don't know how many times the refresh is working, we refresh to avoid the captcha,
             # if /refresh returns an error, we go back to the captcha
             try:
                 # Nothing to send, access and refresh are in the cookies, but it requires a post
-                self.refresh.go(data='')
+                self.refresh.go(data="")
                 return
             # The refresh token URI sometimes returns a 404 without any reason, so we except HTTPNotFound.
             except (ClientError, HTTPNotFound):
                 pass
 
         request_payload = {
-            'email': self.username,
-            'password': self.password,
+            "email": self.username,
+            "password": self.password,
         }
-        if self.config['captcha_response'].get() is not None:
-            request_payload['g-recaptcha-response'] = self.config['captcha_response'].get()
+        if self.config["captcha_response"].get() is not None:
+            request_payload["g-recaptcha-response"] = self.config["captcha_response"].get()
 
             try:
                 self.login.go(json=request_payload)
             except ClientError as e:
                 response_body = e.response.json()
-                error_message = response_body.get('message')
+                error_message = response_body.get("message")
 
                 if error_message == "Bad credentials":
                     raise BrowserIncorrectPassword()
 
                 if not error_message:
-                    error_field = response_body.get('fieldErrors', [{}])[0].get('field')
-                    if error_field == 'email':
-                        raise BrowserIncorrectPassword(bad_fields=['login'])
-                    raise AssertionError(f'Unhandled error field at login : {error_field}')
-                raise AssertionError(f'Unhandled error at login : {error_message}')
+                    error_field = response_body.get("fieldErrors", [{}])[0].get("field")
+                    if error_field == "email":
+                        raise BrowserIncorrectPassword(bad_fields=["login"])
+                    raise AssertionError(f"Unhandled error field at login : {error_field}")
+                raise AssertionError(f"Unhandled error at login : {error_message}")
         else:
             # Did not encountered login without captcha, but we try it anyway.
             # If we see that captcha is systematic then remove this part.
@@ -101,10 +102,7 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
         # We must do the whole journey from the home page to get .js numbers and obtain the website key.
         # These numbers seem to change once a day
         self.home.go()
-        recaptcha_form = re.search(
-            rf'{self.key_js.urls[0]}',
-            self.response.headers['link']
-        ).group('recaptcha_form')
+        recaptcha_form = re.search(rf"{self.key_js.urls[0]}", self.response.headers["link"]).group("recaptcha_form")
         self.key_js.go(recaptcha_form=recaptcha_form)
         return self.page.get_website_key()
 
@@ -131,9 +129,9 @@ class WiseedBrowser(LoginBrowser, StatesMixin):
         self.investments.go()
 
         invest_types = {
-            'actions': self.page.iter_stocks(),
-            'obligations': self.page.iter_bonds(),
-            'titresParticipatifs': self.page.iter_equities(),
+            "actions": self.page.iter_stocks(),
+            "obligations": self.page.iter_bonds(),
+            "titresParticipatifs": self.page.iter_equities(),
         }
         for invest_type, iter_invest in invest_types.items():
             if self.page.get_invest_list(invest_type):

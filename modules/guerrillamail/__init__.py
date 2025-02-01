@@ -21,4 +21,4 @@
 from .module import GuerrillamailModule
 
 
-__all__ = ['GuerrillamailModule']
+__all__ = ["GuerrillamailModule"]

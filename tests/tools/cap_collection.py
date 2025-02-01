@@ -26,17 +26,17 @@ def test_some():
     assert c.parent_path is None
     assert c.path_level == 0
 
-    c = Collection([u'lol'])
-    assert c.basename == u'lol'
+    c = Collection(["lol"])
+    assert c.basename == "lol"
     assert c.parent_path == []
     assert c.path_level == 1
 
-    c = Collection([u'lol', u'cat'])
-    assert c.basename == u'cat'
-    assert c.parent_path == [u'lol']
+    c = Collection(["lol", "cat"])
+    assert c.basename == "cat"
+    assert c.parent_path == ["lol"]
     assert c.path_level == 2
 
-    c = Collection([u'w', u'e', u'e', u'b', u'o', u'o', u'b'])
-    assert c.basename == u'b'
-    assert c.parent_path == [u'w', u'e', u'e', u'b', u'o', u'o']
+    c = Collection(["w", "e", "e", "b", "o", "o", "b"])
+    assert c.basename == "b"
+    assert c.parent_path == ["w", "e", "e", "b", "o", "o"]
     assert c.path_level == 7

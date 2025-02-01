@@ -23,14 +23,14 @@ from .tools import rssid
 
 
 class Newspaper20minutesModule(GenericNewspaperModule, CapMessages):
-    MAINTAINER = 'Julien Hebert'
-    EMAIL = 'juke@free.fr'
-    VERSION = '3.7'
-    DEPENDENCIES = ('genericnewspaper',)
-    LICENSE = 'AGPLv3+'
-    STORAGE = {'seen': {}}
-    NAME = 'minutes20'
-    DESCRIPTION = u'20 Minutes French newspaper website'
+    MAINTAINER = "Julien Hebert"
+    EMAIL = "juke@free.fr"
+    VERSION = "3.7"
+    DEPENDENCIES = ("genericnewspaper",)
+    LICENSE = "AGPLv3+"
+    STORAGE = {"seen": {}}
+    NAME = "minutes20"
+    DESCRIPTION = "20 Minutes French newspaper website"
     BROWSER = Newspaper20minutesBrowser
-    RSS_FEED = 'http://www.20minutes.fr/rss/une.xml'
+    RSS_FEED = "http://www.20minutes.fr/rss/une.xml"
     RSSID = rssid

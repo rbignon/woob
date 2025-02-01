@@ -46,6 +46,7 @@ class SearchPage(JsonPage):
         date = "%s %s" % (data["date"], data["time"])
         event.date = parse_date(date, dayfirst=False)
         event.location = ", ".join(
-            [str(data["address"][field]) for field in ["city", "countryName"] if data["address"][field]])
+            [str(data["address"][field]) for field in ["city", "countryName"] if data["address"][field]]
+        )
         event.activity = str(data["evtDscr"])
         return event

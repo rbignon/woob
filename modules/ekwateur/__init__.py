@@ -21,4 +21,4 @@
 from .module import EkwateurModule
 
 
-__all__ = ['EkwateurModule']
+__all__ = ["EkwateurModule"]

@@ -25,11 +25,11 @@ from woob.tools.value import Value
 
 
 class AgendaculturelTest(BackendTest):
-    MODULE = 'agendaculturel'
+    MODULE = "agendaculturel"
 
     def setUp(self):
         if not self.is_backend_configured():
-            self.backend.config['place'] = Value(value='paris')
+            self.backend.config["place"] = Value(value="paris")
 
     def test_agendaculturel(self):
         _ = list(self.backend.list_events(datetime.now()))

@@ -1,4 +1,4 @@
 from .module import YoupornModule
 
 
-__all__ = ['YoupornModule']
+__all__ = ["YoupornModule"]

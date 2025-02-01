@@ -21,4 +21,4 @@
 from .module import TumblrModule
 
 
-__all__ = ['TumblrModule']
+__all__ = ["TumblrModule"]

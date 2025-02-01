@@ -27,19 +27,20 @@ from .browser import FeedlyBrowser
 from .google import GoogleBrowser
 
 
-__all__ = ['FeedlyModule']
+__all__ = ["FeedlyModule"]
 
 
 class FeedlyModule(Module, CapMessages, CapCollection):
-    NAME = 'feedly'
-    DESCRIPTION = u'handle the popular RSS reading service Feedly'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
-    STORAGE = {'seen': []}
-    CONFIG = BackendConfig(Value('username', label='Username', default=''),
-                           ValueBackendPassword('password', label='Password', default=''))
+    NAME = "feedly"
+    DESCRIPTION = "handle the popular RSS reading service Feedly"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
+    STORAGE = {"seen": []}
+    CONFIG = BackendConfig(
+        Value("username", label="Username", default=""), ValueBackendPassword("password", label="Password", default="")
+    )
 
     BROWSER = FeedlyBrowser
 
@@ -70,7 +71,7 @@ class FeedlyModule(Module, CapMessages, CapCollection):
         else:
             thread = Thread(id)
         if entry is None:
-            url = id.split('#')[0]
+            url = id.split("#")[0]
             for article in self.browser.get_unread_feed(url):
                 if article.id == id:
                     entry = article
@@ -78,7 +79,7 @@ class FeedlyModule(Module, CapMessages, CapCollection):
 
             return None
 
-        if thread.id not in self.storage.get('seen', default=[]):
+        if thread.id not in self.storage.get("seen", default=[]):
             entry.flags = Message.IS_UNREAD
 
         entry.thread = thread
@@ -97,19 +98,22 @@ class FeedlyModule(Module, CapMessages, CapCollection):
             yield self.get_thread(article.id, article)
 
     def set_message_read(self, message):
-        self.browser.set_message_read(message.thread.id.split('#')[-1])
-        self.storage.get('seen', default=[]).append(message.thread.id)
+        self.browser.set_message_read(message.thread.id.split("#")[-1])
+        self.storage.get("seen", default=[]).append(message.thread.id)
         self.storage.save()
 
     def fill_thread(self, thread, fields):
         return self.get_thread(thread)
 
     def create_default_browser(self):
-        username = self.config['username'].get()
+        username = self.config["username"].get()
         if username:
-            password = self.config['password'].get()
-            login_browser = GoogleBrowser(username, password,
-                                          'https://feedly.com/v3/auth/callback&scope=profile+email&state=A8duE2XpzvtgcHt-q29qyBBK2fkpTefgqfzy7SY4GWUOPl3BgrSt4DRS-qKm9MRi_mXJRem8QW7RmNjpc_BIlkWc0JJvpay3UyzIErNvtaZLcsrUy94Ays3gTyispb8R0doguiky8gGxuCFNvJ9iXIB_SlwNhWABm7ut3nIgoMg3wodRgYOPFothhkErchrv076tBwXQA4Z8OIRyrQ')
+            password = self.config["password"].get()
+            login_browser = GoogleBrowser(
+                username,
+                password,
+                "https://feedly.com/v3/auth/callback&scope=profile+email&state=A8duE2XpzvtgcHt-q29qyBBK2fkpTefgqfzy7SY4GWUOPl3BgrSt4DRS-qKm9MRi_mXJRem8QW7RmNjpc_BIlkWc0JJvpay3UyzIErNvtaZLcsrUy94Ays3gTyispb8R0doguiky8gGxuCFNvJ9iXIB_SlwNhWABm7ut3nIgoMg3wodRgYOPFothhkErchrv076tBwXQA4Z8OIRyrQ",
+            )
         else:
             password = None
             login_browser = None

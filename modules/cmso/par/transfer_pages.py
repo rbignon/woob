@@ -35,12 +35,12 @@ def get_recipient_id_hash(label, name, iban):
     # between the request in iter_accounts and the requests
     # listing recipients. Sorting the owner name is a way to
     # have the same md5 hash in both of those cases.
-    to_hash = '%s %s %s' % (
+    to_hash = "%s %s %s" % (
         label.upper(),
-        ''.join(sorted(CleanText().filter(name).split())).upper(),
+        "".join(sorted(CleanText().filter(name).split())).upper(),
         iban.upper(),
     )
-    return md5(to_hash.encode('utf-8')).hexdigest()
+    return md5(to_hash.encode("utf-8")).hexdigest()
 
 
 class RecipientsListPage(LoggedPage, JsonPage):
@@ -49,17 +49,17 @@ class RecipientsListPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Recipient
 
-            obj_category = 'Externe'
-            obj_id = CleanText(Dict('id'))
-            obj_label = obj__owner_name = CleanText(Dict('ownerName'))
-            obj__bic = Dict('bic')
-            obj__ciphered_iban = Dict('cipheredIban')
+            obj_category = "Externe"
+            obj_id = CleanText(Dict("id"))
+            obj_label = obj__owner_name = CleanText(Dict("ownerName"))
+            obj__bic = Dict("bic")
+            obj__ciphered_iban = Dict("cipheredIban")
             # 'country' is a dict formatted like that:
             # {"code": "FR", "name": "France", "sepa": true}
-            obj__country = Dict('country')
+            obj__country = Dict("country")
             # The iban has its last 5 numbers hidden
             obj_iban = NotAvailable
-            obj__hidden_iban = Dict('iban')
+            obj__hidden_iban = Dict("iban")
             obj_bank_name = NotAvailable
             obj_enabled_at = dt.date.today()
 
@@ -70,10 +70,7 @@ class RecipientsListPage(LoggedPage, JsonPage):
 
             def condition(self):
                 # availableForCredit or availableForDebit
-                return Dict(Format(
-                    'availableFor%s',
-                    Env('availableFor')
-                ))(self)
+                return Dict(Format("availableFor%s", Env("availableFor")))(self)
 
             def obj_id(self):
                 # There is nothing beside the account label and owner name
@@ -81,21 +78,21 @@ class RecipientsListPage(LoggedPage, JsonPage):
                 # The fields used here should match the ones used in
                 # AccountsPage.iter_accounts
                 return get_recipient_id_hash(
-                    Dict('label')(self),
-                    Dict('personName')(self),
-                    Dict('iban')(self),
+                    Dict("label")(self),
+                    Dict("personName")(self),
+                    Dict("iban")(self),
                 )
 
-            obj_category = 'Interne'
-            obj_label = CleanText(Dict('label'))
-            obj__bic = Dict('bic')
-            obj__owner_name = CleanText(Dict('personName'))
-            obj__ciphered_iban = Dict('cipheredIban')
-            obj__ciphered_contract_number = Dict('cipheredContractNumber')
+            obj_category = "Interne"
+            obj_label = CleanText(Dict("label"))
+            obj__bic = Dict("bic")
+            obj__owner_name = CleanText(Dict("personName"))
+            obj__ciphered_iban = Dict("cipheredIban")
+            obj__ciphered_contract_number = Dict("cipheredContractNumber")
             # The iban has its last 5 numbers hidden
             obj_iban = NotAvailable
             obj_enabled_at = dt.date.today()
-            obj__type = CleanText(Dict('type'))
+            obj__type = CleanText(Dict("type"))
 
 
 class AllowedRecipientsPage(LoggedPage, JsonPage):
@@ -109,57 +106,46 @@ class TransferInfoPage(LoggedPage, JsonPage):
         # recipients (server error for ex.), return an empty dictionary
         # that will be filled later after being returned the json of the
         # account page (containing the accounts IDs too).
-        if 'listCompteTitulaireCotitulaire' not in self.doc and 'exception' in self.doc:
+        if "listCompteTitulaireCotitulaire" not in self.doc and "exception" in self.doc:
             return {}
 
         information = {
-            'numbers': ('index', 'numeroContratSouscrit'),
-            'eligibilite_debit': ('numeroContratSouscrit', 'eligibiliteDebit'),
+            "numbers": ("index", "numeroContratSouscrit"),
+            "eligibilite_debit": ("numeroContratSouscrit", "eligibiliteDebit"),
         }
         key = information[info][0]
         value = information[info][1]
 
         ret = {}
-        ret.update({
-            d[key]: d.get(value)
-            for d in self.doc['listCompteTitulaireCotitulaire']
-        })
-        ret.update({
-            d[key]: d.get(value)
-            for p in self.doc['listCompteMandataire'].values()
-            for d in p
-        })
-        ret.update({
-            d[key]: d.get(value)
-            for p in self.doc['listCompteLegalRep'].values()
-            for d in p
-        })
+        ret.update({d[key]: d.get(value) for d in self.doc["listCompteTitulaireCotitulaire"]})
+        ret.update({d[key]: d.get(value) for p in self.doc["listCompteMandataire"].values() for d in p})
+        ret.update({d[key]: d.get(value) for p in self.doc["listCompteLegalRep"].values() for d in p})
         return ret
 
     def get_numbers(self):
-        transfer_numbers = self.get_transfer_info('numbers')
+        transfer_numbers = self.get_transfer_info("numbers")
         for key, value in transfer_numbers.items():
             assert value, "The 'numeroContratSouscrit' associated with the account index: %s is empty" % key
         return transfer_numbers
 
     def get_eligibilite_debit(self):
-        return self.get_transfer_info('eligibilite_debit')
+        return self.get_transfer_info("eligibilite_debit")
 
     def check_response(self):
-        return 'exception' not in self.doc
+        return "exception" not in self.doc
 
     @method
     class iter_emitters(DictElement):
         def parse(self, el):
-            self.item_xpath = "%s/*" % Env('key')(self)
+            self.item_xpath = "%s/*" % Env("key")(self)
 
         def find_elements(self):
-            selector = self.item_xpath.split('/')
+            selector = self.item_xpath.split("/")
             for sub_element in selector:
-                if isinstance(self.el, dict) and self.el and sub_element == '*':
+                if isinstance(self.el, dict) and self.el and sub_element == "*":
                     # data is sometimes found in sub dicts
                     self.el = [sub_list for sub_dict in self.el.values() for sub_list in sub_dict]
-                if sub_element == '*':
+                if sub_element == "*":
                     continue
                 self.el = self.el[sub_element]
             for sub_element in self.el:
@@ -169,50 +155,50 @@ class TransferInfoPage(LoggedPage, JsonPage):
             klass = Emitter
 
             def condition(self):
-                return Dict('eligibiliteDebit', default=None)(self.el)
+                return Dict("eligibiliteDebit", default=None)(self.el)
 
-            obj_id = Dict('numeroContratSouscrit')
-            obj_label = Upper(Dict('lib'))
-            obj_currency = Currency(Dict('deviseCompteCode'))
+            obj_id = Dict("numeroContratSouscrit")
+            obj_label = Upper(Dict("lib"))
+            obj_currency = Currency(Dict("deviseCompteCode"))
 
             def obj_balance(self):
-                if 'solde' in self.el:
-                    return CleanDecimal(Dict('solde'))(self)
+                if "solde" in self.el:
+                    return CleanDecimal(Dict("solde"))(self)
                 return NotAvailable
 
 
 class TransferPage(LoggedPage, JsonPage):
     def on_load(self):
-        if self.doc.get('exception') and not self.doc.get('debitAccountOwner'):
-            if Dict('exception/type')(self.doc) == 1:
+        if self.doc.get("exception") and not self.doc.get("debitAccountOwner"):
+            if Dict("exception/type")(self.doc) == 1:
                 # technical error
                 raise AssertionError(
-                    'Error with code %s occured during init_transfer: %s'
-                    % (Dict('exception/code')(self.doc), Dict('exception/message')(self.doc))
+                    "Error with code %s occured during init_transfer: %s"
+                    % (Dict("exception/code")(self.doc), Dict("exception/message")(self.doc))
                 )
-            elif Dict('exception/type')(self.doc) == 2:
+            elif Dict("exception/type")(self.doc) == 2:
                 # user error
-                raise TransferBankError(message=Dict('exception/message')(self.doc))
+                raise TransferBankError(message=Dict("exception/message")(self.doc))
 
     def get_transfer_with_response(self, account, recipient, amount, reason, exec_date):
         transfer = Transfer()
 
-        transfer.amount = CleanDecimal(Dict('amount/value'))(self.doc)
-        transfer.currency = Currency(Dict('amount/currencyCode'))(self.doc)
+        transfer.amount = CleanDecimal(Dict("amount/value"))(self.doc)
+        transfer.currency = Currency(Dict("amount/currencyCode"))(self.doc)
         transfer.label = reason
 
         if exec_date:
-            transfer.exec_date = dt.date.fromtimestamp(int(Dict('executionDate')(self.doc)) // 1000)
+            transfer.exec_date = dt.date.fromtimestamp(int(Dict("executionDate")(self.doc)) // 1000)
 
         transfer.account_id = account.id
-        transfer.account_label = CleanText(Dict('debitAccount/name'))(self.doc)
+        transfer.account_label = CleanText(Dict("debitAccount/name"))(self.doc)
         transfer.account_balance = account.balance
 
         transfer.recipient_id = recipient.id
         transfer.recipient_iban = recipient.iban
-        transfer.recipient_label = CleanText(Dict('creditAccount/name'))(self.doc)
+        transfer.recipient_label = CleanText(Dict("creditAccount/name"))(self.doc)
 
         return transfer
 
     def get_transfer_id(self):
-        return CleanText(Dict('id'))(self.doc)
+        return CleanText(Dict("id"))(self.doc)

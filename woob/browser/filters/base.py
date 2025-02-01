@@ -25,7 +25,7 @@ from woob.tools.misc import NO_DEFAULT as _NO_DEFAULT
 from woob.tools.misc import NoDefaultType
 
 
-__all__ = ['FilterError', 'ItemNotFound', 'Filter']
+__all__ = ["FilterError", "ItemNotFound", "Filter"]
 
 # Defined for compatibility.
 NoDefault = NoDefaultType
@@ -74,7 +74,7 @@ class _Filter:
     def highlight_el(self, el, item=None):
         obj = self._obj or item
         try:
-            if not hasattr(obj, 'saved_attrib'):
+            if not hasattr(obj, "saved_attrib"):
                 return
             if not obj.page.browser.highlight_el:
                 return
@@ -84,9 +84,9 @@ class _Filter:
         if el not in obj.saved_attrib:
             obj.saved_attrib[el] = dict(el.attrib)
 
-        el.attrib['style'] = 'color: white !important; background: red !important;'
+        el.attrib["style"] = "color: white !important; background: red !important;"
         if self._key:
-            el.attrib['title'] = 'woob field: %s' % self._key
+            el.attrib["title"] = "woob field: %s" % self._key
 
 
 def debug(*args):
@@ -95,21 +95,23 @@ def debug(*args):
     in Filters.
     It prints by default the name of the Filter and the input value.
     """
+
     def decorator(function):
-        logger = getLogger('woob.browser.b2filters')
+        logger = getLogger("woob.browser.b2filters")
 
         def print_debug(self, value):
-            result = ''
+            result = ""
             outputvalue = value
             if isinstance(value, list):
                 from lxml import etree
-                outputvalue = ''
+
+                outputvalue = ""
                 first = True
                 for element in value:
                     if first:
                         first = False
                     else:
-                        outputvalue += ', '
+                        outputvalue += ", "
                     if isinstance(element, etree.ElementBase):
                         outputvalue += "%s" % etree.tostring(element, encoding="unicode")
                     else:
@@ -121,12 +123,12 @@ def debug(*args):
             name = str(self)
             result += " %s(%r" % (name, outputvalue)
             for arg in self.__dict__:
-                if arg.startswith('_') or arg == "selector":
+                if arg.startswith("_") or arg == "selector":
                     continue
-                if arg == 'default' and getattr(self, arg) == _NO_DEFAULT:
+                if arg == "default" and getattr(self, arg) == _NO_DEFAULT:
                     continue
                 result += ", %s=%r" % (arg, getattr(self, arg))
-            result += ')'
+            result += ")"
             logger.log(DEBUG_FILTERS, result)
 
         @wraps(function)
@@ -138,6 +140,7 @@ def debug(*args):
             return res
 
         return wrapper
+
     return decorator
 
 
@@ -201,4 +204,4 @@ class _Selector(Filter):
         if elements is not None:
             return elements
         else:
-            return self.default_or_raise(FilterError('Element %r not found' % self.selector))
+            return self.default_or_raise(FilterError("Element %r not found" % self.selector))

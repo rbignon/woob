@@ -35,57 +35,60 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .document_pages import DocumentsPage, PdfPage
 from .pages import (
-    AccountsHistoryPage, AuthPage, CardsHistoryPage, CardsPage, CheckingAccountsPage, GetMarketURLPage, GetProfilePage,
-    LifeInsuranceAccountsPage, LifeInsuranceHistoryPage, LoanAccountsDetailsPage, LoanAccountsPage, MarketAccountsPage,
-    MarketHistoryPage, MarketInvestPage, SavingAccountsPage, TokenPage, UserStatesPage,
+    AccountsHistoryPage,
+    AuthPage,
+    CardsHistoryPage,
+    CardsPage,
+    CheckingAccountsPage,
+    GetMarketURLPage,
+    GetProfilePage,
+    LifeInsuranceAccountsPage,
+    LifeInsuranceHistoryPage,
+    LoanAccountsDetailsPage,
+    LoanAccountsPage,
+    MarketAccountsPage,
+    MarketHistoryPage,
+    MarketInvestPage,
+    SavingAccountsPage,
+    TokenPage,
+    UserStatesPage,
 )
 
 
 class MilleisBrowser(LoginBrowser):
-    BASEURL = 'https://api-gw.milleis.fr'
+    BASEURL = "https://api-gw.milleis.fr"
 
-    auth_page = URL(r'/auth/authorize', AuthPage)
-    token_page = URL(r'/auth/token', TokenPage)
+    auth_page = URL(r"/auth/authorize", AuthPage)
+    token_page = URL(r"/auth/token", TokenPage)
 
-    user_states_page = URL(r'/user-states/v1/(?P<user_id>)', UserStatesPage)
+    user_states_page = URL(r"/user-states/v1/(?P<user_id>)", UserStatesPage)
 
-    card_accounts_page = URL(r'/accounts/secured/cards$', CardsPage)
-    cards_history_page = URL(
-        r'/accounts/secured/cards/(?P<card_history_id>.*)/movements',
-        CardsHistoryPage
-    )
+    card_accounts_page = URL(r"/accounts/secured/cards$", CardsPage)
+    cards_history_page = URL(r"/accounts/secured/cards/(?P<card_history_id>.*)/movements", CardsHistoryPage)
 
-    checking_accounts_page = URL(r'/accounts/secured/current-accounts', CheckingAccountsPage)
-    saving_accounts_page = URL(r'/accounts/secured/saving-accounts', SavingAccountsPage)
-    accounts_history_page = URL(
-        r'/accounts/secured/accounts/(?P<account_history_id>.*)/movements',
-        AccountsHistoryPage
-    )
+    checking_accounts_page = URL(r"/accounts/secured/current-accounts", CheckingAccountsPage)
+    saving_accounts_page = URL(r"/accounts/secured/saving-accounts", SavingAccountsPage)
+    accounts_history_page = URL(r"/accounts/secured/accounts/(?P<account_history_id>.*)/movements", AccountsHistoryPage)
 
-    market_accounts_page = URL(r'/accounts/secured/security-accounts', MarketAccountsPage)
-    get_market_url_page = URL(r'/accounts/secured/trading-url', GetMarketURLPage)
-    market_invest_page = URL(r'https://bourse.milleis.fr/milleis/trading/positions/realtime', MarketInvestPage)
-    market_history_page = URL(r'https://bourse.milleis.fr/milleis/trading/movements/security', MarketHistoryPage)
+    market_accounts_page = URL(r"/accounts/secured/security-accounts", MarketAccountsPage)
+    get_market_url_page = URL(r"/accounts/secured/trading-url", GetMarketURLPage)
+    market_invest_page = URL(r"https://bourse.milleis.fr/milleis/trading/positions/realtime", MarketInvestPage)
+    market_history_page = URL(r"https://bourse.milleis.fr/milleis/trading/movements/security", MarketHistoryPage)
 
-    life_insurance_accounts_page = URL(
-        r'/accounts/secured/life-insurances$',
-        LifeInsuranceAccountsPage
-    )
+    life_insurance_accounts_page = URL(r"/accounts/secured/life-insurances$", LifeInsuranceAccountsPage)
     life_insurance_history_page = URL(
-        r'/accounts/secured/life-insurances/(?P<life_insurance_id>)',
-        LifeInsuranceHistoryPage
+        r"/accounts/secured/life-insurances/(?P<life_insurance_id>)", LifeInsuranceHistoryPage
     )
 
-    loan_accounts_page = URL(r'/accounts/secured/loans$', LoanAccountsPage)
+    loan_accounts_page = URL(r"/accounts/secured/loans$", LoanAccountsPage)
     loan_accounts_details_page = URL(
-        r'/accounts/secured/loans/(?P<loan_details_id>.*)/details',
-        LoanAccountsDetailsPage
+        r"/accounts/secured/loans/(?P<loan_details_id>.*)/details", LoanAccountsDetailsPage
     )
 
-    profile_page = URL(r'/contacts/v1/(?P<user_id>)', GetProfilePage)
+    profile_page = URL(r"/contacts/v1/(?P<user_id>)", GetProfilePage)
 
-    documents_download = URL(r'/documents/secured/documents/download', PdfPage)
-    documents_page = URL(r'/documents/secured/documents', DocumentsPage)
+    documents_download = URL(r"/documents/secured/documents/download", PdfPage)
+    documents_page = URL(r"/documents/secured/documents", DocumentsPage)
 
     TIMEOUT = 30
 
@@ -95,13 +98,13 @@ class MilleisBrowser(LoginBrowser):
         # Fake base36 string made of random characters works
         # No need to mimic the real JS so far
         base_36_char = string.digits + string.ascii_lowercase
-        code_verifier = ''
+        code_verifier = ""
         for _ in range(6):
             code_verifier += choice(base_36_char)
         return code_verifier
 
     def code_challenger(self, verifier):
-        code_challenger = sha256(verifier.encode('utf-8')).digest()
+        code_challenger = sha256(verifier.encode("utf-8")).digest()
         code_challenger = b16encode(code_challenger).lower()
         return code_challenger
 
@@ -114,24 +117,25 @@ class MilleisBrowser(LoginBrowser):
         if relative_delta:
             dt += relative_delta
         data_date = datetime.timestamp(dt.replace(microsecond=1000))
-        return str(data_date).replace('.', '')
+        return str(data_date).replace(".", "")
 
     def do_login(self):
         code_verifier = self.code_verifier()
         code_challenger = self.code_challenger(code_verifier)
 
         data = {
-            'login': self.username,
-            'password': self.password,
-            'codeChallenger': code_challenger,
-            'tempVersion': 'v2',
+            "login": self.username,
+            "password": self.password,
+            "codeChallenger": code_challenger,
+            "tempVersion": "v2",
         }
 
-        old_username = match(r'\d{6}[a-zA-Z]{2}', self.username)
+        old_username = match(r"\d{6}[a-zA-Z]{2}", self.username)
         if old_username:
             # No usable response from the API, message is generated by JS
             raise ActionNeeded(
-                locale="fr-FR", message="Veuillez contacter votre Banquier Privé afin qu'il vous transmette vos nouveaux identifiants.",
+                locale="fr-FR",
+                message="Veuillez contacter votre Banquier Privé afin qu'il vous transmette vos nouveaux identifiants.",
                 action_type=ActionType.CONTACT,
             )
 
@@ -144,13 +148,14 @@ class MilleisBrowser(LoginBrowser):
                 raise BrowserUserBanned()
             raise
 
-        self.token_page.go(json={'codeVerifier': code_verifier})
-        self.session.headers['Authorization'] = self.page.get_token()
+        self.token_page.go(json={"codeVerifier": code_verifier})
+        self.session.headers["Authorization"] = self.page.get_token()
 
         self.user_states_page.go(user_id=self.username[1:])
         if self.page.is_strong_auth_required():
             raise ActionNeeded(
-                locale="fr-FR", message="Vous devez réaliser une authentification forte sur le portail internet.",
+                locale="fr-FR",
+                message="Vous devez réaliser une authentification forte sur le portail internet.",
                 action_type=ActionType.PERFORM_MFA,
             )
 
@@ -179,7 +184,7 @@ class MilleisBrowser(LoginBrowser):
                     except ServerError as e:
                         if e.response.status_code == 500:
                             self.logger.warning(
-                                'loan_accounts_details_page not available with the new details id so we use the old one'
+                                "loan_accounts_details_page not available with the new details id so we use the old one"
                             )
                             self.loan_accounts_details_page.go(loan_details_id=account._old_loan_details_id)
                         else:
@@ -200,10 +205,10 @@ class MilleisBrowser(LoginBrowser):
 
         if account.type == Account.TYPE_CARD:
             data = {
-                'id': account._reference,
-                'root': account._root,
-                'startDate': start_date,
-                'endDate': end_date,
+                "id": account._reference,
+                "root": account._root,
+                "startDate": start_date,
+                "endDate": end_date,
             }
             self.cards_history_page.go(card_history_id=account._reference, params=data)
             return self.page.iter_history()
@@ -212,7 +217,7 @@ class MilleisBrowser(LoginBrowser):
         # but not the same method for fetching history or investment. For example,
         # "Espèces PEA" and "Comptes PEA Géré"
         if account._is_cash is False and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-            self.get_market_url_page.go(params={'account': quote_plus(account.number)})
+            self.get_market_url_page.go(params={"account": quote_plus(account.number)})
             iter_history_url = self.page.get_iter_history_url()
             self.location(iter_history_url)
             self.market_history_page.go()
@@ -227,9 +232,9 @@ class MilleisBrowser(LoginBrowser):
             self.accounts_history_page.go(
                 account_history_id=account._iter_history_id,
                 params={
-                    'id': account._iter_history_id,
-                    'startDate': start_date,
-                    'endDate': end_date,
+                    "id": account._iter_history_id,
+                    "startDate": start_date,
+                    "endDate": end_date,
                 },
             )
             return sorted_transactions(self.page.iter_history())
@@ -243,7 +248,7 @@ class MilleisBrowser(LoginBrowser):
             return self.page.iter_investments()
 
         if account._is_cash is False and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-            self.get_market_url_page.go(params={'account': quote_plus(account.number)})
+            self.get_market_url_page.go(params={"account": quote_plus(account.number)})
             iter_invest_url = self.page.get_iter_invest_url()
             self.location(iter_invest_url)
             return self.page.iter_investments()
@@ -265,12 +270,12 @@ class MilleisBrowser(LoginBrowser):
         start_date = self.build_timestamp(relativedelta(months=-6))
         end_date = self.build_timestamp()
         params = {
-            'start': start_date,
-            'end': end_date,
+            "start": start_date,
+            "end": end_date,
         }
         self.documents_page.go(params=params)
         return self.page.iter_documents(subid=subscription.id)
 
     def download_document(self, document):
-        data = {'documentId': document._download_id}
+        data = {"documentId": document._download_id}
         return self.documents_download.open(json=data).content

@@ -24,10 +24,10 @@ class HybrideCalendarEvent(BaseCalendarEvent):
 
     def __init__(self):
         BaseCalendarEvent.__init__(self)
-        self.city = u'Lille'
-        self.location = u'18 rue Gosselet'
+        self.city = "Lille"
+        self.location = "18 rue Gosselet"
         self.sequence = 1
         self.transp = TRANSP.TRANSPARENT
         self.status = STATUS.CONFIRMED
         self.category = CATEGORIES.CINE
-        self.timezone = u'Europe/Paris'
+        self.timezone = "Europe/Paris"

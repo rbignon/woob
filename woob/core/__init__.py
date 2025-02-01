@@ -21,7 +21,7 @@ from .bcall import CallErrors
 from .woob import Woob, WoobBase
 
 
-__all__ = ['CallErrors', 'Woob', 'WoobBase', 'Weboob', 'WebNip']
+__all__ = ["CallErrors", "Woob", "WoobBase", "Weboob", "WebNip"]
 
 
 class WebNip(WoobBase):
@@ -33,8 +33,7 @@ class WebNip(WoobBase):
 
     def __init__(self, *args, **kwargs):
         warn(
-            'WebNip is a deprecated alias and will be removed in Woob 4.0, '
-            + 'use WoobBase from woob.core.woob.',
+            "WebNip is a deprecated alias and will be removed in Woob 4.0, " + "use WoobBase from woob.core.woob.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -51,8 +50,7 @@ class Weboob(Woob):
 
     def __init__(self, *args, **kwargs):
         warn(
-            'Weboob is a deprecated alias and will be removed in Woob 4.0, '
-            + 'use Woob from woob.core.woob.',
+            "Weboob is a deprecated alias and will be removed in Woob 4.0, " + "use Woob from woob.core.woob.",
             DeprecationWarning,
             stacklevel=2,
         )

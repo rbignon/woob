@@ -22,7 +22,11 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from woob.capabilities.bank import (
-    Account, AccountNotFound, CapBankTransferAddRecipient, RecipientNotFound, TransferInvalidLabel,
+    Account,
+    AccountNotFound,
+    CapBankTransferAddRecipient,
+    RecipientNotFound,
+    TransferInvalidLabel,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object, strict_find_object
@@ -36,36 +40,34 @@ from woob.tools.value import Value, ValueBackendPassword, ValueBool, ValueTransi
 from .pp.browser import BNPPartPro, HelloBank
 
 
-__all__ = ['BNPModule']
+__all__ = ["BNPModule"]
 
 
-class BNPModule(
-    Module, CapBankWealth, CapBankTransferAddRecipient, CapMessages, CapContact, CapProfile, CapDocument
-):
-    NAME = 'bnp'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    LICENSE = 'LGPLv3+'
-    DESCRIPTION = 'BNP Paribas'
+class BNPModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapMessages, CapContact, CapProfile, CapDocument):
+    NAME = "bnp"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    LICENSE = "LGPLv3+"
+    DESCRIPTION = "BNP Paribas"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label=u'Numéro client', masked=False),
-        ValueBackendPassword('password', label=u'Code secret', regexp=r'^(\d{6})$'),
-        ValueBool('rotating_password', label=u'Automatically renew password every 100 connections', default=False),
-        ValueBool('digital_key', label=u'User with digital key have to add recipient with digital key', default=False),
-        ValueTransient('otp'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Numéro client", masked=False),
+        ValueBackendPassword("password", label="Code secret", regexp=r"^(\d{6})$"),
+        ValueBool("rotating_password", label="Automatically renew password every 100 connections", default=False),
+        ValueBool("digital_key", label="User with digital key have to add recipient with digital key", default=False),
+        ValueTransient("otp"),
+        ValueTransient("request_information"),
         Value(
-            'website',
-            label='Type de compte',
-            default='pp',
+            "website",
+            label="Type de compte",
+            default="pp",
             choices={
-                'pp': 'Particuliers/Professionnels',
-                'hbank': 'HelloBank',
-            }
-        )
+                "pp": "Particuliers/Professionnels",
+                "hbank": "HelloBank",
+            },
+        ),
     )
-    STORAGE = {'seen': []}
+    STORAGE = {"seen": []}
 
     accepted_document_types = (
         DocumentTypes.STATEMENT,
@@ -84,8 +86,8 @@ class BNPModule(
         self._threads_age = datetime.utcnow()
 
     def create_default_browser(self):
-        b = {'pp': BNPPartPro, 'hbank': HelloBank}
-        self.BROWSER = b[self.config['website'].get()]
+        b = {"pp": BNPPartPro, "hbank": HelloBank}
+        self.BROWSER = b[self.config["website"].get()]
         return self.create_browser(self.config)
 
     def iter_resources(self, objs, split_path):
@@ -112,7 +114,7 @@ class BNPModule(
         return self.browser.iter_market_orders(account)
 
     def iter_transfer_recipients(self, origin_account):
-        if self.config['website'].get() != 'pp':
+        if self.config["website"].get() != "pp":
             raise NotImplementedError()
 
         if isinstance(origin_account, Account):
@@ -120,26 +122,26 @@ class BNPModule(
             if not emitter_account:
                 # account_id is different in PSD2 case
                 # search for the account with iban first to get the account_id
-                assert origin_account.iban, 'Cannot do iter_transfer_recipient, the origin account was not found'
+                assert origin_account.iban, "Cannot do iter_transfer_recipient, the origin account was not found"
                 emitter_account = find_object(self.iter_accounts(), iban=origin_account.iban, error=AccountNotFound)
             origin_account = emitter_account.id
         return self.browser.iter_recipients(origin_account)
 
     def new_recipient(self, recipient, **params):
-        if self.config['website'].get() != 'pp':
+        if self.config["website"].get() != "pp":
             raise NotImplementedError()
         # Recipient label has max 70 chars.
-        recipient.label = ' '.join(w for w in re.sub(r'[^0-9a-zA-Z-,\.: ]+', '', recipient.label).split())[:70]
+        recipient.label = " ".join(w for w in re.sub(r"[^0-9a-zA-Z-,\.: ]+", "", recipient.label).split())[:70]
         return self.browser.new_recipient(recipient, **params)
 
     def init_transfer(self, transfer, **params):
-        if self.config['website'].get() != 'pp':
+        if self.config["website"].get() != "pp":
             raise NotImplementedError()
 
         if transfer.label is None:
             raise TransferInvalidLabel()
 
-        self.logger.info('Going to do a new transfer')
+        self.logger.info("Going to do a new transfer")
         if transfer.account_iban:
             account = find_object(self.iter_accounts(), iban=transfer.account_iban, error=AccountNotFound)
         else:
@@ -162,7 +164,7 @@ class BNPModule(
 
     def transfer_check_recipient_id(self, old, new):
         # external recipient id can change, check the iban in recipient id
-        iban = re.search(r'([A-Z]{2}[A-Z\d]+)', old)
+        iban = re.search(r"([A-Z]{2}[A-Z\d]+)", old)
         if iban:
             # external recipients id
             iban = iban.group(1)
@@ -179,14 +181,14 @@ class BNPModule(
         return self.browser.iter_transfers(account)
 
     def iter_contacts(self):
-        if not hasattr(self.browser, 'get_advisor'):
+        if not hasattr(self.browser, "get_advisor"):
             raise NotImplementedError()
 
         for advisor in self.browser.get_advisor():
             yield advisor
 
     def get_profile(self):
-        if not hasattr(self.browser, 'get_profile'):
+        if not hasattr(self.browser, "get_profile"):
             raise NotImplementedError()
         return self.browser.get_profile()
 
@@ -201,7 +203,7 @@ class BNPModule(
             # the website is stupid and does not have the messages in the proper order
             threads = sorted(threads, key=lambda t: t.date, reverse=True)
             self._threads = threads
-        seen = self.storage.get('seen', default=[])
+        seen = self.storage.get("seen", default=[])
         for thread in threads:
             if thread.id not in seen:
                 thread.root.flags |= thread.root.IS_UNREAD
@@ -210,11 +212,11 @@ class BNPModule(
             yield thread
 
     def fill_thread(self, thread, fields=None):
-        if fields is None or 'root' in fields:
+        if fields is None or "root" in fields:
             return self.get_thread(thread)
 
     def get_thread(self, _id):
-        if self.config['website'].get() != 'ppold':
+        if self.config["website"].get() != "ppold":
             raise NotImplementedError()
 
         if isinstance(_id, Thread):
@@ -226,7 +228,7 @@ class BNPModule(
         return thread
 
     def iter_unread_messages(self):
-        if self.config['website'].get() != 'ppold':
+        if self.config["website"].get() != "ppold":
             raise NotImplementedError()
 
         threads = list(self.iter_threads(cache=True))
@@ -236,7 +238,7 @@ class BNPModule(
                 yield thread.root
 
     def set_message_read(self, message):
-        self.storage.get('seen', default=[]).append(message.thread.id)
+        self.storage.get("seen", default=[]).append(message.thread.id)
         self.storage.save()
 
     def iter_documents(self, subscription):
@@ -249,7 +251,7 @@ class BNPModule(
         return self.browser.iter_subscription()
 
     def get_document(self, _id):
-        subscription_id = _id.split('_')[0]
+        subscription_id = _id.split("_")[0]
         subscription = self.get_subscription(subscription_id)
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 
@@ -260,7 +262,7 @@ class BNPModule(
         return self.browser.open(document.url).content
 
     def iter_emitters(self):
-        if self.config['website'].get() not in ('pp', 'hbank'):
+        if self.config["website"].get() not in ("pp", "hbank"):
             raise NotImplementedError()
         return self.browser.iter_emitters()
 

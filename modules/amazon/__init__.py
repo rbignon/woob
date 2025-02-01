@@ -20,4 +20,4 @@
 from .module import AmazonModule
 
 
-__all__ = ['AmazonModule']
+__all__ = ["AmazonModule"]

@@ -22,10 +22,10 @@ from woob.tools.test import BackendTest
 
 
 class CentQuatreTest(BackendTest):
-    MODULE = 'centquatre'
+    MODULE = "centquatre"
 
     def test_centquatre(self):
         l = list(self.backend.list_events(None))
         assert len(l)
         event = self.backend.get_event(l[0].id)
-        assert (event.id == l[0].id)
+        assert event.id == l[0].id

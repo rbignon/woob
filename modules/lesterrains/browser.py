@@ -27,19 +27,15 @@ from .pages import CitiesPage, HousingPage, SearchPage
 
 class LesterrainsBrowser(PagesBrowser):
 
-    BASEURL = 'http://www.les-terrains.com'
-    TYPES = {
-        POSTS_TYPES.SALE: 'vente'
-    }
-    RET = {
-        HOUSE_TYPES.LAND: 'Terrain seul'
-    }
-    cities = URL(r'/api/get-search.php\?q=(?P<city>.*)', CitiesPage)
-    search = URL(r'/index.php\?mode_aff=liste&ongletAccueil=Terrains&(?P<query>.*)&distance=0', SearchPage)
+    BASEURL = "http://www.les-terrains.com"
+    TYPES = {POSTS_TYPES.SALE: "vente"}
+    RET = {HOUSE_TYPES.LAND: "Terrain seul"}
+    cities = URL(r"/api/get-search.php\?q=(?P<city>.*)", CitiesPage)
+    search = URL(r"/index.php\?mode_aff=liste&ongletAccueil=Terrains&(?P<query>.*)&distance=0", SearchPage)
     housing = URL(
-        r'/index.php\?page=terrains&mode_aff=un_terrain&idter=(?P<_id>\d+).*',
-        r'/index.php\?page=terrains&mode_aff=maisonterrain&idter=(?P<_id>\d+).*',
-        HousingPage
+        r"/index.php\?page=terrains&mode_aff=un_terrain&idter=(?P<_id>\d+).*",
+        r"/index.php\?page=terrains&mode_aff=maisonterrain&idter=(?P<_id>\d+).*",
+        HousingPage,
     )
 
     def get_cities(self, pattern):
@@ -48,20 +44,22 @@ class LesterrainsBrowser(PagesBrowser):
     def search_housings(self, cities, area_min, area_max, cost_min, cost_max):
 
         def _get_departement(city):
-            return city.split(';')[0][:2]
+            return city.split(";")[0][:2]
 
         def _get_ville(city):
-            return city.split(';')[1]
+            return city.split(";")[1]
 
         for city in cities:
-            query = urlencode({
-                "departement": _get_departement(city),
-                "ville": _get_ville(city),
-                "prixMin": cost_min or '',
-                "prixMax": cost_max or '',
-                "surfMin": area_min or '',
-                "surfMax": area_max or '',
-            })
+            query = urlencode(
+                {
+                    "departement": _get_departement(city),
+                    "ville": _get_ville(city),
+                    "prixMin": cost_min or "",
+                    "prixMax": cost_max or "",
+                    "surfMin": area_min or "",
+                    "surfMax": area_max or "",
+                }
+            )
             for house in self.search.go(query=query).iter_housings():
                 yield house
 

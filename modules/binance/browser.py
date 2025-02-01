@@ -26,7 +26,7 @@ from woob.browser import APIBrowser
 from woob.capabilities.bank import Account
 
 
-__all__ = ['BinanceBrowser']
+__all__ = ["BinanceBrowser"]
 
 
 class BinanceBrowser(APIBrowser):
@@ -35,21 +35,17 @@ class BinanceBrowser(APIBrowser):
     def __init__(self, config, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.api_key = config['api_key'].get()
-        self.secret_key = config['secret_key'].get()
+        self.api_key = config["api_key"].get()
+        self.secret_key = config["secret_key"].get()
 
     def get_snap(self, acc_type):
         ts = int(time.time() * 1000)
         yesterday = int((datetime.now() - timedelta(days=2)).timestamp() * 1000)
         data = {"timestamp": ts, "type": acc_type, "limit": 5, "startTime": yesterday}
         data_st = urllib.parse.urlencode(data, doseq=False)
-        signature = hmac.new(self.secret_key.encode("utf-8"), data_st.encode('utf-8'), sha256).hexdigest()
+        signature = hmac.new(self.secret_key.encode("utf-8"), data_st.encode("utf-8"), sha256).hexdigest()
         data_st += "&signature=" + signature
-        res = self.request(
-            "/sapi/v1/accountSnapshot",
-            params=data_st,
-            headers={"X-MBX-APIKEY": self.api_key}
-        )
+        res = self.request("/sapi/v1/accountSnapshot", params=data_st, headers={"X-MBX-APIKEY": self.api_key})
         return res
 
     def get_future_balance(self):
@@ -57,8 +53,8 @@ class BinanceBrowser(APIBrowser):
             res = self.get_snap("FUTURES")["snapshotVos"][-1]
         except KeyError:
             return 0
-        assets = res['data']["assets"]
-        my_item = next((item for item in assets if item['asset'] == "USDT"), None)
+        assets = res["data"]["assets"]
+        my_item = next((item for item in assets if item["asset"] == "USDT"), None)
         return float(my_item["walletBalance"])
 
     def get_ticker(self, symbol):
@@ -84,14 +80,16 @@ class BinanceBrowser(APIBrowser):
 
     def iter_accounts(self):
         usb_to_eur = self.get_exchange_rate_usd_to_eur()
-        accounts_balance = {"Spot": self.get_spot_or_margin_balance("SPOT") / usb_to_eur,
-                            "Margin": self.get_spot_or_margin_balance("MARGIN") / usb_to_eur,
-                            "Future": self.get_future_balance()}
+        accounts_balance = {
+            "Spot": self.get_spot_or_margin_balance("SPOT") / usb_to_eur,
+            "Margin": self.get_spot_or_margin_balance("MARGIN") / usb_to_eur,
+            "Future": self.get_future_balance(),
+        }
         for acc_type, balance in accounts_balance.items():
             acc = Account()
             acc.type = Account.TYPE_MARKET
             acc.label = acc_type
             acc.id = acc_type
-            acc.currency = 'EUR'
+            acc.currency = "EUR"
             acc.balance = Decimal(balance)
             yield acc

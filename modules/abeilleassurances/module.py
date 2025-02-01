@@ -24,28 +24,25 @@ from woob.tools.value import ValueBackendPassword
 from .browser import AbeilleAssurancesBrowser
 
 
-__all__ = ['AbeilleAssurancesModule']
+__all__ = ["AbeilleAssurancesModule"]
 
 
 class AbeilleAssurancesModule(Module, CapBankWealth):
-    NAME = 'abeilleassurances'
-    DESCRIPTION = 'Abeille Assurances'
-    MAINTAINER = 'Nicolas Vergnac'
-    EMAIL = 'nicolas.vergnac@budget-insight.com'
-    LICENSE = 'LGPLv3+'
+    NAME = "abeilleassurances"
+    DESCRIPTION = "Abeille Assurances"
+    MAINTAINER = "Nicolas Vergnac"
+    EMAIL = "nicolas.vergnac@budget-insight.com"
+    LICENSE = "LGPLv3+"
     VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe')
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
     )
 
     BROWSER = AbeilleAssurancesBrowser
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get()
-        )
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

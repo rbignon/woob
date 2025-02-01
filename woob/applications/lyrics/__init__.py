@@ -19,4 +19,4 @@
 from .lyrics import AppLyrics
 
 
-__all__ = ['AppLyrics']
+__all__ = ["AppLyrics"]

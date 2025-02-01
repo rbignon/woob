@@ -21,7 +21,7 @@ from woob.tools.json import WoobEncoder, json
 from .iformatter import IFormatter
 
 
-__all__ = ['JsonFormatter', 'JsonLineFormatter']
+__all__ = ["JsonFormatter", "JsonLineFormatter"]
 
 
 class JsonFormatter(IFormatter):

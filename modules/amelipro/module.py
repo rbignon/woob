@@ -27,21 +27,21 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import AmeliProBrowser
 
 
-__all__ = ['AmeliProModule']
+__all__ = ["AmeliProModule"]
 
 
 class AmeliProModule(Module, CapDocument):
-    NAME = 'amelipro'
-    DESCRIPTION = 'Ameli website: French Health Insurance for Professionals'
-    MAINTAINER = 'Christophe Lampin'
-    EMAIL = 'weboob@lampin.net'
-    VERSION = '3.7'
-    LICENSE = 'LGPLv3+'
+    NAME = "amelipro"
+    DESCRIPTION = "Ameli website: French Health Insurance for Professionals"
+    MAINTAINER = "Christophe Lampin"
+    EMAIL = "weboob@lampin.net"
+    VERSION = "3.7"
+    LICENSE = "LGPLv3+"
     BROWSER = AmeliProBrowser
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label="E-mail, N° d'Assurance Maladie ou N° FINESS", masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('captcha_response'),
+        ValueBackendPassword("login", label="E-mail, N° d'Assurance Maladie ou N° FINESS", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("captcha_response"),
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
@@ -50,8 +50,8 @@ class AmeliProModule(Module, CapDocument):
     def create_default_browser(self):
         return self.create_browser(
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_subscription(self):
@@ -63,7 +63,7 @@ class AmeliProModule(Module, CapDocument):
         return self.browser.iter_documents(subscription)
 
     def get_document(self, _id):
-        subid = _id.rsplit('_')[0]
+        subid = _id.rsplit("_")[0]
         subscription = self.get_subscription(subid)
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 

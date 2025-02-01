@@ -19,4 +19,4 @@
 from .config import AppConfig
 
 
-__all__ = ['AppConfig']
+__all__ = ["AppConfig"]

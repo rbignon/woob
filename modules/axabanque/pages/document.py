@@ -30,21 +30,21 @@ class SubscriptionsPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Subscription
 
-            obj_id = Dict('sourceContractId')
+            obj_id = Dict("sourceContractId")
 
             # there can be several "participants" but no matter what _contract_id is,
             # list of related documents will be the same, so we can simply take the first one
-            obj__contract_id = Dict('participants/0/id')  # CAUTION non persistant
+            obj__contract_id = Dict("participants/0/id")  # CAUTION non persistant
             obj_subscriber = Format(
-                '%s %s',
-                CleanText(Dict('participants/0/firstName')),
-                CleanText(Dict('participants/0/lastName')),
+                "%s %s",
+                CleanText(Dict("participants/0/firstName")),
+                CleanText(Dict("participants/0/lastName")),
             )
 
 
 DOCUMENT_TYPES = {
-    'Relevé de compte': DocumentTypes.STATEMENT,
-    'e-relevés': DocumentTypes.STATEMENT,
+    "Relevé de compte": DocumentTypes.STATEMENT,
+    "e-relevés": DocumentTypes.STATEMENT,
 }
 
 
@@ -61,7 +61,7 @@ class MyDictElement(DictElement):
         n = 1
         while _id in self.objects:
             n += 1
-            _id = f'{obj.id}-{n}'
+            _id = f"{obj.id}-{n}"
         obj.id = _id
         self.objects[obj.id] = obj
         return obj
@@ -73,10 +73,10 @@ class DocumentsPage(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Document
 
-            obj_id = Format('%s_%s', Env('subid'), Field('_doc_name'))
-            obj_label = CleanText(Dict('documentName'))
-            obj_date = Date(CleanText(Dict('depositDate')))
-            obj_type = Map(Dict('typeLabel'), DOCUMENT_TYPES, DocumentTypes.OTHER)
-            obj_url = BrowserURL('document_pdf', contract_id=Env('contract_id'), document_id=Dict('documentId'))
-            obj__doc_name = Eval(lambda v: v.strip('.pdf'), Dict('documentName'))
-            obj_format = 'pdf'
+            obj_id = Format("%s_%s", Env("subid"), Field("_doc_name"))
+            obj_label = CleanText(Dict("documentName"))
+            obj_date = Date(CleanText(Dict("depositDate")))
+            obj_type = Map(Dict("typeLabel"), DOCUMENT_TYPES, DocumentTypes.OTHER)
+            obj_url = BrowserURL("document_pdf", contract_id=Env("contract_id"), document_id=Dict("documentId"))
+            obj__doc_name = Eval(lambda v: v.strip(".pdf"), Dict("documentName"))
+            obj_format = "pdf"

@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class PoivyTest(BackendTest):
-    MODULE = 'poivy'
+    MODULE = "poivy"
 
     def test_list(self):
         """
@@ -33,8 +33,7 @@ class PoivyTest(BackendTest):
         """
         subscriptions = list(self.backend.iter_subscription())
         self.assertTrue(len(subscriptions) == 1, msg="Account listing failed")
-        self.assertTrue(self.backend.get_balance(subscriptions[0]) > 0,
-                        msg="Get balance failed")
+        self.assertTrue(self.backend.get_balance(subscriptions[0]) > 0, msg="Get balance failed")
 
     def test_history(self):
         for subscription in self.backend.iter_subscription():

@@ -19,7 +19,7 @@
 from .base import BaseObject, Capability, IntField, StringField, UserError
 
 
-__all__ = ['Subtitle', 'CapSubtitle']
+__all__ = ["Subtitle", "CapSubtitle"]
 
 
 class LanguageNotSupported(UserError):
@@ -27,7 +27,7 @@ class LanguageNotSupported(UserError):
     Raised when the language is not supported
     """
 
-    def __init__(self, msg='language is not supported'):
+    def __init__(self, msg="language is not supported"):
         super(LanguageNotSupported, self).__init__(msg)
 
 
@@ -35,13 +35,14 @@ class Subtitle(BaseObject):
     """
     Subtitle object.
     """
-    name =      StringField('Name of subtitle')
-    ext =       StringField('Extension of file')
-    nb_cd =     IntField('Number of cd or files')
-    language =  StringField('Language of the subtitle')
-    description = StringField('Description of corresponding video')
 
-    def __init__(self, id='', name='', url=None):
+    name = StringField("Name of subtitle")
+    ext = StringField("Extension of file")
+    nb_cd = IntField("Number of cd or files")
+    language = StringField("Language of the subtitle")
+    description = StringField("Description of corresponding video")
+
+    def __init__(self, id="", name="", url=None):
         super(Subtitle, self).__init__(id, url)
         self.name = name
 

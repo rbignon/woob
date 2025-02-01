@@ -41,13 +41,13 @@ class MaintenancePage(HTMLPage):
 
 class LoginPage(JsonPage):
     def has_2fa(self):
-        return Dict('statusText', default="")(self.doc) == "totpNeeded"
+        return Dict("statusText", default="")(self.doc) == "totpNeeded"
 
     def get_session_id(self):
-        return Dict('sessionId')(self.doc)
+        return Dict("sessionId")(self.doc)
 
     def get_information(self, information):
-        key = 'data/' + information
+        key = "data/" + information
         return Dict(key, default=None)(self.doc)
 
 
@@ -56,14 +56,15 @@ class OtpPage(RawPage):
 
 
 def list_to_dict(l):
-    return {d['name']: d.get('value') for d in l}
+    return {d["name"]: d.get("value") for d in l}
 
 
 # Specific currencies are displayed with a factor
 # in the API so we must divide the invest valuations
 SPECIFIC_CURRENCIES = {
-    'JPY': 100,
+    "JPY": 100,
 }
+
 
 class AccountsPage(LoggedPage, JsonPage):
     @method
@@ -80,127 +81,137 @@ class AccountsPage(LoggedPage, JsonPage):
             return str(self.page.browser.int_account)
 
         def obj_label(self):
-            return '%s DEGIRO' % self.page.browser.name.title()
+            return "%s DEGIRO" % self.page.browser.name.title()
 
         def obj_type(self):
             return Account.TYPE_MARKET
 
     @method
     class iter_investment(DictElement):
-        item_xpath = 'portfolio/value'
+        item_xpath = "portfolio/value"
 
         class item(ItemElement):
             klass = Investment
 
             def condition(self):
-                return float_to_decimal(list_to_dict(self.el['value'])['size'])
+                return float_to_decimal(list_to_dict(self.el["value"])["size"])
 
-            obj_unitvalue = Env('unitvalue', default=NotAvailable)
-            obj_unitprice = Env('unitprice', default=NotAvailable)
-            obj_original_currency = Env('original_currency', default=NotAvailable)
-            obj_original_unitvalue = Env('original_unitvalue', default=NotAvailable)
-            obj_original_unitprice = Env('original_unitprice', default=NotAvailable)
-            obj_valuation = Env('valuation')
-            obj_quantity = Env('quantity', default=NotAvailable)
-            obj_diff = Env('diff')
-            obj_diff_ratio = Env('diff_ratio', default=NotAvailable)
+            obj_unitvalue = Env("unitvalue", default=NotAvailable)
+            obj_unitprice = Env("unitprice", default=NotAvailable)
+            obj_original_currency = Env("original_currency", default=NotAvailable)
+            obj_original_unitvalue = Env("original_unitvalue", default=NotAvailable)
+            obj_original_unitprice = Env("original_unitprice", default=NotAvailable)
+            obj_valuation = Env("valuation")
+            obj_quantity = Env("quantity", default=NotAvailable)
+            obj_diff = Env("diff")
+            obj_diff_ratio = Env("diff_ratio", default=NotAvailable)
 
             def obj__product_id(self):
-                return str(list_to_dict(self.el['value'])['id'])
+                return str(list_to_dict(self.el["value"])["id"])
 
             def obj_label(self):
-                product_data = Field('_product_data')(self)
-                return product_data['name']
+                product_data = Field("_product_data")(self)
+                return product_data["name"]
 
             def obj_vdate(self):
-                product_data = Field('_product_data')(self)
-                vdate = product_data.get('closePriceDate')  # .get() because certain invest don't have that key in the json
+                product_data = Field("_product_data")(self)
+                vdate = product_data.get(
+                    "closePriceDate"
+                )  # .get() because certain invest don't have that key in the json
                 if vdate:
                     return Date().filter(vdate)
                 return NotAvailable
 
             def obj_code(self):
-                product_data = Field('_product_data')(self)
-                if 'isin' not in product_data:
+                product_data = Field("_product_data")(self)
+                if "isin" not in product_data:
                     return NotAvailable
 
-                code = product_data['isin']
+                code = product_data["isin"]
                 if is_isin_valid(code):
                     # Prefix CFD (Contrats for difference) ISIN codes with "XX-"
                     # to avoid id_security duplicates in the database
-                    if "- CFD" in Field('label')(self):
+                    if "- CFD" in Field("label")(self):
                         return "XX-" + code
                     return code
                 return NotAvailable
 
             def obj_code_type(self):
-                if empty(Field('code')(self)):
+                if empty(Field("code")(self)):
                     return NotAvailable
                 return Investment.CODE_TYPE_ISIN
 
             def obj__product_data(self):
-                return self.page.browser.get_product(str(Field('_product_id')(self)))
+                return self.page.browser.get_product(str(Field("_product_id")(self)))
 
             def obj_stock_symbol(self):
-                product_data = Field('_product_data')(self)
-                return CleanText(default=NotAvailable).filter(product_data.get('symbol'))
+                product_data = Field("_product_data")(self)
+                return CleanText(default=NotAvailable).filter(product_data.get("symbol"))
 
             def obj_stock_market(self):
-                exchanges = Env('exchanges')(self)
-                product_data = Field('_product_data')(self)
-                if 'exchangeId' not in product_data:
+                exchanges = Env("exchanges")(self)
+                product_data = Field("_product_data")(self)
+                if "exchangeId" not in product_data:
                     return NotAvailable
-                exchange_id = product_data['exchangeId']
+                exchange_id = product_data["exchangeId"]
                 if exchange_id:
                     return exchanges.get(int(exchange_id), NotAvailable)
                 return NotAvailable
 
             def parse(self, el):
-                product_data = Field('_product_data')(self)
-                currency = product_data['currency']
-                unitvalue = Decimal.quantize(Decimal(list_to_dict(Dict('value')(el))['price']), Decimal('0.0001'))
-                unitprice = Decimal.quantize(Decimal(list_to_dict(Dict('value')(el))['breakEvenPrice']), Decimal('0.0001'))
-                quantity = Decimal.quantize(Decimal(list_to_dict(Dict('value')(el))['size']), Decimal('0.01'))
-                valuation = Decimal(list_to_dict(Dict('value')(el))['value'])
+                product_data = Field("_product_data")(self)
+                currency = product_data["currency"]
+                unitvalue = Decimal.quantize(Decimal(list_to_dict(Dict("value")(el))["price"]), Decimal("0.0001"))
+                unitprice = Decimal.quantize(
+                    Decimal(list_to_dict(Dict("value")(el))["breakEvenPrice"]), Decimal("0.0001")
+                )
+                quantity = Decimal.quantize(Decimal(list_to_dict(Dict("value")(el))["size"]), Decimal("0.01"))
+                valuation = Decimal(list_to_dict(Dict("value")(el))["value"])
 
-                invested_amount = Decimal(list_to_dict(Dict('value')(el))['plBase'][self.env['currency']])
-                current_valuation = Decimal(list_to_dict(Dict('value')(el))['todayPlBase'][self.env['currency']])
-                self.env['diff'] = Decimal.quantize(invested_amount - current_valuation, Decimal('0.0001'),)
+                invested_amount = Decimal(list_to_dict(Dict("value")(el))["plBase"][self.env["currency"]])
+                current_valuation = Decimal(list_to_dict(Dict("value")(el))["todayPlBase"][self.env["currency"]])
+                self.env["diff"] = Decimal.quantize(
+                    invested_amount - current_valuation,
+                    Decimal("0.0001"),
+                )
                 if invested_amount:
                     # invested amount can be 0
-                    self.env['diff_ratio'] = Decimal.quantize(self.env['diff'] / abs(invested_amount), Decimal('0.0001'))
+                    self.env["diff_ratio"] = Decimal.quantize(
+                        self.env["diff"] / abs(invested_amount), Decimal("0.0001")
+                    )
 
-                if currency == 'GBX':
+                if currency == "GBX":
                     # Some stocks are priced in GBX (penny sterling)
                     # We convert them to GBP to avoid ambiguity with the crypto-currency with the same symbol
-                    currency = 'GBP'
+                    currency = "GBP"
                     unitvalue = unitvalue / 100
                     unitprice = unitprice / 100
 
-                self.env['valuation'] = round(valuation / SPECIFIC_CURRENCIES.get(currency, 1), 2)
-                self.env['quantity'] = quantity
+                self.env["valuation"] = round(valuation / SPECIFIC_CURRENCIES.get(currency, 1), 2)
+                self.env["quantity"] = quantity
 
-                if currency == self.env['currency']:
-                    self.env['unitvalue'] = unitvalue
-                    self.env['unitprice'] = unitprice
+                if currency == self.env["currency"]:
+                    self.env["unitvalue"] = unitvalue
+                    self.env["unitprice"] = unitprice
                 else:
-                    self.env['original_unitvalue'] = unitvalue
-                    self.env['original_unitprice'] = unitprice
+                    self.env["original_unitvalue"] = unitvalue
+                    self.env["original_unitprice"] = unitprice
 
-                self.env['original_currency'] = currency
+                self.env["original_currency"] = currency
 
 
 class AccountDetailsPage(LoggedPage, XMLPage):
     def get_currency(self):
-        base_currency = self.doc.xpath('//baseCurrency')
+        base_currency = self.doc.xpath("//baseCurrency")
         if base_currency:
             return base_currency[0].text
         else:
             raise ValueError("baseCurrency not found in XML response.")
 
+
 class InvestmentPage(LoggedPage, JsonPage):
     def get_products(self):
-        return self.doc.get('data', [])
+        return self.doc.get("data", [])
 
 
 MARKET_ORDER_TYPES = {
@@ -211,55 +222,55 @@ MARKET_ORDER_TYPES = {
 }
 
 MARKET_ORDER_DIRECTIONS = {
-    'B': MarketOrderDirection.BUY,
-    'S': MarketOrderDirection.SALE,
+    "B": MarketOrderDirection.BUY,
+    "S": MarketOrderDirection.SALE,
 }
 
 
 class MarketOrdersPage(LoggedPage, JsonPage):
     @method
     class iter_market_orders(DictElement):
-        item_xpath = 'data'
+        item_xpath = "data"
         ignore_duplicate = True
 
         class item(ItemElement):
             klass = MarketOrder
 
-            obj_id = Dict('orderId', default=None)
-            obj_quantity = CleanDecimal.SI(Dict('size'))
-            obj_date = Date(CleanText(Dict('created')))
-            obj_state = Title(Dict('status'))
-            obj__product_id = CleanText(Dict('productId'))
-            obj_direction = Map(CleanText(Dict('buysell')), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
-            obj_order_type = Map(Dict('orderTypeId'), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
+            obj_id = Dict("orderId", default=None)
+            obj_quantity = CleanDecimal.SI(Dict("size"))
+            obj_date = Date(CleanText(Dict("created")))
+            obj_state = Title(Dict("status"))
+            obj__product_id = CleanText(Dict("productId"))
+            obj_direction = Map(CleanText(Dict("buysell")), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN)
+            obj_order_type = Map(Dict("orderTypeId"), MARKET_ORDER_TYPES, MarketOrderType.UNKNOWN)
 
             def obj_ordervalue(self):
-                if Dict('orderTypeId')(self) != 0:
+                if Dict("orderTypeId")(self) != 0:
                     # Not applicable
                     return NotAvailable
-                return CleanDecimal.SI(Dict('price'))(self)
+                return CleanDecimal.SI(Dict("price"))(self)
 
             # Some information is not available in this JSON
             # so we fetch it in the 'products' dictionary.
             # There is no info regarding unitprice, unitvalue & payment method.
             def _product(self):
-                return self.page.browser.get_product(str(Field('_product_id')(self)))
+                return self.page.browser.get_product(str(Field("_product_id")(self)))
 
             def obj_label(self):
-                return self._product()['name']
+                return self._product()["name"]
 
             def obj_currency(self):
-                return Currency().filter(self._product()['currency'])
+                return Currency().filter(self._product()["currency"])
 
             def obj_code(self):
-                return IsinCode(default=NotAvailable).filter(self._product()['isin'])
+                return IsinCode(default=NotAvailable).filter(self._product()["isin"])
 
             def obj_stock_symbol(self):
-                return CleanText(default=NotAvailable).filter(self._product().get('symbol'))
+                return CleanText(default=NotAvailable).filter(self._product().get("symbol"))
 
             def obj_stock_market(self):
-                exchanges = Env('exchanges')(self)
-                exchange_id = self._product()['exchangeId']
+                exchanges = Env("exchanges")(self)
+                exchange_id = self._product()["exchangeId"]
                 if exchange_id:
                     return exchanges.get(int(exchange_id), NotAvailable)
                 return NotAvailable
@@ -270,92 +281,94 @@ class MarketOrdersPage(LoggedPage, JsonPage):
 
 
 class Transaction(FrenchTransaction):
-    PATTERNS = [(re.compile('^(Deposit|Versement)'), FrenchTransaction.TYPE_DEPOSIT),
-                (re.compile('^(Buy|Sell|Achat|Vente)'), FrenchTransaction.TYPE_ORDER),
-                (re.compile(u'^(?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-               ]
+    PATTERNS = [
+        (re.compile("^(Deposit|Versement)"), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile("^(Buy|Sell|Achat|Vente)"), FrenchTransaction.TYPE_ORDER),
+        (re.compile("^(?P<text>.*)"), FrenchTransaction.TYPE_BANK),
+    ]
 
 
 class HistoryPage(LoggedPage, JsonPage):
     @method
     class iter_history(DictElement):
         def find_elements(self):
-            return self.el.get('data', {}).get('cashMovements', [])
-
+            return self.el.get("data", {}).get("cashMovements", [])
 
         class item(ItemElement):
             klass = Transaction
 
             def condition(self):
                 # Transactions without amount are ignored even on the website
-                return Dict('change', default=None)(self)
+                return Dict("change", default=None)(self)
 
-            obj_raw = Transaction.Raw(CleanText(Dict('description')))
-            obj_date = Date(CleanText(Dict('date')))
-            obj__isin = Regexp(Dict('description'), r'\((.{12}?)\)', nth=-1, default=None)
-            obj__number = Regexp(Dict('description'), r'^([Aa]chat|[Vv]ente|[Bb]uy|[Ss]ell) (\d+[,.]?\d*)', template='\\2', default=None)
-            obj__datetime = Dict('date')
+            obj_raw = Transaction.Raw(CleanText(Dict("description")))
+            obj_date = Date(CleanText(Dict("date")))
+            obj__isin = Regexp(Dict("description"), r"\((.{12}?)\)", nth=-1, default=None)
+            obj__number = Regexp(
+                Dict("description"), r"^([Aa]chat|[Vv]ente|[Bb]uy|[Ss]ell) (\d+[,.]?\d*)", template="\\2", default=None
+            )
+            obj__datetime = Dict("date")
 
             def obj__action(self):
-                if not Field('_isin')(self):
+                if not Field("_isin")(self):
                     return
 
-                label = Field('raw')(self).split()[0]
+                label = Field("raw")(self).split()[0]
                 labels = {
-                    'Buy': 'B',
-                    'Achat': 'B',
-                    'Compra': 'B',
-                    'Kauf': 'B',
-                    'Sell': 'S',
-                    'Vente': 'S',
-                    'Venta': 'S',
-                    'Venda': 'S',
-                    'Verkauf': 'S',
-                    'Taxe': None,
-                    'Frais': None,
-                    'Intérêts': None,
-                    'Comisión': None,
-                    'Custo': None,
-                    'Einrichtung': None,
-                    'DEGIRO': None,
-                    'TAKE': None,
-                    'STOCK': None,
-                    'SUBSCRIPTION': None,
-                    'REDEEMED': None,
-                    'ISIN': None,
-                    'MERGER:': None,
-                    'EXPIRATION': None,
-                    'SETTLEMENT': None,
-                    'ASSIGNMENT': None,
-                    'ON': None,
+                    "Buy": "B",
+                    "Achat": "B",
+                    "Compra": "B",
+                    "Kauf": "B",
+                    "Sell": "S",
+                    "Vente": "S",
+                    "Venta": "S",
+                    "Venda": "S",
+                    "Verkauf": "S",
+                    "Taxe": None,
+                    "Frais": None,
+                    "Intérêts": None,
+                    "Comisión": None,
+                    "Custo": None,
+                    "Einrichtung": None,
+                    "DEGIRO": None,
+                    "TAKE": None,
+                    "STOCK": None,
+                    "SUBSCRIPTION": None,
+                    "REDEEMED": None,
+                    "ISIN": None,
+                    "MERGER:": None,
+                    "EXPIRATION": None,
+                    "SETTLEMENT": None,
+                    "ASSIGNMENT": None,
+                    "ON": None,
                     # make sure we don't miss transactions labels specifying an ISIN
                 }
                 if label not in labels:
-                    self.logger.warning('Unknown action label: %s', label)
+                    self.logger.warning("Unknown action label: %s", label)
                 return labels.get(label)
 
             def obj_amount(self):
-                if Env('account_currency')(self) == Dict('currency')(self):
-                    return float_to_decimal(Dict('change')(self))
+                if Env("account_currency")(self) == Dict("currency")(self):
+                    return float_to_decimal(Dict("change")(self))
                 # The amount is not displayed so we only retrieve the original_amount
                 return NotAvailable
 
             def obj_original_amount(self):
-                if Env('account_currency')(self) == Dict('currency')(self):
+                if Env("account_currency")(self) == Dict("currency")(self):
                     return NotAvailable
-                return float_to_decimal(Dict('change')(self))
+                return float_to_decimal(Dict("change")(self))
 
             def obj_original_currency(self):
-                if Env('account_currency')(self) == Dict('currency')(self):
+                if Env("account_currency")(self) == Dict("currency")(self):
                     return NotAvailable
-                return Currency(Dict('currency'))(self)
+                return Currency(Dict("currency"))(self)
 
             def obj_investments(self):
-                tr_investment_list = Env('transaction_investments')(self).v
-                isin = Field('_isin')(self)
-                action = Field('_action')(self)
+                tr_investment_list = Env("transaction_investments")(self).v
+                isin = Field("_isin")(self)
+                action = Field("_action")(self)
                 if isin and action:
-                    tr_inv_key = (isin, action, Field('_datetime')(self))
+                    tr_inv_key = (isin, action, Field("_datetime")(self))
                     try:
                         return [tr_investment_list[tr_inv_key]]
                     except KeyError:
@@ -363,56 +376,57 @@ class HistoryPage(LoggedPage, JsonPage):
                 return []
 
             def validate(self, obj):
-                assert not empty(obj.amount) or not empty(obj.original_amount), 'This transaction has no amount and no original_amount!'
+                assert not empty(obj.amount) or not empty(
+                    obj.original_amount
+                ), "This transaction has no amount and no original_amount!"
                 return True
-
 
     @method
     class iter_transaction_investments(DictElement):
-        item_xpath = 'data'
+        item_xpath = "data"
 
         class item(ItemElement):
             klass = Investment
 
-            obj__product_id = Dict('productId')
-            obj_quantity = CleanDecimal(Dict('quantity'))
-            obj_unitvalue = CleanDecimal(Dict('price'))
-            obj_vdate = Date(CleanText(Dict('date')))
-            obj__action = Dict('buysell')
-            obj__datetime = Dict('date')
+            obj__product_id = Dict("productId")
+            obj_quantity = CleanDecimal(Dict("quantity"))
+            obj_unitvalue = CleanDecimal(Dict("price"))
+            obj_vdate = Date(CleanText(Dict("date")))
+            obj__action = Dict("buysell")
+            obj__datetime = Dict("date")
 
             def _product(self):
-                return self.page.browser.get_product(str(Field('_product_id')(self)))
+                return self.page.browser.get_product(str(Field("_product_id")(self)))
 
             def obj_label(self):
-                return self._product()['name']
+                return self._product()["name"]
 
             def obj_code(self):
-                code = self._product()['isin']
+                code = self._product()["isin"]
                 if is_isin_valid(code):
                     # Prefix CFD (Contrats for difference) ISIN codes with "XX-"
                     # to avoid id_security duplicates in the database
-                    if "- CFD" in Field('label')(self):
+                    if "- CFD" in Field("label")(self):
                         return "XX-" + code
                     return code
                 return NotAvailable
 
             def obj_code_type(self):
-                if empty(Field('code')(self)):
+                if empty(Field("code")(self)):
                     return NotAvailable
                 return Investment.CODE_TYPE_ISIN
 
     def get_products(self):
-        return set(d['productId'] for d in self.doc['data'])
+        return set(d["productId"] for d in self.doc["data"])
 
 
 class ExchangesPage(JsonPage):
     def get_stock_market_exchanges(self):
         exchanges = {}
-        for exchange in self.doc['exchanges']:
-            market_code = exchange.get('code')
+        for exchange in self.doc["exchanges"]:
+            market_code = exchange.get("code")
             if market_code:
-                exchanges[exchange['id']] = market_code
+                exchanges[exchange["id"]] = market_code
 
-        assert exchanges, 'Could not fetch stock market exchanges'
+        assert exchanges, "Could not fetch stock market exchanges"
         return exchanges

@@ -24,15 +24,15 @@ from woob_modules.creditdunord.module import CreditDuNordModule
 from .browser import SmcBrowser
 
 
-__all__ = ['SmcModule']
+__all__ = ["SmcModule"]
 
 
 class SmcModule(CreditDuNordModule, CapBankWealth, CapProfile):
-    NAME = 'smc'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DEPENDENCIES = ('creditdunord',)
-    DESCRIPTION = 'Société Marseillaise de Crédit'
-    LICENSE = 'LGPLv3+'
+    NAME = "smc"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DEPENDENCIES = ("creditdunord",)
+    DESCRIPTION = "Société Marseillaise de Crédit"
+    LICENSE = "LGPLv3+"
     BROWSER = SmcBrowser

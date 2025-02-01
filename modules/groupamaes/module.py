@@ -23,25 +23,25 @@ from woob_modules.cmes.module import CmesModule
 from .browser import GroupamaesBrowser
 
 
-__all__ = ['GroupamaesModule']
+__all__ = ["GroupamaesModule"]
 
 
 class GroupamaesModule(CmesModule, CapBankWealth):
-    NAME = 'groupamaes'
-    DESCRIPTION = 'Groupama Épargne Salariale'
-    MAINTAINER = 'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('cmes',)
+    NAME = "groupamaes"
+    DESCRIPTION = "Groupama Épargne Salariale"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("cmes",)
 
     BROWSER = GroupamaesBrowser
 
     def create_default_browser(self):
         return self.create_browser(
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
-            'https://www.gestion-epargne-salariale.fr',
-            'groupama-es/',
+            self.config["login"].get(),
+            self.config["password"].get(),
+            "https://www.gestion-epargne-salariale.fr",
+            "groupama-es/",
         )

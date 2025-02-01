@@ -26,14 +26,14 @@ from .pages import CaptchaPage, DocumentsDetailsPage, DocumentsPage, LoginPage, 
 
 
 class MaterielnetBrowser(LoginBrowser):
-    BASEURL = 'https://secure.materiel.net'
+    BASEURL = "https://secure.materiel.net"
 
-    login = URL(r'/Login/Login', LoginPage)
-    captcha = URL(r'/pm/client/captcha.html', CaptchaPage)
-    profile = URL(r'/Identity', ProfilePage)
-    documents = URL(r'/Orders/PartialCompletedOrdersHeader', DocumentsPage)
-    document_details = URL(r'/Orders/PartialCompletedOrderContent', DocumentsDetailsPage)
-    periods = URL(r'/Orders/CompletedOrdersPeriodSelection', PeriodPage)
+    login = URL(r"/Login/Login", LoginPage)
+    captcha = URL(r"/pm/client/captcha.html", CaptchaPage)
+    profile = URL(r"/Identity", ProfilePage)
+    documents = URL(r"/Orders/PartialCompletedOrdersHeader", DocumentsPage)
+    document_details = URL(r"/Orders/PartialCompletedOrderContent", DocumentsDetailsPage)
+    periods = URL(r"/Orders/CompletedOrdersPeriodSelection", PeriodPage)
 
     def __init__(self, config, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,10 +44,10 @@ class MaterielnetBrowser(LoginBrowser):
         sitekey = self.page.get_recaptcha_sitekey()
         # captcha is not always present
         if sitekey:
-            if not self.config['captcha_response'].get():
+            if not self.config["captcha_response"].get():
                 raise RecaptchaV2Question(website_key=sitekey, website_url=self.url)
 
-        self.page.login(self.username, self.password, self.config['captcha_response'].get())
+        self.page.login(self.username, self.password, self.config["captcha_response"].get())
 
         if self.captcha.is_here():
             BrowserIncorrectPassword()
@@ -66,7 +66,7 @@ class MaterielnetBrowser(LoginBrowser):
 
     @need_login
     def iter_documents(self):
-        periods = self.periods.go(method='POST').get_periods()
+        periods = self.periods.go(method="POST").get_periods()
 
         # data will be a dict containing information to retrieve bills by period
         for period in periods:

@@ -22,10 +22,10 @@ from woob.tools.test import BackendTest
 
 
 class XHamsterTest(BackendTest):
-    MODULE = 'xhamster'
+    MODULE = "xhamster"
 
     def test_search(self):
-        vids = list(zip(range(30), self.backend.search_videos('fuck', nsfw=True)))
+        vids = list(zip(range(30), self.backend.search_videos("fuck", nsfw=True)))
         assert vids
         for _, vid in vids:
             assert vid.id
@@ -41,6 +41,6 @@ class XHamsterTest(BackendTest):
         self.assertEquals(old.id, new.id)
         assert new.url
 
-        self.backend.fillobj(old, ['url', 'thumbnail'])
+        self.backend.fillobj(old, ["url", "thumbnail"])
         assert old.thumbnail.data
         self.assertEquals(old.url, new.url)

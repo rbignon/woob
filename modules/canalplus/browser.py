@@ -26,45 +26,51 @@ from .pages import ChannelsPage, VideoPage
 from .video import CanalplusVideo
 
 
-__all__ = ['CanalplusBrowser']
+__all__ = ["CanalplusBrowser"]
 
 
 class CanalplusBrowser(PagesBrowser):
-    BASEURL = u'http://service.canal-plus.com'
+    BASEURL = "http://service.canal-plus.com"
 
-    channels = URL('/video/rest/initPlayer/cplus/', ChannelsPage)
-    videos = URL('/video/rest/search/cplus/.*',
-                 '/video/rest/getVideosLiees/cplus/(?P<id>.+)',
-                 '/video/rest/getMEAs/cplus/.*', VideoPage)
+    channels = URL("/video/rest/initPlayer/cplus/", ChannelsPage)
+    videos = URL(
+        "/video/rest/search/cplus/.*",
+        "/video/rest/getVideosLiees/cplus/(?P<id>.+)",
+        "/video/rest/getMEAs/cplus/.*",
+        VideoPage,
+    )
 
     FORMATS = {
-        'sd': 0,
-        'hd': -1,
-        }
+        "sd": 0,
+        "hd": -1,
+    }
 
     def __init__(self, quality, *args, **kwargs):
         super(CanalplusBrowser, self).__init__(*args, **kwargs)
 
-        self.quality = self.FORMATS.get(quality, self.FORMATS['hd'])
+        self.quality = self.FORMATS.get(quality, self.FORMATS["hd"])
 
     def home(self):
-        self.location('http://service.canal-plus.com/video/rest/initPlayer/cplus/')
+        self.location("http://service.canal-plus.com/video/rest/initPlayer/cplus/")
 
     def search_videos(self, pattern):
-        self.location('http://service.canal-plus.com/video/rest/search/cplus/' + quote_plus(pattern.replace('/', '').encode('utf-8')))
+        self.location(
+            "http://service.canal-plus.com/video/rest/search/cplus/"
+            + quote_plus(pattern.replace("/", "").encode("utf-8"))
+        )
         return self.page.iter_results()
 
     def get_video(self, url, video=None):
-        if not url.startswith('http'):
+        if not url.startswith("http"):
             url = CanalplusVideo.id2url(url)
         self.location(url)
         video = self.page.get_video(video)
-        video.url = u'%s' % self.read_url(video.url)[self.quality]
+        video.url = "%s" % self.read_url(video.url)[self.quality]
         return video
 
     def read_url(self, url):
-        buf = self.open(url).text.split('\n')
-        return [line for line in buf if not line.startswith('#')]
+        buf = self.open(url).text.split("\n")
+        return [line for line in buf if not line.startswith("#")]
 
     def iter_resources(self, split_path):
         if not self.is_on_page(ChannelsPage):
@@ -82,8 +88,7 @@ class CanalplusBrowser(PagesBrowser):
         elif len(split_path) == 2:
             subchannels = self.iter_resources(split_path[0:1])
             try:
-                channel = [subchannel for subchannel in subchannels
-                           if split_path == subchannel.split_path][0]
+                channel = [subchannel for subchannel in subchannels if split_path == subchannel.split_path][0]
                 self.location("http://service.canal-plus.com/video/rest/getMEAs/cplus/%s" % channel._link_id)
                 assert self.is_on_page(VideoPage)
                 for video in self.page.iter_channel():

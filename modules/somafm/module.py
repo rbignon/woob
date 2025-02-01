@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import SomaFMBrowser
 
 
-__all__ = ['SomaFMModule']
+__all__ = ["SomaFMModule"]
 
 
 class SomaFMModule(Module, CapRadio, CapCollection):
-    NAME = 'somafm'
-    MAINTAINER = u'Roger Philibert'
-    EMAIL = 'roger.philibert@gmail.com'
-    VERSION = '3.7'
-    DESCRIPTION = u'SomaFM web radio'
-    LICENSE = 'AGPLv3+'
+    NAME = "somafm"
+    MAINTAINER = "Roger Philibert"
+    EMAIL = "roger.philibert@gmail.com"
+    VERSION = "3.7"
+    DESCRIPTION = "SomaFM web radio"
+    LICENSE = "AGPLv3+"
     BROWSER = SomaFMBrowser
 
     def iter_radios_search(self, pattern):
@@ -55,7 +55,7 @@ class SomaFMModule(Module, CapRadio, CapCollection):
                 return radio
 
     def fill_radio(self, radio, fields):
-        if 'current' in fields:
+        if "current" in fields:
             return self.get_radio(radio.id)
         return radio
 

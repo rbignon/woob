@@ -22,4 +22,4 @@ from woob.tools.test import BackendTest
 
 
 class GanpatrimoineTest(BackendTest):
-    MODULE = 'ganpatrimoine'
+    MODULE = "ganpatrimoine"

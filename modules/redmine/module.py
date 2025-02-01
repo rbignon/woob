@@ -19,7 +19,16 @@
 
 
 from woob.capabilities.bugtracker import (
-    Attachment, CapBugTracker, Change, Issue, Project, Query, Status, Update, User, Version,
+    Attachment,
+    CapBugTracker,
+    Change,
+    Issue,
+    Project,
+    Query,
+    Status,
+    Update,
+    User,
+    Version,
 )
 from woob.capabilities.collection import CapCollection, Collection, CollectionNotFound
 from woob.capabilities.content import CapContent, Content
@@ -30,30 +39,32 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import RedmineBrowser
 
 
-__all__ = ['RedmineModule']
+__all__ = ["RedmineModule"]
 
 
 class RedmineModule(Module, CapContent, CapBugTracker, CapCollection):
-    NAME = 'redmine'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = 'The Redmine project management web application'
-    LICENSE = 'AGPLv3+'
-    CONFIG = BackendConfig(Value('url',      label='URL of the Redmine website', regexp=r'https?://.*'),
-                           Value('username', label='Login'),
-                           ValueBackendPassword('password', label='Password'))
+    NAME = "redmine"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "The Redmine project management web application"
+    LICENSE = "AGPLv3+"
+    CONFIG = BackendConfig(
+        Value("url", label="URL of the Redmine website", regexp=r"https?://.*"),
+        Value("username", label="Login"),
+        ValueBackendPassword("password", label="Password"),
+    )
     BROWSER = RedmineBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['url'].get(),
-                                   self.config['username'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(
+            self.config["url"].get(), self.config["username"].get(), self.config["password"].get()
+        )
 
     ############# CapContent ######################################################
 
     def id2path(self, id):
-        return id.split('/', 2)
+        return id.split("/", 2)
 
     def get_content(self, id, revision=None):
         if isinstance(id, str):
@@ -94,8 +105,7 @@ class RedmineModule(Module, CapContent, CapBugTracker, CapCollection):
         if Project in objs or Issue in objs:
             self._restrict_level(split_path, 1)
             if len(split_path) == 0:
-                return [Collection([project.id], project.name)
-                        for project in self.iter_projects()]
+                return [Collection([project.id], project.name) for project in self.iter_projects()]
             elif len(split_path) == 1:
                 query = Query()
                 query.project = str(split_path[0])
@@ -117,12 +127,12 @@ class RedmineModule(Module, CapContent, CapBugTracker, CapCollection):
     ############# CapBugTracker ###################################################
     @classmethod
     def _build_project(cls, project_dict):
-        project = Project(project_dict['name'], project_dict['name'])
-        project.members = [User(int(u[0]), u[1]) for u in project_dict['members']]
-        project.versions = [Version(int(v[0]), v[1]) for v in project_dict['versions']]
-        project.categories = [c[1] for c in project_dict['categories']]
+        project = Project(project_dict["name"], project_dict["name"])
+        project.members = [User(int(u[0]), u[1]) for u in project_dict["members"]]
+        project.versions = [Version(int(v[0]), v[1]) for v in project_dict["versions"]]
+        project.categories = [c[1] for c in project_dict["categories"]]
         # TODO set the value of status
-        project.statuses = [Status(int(s[0]), s[1], 0) for s in project_dict['statuses']]
+        project.statuses = [Status(int(s[0]), s[1], 0) for s in project_dict["statuses"]]
         return project
 
     @staticmethod
@@ -147,42 +157,43 @@ class RedmineModule(Module, CapContent, CapBugTracker, CapCollection):
         @return [iter(Issue)] issues
         """
         params = self.browser.get_project(query.project)
-        kwargs = {'subject':          query.title,
-                  'author_id':        self._attr_to_id(params['members'], query.author),
-                  'assigned_to_id':   self._attr_to_id(params['members'], query.assignee),
-                  'fixed_version_id': self._attr_to_id(params['versions'], query.version),
-                  'category_id':      self._attr_to_id(params['categories'], query.category),
-                  'status_id':        self._attr_to_id(params['statuses'], query.status),
-                 }
+        kwargs = {
+            "subject": query.title,
+            "author_id": self._attr_to_id(params["members"], query.author),
+            "assigned_to_id": self._attr_to_id(params["members"], query.assignee),
+            "fixed_version_id": self._attr_to_id(params["versions"], query.version),
+            "category_id": self._attr_to_id(params["categories"], query.category),
+            "status_id": self._attr_to_id(params["statuses"], query.status),
+        }
         r = self.browser.query_issues(query.project, **kwargs)
-        project = self._build_project(r['project'])
-        for issue in r['iter']:
-            obj = Issue(issue['id'])
+        project = self._build_project(r["project"])
+        for issue in r["iter"]:
+            obj = Issue(issue["id"])
             obj.project = project
-            obj.title = issue['subject']
-            obj.creation = issue['created_on']
-            obj.updated = issue['updated_on']
-            obj.start = issue['start_date']
-            obj.due = issue['due_date']
+            obj.title = issue["subject"]
+            obj.creation = issue["created_on"]
+            obj.updated = issue["updated_on"]
+            obj.start = issue["start_date"]
+            obj.due = issue["due_date"]
 
-            if isinstance(issue['author'], tuple):
-                obj.author = project.find_user(*issue['author'])
+            if isinstance(issue["author"], tuple):
+                obj.author = project.find_user(*issue["author"])
             else:
-                obj.author = User(0, issue['author'])
-            if isinstance(issue['assigned_to'], tuple):
-                obj.assignee = project.find_user(*issue['assigned_to'])
+                obj.author = User(0, issue["author"])
+            if isinstance(issue["assigned_to"], tuple):
+                obj.assignee = project.find_user(*issue["assigned_to"])
             else:
-                obj.assignee = issue['assigned_to']
+                obj.assignee = issue["assigned_to"]
 
-            obj.tracker = issue['tracker']
-            obj.category = issue['category']
+            obj.tracker = issue["tracker"]
+            obj.category = issue["category"]
 
-            if issue['fixed_version'] is not None:
-                obj.version = project.find_version(*issue['fixed_version'])
+            if issue["fixed_version"] is not None:
+                obj.version = project.find_version(*issue["fixed_version"])
             else:
                 obj.version = None
-            obj.status = project.find_status(issue['status'])
-            obj.priority = issue['priority']
+            obj.status = project.find_status(issue["status"])
+            obj.priority = issue["priority"]
             yield obj
 
     def get_issue(self, issue):
@@ -197,43 +208,43 @@ class RedmineModule(Module, CapContent, CapBugTracker, CapCollection):
         except BrowserHTTPNotFound:
             return None
 
-        issue.project = self._build_project(params['project'])
-        issue.title = params['subject']
-        issue.body = params['body']
-        issue.creation = params['created_on']
-        issue.updated = params['updated_on']
-        issue.start = params['start_date']
-        issue.due = params['due_date']
+        issue.project = self._build_project(params["project"])
+        issue.title = params["subject"]
+        issue.body = params["body"]
+        issue.creation = params["created_on"]
+        issue.updated = params["updated_on"]
+        issue.start = params["start_date"]
+        issue.due = params["due_date"]
         issue.fields = {}
-        for key, value in params['fields'].items():
+        for key, value in params["fields"].items():
             issue.fields[key] = value
         issue.attachments = []
-        for a in params['attachments']:
-            attachment = Attachment(a['id'])
-            attachment.filename = a['filename']
-            attachment.url = a['url']
+        for a in params["attachments"]:
+            attachment = Attachment(a["id"])
+            attachment.filename = a["filename"]
+            attachment.url = a["url"]
             issue.attachments.append(attachment)
         issue.history = []
-        for u in params['updates']:
-            update = Update(u['id'])
-            update.author = issue.project.find_user(*u['author'])
-            update.date = u['date']
-            update.message = u['message']
+        for u in params["updates"]:
+            update = Update(u["id"])
+            update.author = issue.project.find_user(*u["author"])
+            update.date = u["date"]
+            update.message = u["message"]
             update.changes = []
-            for i, (field, last, new) in enumerate(u['changes']):
+            for i, (field, last, new) in enumerate(u["changes"]):
                 change = Change(i)
                 change.field = field
                 change.last = last
                 change.new = new
                 update.changes.append(change)
             issue.history.append(update)
-        issue.author = issue.project.find_user(*params['author'])
-        issue.assignee = issue.project.find_user(*params['assignee'])
-        issue.tracker = params['tracker'][1]
-        issue.category = params['category'][1]
-        issue.version = issue.project.find_version(*params['version'])
-        issue.status = issue.project.find_status(params['status'][1])
-        issue.priority = params['priority'][1]
+        issue.author = issue.project.find_user(*params["author"])
+        issue.assignee = issue.project.find_user(*params["assignee"])
+        issue.tracker = params["tracker"][1]
+        issue.category = params["category"][1]
+        issue.version = issue.project.find_version(*params["version"])
+        issue.status = issue.project.find_status(params["status"][1])
+        issue.priority = params["priority"][1]
 
         return issue
 
@@ -251,18 +262,19 @@ class RedmineModule(Module, CapContent, CapBugTracker, CapCollection):
     def post_issue(self, issue):
         project = issue.project.id
 
-        kwargs = {'title':      issue.title,
-                  'version':    issue.version.id if issue.version else None,
-                  'assignee':   issue.assignee.id if issue.assignee else None,
-                  'tracker':    issue.tracker if issue.tracker else None,
-                  'category':   issue.category,
-                  'status':     issue.status.id if issue.status else None,
-                  'priority':   issue.priority if issue.priority else None,
-                  'start':      issue.start if issue.start else None,
-                  'due':        issue.due if issue.due else None,
-                  'body':       issue.body,
-                  'fields':     issue.fields,
-                 }
+        kwargs = {
+            "title": issue.title,
+            "version": issue.version.id if issue.version else None,
+            "assignee": issue.assignee.id if issue.assignee else None,
+            "tracker": issue.tracker if issue.tracker else None,
+            "category": issue.category,
+            "status": issue.status.id if issue.status else None,
+            "priority": issue.priority if issue.priority else None,
+            "start": issue.start if issue.start else None,
+            "due": issue.due if issue.due else None,
+            "body": issue.body,
+            "fields": issue.fields,
+        }
 
         if int(issue.id) < 1:
             id = self.browser.create_issue(project, **kwargs)
@@ -300,7 +312,7 @@ class RedmineModule(Module, CapContent, CapBugTracker, CapCollection):
         @return [iter(Project)] projects
         """
         for project in self.browser.iter_projects():
-            yield Project(project['id'], project['name'])
+            yield Project(project["id"], project["name"])
 
     def get_project(self, id):
         try:

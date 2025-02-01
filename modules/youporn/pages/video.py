@@ -34,14 +34,14 @@ class VideoPage(HTMLPage):
         klass = YoupornVideo
 
         obj_author = CleanText('//div[has-class("submitByLink")]')
-        #obj_date = Date('//div[@id="stats-date"]')
+        # obj_date = Date('//div[@id="stats-date"]')
         obj_duration = NotAvailable
-        obj_ext = 'mp4'
-        obj_id = Env('id')
-        obj_rating = CleanText('//div[@class="videoRatingPercentage"]') & Regexp(pattern=r'(\d+)%') & Type(type=int)
+        obj_ext = "mp4"
+        obj_id = Env("id")
+        obj_rating = CleanText('//div[@class="videoRatingPercentage"]') & Regexp(pattern=r"(\d+)%") & Type(type=int)
         obj_rating_max = 100
         obj_thumbnail = NotAvailable
-        obj_title = CleanText('//h1')
+        obj_title = CleanText("//h1")
 
         def obj_url(self):
             return loads(re.search('videoUrl":(".*?")', self.page.text).group(1))

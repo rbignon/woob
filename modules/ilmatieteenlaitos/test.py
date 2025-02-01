@@ -22,10 +22,10 @@ from woob.tools.test import BackendTest
 
 
 class IlmatieteenlaitosTest(BackendTest):
-    MODULE = 'ilmatieteenlaitos'
+    MODULE = "ilmatieteenlaitos"
 
     def test_ilmatieteenlaitos(self):
-        l = list(self.backend.iter_city_search('helsinki'))
+        l = list(self.backend.iter_city_search("helsinki"))
         self.assertTrue(len(l) > 0)
 
         city = l[0]

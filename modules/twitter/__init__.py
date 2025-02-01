@@ -21,4 +21,4 @@
 from .module import TwitterModule
 
 
-__all__ = ['TwitterModule']
+__all__ = ["TwitterModule"]

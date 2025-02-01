@@ -28,10 +28,10 @@ from .pages import HomePage, OtherPage
 
 
 class InstagramBrowser(CacheMixin, PagesBrowser):
-    BASEURL = 'https://www.instagram.com'
+    BASEURL = "https://www.instagram.com"
 
-    pagination = URL(r'/graphql/query/', OtherPage)
-    home = URL(r'/(?P<user>[^/]+)/', HomePage)
+    pagination = URL(r"/graphql/query/", OtherPage)
+    home = URL(r"/(?P<user>[^/]+)/", HomePage)
 
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -56,12 +56,16 @@ class InstagramBrowser(CacheMixin, PagesBrowser):
             if not after:
                 return
 
-            self.pagination.go(params={
-                'query_hash': 'bfa387b2992c3a52dcbe447467b4b771',
-                'variables': json.dumps({
-                    'id': user_id,
-                    'first': 12,
-                    'after': after,
-                }),
-            })
+            self.pagination.go(
+                params={
+                    "query_hash": "bfa387b2992c3a52dcbe447467b4b771",
+                    "variables": json.dumps(
+                        {
+                            "id": user_id,
+                            "first": 12,
+                            "after": after,
+                        }
+                    ),
+                }
+            )
             yield from map(set_author, self.page.iter_images())

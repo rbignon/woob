@@ -44,8 +44,8 @@ class PasswordExpiredPage(LoggedPage, HTMLPage):
 class AuthenticatePage(JsonPage):
     def get_authentication_result(self):
         return {
-            'authentication': Dict('authentication')(self.doc),
-            'message': Dict('authenticationResult')(self.doc),
+            "authentication": Dict("authentication")(self.doc),
+            "message": Dict("authenticationResult")(self.doc),
         }
 
 
@@ -54,55 +54,57 @@ class ProfilePage(LoggedPage, JsonPage):
     class get_profile(ItemElement):
         klass = Person
 
-        obj_name = CleanText(Dict('Locataire/computedName'))
+        obj_name = CleanText(Dict("Locataire/computedName"))
         obj_gender = Map(
-            Upper(Dict('Locataire/civilites_libelle')),
+            Upper(Dict("Locataire/civilites_libelle")),
             {
-                'M.': 'male',
-                'MME.': 'female',
+                "M.": "male",
+                "MME.": "female",
             },
         )
 
-        obj_email = CleanText(Dict('Locataire/email/0/libelle'))
-        obj_phone = CleanText(Coalesce(
-            Dict('Locataire/telephone_mobile/0/libelle', default=None),
-            Dict('Locataire/telephone_dom/0/libelle', default=None),
-        ))
+        obj_email = CleanText(Dict("Locataire/email/0/libelle"))
+        obj_phone = CleanText(
+            Coalesce(
+                Dict("Locataire/telephone_mobile/0/libelle", default=None),
+                Dict("Locataire/telephone_dom/0/libelle", default=None),
+            )
+        )
 
         class obj_postal_address(ItemElement):
             klass = PostalAddress
 
-            obj_street = CleanText(Dict('Locataire/route'))
-            obj_postal_code = CleanText(Dict('Locataire/postal_code'))
-            obj_city = CleanText(Dict('Locataire/locality'))
-            obj_country = CleanText(Dict('Locataire/country'))
+            obj_street = CleanText(Dict("Locataire/route"))
+            obj_postal_code = CleanText(Dict("Locataire/postal_code"))
+            obj_city = CleanText(Dict("Locataire/locality"))
+            obj_country = CleanText(Dict("Locataire/country"))
 
 
 class DocumentCategoriesPage(LoggedPage, JsonPage):
     def iter_categories(self):
-        for obj in self.doc['data']['Classeurs']:
+        for obj in self.doc["data"]["Classeurs"]:
             yield obj
 
 
 class DocumentsPage(LoggedPage, JsonPage):
     @method
     class iter_documents(DictElement):
-        item_xpath = 'data/Documents'
+        item_xpath = "data/Documents"
 
         # TODO: Manage pagination when a case with enough documents
         #       has been found.
         class item(ItemElement):
             klass = Document
 
-            obj_id = CleanText(Dict('id'))
-            obj_label = CleanText(Dict('name'))
+            obj_id = CleanText(Dict("id"))
+            obj_label = CleanText(Dict("name"))
             obj_format = Map(
-                CleanText(Dict('mime_type')),
+                CleanText(Dict("mime_type")),
                 {
-                    'application/pdf': 'pdf',
+                    "application/pdf": "pdf",
                 },
             )
-            obj_date = Date(CleanText(Dict('date_commit_libelle')))
+            obj_date = Date(CleanText(Dict("date_commit_libelle")))
 
             # NOTE: Since the categories on the Gercop website are
             #       dynamic and are named by the company or organization
@@ -111,8 +113,9 @@ class DocumentsPage(LoggedPage, JsonPage):
 
             # Extract the number, e.g. 'AVIS_22-05-001-23456-789-00.pdf'.
             obj_number = Regexp(
-                Dict('name'),
-                r'.+_([0-9-]+)\.[a-z]+',
+                Dict("name"),
+                r".+_([0-9-]+)\.[a-z]+",
             )
+
 
 # End of file.

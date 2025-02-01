@@ -21,4 +21,4 @@
 from .module import IlmatieteenlaitosModule
 
 
-__all__ = ['IlmatieteenlaitosModule']
+__all__ = ["IlmatieteenlaitosModule"]

@@ -23,13 +23,13 @@ from woob.capabilities.job import BaseJobAdvert
 from .pages import SearchPage
 
 
-__all__ = ['CciBrowser']
+__all__ = ["CciBrowser"]
 
 
 class CciBrowser(PagesBrowser):
-    BASEURL = 'http://www.cci.fr'
+    BASEURL = "http://www.cci.fr"
 
-    search_page = URL('/web/recrutement/les-offres-d-emploi', SearchPage)
+    search_page = URL("/web/recrutement/les-offres-d-emploi", SearchPage)
 
     def search_job(self, pattern):
         return self.search_page.go().iter_job_adverts(pattern=pattern)

@@ -20,4 +20,4 @@
 from .module import VicSecCardModule
 
 
-__all__ = ['VicSecCardModule']
+__all__ = ["VicSecCardModule"]

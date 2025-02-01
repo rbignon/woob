@@ -32,9 +32,9 @@ class ArticlePage(GenericNewsPage):
     def get_title(self):
         try:
             return super(self.__class__, self).get_title()
-        except(XPathNotFound):
+        except XPathNotFound:
             if self.main_div is None:
-                return u""
+                return ""
             else:
                 raise
 
@@ -42,18 +42,19 @@ class ArticlePage(GenericNewsPage):
         try:
             element_body = self.get_element_body()
         except XPathNotFound:
-            return u'Ceci est un article payant'
+            return "Ceci est un article payant"
         else:
             self.drop_comments(element_body)
 
             div_header_element = self._selector("div.header")(element_body)[0]
             div_content_element = self._selector("div#the-content")(element_body)[0]
 
-            self.try_remove_from_selector_list(div_header_element,
-                                               ["h1", "div.picture", "div.date",
-                                                "div.news-single-img", "div.article-top",
-                                                "div.metas_img", "strong"])
-            self.try_remove_from_selector_list(div_content_element, ["div.tw_button", "div.wpfblike",
-                                                                     "blockquote", "p.wp-caption-text", "img"])
+            self.try_remove_from_selector_list(
+                div_header_element,
+                ["h1", "div.picture", "div.date", "div.news-single-img", "div.article-top", "div.metas_img", "strong"],
+            )
+            self.try_remove_from_selector_list(
+                div_content_element, ["div.tw_button", "div.wpfblike", "blockquote", "p.wp-caption-text", "img"]
+            )
 
-            return '%s\n%s' % (CleanHTML('.')(div_header_element), CleanHTML('.')(div_content_element))
+            return "%s\n%s" % (CleanHTML(".")(div_header_element), CleanHTML(".")(div_content_element))

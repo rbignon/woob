@@ -29,19 +29,15 @@ from .pages.index import LoginPage
 from .tools import id2url, url2id
 
 
-__all__ = ['PhpBB']
+__all__ = ["PhpBB"]
 
 
 # Browser
 class PhpBB(LoginBrowser):
-    forum = URL(r'.*index.php',
-                r'/$',
-                r'.*viewforum.php\?f=(\d+)',
-                r'.*search.php\?.*',
-                ForumPage)
-    topic = URL(r'.*viewtopic.php\?.*', TopicPage)
-    posting = URL(r'.*posting.php\?.*', PostingPage)
-    login = URL(r'.*ucp.php\?mode=login.*', LoginPage)
+    forum = URL(r".*index.php", r"/$", r".*viewforum.php\?f=(\d+)", r".*search.php\?.*", ForumPage)
+    topic = URL(r".*viewtopic.php\?.*", TopicPage)
+    posting = URL(r".*posting.php\?.*", PostingPage)
+    login = URL(r".*ucp.php\?mode=login.*", LoginPage)
 
     last_board_msg_id = None
 
@@ -53,11 +49,12 @@ class PhpBB(LoginBrowser):
         self.location(self.BASEURL)
 
     def do_login(self):
-        data = {'login': 'Connexion',
-                'username': self.username,
-                'password': self.password,
-                }
-        self.location('ucp.php?mode=login', data=data)
+        data = {
+            "login": "Connexion",
+            "username": self.username,
+            "password": self.password,
+        }
+        self.location("ucp.php?mode=login", data=data)
 
         if not self.page.logged:
             raise BrowserIncorrectPassword(self.page.get_error_message())
@@ -79,10 +76,10 @@ class PhpBB(LoginBrowser):
 
     @need_login
     def iter_posts(self, id, stop_id=None):
-        if id.startswith('http'):
+        if id.startswith("http"):
             self.location(id)
         else:
-            self.location('%s/%s' % (self.BASEURL, id2url(id)))
+            self.location("%s/%s" % (self.BASEURL, id2url(id)))
         assert self.topic.is_here()
 
         parent = 0
@@ -101,10 +98,10 @@ class PhpBB(LoginBrowser):
 
     @need_login
     def riter_posts(self, id, stop_id=None):
-        if id.startswith('http'):
+        if id.startswith("http"):
             self.location(id)
         else:
-            self.location('%s/%s' % (self.BASEURL, id2url(id)))
+            self.location("%s/%s" % (self.BASEURL, id2url(id)))
         assert self.topic.is_here()
 
         child = None
@@ -125,14 +122,14 @@ class PhpBB(LoginBrowser):
 
     @need_login
     def get_post(self, id):
-        if id.startswith('http'):
+        if id.startswith("http"):
             self.location(id)
             id = url2id(id)
         else:
-            self.location('%s/%s' % (self.BASEURL, id2url(id)))
+            self.location("%s/%s" % (self.BASEURL, id2url(id)))
         assert self.topic.is_here()
 
-        post = self.page.get_post(int(id.split('.')[-1]))
+        post = self.page.get_post(int(id.split(".")[-1]))
         if not post:
             return None
 
@@ -152,10 +149,12 @@ class PhpBB(LoginBrowser):
         if topic_id == 0:
             if not forum_id:
                 forums = self.get_forums()
-                forums_prompt = 'Forums list:\n%s' % ('\n'.join(['\t- %s' % f for f in forums.values()]))
-                m = re.match(r'\[(.*)\] (.*)', title or '')
+                forums_prompt = "Forums list:\n%s" % ("\n".join(["\t- %s" % f for f in forums.values()]))
+                m = re.match(r"\[(.*)\] (.*)", title or "")
                 if not m:
-                    raise CantSendMessage('Please enter a title formatted like that:\n\t"[FORUM] SUBJECT"\n\n%s' % forums_prompt)
+                    raise CantSendMessage(
+                        'Please enter a title formatted like that:\n\t"[FORUM] SUBJECT"\n\n%s' % forums_prompt
+                    )
 
                 forum_id = None
                 for k, v in forums.items():
@@ -166,7 +165,7 @@ class PhpBB(LoginBrowser):
             if not forum_id:
                 raise CantSendMessage('Forum "%s" not found.\n\n%s' % (m.group(1), forums_prompt))
 
-            self.location('%s/posting.php?mode=post&f=%d' % (self.BASEURL, forum_id))
+            self.location("%s/posting.php?mode=post&f=%d" % (self.BASEURL, forum_id))
 
             assert self.posting.is_here()
             self.page.post(title, content)
@@ -174,9 +173,9 @@ class PhpBB(LoginBrowser):
             assert self.posting.is_here()
             error = self.page.get_error_message()
             if error:
-                raise CantSendMessage(u'Unable to send message: %s' % error)
+                raise CantSendMessage("Unable to send message: %s" % error)
         else:
-            self.location('%s/%s' % (self.BASEURL, id2url('%s.%s' % (forum_id, topic_id))))
+            self.location("%s/%s" % (self.BASEURL, id2url("%s.%s" % (forum_id, topic_id))))
             assert self.topic.is_here()
 
             self.page.go_reply()
@@ -185,11 +184,11 @@ class PhpBB(LoginBrowser):
             # Don't send title because it isn't needed in real use case
             # and with monboob title is something like:
             #   Re: [Forum Name] Re: Topic Name
-            if title is not None and title.startswith('Re:'):
+            if title is not None and title.startswith("Re:"):
                 title = None
             self.page.post(title, content)
 
             assert self.posting.is_here() or self.topic.is_here()
             error = self.page.get_error_message()
             if error:
-                raise CantSendMessage(u'Unable to send message: %s' % error)
+                raise CantSendMessage("Unable to send message: %s" % error)

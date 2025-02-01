@@ -24,4 +24,4 @@ class GroupamaBrowser(GanPatrimoineBrowser):
     def __init__(self, website, *args, **kwargs):
         super().__init__(website, *args, **kwargs)
         self.website = website
-        self.BASEURL = f'https://espaceclient.{website}.fr'
+        self.BASEURL = f"https://espaceclient.{website}.fr"

@@ -25,24 +25,24 @@ from woob.tools.value import ValueBackendPassword
 from .browser import Citibank
 
 
-__all__ = ['CitibankModule']
+__all__ = ["CitibankModule"]
 
 
 class CitibankModule(Module, CapBank):
-    NAME = 'citibank'
-    MAINTAINER = u'Oleg Plakhotniuk'
-    EMAIL = 'olegus8@gmail.com'
-    VERSION = '3.7'
-    LICENSE = 'LGPLv3+'
-    DESCRIPTION = u'Citibank'
+    NAME = "citibank"
+    MAINTAINER = "Oleg Plakhotniuk"
+    EMAIL = "olegus8@gmail.com"
+    VERSION = "3.7"
+    LICENSE = "LGPLv3+"
+    DESCRIPTION = "Citibank"
     CONFIG = BackendConfig(
-        ValueBackendPassword('username', label='Username', masked=False),
-        ValueBackendPassword('password', label='Password'))
+        ValueBackendPassword("username", label="Username", masked=False),
+        ValueBackendPassword("password", label="Password"),
+    )
     BROWSER = Citibank
 
     def create_default_browser(self):
-        return self.create_browser(self.config['username'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(self.config["username"].get(), self.config["password"].get())
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

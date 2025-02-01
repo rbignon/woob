@@ -23,4 +23,4 @@ from woob.browser.pages import HTMLPage
 
 class IndexPage(HTMLPage):
     def is_logged(self):
-        return 'id' in self.document.find('body').attrib
+        return "id" in self.document.find("body").attrib

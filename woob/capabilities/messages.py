@@ -23,13 +23,14 @@ from .base import BaseObject, Capability, Field, IntField, NotLoaded, StringFiel
 from .date import DateField
 
 
-__all__ = ['Thread', 'Message', 'CapMessages', 'CantSendMessage', 'CapMessagesPost']
+__all__ = ["Thread", "Message", "CapMessages", "CantSendMessage", "CapMessagesPost"]
 
 
 class Message(BaseObject):
     """
     Represents a message read or to send.
     """
+
     IS_HTML = 0x001
     "The content is HTML formatted"
     IS_UNREAD = 0x002
@@ -39,16 +40,16 @@ class Message(BaseObject):
     IS_NOT_RECEIVED = 0x008
     "The receiver hass not read this message"
 
-    thread =        Field('Reference to the thread', 'Thread')
-    title =         StringField('Title of message')
-    sender =        StringField('Author of this message')
-    receivers =     Field('Receivers of the message', list)
-    date =          DateField('Date when the message has been sent')
-    content =       StringField('Body of message')
-    signature =     StringField('Optional signature')
-    parent =        Field('Parent message', 'Message')
-    children =      Field('Children fields', list)
-    flags =         IntField('Flags (IS_* constants)', default=0)
+    thread = Field("Reference to the thread", "Thread")
+    title = StringField("Title of message")
+    sender = StringField("Author of this message")
+    receivers = Field("Receivers of the message", list)
+    date = DateField("Date when the message has been sent")
+    content = StringField("Body of message")
+    signature = StringField("Optional signature")
+    parent = Field("Parent message", "Message")
+    children = Field("Children fields", list)
+    flags = IntField("Flags (IS_* constants)", default=0)
 
     def __init__(
         self,
@@ -63,7 +64,7 @@ class Message(BaseObject):
         signature=NotLoaded,
         children=NotLoaded,
         flags=0,
-        url=None
+        url=None,
     ):
         super(Message, self).__init__(id, url)
         self.thread = thread
@@ -90,14 +91,14 @@ class Message(BaseObject):
         """
         Date of message as an integer.
         """
-        return int(time.strftime('%Y%m%d%H%M%S', self.date.timetuple()))
+        return int(time.strftime("%Y%m%d%H%M%S", self.date.timetuple()))
 
     @property
     def full_id(self):
         """
         Full ID of message (in form '**THREAD_ID.MESSAGE_ID**')
         """
-        return '%s.%s' % (self.thread.id, self.id)
+        return "%s.%s" % (self.thread.id, self.id)
 
     @property
     def full_parent_id(self):
@@ -107,38 +108,37 @@ class Message(BaseObject):
         if self.parent:
             return self.parent.full_id
         elif self._parent_id is None:
-            return ''
+            return ""
         elif self._parent_id is NotLoaded:
             return NotLoaded
         else:
-            return '%s.%s' % (self.thread.id, self._parent_id)
+            return "%s.%s" % (self.thread.id, self._parent_id)
 
     def __eq__(self, msg):
         if not isinstance(msg, Message):
             return False
 
         if self.thread:
-            return str(self.thread.id) == str(msg.thread.id) and \
-                   str(self.id) == str(msg.id)
+            return str(self.thread.id) == str(msg.thread.id) and str(self.id) == str(msg.id)
         else:
             return str(self.id) == str(msg.id)
 
     def __repr__(self):
-        return '<Message id=%r title=%r date=%r from=%r>' % (
-                   self.full_id, self.title, self.date, self.sender)
+        return "<Message id=%r title=%r date=%r from=%r>" % (self.full_id, self.title, self.date, self.sender)
 
 
 class Thread(BaseObject):
     """
     Thread containing messages.
     """
-    IS_THREADS =    0x001
+
+    IS_THREADS = 0x001
     IS_DISCUSSION = 0x002
 
-    root =      Field('Root message', Message)
-    title =     StringField('Title of thread')
-    date =      DateField('Date of thread')
-    flags =     IntField('Flags (IS_* constants)', default=IS_THREADS)
+    root = Field("Root message", Message)
+    title = StringField("Title of thread")
+    date = DateField("Date of thread")
+    flags = IntField("Flags (IS_* constants)", default=IS_THREADS)
 
     def iter_all_messages(self):
         """

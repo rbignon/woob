@@ -25,15 +25,15 @@ from .pages import ConsolePage, ContractPage, DocumentsPage, HomePage, LoginPage
 
 
 class FreeBrowser(LoginBrowser):
-    BASEURL = 'https://adsl.free.fr'
+    BASEURL = "https://adsl.free.fr"
 
-    login = URL(r'https://subscribe.free.fr/login/', LoginPage)
-    home = URL(r'/home.pl(?P<urlid>.*)', HomePage)
-    console = URL(r'https://subscribe.free.fr/accesgratuit/console/console.pl(?P<urlid>.*)', ConsolePage)
-    suivi = URL(r'/suivi.pl', SuiviPage)
-    documents = URL(r'/liste-factures.pl(?P<urlid>.*)', DocumentsPage)
-    profile = URL(r'/modif_infoscontact.pl(?P<urlid>.*)', ProfilePage)
-    address = URL(r'/show_adresse.pl(?P<urlid>.*)', ProfilePage)
+    login = URL(r"https://subscribe.free.fr/login/", LoginPage)
+    home = URL(r"/home.pl(?P<urlid>.*)", HomePage)
+    console = URL(r"https://subscribe.free.fr/accesgratuit/console/console.pl(?P<urlid>.*)", ConsolePage)
+    suivi = URL(r"/suivi.pl", SuiviPage)
+    documents = URL(r"/liste-factures.pl(?P<urlid>.*)", DocumentsPage)
+    profile = URL(r"/modif_infoscontact.pl(?P<urlid>.*)", ProfilePage)
+    address = URL(r"/show_adresse.pl(?P<urlid>.*)", ProfilePage)
     contracts = URL(r"/afficher-cgv.pl(?P<urlid>.*)", ContractPage)
 
     def __init__(self, private_user_agent, *args, **kwargs):
@@ -42,7 +42,7 @@ class FreeBrowser(LoginBrowser):
         self.status = "active"
 
         if private_user_agent:
-            self.session.headers['User-Agent'] = private_user_agent
+            self.session.headers["User-Agent"] = private_user_agent
 
     def do_login(self):
         self.login.go()
@@ -50,14 +50,14 @@ class FreeBrowser(LoginBrowser):
         self.page.login(self.username, self.password)
 
         if self.login.is_here():
-            if all(var in self.url for var in ('error=1', '$flink')):
+            if all(var in self.url for var in ("error=1", "$flink")):
                 # when login or password is incorrect they redirect us to login page but with $flink at the end of url
                 # and when this is present, error message is not there, we remove it and reload page to get it
-                self.location(self.url.replace('$flink', ''))
+                self.location(self.url.replace("$flink", ""))
             error = self.page.get_error()
-            if error and 'mot de passe' in error:
+            if error and "mot de passe" in error:
                 raise BrowserIncorrectPassword(error)
-            if error and 'reeconnecter' in error:
+            if error and "reeconnecter" in error:
                 raise BrowserUnavailable(error)
             raise AssertionError('Unhandled behavior at login: error is "{}"'.format(error))
 
@@ -75,7 +75,7 @@ class FreeBrowser(LoginBrowser):
             # user has subscribed recently and his subscription is still being processed
             return []
 
-        self.urlid = self.page.url.rsplit('.pl', 2)[1]
+        self.urlid = self.page.url.rsplit(".pl", 2)[1]
         if self.status == "inactive":
             return self.documents.stay_or_go(urlid=self.urlid).get_list()
         return self.home.stay_or_go(urlid=self.urlid).get_list()

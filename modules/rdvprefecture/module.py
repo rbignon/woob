@@ -25,17 +25,17 @@ from woob.tools.value import ValueTransient
 from .browser import RDVPrefectureBrowser
 
 
-__all__ = ['RDVPrefectureModule']
+__all__ = ["RDVPrefectureModule"]
 
 
 class RDVPrefectureModule(Module):
-    NAME = 'rdvprefecture'
-    DESCRIPTION = 'RDV Prefecture'
-    MAINTAINER = 'Thomas Touhey'
-    EMAIL = 'thomas+woob@touhey.fr'
-    LICENSE = 'LGPLv3+'
+    NAME = "rdvprefecture"
+    DESCRIPTION = "RDV Prefecture"
+    MAINTAINER = "Thomas Touhey"
+    EMAIL = "thomas+woob@touhey.fr"
+    LICENSE = "LGPLv3+"
 
-    CONFIG = BackendConfig(ValueTransient('captcha_response'))
+    CONFIG = BackendConfig(ValueTransient("captcha_response"))
     BROWSER = RDVPrefectureBrowser
 
     def create_default_browser(self):

@@ -24,18 +24,20 @@ from .pages import CitiesPage, Days5Page, Days10Page, HourPage
 
 
 class LameteoagricoleBrowser(PagesBrowser):
-    BASEURL = 'https://www.lameteoagricole.net'
-    cities = URL(r'/autocomplete/autocomplete_ajax_new.php\?table=meteo_ville_france_new&field=nom_commune_normalise&search=(?P<pattern>.*)',
-                 CitiesPage)
-    hour = URL(r'/meteo-heure-par-heure/(?P<code>[^.]+).html',
-               r'/index_meteo-heure-par-heure.php\?communehome=(?P<id>.*)',
-               HourPage)
-    day5 = URL(r'/previsions-meteo-agricole/(?P<code>[^.]+).html',
-               r'/index.php\?communehome=(?P<id>.*)',
-               Days5Page)
-    day10 = URL(r'/meteo-a-10-jours/(?P<code>[^.]+).html',
-                r'/index_meteo-a-10-jours.php\?communehome=(?P<id>.*)',
-                Days10Page)
+    BASEURL = "https://www.lameteoagricole.net"
+    cities = URL(
+        r"/autocomplete/autocomplete_ajax_new.php\?table=meteo_ville_france_new&field=nom_commune_normalise&search=(?P<pattern>.*)",
+        CitiesPage,
+    )
+    hour = URL(
+        r"/meteo-heure-par-heure/(?P<code>[^.]+).html",
+        r"/index_meteo-heure-par-heure.php\?communehome=(?P<id>.*)",
+        HourPage,
+    )
+    day5 = URL(r"/previsions-meteo-agricole/(?P<code>[^.]+).html", r"/index.php\?communehome=(?P<id>.*)", Days5Page)
+    day10 = URL(
+        r"/meteo-a-10-jours/(?P<code>[^.]+).html", r"/index_meteo-a-10-jours.php\?communehome=(?P<id>.*)", Days10Page
+    )
 
     def iter_cities(self, pattern):
         self.cities.go(pattern=pattern)

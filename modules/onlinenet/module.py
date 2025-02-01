@@ -19,7 +19,12 @@
 
 from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
+    CapDocument,
+    Document,
+    DocumentCategory,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
 )
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
@@ -27,34 +32,37 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import OnlinenetBrowser
 
 
-__all__ = ['OnlinenetModule']
+__all__ = ["OnlinenetModule"]
 
 
 class OnlinenetModule(Module, CapDocument):
-    NAME = 'onlinenet'
-    DESCRIPTION = 'Online.net'
-    MAINTAINER = 'Edouard Lambert'
-    EMAIL = 'elambert@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "onlinenet"
+    DESCRIPTION = "Online.net"
+    MAINTAINER = "Edouard Lambert"
+    EMAIL = "elambert@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-            Value('login', label='Identifiant'),
-            ValueBackendPassword('password', label='Mot de passe'),
+        Value("login", label="Identifiant"),
+        ValueBackendPassword("password", label="Mot de passe"),
     )
 
     BROWSER = OnlinenetBrowser
 
-    accepted_document_types = (DocumentTypes.BILL, DocumentTypes.OTHER,)
+    accepted_document_types = (
+        DocumentTypes.BILL,
+        DocumentTypes.OTHER,
+    )
     document_categories = {DocumentCategory.SOFTWARE}
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
+        subid = _id.rsplit("_", 1)[0]
         subscription = self.get_subscription(subid)
 
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)

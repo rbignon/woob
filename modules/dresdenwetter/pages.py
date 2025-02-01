@@ -31,14 +31,14 @@ class Split(Filter):
 
     @debug()
     def filter(self, txt):
-        if u"Temperatur" in txt:
-            value = txt.split(': ')[1].split(u'°')[0]
-            unit = u'°C'
+        if "Temperatur" in txt:
+            value = txt.split(": ")[1].split("°")[0]
+            unit = "°C"
         else:
-            value = txt.split(':')[-1].split()[0]
-            unit = txt.split(':')[-1].split()[1]
-            if unit == u"W/m":
-                unit = u"W/m²"
+            value = txt.split(":")[-1].split()[0]
+            unit = txt.split(":")[-1].split()[1]
+            if unit == "W/m":
+                unit = "W/m²"
         try:
             value = float(value)
         except ValueError:
@@ -55,14 +55,14 @@ class StartPage(HTMLPage):
         class item(ItemElement):
             klass = GaugeSensor
 
-            obj_name = Regexp(CleanText('.'), '(.*?) {0,}: .*', "\\1")
-            obj_id = CleanText(Regexp(Field('name'), '(.*)', "dd-\\1"), " .():")
-            obj_gaugeid = u"wetter"
+            obj_name = Regexp(CleanText("."), "(.*?) {0,}: .*", "\\1")
+            obj_id = CleanText(Regexp(Field("name"), "(.*)", "dd-\\1"), " .():")
+            obj_gaugeid = "wetter"
             obj_forecast = NotAvailable
-            obj_unit = Split(CleanText('.'), 1)
+            obj_unit = Split(CleanText("."), 1)
 
             def obj_lastvalue(self):
                 lastvalue = GaugeMeasure()
-                lastvalue.level = Split(CleanText('.'), 0)(self)
+                lastvalue.level = Split(CleanText("."), 0)(self)
                 lastvalue.alarm = NotAvailable
                 return lastvalue

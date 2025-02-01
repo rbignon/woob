@@ -22,7 +22,7 @@ from woob.tools.log import getLogger
 from woob.tools.misc import get_backtrace
 
 
-__all__ = ['Scheduler']
+__all__ = ["Scheduler"]
 
 
 class IScheduler:
@@ -92,7 +92,7 @@ class Scheduler(IScheduler):
     """Scheduler using Python's :mod:`threading`."""
 
     def __init__(self):
-        self.logger = getLogger('%s.scheduler' % __name__)
+        self.logger = getLogger("%s.scheduler" % __name__)
         self.mutex = RLock()
         self.stop_event = Event()
         self.count = 0

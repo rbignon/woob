@@ -20,4 +20,4 @@
 from .module import KolbModule
 
 
-__all__ = ['KolbModule']
+__all__ = ["KolbModule"]

@@ -23,22 +23,22 @@ from woob.tools.backend import Module
 from .browser import ColissimoBrowser
 
 
-__all__ = ['ColissimoModule']
+__all__ = ["ColissimoModule"]
 
 
 class ColissimoModule(Module, CapParcel):
-    NAME = 'colissimo'
-    DESCRIPTION = u'Colissimo parcel tracking website'
-    MAINTAINER = u'Florent Fourcot'
-    EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.7'
-    LICENSE = 'AGPLv3+'
+    NAME = "colissimo"
+    DESCRIPTION = "Colissimo parcel tracking website"
+    MAINTAINER = "Florent Fourcot"
+    EMAIL = "weboob@flo.fourcot.fr"
+    VERSION = "3.7"
+    LICENSE = "AGPLv3+"
 
     BROWSER = ColissimoBrowser
 
     def get_parcel_tracking(self, _id):
         # 13 is the magic length of colissimo tracking ids
         if len(_id) != 13:
-            raise ParcelNotFound(u"Colissimo ID's must have 13 print character")
+            raise ParcelNotFound("Colissimo ID's must have 13 print character")
 
         return self.browser.get_tracking_info(_id)

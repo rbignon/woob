@@ -30,14 +30,14 @@ class QueriesQueue(Optimization):
         self._sched = sched
         self._storage = storage
         self._browser = browser
-        self._logger = getLogger('queriesqueue', browser.logger)
+        self._logger = getLogger("queriesqueue", browser.logger)
 
-        self._queue = storage.get('queries_queue', 'queue', default=[])
+        self._queue = storage.get("queries_queue", "queue", default=[])
 
         self._check_cron = None
 
     def save(self):
-        self._storage.set('queries_queue', 'queue', self._queue)
+        self._storage.set("queries_queue", "queue", self._queue)
         self._storage.save()
 
     def start(self):
@@ -55,7 +55,7 @@ class QueriesQueue(Optimization):
     def enqueue_query(self, id, priority=999):
         id_queue = [_id[1] for _id in self._queue]
         if int(id) in id_queue:
-            raise QueryError('This id is already queued')
+            raise QueryError("This id is already queued")
         self._queue.append((int(priority), int(id)))
         self.save()
         # Try to flush queue to send it now.
@@ -82,7 +82,7 @@ class QueriesQueue(Optimization):
                         continue
 
                     if self._browser.send_charm(id):
-                        self._logger.info('Charm sent to %s', id)
+                        self._logger.info("Charm sent to %s", id)
                     else:
                         self._queue.append((priority, id))
                         self._logger.info("Charm can't be send to %s", id)

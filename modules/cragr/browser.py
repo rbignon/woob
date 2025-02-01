@@ -28,13 +28,24 @@ from requests.exceptions import ReadTimeout
 from woob.browser import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import BrowserHTTPNotFound, ClientError, HTTPNotFound, ServerError
 from woob.capabilities.bank import (
-    Account, AccountNotFound, AddRecipientBankError, AddRecipientStep, Loan, RecipientInvalidIban, RecipientInvalidOTP,
-    RecipientNotFound, Transaction,
+    Account,
+    AccountNotFound,
+    AddRecipientBankError,
+    AddRecipientStep,
+    Loan,
+    RecipientInvalidIban,
+    RecipientInvalidOTP,
+    RecipientNotFound,
+    Transaction,
 )
 from woob.capabilities.bank.wealth import Per, PerProviderType
 from woob.capabilities.base import NotAvailable, empty, strict_find_object
 from woob.exceptions import (
-    ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserUnavailable,
+    ActionNeeded,
+    ActionType,
+    AuthMethodNotImplemented,
+    BrowserIncorrectPassword,
+    BrowserUnavailable,
 )
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.capabilities.bank.investments import create_french_liquidity
@@ -46,21 +57,64 @@ from woob_modules.netfinca.browser import NetfincaBrowser as _NetfincaBrowser
 
 from .document_pages import SubscriptionsDocumentsPage, SubscriptionsTransitionPage
 from .pages import (
-    AccountDetailsPage, AccountsPage, BgpiAccountsPage, BgpiInvestmentsPage, BgpiRedirectionPage, CardHistoryPage,
-    CardsPage, ChangePasswordPage, ConsumerCreditPage, ContractsPage, DetailsLoanPage, EntRedirectionPage,
-    FirstConnectionPage, HistoryPage, IbanPage, JsonRedirectionPage, KeypadPage, LifeInsuranceInvestmentsPage, LoanPage,
-    LoanRedirectionPage, LoggedOutPage, LoginPage, NetfincaHomePage, NetfincaLogoutToCragrPage, NetfincaRedirectionPage,
-    PredicaInvestmentsPage, PredicaRedirectionPage, ProfileDetailsPage, ProfilePage, ProProfileDetailsPage,
-    RevolingErrorPage, RevolvingPage, SecurityPage, SofincoRedirectionPage, SofincoRevolvingCreditPage,
-    SofincoTokenPage, SofincoUidPage, TaxResidencyFillingPage, TokenPage, UpdateProfilePage,
+    AccountDetailsPage,
+    AccountsPage,
+    BgpiAccountsPage,
+    BgpiInvestmentsPage,
+    BgpiRedirectionPage,
+    CardHistoryPage,
+    CardsPage,
+    ChangePasswordPage,
+    ConsumerCreditPage,
+    ContractsPage,
+    DetailsLoanPage,
+    EntRedirectionPage,
+    FirstConnectionPage,
+    HistoryPage,
+    IbanPage,
+    JsonRedirectionPage,
+    KeypadPage,
+    LifeInsuranceInvestmentsPage,
+    LoanPage,
+    LoanRedirectionPage,
+    LoggedOutPage,
+    LoginPage,
+    NetfincaHomePage,
+    NetfincaLogoutToCragrPage,
+    NetfincaRedirectionPage,
+    PredicaInvestmentsPage,
+    PredicaRedirectionPage,
+    ProfileDetailsPage,
+    ProfilePage,
+    ProProfileDetailsPage,
+    RevolingErrorPage,
+    RevolvingPage,
+    SecurityPage,
+    SofincoRedirectionPage,
+    SofincoRevolvingCreditPage,
+    SofincoTokenPage,
+    SofincoUidPage,
+    TaxResidencyFillingPage,
+    TokenPage,
+    UpdateProfilePage,
 )
 from .transfer_pages import (
-    CheckSmsPage, EndNewRecipientPage, NewRecipientPage, NewRecipientSmsPage, RecipientsPage, RecipientTokenPage,
-    SendSmsPage, TransferPage, TransferTokenPage, ValidateNewRecipientPage, ValidateSmsPage, VerifyNewRecipientPage,
+    CheckSmsPage,
+    EndNewRecipientPage,
+    NewRecipientPage,
+    NewRecipientSmsPage,
+    RecipientsPage,
+    RecipientTokenPage,
+    SendSmsPage,
+    TransferPage,
+    TransferTokenPage,
+    ValidateNewRecipientPage,
+    ValidateSmsPage,
+    VerifyNewRecipientPage,
 )
 
 
-__all__ = ['CreditAgricoleBrowser', 'NetfincaBrowser']
+__all__ = ["CreditAgricoleBrowser", "NetfincaBrowser"]
 
 
 def raise_if_not_403(exc):
@@ -70,247 +124,240 @@ def raise_if_not_403(exc):
 
 
 class NetfincaBrowser(_NetfincaBrowser):
-    BASEURL = 'https://www.cabourse.credit-agricole.fr'
+    BASEURL = "https://www.cabourse.credit-agricole.fr"
 
 
 class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     TIMEOUT = 20.0
 
-    ENT_BASEURL = 'https://entreprises.credit-agricole.fr/'
-    PDIK_BASEURL = 'https://pdik.credit-agricole.fr/'
+    ENT_BASEURL = "https://entreprises.credit-agricole.fr/"
+    PDIK_BASEURL = "https://pdik.credit-agricole.fr/"
 
     # Login pages
-    login_page = URL(r'particulier/acceder-a-mes-comptes.html$', LoginPage)
-    keypad = URL(r'particulier/acceder-a-mes-comptes.authenticationKeypad.json', KeypadPage)
-    security_check = URL(r'particulier/acceder-a-mes-comptes.html/j_security_check', SecurityPage)
-    first_connection = URL(r'.*/operations/interstitielles/premiere-connexion.html', FirstConnectionPage)
-    update_profile = URL(r'.*/operations/interstitielles/SKYC-maj-donnees.html', UpdateProfilePage)
-    token_page = URL(r'libs/granite/csrf/token.json', TokenPage)
-    change_password = URL(r'(?P<space>[\w-]+)/operations/interstitielles/code-personnel.html', ChangePasswordPage)
+    login_page = URL(r"particulier/acceder-a-mes-comptes.html$", LoginPage)
+    keypad = URL(r"particulier/acceder-a-mes-comptes.authenticationKeypad.json", KeypadPage)
+    security_check = URL(r"particulier/acceder-a-mes-comptes.html/j_security_check", SecurityPage)
+    first_connection = URL(r".*/operations/interstitielles/premiere-connexion.html", FirstConnectionPage)
+    update_profile = URL(r".*/operations/interstitielles/SKYC-maj-donnees.html", UpdateProfilePage)
+    token_page = URL(r"libs/granite/csrf/token.json", TokenPage)
+    change_password = URL(r"(?P<space>[\w-]+)/operations/interstitielles/code-personnel.html", ChangePasswordPage)
     tax_residency_filling_page = URL(
-        r'/(?P<space>[\w-]+)/operations/interstitielles/notification-auto-certification.html',
+        r"/(?P<space>[\w-]+)/operations/interstitielles/notification-auto-certification.html",
         TaxResidencyFillingPage,
     )
 
     # New 'entreprise' space
     ent_redirection_page = URL(
-        r'ihm-light/ihm-light-callback.iidc-.*.html\?sso_status=SUCCESS',
-        r'(?P<space>[\w-]+)/operations/noeuds-ihml/acces-portail-entreprise.html',
+        r"ihm-light/ihm-light-callback.iidc-.*.html\?sso_status=SUCCESS",
+        r"(?P<space>[\w-]+)/operations/noeuds-ihml/acces-portail-entreprise.html",
         EntRedirectionPage,
     )
-    ent_appconfig = URL(r'(?P<region>[\w-]+)/fe/configuration/app-config.json', JsonRedirectionPage, base='ENT_BASEURL')
-    ent_user = URL(r'bff/user', JsonRedirectionPage, base='ENT_BASEURL')
-    ent_auth_ca_connect = URL(r'https://client.ca-connect.credit-agricole.fr/authorize')
-    ent_authentication = URL(r'bff/authentication', JsonRedirectionPage, base='ENT_BASEURL')
-    ent_authorize = URL(r'bff/authorize', base='ENT_BASEURL')
-    ent_enrole = URL(r'bff/(?P<cael>\d+)/enroles', JsonRedirectionPage, base='ENT_BASEURL')
-    ent_sso = URL(r'bff/sso/(?P<record_id>[\w-]+)', JsonRedirectionPage, base='ENT_BASEURL')
+    ent_appconfig = URL(r"(?P<region>[\w-]+)/fe/configuration/app-config.json", JsonRedirectionPage, base="ENT_BASEURL")
+    ent_user = URL(r"bff/user", JsonRedirectionPage, base="ENT_BASEURL")
+    ent_auth_ca_connect = URL(r"https://client.ca-connect.credit-agricole.fr/authorize")
+    ent_authentication = URL(r"bff/authentication", JsonRedirectionPage, base="ENT_BASEURL")
+    ent_authorize = URL(r"bff/authorize", base="ENT_BASEURL")
+    ent_enrole = URL(r"bff/(?P<cael>\d+)/enroles", JsonRedirectionPage, base="ENT_BASEURL")
+    ent_sso = URL(r"bff/sso/(?P<record_id>[\w-]+)", JsonRedirectionPage, base="ENT_BASEURL")
 
     # Accounts pages
     contracts_page = URL(
-        r'(?P<space>[\w-]+)/operations/.rechargement.contexte.html\?idBamIndex=(?P<id_contract>)', ContractsPage
+        r"(?P<space>[\w-]+)/operations/.rechargement.contexte.html\?idBamIndex=(?P<id_contract>)", ContractsPage
     )
 
-    accounts_page = URL(r'[\w-]+/operations/synthese.html', AccountsPage)
+    accounts_page = URL(r"[\w-]+/operations/synthese.html", AccountsPage)
 
     account_details = URL(
-        r'(?P<space>[\w-]+)/operations/synthese/jcr:content.produits-valorisation.json/(?P<category>)',
-        AccountDetailsPage
+        r"(?P<space>[\w-]+)/operations/synthese/jcr:content.produits-valorisation.json/(?P<category>)",
+        AccountDetailsPage,
     )
 
     account_iban = URL(
-        r'(?P<space>[\w-]+)/operations/operations-courantes/editer-rib/jcr:content.ibaninformation.json', IbanPage
+        r"(?P<space>[\w-]+)/operations/operations-courantes/editer-rib/jcr:content.ibaninformation.json", IbanPage
     )
 
-    cards = URL(r'(?P<space>[\w-]+)/operations/(?P<op>.*)/mes-cartes/jcr:content.listeCartesParCompte.json', CardsPage)
+    cards = URL(r"(?P<space>[\w-]+)/operations/(?P<op>.*)/mes-cartes/jcr:content.listeCartesParCompte.json", CardsPage)
 
-    history = URL(r'(?P<space>[\w-]+)/operations/synthese/detail-comptes/jcr:content.n3.operations.json', HistoryPage)
+    history = URL(r"(?P<space>[\w-]+)/operations/synthese/detail-comptes/jcr:content.n3.operations.json", HistoryPage)
 
     card_history = URL(
-        r'(?P<space>[\w-]+)/operations/synthese/detail-comptes/jcr:content.n3.operations.encours.carte.debit.differe.json',
-        CardHistoryPage
+        r"(?P<space>[\w-]+)/operations/synthese/detail-comptes/jcr:content.n3.operations.encours.carte.debit.differe.json",
+        CardHistoryPage,
     )
 
     # Investment pages
     life_insurance_investments = URL(
-        r'(?P<space>[\w-]+)/operations/synthese/detail-assurance-vie.html\?idx=(?P<idx>\d+)&famillecode=(?P<category>\d+)',
-        LifeInsuranceInvestmentsPage
+        r"(?P<space>[\w-]+)/operations/synthese/detail-assurance-vie.html\?idx=(?P<idx>\d+)&famillecode=(?P<category>\d+)",
+        LifeInsuranceInvestmentsPage,
     )
 
     netfinca_redirection = URL(
-        r'(?P<space>[\w-]+)/operations/moco/catitres/_?jcr[:_]content.init.html', NetfincaRedirectionPage
+        r"(?P<space>[\w-]+)/operations/moco/catitres/_?jcr[:_]content.init.html", NetfincaRedirectionPage
     )
     netfinca_home = URL(
-        r'https://www.cabourse.credit-agricole.fr/netfinca-titres/servlet/com.netfinca.frontcr.navigation.AccueilBridge',
-        NetfincaHomePage
+        r"https://www.cabourse.credit-agricole.fr/netfinca-titres/servlet/com.netfinca.frontcr.navigation.AccueilBridge",
+        NetfincaHomePage,
     )
     netfinca_logout_to_cragr = URL(
-        r'https://www.cabourse.credit-agricole.fr/netfinca-titres/servlet/com.netfinca.frontcr.login.ContextTransferDisconnect',
+        r"https://www.cabourse.credit-agricole.fr/netfinca-titres/servlet/com.netfinca.frontcr.login.ContextTransferDisconnect",
         NetfincaLogoutToCragrPage,
     )
     predica_redirection = URL(
-        r'(?P<space>[\w-]+)/operations/moco/predica/_?jcr[:_]content.init.html', PredicaRedirectionPage
+        r"(?P<space>[\w-]+)/operations/moco/predica/_?jcr[:_]content.init.html", PredicaRedirectionPage
     )
     predica_investments = URL(
-        r'https://npcprediweb.predica.credit-agricole.fr/rest/detailEpargne/contrat/', PredicaInvestmentsPage
+        r"https://npcprediweb.predica.credit-agricole.fr/rest/detailEpargne/contrat/", PredicaInvestmentsPage
     )
-    predica_inv_redirect = URL(r'(?P<space>[\w-]+)/operations/synthese/jcr:content.n1.chargercontexteihml.parcourssynthesecontexteservlet.json')
+    predica_inv_redirect = URL(
+        r"(?P<space>[\w-]+)/operations/synthese/jcr:content.n1.chargercontexteihml.parcourssynthesecontexteservlet.json"
+    )
     predica_versement = URL(
-        r'(?P<space>[\w-]+)/operations/synthese/predica-versement-libre-synthese.iidc-.*.html',
-        EntRedirectionPage
+        r"(?P<space>[\w-]+)/operations/synthese/predica-versement-libre-synthese.iidc-.*.html", EntRedirectionPage
     )
     pdik_config = URL(
-        r'(?P<region>[\w-]+)/fe/configuration/app-config.json',
+        r"(?P<region>[\w-]+)/fe/configuration/app-config.json",
         JsonRedirectionPage,
-        base='PDIK_BASEURL',
+        base="PDIK_BASEURL",
     )
-    pdik_user = URL(r'(?P<region>[\w-]+)/bff/api/security/user', JsonRedirectionPage, base='PDIK_BASEURL')
-    pdik_login = URL(r'(?P<region>[\w-]+)/bff/api/security/login', base='PDIK_BASEURL')
-    pdik_jwt = URL(r'(?P<region>[\w-]+)/bff/api/context/(?P<context_id>[\w-]+)/jwt', JsonRedirectionPage, base='PDIK_BASEURL')
-    npcprediweb_rooting = URL(r'https://npcprediweb.predica.credit-agricole.fr/prediweb/oidc/rooting')
+    pdik_user = URL(r"(?P<region>[\w-]+)/bff/api/security/user", JsonRedirectionPage, base="PDIK_BASEURL")
+    pdik_login = URL(r"(?P<region>[\w-]+)/bff/api/security/login", base="PDIK_BASEURL")
+    pdik_jwt = URL(
+        r"(?P<region>[\w-]+)/bff/api/context/(?P<context_id>[\w-]+)/jwt", JsonRedirectionPage, base="PDIK_BASEURL"
+    )
+    npcprediweb_rooting = URL(r"https://npcprediweb.predica.credit-agricole.fr/prediweb/oidc/rooting")
 
-    bgpi_redirection = URL(r'(?P<space>[\w-]+)/operations/moco/bgpi/_?jcr[:_]content.init.html', BgpiRedirectionPage)
-    bgpi_accounts = URL(r'https://bgpi-gestionprivee.credit-agricole.fr/bgpi/Logon.do', BgpiAccountsPage)
-    bgpi_investments = URL(r'https://bgpi-gestionprivee.credit-agricole.fr/bgpi/CompteDetail.do', BgpiInvestmentsPage)
+    bgpi_redirection = URL(r"(?P<space>[\w-]+)/operations/moco/bgpi/_?jcr[:_]content.init.html", BgpiRedirectionPage)
+    bgpi_accounts = URL(r"https://bgpi-gestionprivee.credit-agricole.fr/bgpi/Logon.do", BgpiAccountsPage)
+    bgpi_investments = URL(r"https://bgpi-gestionprivee.credit-agricole.fr/bgpi/CompteDetail.do", BgpiInvestmentsPage)
 
     # Profile pages
-    profile_page = URL(r'(?P<space>[\w-]+)/operations/synthese/jcr:content.npc.store.client.json', ProfilePage)
+    profile_page = URL(r"(?P<space>[\w-]+)/operations/synthese/jcr:content.npc.store.client.json", ProfilePage)
 
     profile_details = URL(
-        r'(?P<space>[\w-]+)/operations/profil/infos-personnelles/gerer-coordonnees.html', ProfileDetailsPage
+        r"(?P<space>[\w-]+)/operations/profil/infos-personnelles/gerer-coordonnees.html", ProfileDetailsPage
     )
 
     pro_profile_details = URL(
-        r'(?P<space>[\w-]+)/operations/profil/infos-personnelles/controler-coordonnees.html', ProProfileDetailsPage
+        r"(?P<space>[\w-]+)/operations/profil/infos-personnelles/controler-coordonnees.html", ProProfileDetailsPage
     )
 
     # Recipients pages
-    recipients = URL(r'(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.accounts.json', RecipientsPage)
+    recipients = URL(r"(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.accounts.json", RecipientsPage)
     transfer_token = URL(
-        r'(?P<space>.*)/operations/(?P<op>.*)/virement.npcgeneratetoken.json\?tokenTypeId=1', TransferTokenPage
+        r"(?P<space>.*)/operations/(?P<op>.*)/virement.npcgeneratetoken.json\?tokenTypeId=1", TransferTokenPage
     )
-    transfer = URL('(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.check-transfer.json', TransferPage)
+    transfer = URL("(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.check-transfer.json", TransferPage)
     transfer_recap = URL(
-        r'(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.transfer-data.json\?useSession=true', TransferPage
+        r"(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.transfer-data.json\?useSession=true", TransferPage
     )
 
-    transfer_exec = URL('(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.process-transfer.json', TransferPage)
+    transfer_exec = URL("(?P<space>.*)/operations/(?P<op>.*)/virement/jcr:content.process-transfer.json", TransferPage)
 
     add_new_recipient = URL(
-        r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires.html',
-        NewRecipientPage
+        r"(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires.html",
+        NewRecipientPage,
     )
     new_recipient_sms = URL(
-        r'(?P<space>.*)/operations/authentification-forte/sms.otp.html\?transactionId=(?P<transaction_id>.*)',
-        NewRecipientSmsPage
+        r"(?P<space>.*)/operations/authentification-forte/sms.otp.html\?transactionId=(?P<transaction_id>.*)",
+        NewRecipientSmsPage,
     )
     verify_new_recipient = URL(
-        r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires/jcr:content.verifier_donnees_beneficiaires.json\?transactionId=(?P<transaction_id>.*)',
-        VerifyNewRecipientPage
+        r"(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires/jcr:content.verifier_donnees_beneficiaires.json\?transactionId=(?P<transaction_id>.*)",
+        VerifyNewRecipientPage,
     )
     validate_new_recipient = URL(
-        r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires/jcr:content.validation.json\?transactionId=(?P<transaction_id>.*)',
-        ValidateNewRecipientPage
+        r"(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires/jcr:content.validation.json\?transactionId=(?P<transaction_id>.*)",
+        ValidateNewRecipientPage,
     )
     end_new_recipient = URL(
-        r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires.html\?transactionId=(?P<transaction_id>.*)',
-        EndNewRecipientPage
+        r"(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires.html\?transactionId=(?P<transaction_id>.*)",
+        EndNewRecipientPage,
     )
 
-    send_sms = URL(r'(?P<space>.*)/operations/authentification-forte/sms/jcr:content.send.json', SendSmsPage)
+    send_sms = URL(r"(?P<space>.*)/operations/authentification-forte/sms/jcr:content.send.json", SendSmsPage)
     validate_sms = URL(
-        r'(?P<space>.*)/operations/authentification-forte/sms/jcr:content.validation.json', ValidateSmsPage
+        r"(?P<space>.*)/operations/authentification-forte/sms/jcr:content.validation.json", ValidateSmsPage
     )
     check_sms = URL(
-        r'(?P<space>.*)/operations/authentification-forte/sms.success.html\?transactionId=(?P<transaction_id>.*)',
-        CheckSmsPage
+        r"(?P<space>.*)/operations/authentification-forte/sms.success.html\?transactionId=(?P<transaction_id>.*)",
+        CheckSmsPage,
     )
     recipient_token = URL(
-        r'(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires.npcgeneratetoken.json\?transactionId=(?P<transaction_id>.*)&tokenTypeId=3',
-        RecipientTokenPage
+        r"(?P<space>.*)/operations/operations-courantes/gerer-beneficiaires/ajouter-modifier-beneficiaires.npcgeneratetoken.json\?transactionId=(?P<transaction_id>.*)&tokenTypeId=3",
+        RecipientTokenPage,
     )
     # Documents pages
     subscriptions_transition = URL(
-        r'(?P<space>[\w-]+)/operations/documents/edocuments.html',
-        SubscriptionsTransitionPage
+        r"(?P<space>[\w-]+)/operations/documents/edocuments.html", SubscriptionsTransitionPage
     )
-    subscriptions_documents = URL(r'(?P<space>[\w-]+)/operations/documents/edocuments', SubscriptionsDocumentsPage)
+    subscriptions_documents = URL(r"(?P<space>[\w-]+)/operations/documents/edocuments", SubscriptionsDocumentsPage)
 
     # loans
     init_loan_page = URL(
-        r'(?P<space>[\w-]+)/operations/synthese/jcr:content.n1.chargercontexteihml.parcourssynthesecontexteservlet.json',
-        LoanPage
+        r"(?P<space>[\w-]+)/operations/synthese/jcr:content.n1.chargercontexteihml.parcourssynthesecontexteservlet.json",
+        LoanPage,
     )
     loan_redirection = URL(
-        r'/ihm-light/ihm-light-callback.iidc',
-        r'(?P<space>[\w-]+)/operations/synthese/detail-credit-amortissable.*',
-        LoanRedirectionPage
+        r"/ihm-light/ihm-light-callback.iidc",
+        r"(?P<space>[\w-]+)/operations/synthese/detail-credit-amortissable.*",
+        LoanRedirectionPage,
     )
-    loan_auth = URL(
-        'https://client.ca-connect.credit-agricole.fr/(?P<auth>.*)',
-        LoanPage
-    )
+    loan_auth = URL("https://client.ca-connect.credit-agricole.fr/(?P<auth>.*)", LoanPage)
     dcam_config = URL(
-        r'https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/fe01/assets/configuration/app-config.json',
-        LoanPage
+        r"https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/fe01/assets/configuration/app-config.json", LoanPage
     )
-    dcam_redirection = URL(
-        r'https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/(?P<action>.+)'
-    )
+    dcam_redirection = URL(r"https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/(?P<action>.+)")
     loan_details = URL(
-        r'https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/(?P<action>.+)/credits/(?P<context_id>[\w.-]+)/',
-        DetailsLoanPage
+        r"https://dcam.credit-agricole.fr/(?P<region>[\w-]+)/(?P<action>.+)/credits/(?P<context_id>[\w.-]+)/",
+        DetailsLoanPage,
     )
     # Revolving pages
     revolving = URL(
-        r'https://compteopen.credit-agricole.fr/sofgate.asp.*',
-        r'https://compteopen.credit-agricole.fr/rcar/controller/carback',
-        RevolvingPage
+        r"https://compteopen.credit-agricole.fr/sofgate.asp.*",
+        r"https://compteopen.credit-agricole.fr/rcar/controller/carback",
+        RevolvingPage,
     )
-    revolving_redirection = URL(
-        r'(?P<space>[\w-]+)/operations/moco/sofutil/_jcr_content.init.html',
-        RevolvingPage
-    )
-    revolving_error = URL(
-        'https://compteopen.credit-agricole.fr/erreurs/Erreur.html',
-        RevolingErrorPage
-    )
+    revolving_redirection = URL(r"(?P<space>[\w-]+)/operations/moco/sofutil/_jcr_content.init.html", RevolvingPage)
+    revolving_error = URL("https://compteopen.credit-agricole.fr/erreurs/Erreur.html", RevolingErrorPage)
     # Consumer credit
     consumer_credit_redirection = URL(
-        r'(?P<space>[\w-]+)/operations/moco/atoutlibre/jcr:content.init.html',
-        ConsumerCreditPage
+        r"(?P<space>[\w-]+)/operations/moco/atoutlibre/jcr:content.init.html", ConsumerCreditPage
     )
-    consumer_credit = URL(
-        r'https://www..+creditconso-enligne.credit-agricole.fr',
-        ConsumerCreditPage
-    )
+    consumer_credit = URL(r"https://www..+creditconso-enligne.credit-agricole.fr", ConsumerCreditPage)
 
     # Sofinco consumer credit space
-    crtconso_redirection = URL(r'(?P<space>[\w-]+)/operations/credits/renouv-util.iidc-.*', SofincoRedirectionPage)
-    crtconso_launcher = URL(r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/lanceur\?context_id=(?P<context_id>[\w-]+)')
-    crtconso_contracts = URL(
-        r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/contrats-renouvelables/(?P<token>[\w-]+)',
-        SofincoUidPage
+    crtconso_redirection = URL(r"(?P<space>[\w-]+)/operations/credits/renouv-util.iidc-.*", SofincoRedirectionPage)
+    crtconso_launcher = URL(
+        r"https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/lanceur\?context_id=(?P<context_id>[\w-]+)"
     )
-    crtconso_appconfig = URL(r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/lanceur/configuration/app-config.json')
-    crtconso_user = URL(r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/security/user')
-    crtconso_login = URL(r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/security/login')
+    crtconso_contracts = URL(
+        r"https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/contrats-renouvelables/(?P<token>[\w-]+)",
+        SofincoUidPage,
+    )
+    crtconso_appconfig = URL(
+        r"https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/lanceur/configuration/app-config.json"
+    )
+    crtconso_user = URL(
+        r"https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/security/user"
+    )
+    crtconso_login = URL(
+        r"https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/security/login"
+    )
     crtconso_jwt = URL(
-        r'https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/jwt/(?P<id_contract>[\w-]+'
+        r"https://lanceur-sav-crtconso.credit-agricole.fr/(?P<region>[\w-]+)/bff/lanceur-myca/jwt/(?P<id_contract>[\w-]+"
     )
     crtconso_token = URL(
-        r'https://sav-crtconso.credit-agricole.fr/summary/api/auth/dev/refresh-token',
-        SofincoTokenPage
+        r"https://sav-crtconso.credit-agricole.fr/summary/api/auth/dev/refresh-token", SofincoTokenPage
     )
-    crtconso_summary = URL(r'https://sav-crtconso.credit-agricole.fr/summary/api/npc/docker')
+    crtconso_summary = URL(r"https://sav-crtconso.credit-agricole.fr/summary/api/npc/docker")
     crtconso_contractinfo = URL(
-        r'https://api.sofinco.fr/CustomerContractPortfolio/v1/contracts/revolving/(?P<contract_number>\d+)',
-        SofincoRevolvingCreditPage
+        r"https://api.sofinco.fr/CustomerContractPortfolio/v1/contracts/revolving/(?P<contract_number>\d+)",
+        SofincoRevolvingCreditPage,
     )
 
-    logged_out = URL(r'.*', LoggedOutPage)
+    logged_out = URL(r".*", LoggedOutPage)
 
-    __states__ = ('BASEURL', 'transaction_id', 'sms_csrf_token', 'need_reload_state', 'accounts_url')
+    __states__ = ("BASEURL", "transaction_id", "sms_csrf_token", "need_reload_state", "accounts_url")
 
     def __init__(self, website, *args, **kwargs):
         super(CreditAgricoleBrowser, self).__init__(*args, **kwargs)
@@ -323,32 +370,26 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         # Netfinca browser:
         dirname = self.responses_dirname
         if dirname:
-            dirname += '/netfinca'
-        self.netfinca = NetfincaBrowser(
-            '',
-            '',
-            logger=self.logger,
-            responses_dirname=dirname,
-            proxy=self.PROXIES
-        )
+            dirname += "/netfinca"
+        self.netfinca = NetfincaBrowser("", "", logger=self.logger, responses_dirname=dirname, proxy=self.PROXIES)
 
         # Needed to add a new recipient
         self.transaction_id = None
         self.sms_csrf_token = None
         self.need_reload_state = None
-        self.region = re.match(r'www\.(?P<region>[\w-]+)\.fr', self.website).group('region')
+        self.region = re.match(r"www\.(?P<region>[\w-]+)\.fr", self.website).group("region")
 
     def load_state(self, state):
         # Reload state for AddRecipientStep only
-        if state.get('need_reload_state'):
+        if state.get("need_reload_state"):
             # Do not locate_browser for 2fa
-            state.pop('url', None)
+            state.pop("url", None)
             super(CreditAgricoleBrowser, self).load_state(state)
             self.need_reload_state = None
 
     @property
     def space(self):
-        return self.session.cookies.get('marche', None)
+        return self.session.cookies.get("marche", None)
 
     def deinit(self):
         super(CreditAgricoleBrowser, self).deinit()
@@ -362,29 +403,27 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         except ServerError as exc:
             # Wrongpass returns a 500 server error...
             exc_json = exc.response.json()
-            error = exc_json.get('error')
+            error = exc_json.get("error")
             if error:
-                message = error.get('message', '')
+                message = error.get("message", "")
                 wrongpass_messages = ("Votre identification est incorrecte", "Vous n'avez plus droit")
                 if any(value in message for value in wrongpass_messages):
                     raise BrowserIncorrectPassword()
-                if 'obtenir un nouveau code' in message:
+                if "obtenir un nouveau code" in message:
                     raise ActionNeeded(message)
 
-                code = error.get('code', '')
-                technical_error_messages = ('Un incident technique', 'identifiant et votre code personnel')
+                code = error.get("code", "")
+                technical_error_messages = ("Un incident technique", "identifiant et votre code personnel")
                 # Sometimes there is no error message, so we try to use the code as well
-                technical_error_codes = ('technical_error',)
-                if (
-                    any(value in message for value in technical_error_messages)
-                    or any(value in code for value in technical_error_codes)
+                technical_error_codes = ("technical_error",)
+                if any(value in message for value in technical_error_messages) or any(
+                    value in code for value in technical_error_codes
                 ):
                     raise BrowserUnavailable(message)
 
             # When a PSD2 SCA is required it also returns a 500, hopefully we can detect it
-            if (
-                exc_json.get('url') == 'dsp2/informations.html'
-                or exc_json.get('redirection', '').endswith('dsp2/informations.html')
+            if exc_json.get("url") == "dsp2/informations.html" or exc_json.get("redirection", "").endswith(
+                "dsp2/informations.html"
             ):
                 return self.handle_sca()
 
@@ -408,58 +447,62 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         self.location(self.page.get_first_ca_connect_url())
         self.location(self.page.get_second_ca_connect_url())
-        context_id = get_url_params(self.url).get('context_id')
+        context_id = get_url_params(self.url).get("context_id")
         self.ent_user.go()
-        nonce = self.page.get_from_json('nonce')
+        nonce = self.page.get_from_json("nonce")
         self.ent_appconfig.go(region=self.region)
-        redirect_uri = f'https://entreprises.credit-agricole.fr/{self.region}/fe/authorize'
+        redirect_uri = f"https://entreprises.credit-agricole.fr/{self.region}/fe/authorize"
         state = str(uuid.uuid4())
 
         params = {
-            'client_id': self.page.get_from_json('clientId'),
-            'redirect_uri': redirect_uri,
-            'state': state,
-            'response_type': 'code',
-            'scope': 'openid vault u010',
-            'nonce': nonce,
-            'header': 'false',
-            'footer': 'false',
-            'marche': '2',
+            "client_id": self.page.get_from_json("clientId"),
+            "redirect_uri": redirect_uri,
+            "state": state,
+            "response_type": "code",
+            "scope": "openid vault u010",
+            "nonce": nonce,
+            "header": "false",
+            "footer": "false",
+            "marche": "2",
         }
         self.ent_auth_ca_connect.go(params=params)
 
-        self.ent_authentication.go(data={
-            'code': get_url_params(self.url).get('code'),
-            'redirect_uri': redirect_uri,
-            'context_id': context_id,
-        })
+        self.ent_authentication.go(
+            data={
+                "code": get_url_params(self.url).get("code"),
+                "redirect_uri": redirect_uri,
+                "context_id": context_id,
+            }
+        )
 
         # Get cael from response for enrole call
-        cael = self.page.get_from_json('cael')
+        cael = self.page.get_from_json("cael")
 
-        self.ent_authorize.go(json={
-            'device': 'null',
-            'navigateur': 'Firefox/102',
-            'portail_client': 'true',
-            'valeur_empreinte': str(uuid.uuid4().hex),
-        })
+        self.ent_authorize.go(
+            json={
+                "device": "null",
+                "navigateur": "Firefox/102",
+                "portail_client": "true",
+                "valeur_empreinte": str(uuid.uuid4().hex),
+            }
+        )
 
         # Then we need to do the redirection toward the classical view of all accounts.
         self.ent_enrole.go(cael=cael)
 
         self.session.headers.update(
-            {'X-XSRF-TOKEN': self.session.cookies.get('XSRF-TOKEN', domain='.entreprises.credit-agricole.fr')}
+            {"X-XSRF-TOKEN": self.session.cookies.get("XSRF-TOKEN", domain=".entreprises.credit-agricole.fr")}
         )
         self.ent_sso.go(
-            record_id=self.page.get_from_json('0/record_id'),
+            record_id=self.page.get_from_json("0/record_id"),
             json={
-                'code_routage_producteur': '',
-                'contexte_redirection': 'OFFR',
-            }
+                "code_routage_producteur": "",
+                "contexte_redirection": "OFFR",
+            },
         )
-        self.location(self.page.get_from_json('target_uri'))
+        self.location(self.page.get_from_json("target_uri"))
 
-        assert self.accounts_page.is_here(), 'Something went wrong during handle_ent_space_redirection'
+        assert self.accounts_page.is_here(), "Something went wrong during handle_ent_space_redirection"
 
     def do_login(self):
         if not self.username or not self.password:
@@ -468,8 +511,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         # For historical reasons (old cragr website), the websites look like 'www.ca-region.fr',
         # from which we extract 'ca-region' to construct the BASEURL with a format such as:
         # 'https://www.credit-agricole.fr/ca-region/'
-        region_domain = re.sub(r'^www\.', 'www.credit-agricole.fr/', self.website.replace('.fr', ''))
-        self.BASEURL = 'https://%s/' % region_domain
+        region_domain = re.sub(r"^www\.", "www.credit-agricole.fr/", self.website.replace(".fr", ""))
+        self.BASEURL = "https://%s/" % region_domain
 
         self.login_page.go()
         self.do_security_check()
@@ -478,14 +521,14 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         accounts_url = self.page.get_accounts_url()
 
         # Check if we are redirected toward 'entreprise' space.
-        if 'acces-portail-entreprise' in accounts_url:
+        if "acces-portail-entreprise" in accounts_url:
             self.location(accounts_url)
             self.handle_ent_space_redirection()
             # Need to update with the correct url in order not to be logged out.
             # Example of a wanted url: https://www.credit-agricole.fr/ca-centrest/entreprise/operations/synthese.html.
             accounts_url = self.url
 
-        assert accounts_url, 'Could not get accounts url from security check'
+        assert accounts_url, "Could not get accounts url from security check"
 
         # It is important to set the domain otherwise self.location(self.accounts_url)
         # will crash when called from external domains (Predica, Netfinca, Bgpi...)
@@ -508,12 +551,12 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             retrying_location(self.accounts_url)
             if retry_count > 0:
                 self.logger.warning(
-                    'Successfully got the account after %d failed attempts',
+                    "Successfully got the account after %d failed attempts",
                     retry_count,
                 )
         except ReadTimeout:
             self.logger.warning(
-                'Could not get the accounts after %d failed attempts',
+                "Could not get the accounts after %d failed attempts",
                 retry_count + 1,  # account for final exception
             )
         except HTTPNotFound:
@@ -522,29 +565,30 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if self.update_profile.is_here():
             action_message = self.page.get_action_message()
             unavailable_regex = re.compile(
-                'vous demander de mettre à jour vos données personnelles'
-                + '|vérifier les informations concernant votre situation'
+                "vous demander de mettre à jour vos données personnelles"
+                + "|vérifier les informations concernant votre situation"
             )
             if unavailable_regex.search(action_message):
                 # The action message retrieved from the website is not specific enough.
                 raise ActionNeeded(
-                    locale="fr-FR", message="Connectez-vous sur le portail web afin de mettre à jour vos données personnelles",
+                    locale="fr-FR",
+                    message="Connectez-vous sur le portail web afin de mettre à jour vos données personnelles",
                     action_type=ActionType.FILL_KYC,
                 )
-            raise AssertionError(f'Unhandled action message after security check : {action_message}')
+            raise AssertionError(f"Unhandled action message after security check : {action_message}")
 
         if self.tax_residency_filling_page.is_here():
             action_needed_message = self.page.get_action_needed_message()
-            if 'besoin de votre auto-certification de résidence fiscale' in action_needed_message:
+            if "besoin de votre auto-certification de résidence fiscale" in action_needed_message:
                 raise ActionNeeded(
-                    message='Veuillez vous connecter sur votre espace personnel afin de fournir une certification de résidence fiscale.',
-                    locale='FR-fr',
+                    message="Veuillez vous connecter sur votre espace personnel afin de fournir une certification de résidence fiscale.",
+                    locale="FR-fr",
                     action_type=ActionType.FILL_KYC,
                 )
-            raise AssertionError(f'Unhandled message on tax residency page: {action_needed_message}')
+            raise AssertionError(f"Unhandled message on tax residency page: {action_needed_message}")
 
         assert self.accounts_page.is_here(), (
-            'We failed to login after the security check: response URL is %s' % self.url
+            "We failed to login after the security check: response URL is %s" % self.url
         )
         # Once the security check is passed, we are logged in.
 
@@ -555,7 +599,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         the SCA on its side there will be no SCA anymore on woob.
         """
         raise ActionNeeded(
-            locale="fr-FR", message="Vous devez réaliser la double authentification sur le portail internet",
+            locale="fr-FR",
+            message="Vous devez réaliser la double authentification sur le portail internet",
             action_type=ActionType.PERFORM_MFA,
         )
 
@@ -569,8 +614,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         #   plus rapidement possible.
         #
         # We suppose that it is momentary errors, and retry in this case.
-        headers = {'Referer': self.BASEURL + 'particulier/acceder-a-mes-comptes.html'}
-        data = {'user_id': self.username}
+        headers = {"Referer": self.BASEURL + "particulier/acceder-a-mes-comptes.html"}
+        data = {"user_id": self.username}
 
         return self.keypad.open(headers=headers, data=data)
 
@@ -579,8 +624,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         keypad_password = keypad_page.build_password(self.password[:6])
         keypad_id = keypad_page.get_keypad_id()
 
-        assert keypad_password, 'Could not obtain keypad password'
-        assert keypad_id, 'Could not obtain keypad id'
+        assert keypad_password, "Could not obtain keypad password"
+        assert keypad_id, "Could not obtain keypad id"
         self.login_page.go()
         # Get the form data to POST the security check:
         form = self.page.get_login_form(self.username, keypad_password, keypad_id)
@@ -592,8 +637,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         It may fail from time to time (error 500 or 403)
         """
         params = {
-            'compteIdx': int(account_index),
-            'grandeFamilleCode': int(account_category),
+            "compteIdx": int(account_index),
+            "grandeFamilleCode": int(account_category),
         }
         try:
             self.account_iban.go(space=self.space, params=params)
@@ -613,7 +658,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         try:
             self.go_to_account_space(contract)
         except (ServerError, BrowserUnavailable):
-            self.logger.warning('Server returned error 500 when trying to access space %s, we try again', contract)
+            self.logger.warning("Server returned error 500 when trying to access space %s, we try again", contract)
             try:
                 self.go_to_account_space(contract)
             except (ServerError, BrowserUnavailable):
@@ -626,13 +671,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # Determine how many spaces are present on the connection
             self.total_spaces = self.page.count_spaces()
             self.total_spaces_available = self.total_spaces
-            self.logger.info('The total number of spaces on this connection is %s.', self.total_spaces)
+            self.logger.info("The total number of spaces on this connection is %s.", self.total_spaces)
         for contract in range(self.total_spaces):
             # Switch to another space
             if not self.check_space_connection(contract):
                 self.logger.warning(
-                    'Server returned error 500 twice when trying to access space %s, this space will be skipped',
-                    contract
+                    "Server returned error 500 twice when trying to access space %s, this space will be skipped",
+                    contract,
                 )
                 self.total_spaces_available -= 1
                 continue
@@ -658,7 +703,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                     self.check_space_connection(contract)
                     main_account = self.page.get_main_account()
                     if main_account.balance == NotAvailable:
-                        self.logger.warning('Could not fetch the balance for main account %s.', main_account.id)
+                        self.logger.warning("Could not fetch the balance for main account %s.", main_account.id)
                 # Get cards for the main account
                 if self.page.has_main_cards():
                     for card in self.page.iter_main_cards():
@@ -679,7 +724,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             for account in accounts_list:
                 account._contract = contract
 
-            ''' Other accounts have no balance in the main JSON, so we must get all
+            """ Other accounts have no balance in the main JSON, so we must get all
             the (_id_element_contrat, balance) pairs in the account_details JSON.
 
             Account categories always correspond to the same account types:
@@ -689,9 +734,9 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # Category 4: Loans & Credits,
             # Category 5: Insurances (skipped),
             # Category 6: To be determined,
-            # Category 7: Market accounts. '''
+            # Category 7: Market accounts. """
 
-            categories = {int(account._category) for account in accounts_list if account._category not in (None, '5')}
+            categories = {int(account._category) for account in accounts_list if account._category not in (None, "5")}
             account_balances = {}
             loan_ids = {}
 
@@ -708,27 +753,27 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                     all_accounts[main_account.id] = main_account
                     yield main_account
 
-            ''' Fetch all deferred credit cards for this space: from the space type
+            """ Fetch all deferred credit cards for this space: from the space type
             we must determine the required URL parameters to build the cards URL.
             If there is no card on the space, the server will return a 500 error
-            (it is the same on the website) so we must handle it with try/except. '''
+            (it is the same on the website) so we must handle it with try/except. """
             cards_parameters = {
-                'PARTICULIER': ('particulier', 'moyens-paiement'),
-                'HORS_MARCHE': ('particulier', 'moyens-paiement'),
-                'PROFESSIONNEL': ('professionnel', 'paiements-encaissements'),
-                'AGRICULTEUR': ('agriculteur', 'paiements-encaissements'),
-                'ASSOC_CA_MODERE': ('association', 'paiements-encaissements'),
-                'ENTREPRISE': ('entreprise', 'paiements-encaissements'),
-                'PROFESSION_LIBERALE': ('professionnel', 'paiements-encaissements'),
-                'PROMOTEURS': ('professionnel', 'paiements-encaissements'),
-                'COLLECTIVITES_PUBLIQUES': ('professionnel', 'paiements-encaissements'),
+                "PARTICULIER": ("particulier", "moyens-paiement"),
+                "HORS_MARCHE": ("particulier", "moyens-paiement"),
+                "PROFESSIONNEL": ("professionnel", "paiements-encaissements"),
+                "AGRICULTEUR": ("agriculteur", "paiements-encaissements"),
+                "ASSOC_CA_MODERE": ("association", "paiements-encaissements"),
+                "ENTREPRISE": ("entreprise", "paiements-encaissements"),
+                "PROFESSION_LIBERALE": ("professionnel", "paiements-encaissements"),
+                "PROMOTEURS": ("professionnel", "paiements-encaissements"),
+                "COLLECTIVITES_PUBLIQUES": ("professionnel", "paiements-encaissements"),
             }
-            assert space_type in cards_parameters, 'Space type %s has never been encountered before.' % space_type
+            assert space_type in cards_parameters, "Space type %s has never been encountered before." % space_type
 
             space, op = cards_parameters[space_type]
-            if 'banque-privee' in self.url:
+            if "banque-privee" in self.url:
                 # The first parameter will always be 'banque-privee'.
-                space = 'banque-privee'
+                space = "banque-privee"
 
             for account in accounts_list:
                 if empty(account.balance):
@@ -741,10 +786,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 # so the backend can match loans properly.
                 if account.type in (Account.TYPE_LOAN, Account.TYPE_CONSUMER_CREDIT, Account.TYPE_MORTGAGE):
                     account.id = loan_ids.get(account._id_element_contrat, account.id)
-                    account.number = loan_ids.get('numeroCompte')
+                    account.number = loan_ids.get("numeroCompte")
                     if empty(account.balance):
                         self.logger.warning(
-                            'Loan skip: no balance is available for %s, %s account', account.id, account.label
+                            "Loan skip: no balance is available for %s, %s account", account.id, account.label
                         )
                         continue
                     account = self.switch_account_to_loan(account, space)
@@ -758,10 +803,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
                 if account.id not in all_accounts:
                     all_accounts[account.id] = account
-                    if hasattr(account, '_unavailable'):
+                    if hasattr(account, "_unavailable"):
                         # Skip revolving credit that we couldn't get additionnal information for, they are not displayed on website.
                         self.logger.warning(
-                            'Loan skip: no information available for %s, %s account',
+                            "Loan skip: no information available for %s, %s account",
                             account.id,
                             account.label,
                         )
@@ -776,9 +821,9 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                     self.cards.go(space=space, op=op)
                 except (ServerError, ClientError, HTTPNotFound):
                     if trial == 0:
-                        self.logger.warning('Request to cards failed, we try again.')
+                        self.logger.warning("Request to cards failed, we try again.")
                     else:
-                        self.logger.warning('Request to cards failed twice, the cards of this space will be skipped.')
+                        self.logger.warning("Request to cards failed twice, the cards of this space will be skipped.")
                 else:
                     break
 
@@ -810,11 +855,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         uuid_state = str(uuid.uuid4())
 
         self.token_page.go()
-        header = {'CSRF-Token': self.page.get_token()}
+        header = {"CSRF-Token": self.page.get_token()}
         data = {
-            'id_element_contrat': loan._id_element_contrat,
-            'numero_compte': loan.number,
-            'url': 'synthese/detail-credit-amortissable.html',
+            "id_element_contrat": loan._id_element_contrat,
+            "numero_compte": loan.number,
+            "url": "synthese/detail-credit-amortissable.html",
         }
         self.init_loan_page.go(space=space, data=data, headers=header)
 
@@ -822,8 +867,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         try:
             self.location(url)
         except HTTPNotFound as e:
-            if 'La page recherchée n\'a pas pu être trouvée' in e.response.text:
-                self.logger.warning('No available detail for loan n°%s, it is skipped.', loan.id)
+            if "La page recherchée n'a pas pu être trouvée" in e.response.text:
+                self.logger.warning("No available detail for loan n°%s, it is skipped.", loan.id)
                 return
             raise
 
@@ -831,68 +876,68 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.location(url)
 
         # Avoid matching "IHML_SSO_ERROR_PING"
-        if 'IHML_SSO_ERROR\\' in self.response.text:
+        if "IHML_SSO_ERROR\\" in self.response.text:
             raise BrowserUnavailable()
 
         context_id = self.page.get_context_id()
 
-        params = {'context_id': context_id}
-        self.dcam_redirection.go(region=self.region, action='fe01/', params=params)
+        params = {"context_id": context_id}
+        self.dcam_redirection.go(region=self.region, action="fe01/", params=params)
 
         self.dcam_config.go(region=self.region)
         client_id = self.page.get_client_id()
 
         params = {
-            'client_id': client_id,
-            'redirect_uri': f'https://dcam.credit-agricole.fr/{self.region}/fe01/authorize',
-            'response_type': 'code',
-            'scope': 'openid',
-            'state': uuid_state,
+            "client_id": client_id,
+            "redirect_uri": f"https://dcam.credit-agricole.fr/{self.region}/fe01/authorize",
+            "response_type": "code",
+            "scope": "openid",
+            "state": uuid_state,
         }
-        self.loan_auth.go(auth='authorize', params=params)
+        self.loan_auth.go(auth="authorize", params=params)
 
-        code = re.search(r'authorize\?code=(.*)&state=', self.url).group(1)
+        code = re.search(r"authorize\?code=(.*)&state=", self.url).group(1)
 
         # All the following dcam requests are necessary.
         # To access each loan details we have to follow this process:
         # logout, authorize, user, login again and loan initialization.
-        self.dcam_redirection.go(region=self.region, action='bff01/security/logout', data='')
+        self.dcam_redirection.go(region=self.region, action="bff01/security/logout", data="")
 
         self.dcam_redirection.go(
             region=self.region,
-            action='fe01/authorize',
+            action="fe01/authorize",
             params={
-                'state': uuid_state,
-                'code': code,
-            }
+                "state": uuid_state,
+                "code": code,
+            },
         )
-        self.dcam_redirection.go(region=self.region, action='bff01/security/user')
+        self.dcam_redirection.go(region=self.region, action="bff01/security/user")
         self.dcam_redirection.go(
             region=self.region,
-            action='bff01/security/login',
+            action="bff01/security/login",
             params={
-                'state': uuid_state,
-                'code': code,
-                'redirect_uri': f'https://dcam.credit-agricole.fr/{self.region}/fe01/authorize',
-            }
+                "state": uuid_state,
+                "code": code,
+                "redirect_uri": f"https://dcam.credit-agricole.fr/{self.region}/fe01/authorize",
+            },
         )
-        self.dcam_redirection.go(region=self.region, action=f'bff01/context/{context_id}')
-        self.loan_details.go(region=self.region, action='bff01', context_id=context_id)
+        self.dcam_redirection.go(region=self.region, action=f"bff01/context/{context_id}")
+        self.loan_details.go(region=self.region, action="bff01", context_id=context_id)
 
     def switch_account_to_loan(self, account, space):
         loan = Loan()
         copy_attrs = (
-            'id',
-            'number',
-            'label',
-            'type',
-            'currency',
-            'ownership',
-            '_index',
-            '_category',
-            '_contract',
-            '_id_element_contrat',
-            'owner_type',
+            "id",
+            "number",
+            "label",
+            "type",
+            "currency",
+            "ownership",
+            "_index",
+            "_category",
+            "_contract",
+            "_id_element_contrat",
+            "owner_type",
         )
         for attr in copy_attrs:
             setattr(loan, attr, getattr(account, attr))
@@ -900,7 +945,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         # Details page cannot be reached for refunded loans
         # or for 'Cautionnement bancaire' loan type
-        if loan.balance and 'Cautionnement' not in loan.label:
+        if loan.balance and "Cautionnement" not in loan.label:
             self.go_loan_space(loan, space)
             # Some loans have no available detail
             if self.loan_details.is_here():
@@ -916,8 +961,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     def go_to_revolving_space(self, space):
         self.token_page.go()
         data = {
-            'situation_travail': 'UTILISATION',
-            ':cq_csrf_token': self.page.get_token(),
+            "situation_travail": "UTILISATION",
+            ":cq_csrf_token": self.page.get_token(),
         }
         self.revolving_redirection.go(space=space, data=data)
 
@@ -927,13 +972,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.location(url)
 
         if self.revolving_error.is_here():
-            self.logger.warning('Unable to access to revolving space.')
+            self.logger.warning("Unable to access to revolving space.")
             raise BrowserUnavailable()
 
     def back_home_from_revolving_space(self):
         # Leave revolving space without logged out
         param = {
-            'p0': 'CARBACK',
+            "p0": "CARBACK",
         }
         self.revolving.go(params=param)
         self.page.back_to_home()
@@ -941,9 +986,9 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     def go_to_consumer_credit_space(self, loan, space):
         self.token_page.go()
         data = {
-            'situation_travail': 'ATOUTLIBRE',
-            'idelco': loan.id,
-            ':cq_csrf_token': self.page.get_token(),
+            "situation_travail": "ATOUTLIBRE",
+            "idelco": loan.id,
+            ":cq_csrf_token": self.page.get_token(),
         }
         self.consumer_credit_redirection.go(space=space, data=data)
 
@@ -952,35 +997,29 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         # We will need url and data, to go back to the home page without logged out
         loan._url, loan._data_url = self.page.get_consumer_credit_details_url()
-        self.location(
-            loan._url,
-            data=loan._data_url
-        )
+        self.location(loan._url, data=loan._data_url)
 
     def back_home_from_consumer_credit_space(self, loan):
         # Leave consumer credit space without logged out
-        loan._data_url['gcFmkActionCode'] = 'gcFmkDoExit'
-        self.location(
-            loan._url,
-            data=loan._data_url
-        )
+        loan._data_url["gcFmkActionCode"] = "gcFmkDoExit"
+        self.location(loan._url, data=loan._data_url)
         self.page.back_to_home()
 
     @retry(BrowserUnavailable, tries=4)
     def do_ca_private_api_auth(self, data):
         self.crtconso_summary.go(data=data)
-        if 'error' in self.url:
+        if "error" in self.url:
             # Sometimes this call doesn't succeeds and we don't have the refreshToken needed to do the next one.
             # Retrying can do the trick.
-            raise BrowserUnavailable('Something went wrong during authentication')
+            raise BrowserUnavailable("Something went wrong during authentication")
 
     def go_to_sofinco_space(self, loan, space):
         self.token_page.go()
-        header = {'CSRF-Token': self.page.get_token()}
+        header = {"CSRF-Token": self.page.get_token()}
         data = {
-            'id_element_contrat': loan.id,
-            'numero_compte': loan._id_element_contrat,
-            'url': 'credits/renouv-util.html',
+            "id_element_contrat": loan.id,
+            "numero_compte": loan._id_element_contrat,
+            "url": "credits/renouv-util.html",
         }
         self.init_loan_page.go(space=space, data=data, headers=header)
 
@@ -990,7 +1029,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             self.location(url)
         except HTTPNotFound as e:
             if "La page recherchée n'a pas pu être trouvée" in e.response.text:
-                self.logger.warning('No available detail for loan n°%s, it is skipped.', loan.id)
+                self.logger.warning("No available detail for loan n°%s, it is skipped.", loan.id)
                 return
             raise
 
@@ -1001,29 +1040,29 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         # Get connection data
         self.crtconso_appconfig.go(region=self.region)
-        param_data = self.response.json().get('cdcAuth')
+        param_data = self.response.json().get("cdcAuth")
 
         # Get XSRF-TOKEN and state
         self.crtconso_user.go(region=self.region)
-        state = self.response.json().get('state')
-        redirect_uri = f'https://lanceur-sav-crtconso.credit-agricole.fr/{self.region}/lanceur/authorize'
+        state = self.response.json().get("state")
+        redirect_uri = f"https://lanceur-sav-crtconso.credit-agricole.fr/{self.region}/lanceur/authorize"
 
         params = {
-            'client_id': param_data['clientId'],
-            'redirect_uri': redirect_uri,
-            'response_type': param_data['responseType'],
-            'scope': param_data['scope'],
-            'state': state,
+            "client_id": param_data["clientId"],
+            "redirect_uri": redirect_uri,
+            "response_type": param_data["responseType"],
+            "scope": param_data["scope"],
+            "state": state,
         }
-        self.location(param_data['xConnectUrl'], params=params)
+        self.location(param_data["xConnectUrl"], params=params)
 
         # Get code and state
         url_params = get_url_params(self.url)
         params = {
-            'code': url_params['code'],
-            'state': url_params['state'],
-            'redirect_uri': redirect_uri,
-            'canal': 'NPC',
+            "code": url_params["code"],
+            "state": url_params["state"],
+            "redirect_uri": redirect_uri,
+            "canal": "NPC",
         }
         self.crtconso_login.go(params=params, region=self.region)
 
@@ -1034,45 +1073,45 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         uid_session_contract = self.page.get_uid_session_contract()
         if not uid_session_contract:
             # Sometimes there is no active contract, it is not displayed by the website.
-            self.logger.warning('No uid has been found for %s, it is skipped.', loan.id)
+            self.logger.warning("No uid has been found for %s, it is skipped.", loan.id)
             return
 
         correlation_id = str(uuid.uuid4())
-        self.session.headers.update({'idCorrelation': correlation_id})
+        self.session.headers.update({"idCorrelation": correlation_id})
         self.crtconso_jwt.go(id_contract=uid_session_contract, region=self.region)
 
         # Get jwt token
-        jwt_token = self.response.json().get('jeton_jwt')
-        self.session.headers.pop('idCorrelation')
+        jwt_token = self.response.json().get("jeton_jwt")
+        self.session.headers.pop("idCorrelation")
         data = {
-            'request_version': 3,
-            'correlation_id': correlation_id,
-            'user_idp_hint': 'https://private.api.credit-agricole.fr/authentification/v2',
-            'ihm_launch_params': jwt_token,
+            "request_version": 3,
+            "correlation_id": correlation_id,
+            "user_idp_hint": "https://private.api.credit-agricole.fr/authentification/v2",
+            "ihm_launch_params": jwt_token,
         }
         self.do_ca_private_api_auth(data=data)
 
         # Finally get the api token
         self.crtconso_token.go()
         token = self.page.get_bearer_token()
-        assert token, 'Token not found'
+        assert token, "Token not found"
 
         self.session.headers.update({"Authorization": f"Bearer {token}"})
 
     def switch_account_to_revolving(self, account, space):
         loan = Loan()
         copy_attrs = (
-            'id',
-            'number',
-            'label',
-            'type',
-            'currency',
-            'ownership',
-            '_index',
-            '_category',
-            '_contract',
-            '_id_element_contrat',
-            'owner_type',
+            "id",
+            "number",
+            "label",
+            "type",
+            "currency",
+            "ownership",
+            "_index",
+            "_category",
+            "_contract",
+            "_id_element_contrat",
+            "owner_type",
         )
         for attr in copy_attrs:
             setattr(loan, attr, getattr(account, attr))
@@ -1081,14 +1120,14 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         # Details page cannot be reached for refunded revolving.
         if loan.available_amount:
-            if loan.label == 'Atout Libre':
+            if loan.label == "Atout Libre":
                 self.go_to_consumer_credit_space(loan, space)
                 self.page.fill_consumer_credit(obj=loan)
                 self.back_home_from_consumer_credit_space(loan)
 
-            elif loan.label in ('Supplétis', 'Open'):
+            elif loan.label in ("Supplétis", "Open"):
                 self.go_to_sofinco_space(loan, space)
-                if 'Authorization' not in self.session.headers:
+                if "Authorization" not in self.session.headers:
                     # In this case a contract has not been found during authentication process.
                     loan._unavailable = True
                     return loan
@@ -1106,15 +1145,15 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     def switch_account_to_per(self, account):
         per = Per.from_dict(account.to_dict())
         copy_attrs = (
-            '_index',
-            '_category',
-            '_contract',
-            '_id_element_contrat',
+            "_index",
+            "_category",
+            "_contract",
+            "_id_element_contrat",
         )
         for attr in copy_attrs:
             setattr(per, attr, getattr(account, attr))
 
-        if per.label == 'PER Assurance':
+        if per.label == "PER Assurance":
             per.provider_type = PerProviderType.INSURER
         else:
             per.provider_type = PerProviderType.BANK
@@ -1128,7 +1167,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if self.total_spaces == 1 or self.total_spaces_available == 1:
             self.location(self.accounts_url)
             if not self.accounts_page.is_here():
-                self.logger.warning('We have been loggged out, relogin.')
+                self.logger.warning("We have been loggged out, relogin.")
                 self.session.cookies.clear()
                 self.do_login()
             return
@@ -1139,12 +1178,12 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 self.contracts_page.go(space=self.space, id_contract=contract)
             except ServerError as e:
                 if e.response.status_code == 500:
-                    self.logger.warning('Space switch returned a 500 error, try again.')
+                    self.logger.warning("Space switch returned a 500 error, try again.")
                     self.contracts_page.go(space=self.space, id_contract=contract)
                 else:
                     raise
             if not self.accounts_page.is_here():
-                self.logger.warning('We have been logged out, trying to relogin.')
+                self.logger.warning("We have been logged out, trying to relogin.")
                 self.do_login()
             else:
                 return
@@ -1160,10 +1199,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # Only three months of history available for cards.
             value = int(not coming)
             params = {
-                'grandeFamilleCode': int(account._category),
-                'compteIdx': int(account.parent._index),
-                'carteIdx': int(account._index),
-                'rechercheEncoursDebite': value,
+                "grandeFamilleCode": int(account._category),
+                "compteIdx": int(account.parent._index),
+                "carteIdx": int(account._index),
+                "rechercheEncoursDebite": value,
             }
             self.card_history.go(space=self.space, params=params)
             for tr in self.page.iter_card_history():
@@ -1177,10 +1216,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 last_transaction = card_transactions[-1]
                 before_last_transaction = False
                 params = {
-                    'compteIdx': int(account.parent._index),
-                    'grandeFamilleCode': int(account.parent._category),
-                    'idDevise': str(account.parent.currency),
-                    'idElementContrat': str(account.parent._id_element_contrat),
+                    "compteIdx": int(account.parent._index),
+                    "grandeFamilleCode": int(account.parent._category),
+                    "idDevise": str(account.parent.currency),
+                    "idElementContrat": str(account.parent._id_element_contrat),
                 }
                 self.history.go(space=self.space, params=params)
                 for tr in self.page.iter_history():
@@ -1194,11 +1233,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 while self.page.has_next_page() and not before_last_transaction:
                     next_index = self.page.get_next_index()
                     params = {
-                        'grandeFamilleCode': int(account.parent._category),
-                        'compteIdx': int(account.parent._index),
-                        'idDevise': str(account.parent.currency),
-                        'startIndex': next_index,
-                        'count': 100,
+                        "grandeFamilleCode": int(account.parent._category),
+                        "compteIdx": int(account.parent._index),
+                        "idDevise": str(account.parent.currency),
+                        "startIndex": next_index,
+                        "count": 100,
                     }
                     self.history.go(space=self.space, params=params)
                     for tr in self.page.iter_history():
@@ -1215,34 +1254,33 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
         # These three parameters are required to get the transactions for non_card accounts
         if (
-            empty(account._index) or empty(account._category) or empty(account._id_element_contrat)
+            empty(account._index)
+            or empty(account._category)
+            or empty(account._id_element_contrat)
             or account.type == Account.TYPE_CONSUMER_CREDIT
         ):
             return
 
         self.go_to_account_space(account._contract)
         params = {
-            'compteIdx': int(account._index),
-            'grandeFamilleCode': int(account._category),
-            'idDevise': str(account.currency),
-            'idElementContrat': str(account._id_element_contrat),
+            "compteIdx": int(account._index),
+            "grandeFamilleCode": int(account._category),
+            "idDevise": str(account.currency),
+            "idElementContrat": str(account._id_element_contrat),
         }
         # This request might lead to occasional 500 errors
         for _ in range(2):
             try:
                 self.history.go(space=self.space, params=params)
             except ServerError:
-                self.logger.warning('Request to get account history failed.')
+                self.logger.warning("Request to get account history failed.")
             else:
                 break
 
         if not self.history.is_here():
             raise BrowserUnavailable()
 
-        if (
-            not self.page.has_history_transactions()
-            and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA)
-        ):
+        if not self.page.has_history_transactions() and account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
             # No transaction found. Try to fetch history on cabourse website
 
             logged_on_netfinca = self.go_netfinca_space(account)
@@ -1266,11 +1304,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         while self.page.has_next_page():
             next_index = self.page.get_next_index()
             params = {
-                'grandeFamilleCode': int(account._category),
-                'compteIdx': int(account._index),
-                'idDevise': str(account.currency),
-                'startIndex': next_index,
-                'count': 30,
+                "grandeFamilleCode": int(account._category),
+                "compteIdx": int(account._index),
+                "idDevise": str(account.currency),
+                "startIndex": next_index,
+                "count": 30,
             }
             self.history.go(space=self.space, params=params)
             for tr in self.page.iter_history():
@@ -1289,11 +1327,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.token_page.go()
         token = self.page.get_token()
         data = {
-            'situation_travail': 'BANCAIRE',
-            'num_compte': account.id,
-            'code_fam_produit': account._fam_product_code,
-            'code_fam_contrat_compte': account._fam_contract_code,
-            ':cq_csrf_token': token,
+            "situation_travail": "BANCAIRE",
+            "num_compte": account.id,
+            "code_fam_produit": account._fam_product_code,
+            "code_fam_contrat_compte": account._fam_contract_code,
+            ":cq_csrf_token": token,
         }
 
         # For some market accounts, investments are not even accessible,
@@ -1302,18 +1340,18 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         try:
             self.netfinca_redirection.go(space=self.space, data=data)
         except BrowserHTTPNotFound:
-            self.logger.info('Netfinca page is not available for this account.')
+            self.logger.info("Netfinca page is not available for this account.")
             self.go_to_account_space(account._contract)
             return
         except ServerError as e:
             if e.response.status_code == 503 and "temporairement inaccessible" in e.response.text:
                 raise BrowserUnavailable("Désolé, le site internet du Crédit Agricole est temporairement inaccessible.")
 
-            self.logger.info('Netfinca page is not available: error.' + str(e.response.status_code))
+            self.logger.info("Netfinca page is not available: error." + str(e.response.status_code))
             return False
 
         url = self.page.get_url()
-        if 'netfinca' in url:
+        if "netfinca" in url:
             self.location(url)
             self.netfinca.session.cookies.update(self.session.cookies)
             self.netfinca.accounts.go()
@@ -1324,45 +1362,45 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
     def perform_predica_redirections(self, account, token):
         headers = self.session.headers
-        headers.update({'CSRF-Token': token})
+        headers.update({"CSRF-Token": token})
         data = {
-            'id_element_contrat': account._id_element_contrat,
-            'numero_compte': account.number,
-            'url': 'synthese/predica-versement-libre-synthese.html',
+            "id_element_contrat": account._id_element_contrat,
+            "numero_compte": account.number,
+            "url": "synthese/predica-versement-libre-synthese.html",
         }
         self.predica_inv_redirect.go(space=self.space, data=data)
         self.location(self.page.doc)
         self.location(self.page.get_first_ca_connect_url())
         self.location(self.page.get_second_ca_connect_url())
-        context_id = get_url_param(self.url, 'context_id')
+        context_id = get_url_param(self.url, "context_id")
         self.pdik_user.go(region=self.region)
-        state = self.page.get_from_json('state')
+        state = self.page.get_from_json("state")
         self.pdik_config.go(region=self.region)
-        redirect_uri = f'{self.PDIK_BASEURL}{self.region}/fe/authorize'
+        redirect_uri = f"{self.PDIK_BASEURL}{self.region}/fe/authorize"
         params = {
-            'client_id': self.page.get_from_json('clientId'),
-            'redirect_uri': redirect_uri,
-            'response_type': 'code',
-            'scope': 'openid',
-            'state': state,
+            "client_id": self.page.get_from_json("clientId"),
+            "redirect_uri": redirect_uri,
+            "response_type": "code",
+            "scope": "openid",
+            "state": state,
         }
         self.location(f"{self.page.get_from_json('xConnectUrl')}/authorize", params=params)
-        code = get_url_param(self.url, 'code')
-        state = get_url_param(self.url, 'state')
+        code = get_url_param(self.url, "code")
+        state = get_url_param(self.url, "state")
         params = {
-            'code': code,
-            'redirect_uri': redirect_uri,
-            'state': state,
-            'canal': '',
+            "code": code,
+            "redirect_uri": redirect_uri,
+            "state": state,
+            "canal": "",
         }
-        headers = {'Accept': 'application/json, text/plain, */*'}
+        headers = {"Accept": "application/json, text/plain, */*"}
         self.pdik_login.go(region=self.region, params=params, headers=headers)
         self.pdik_jwt.go(region=self.region, context_id=context_id)
         data = {
-            'request_version': '3',
-            'correlation_id': self.page.get_from_json('correlationId'),
-            'user_idp_hint': 'private.api.credit-agricole.fr',
-            'ihm_launch_params': self.page.get_from_json('jwt'),
+            "request_version": "3",
+            "correlation_id": self.page.get_from_json("correlationId"),
+            "user_idp_hint": "private.api.credit-agricole.fr",
+            "ihm_launch_params": self.page.get_from_json("jwt"),
         }
         self.npcprediweb_rooting.go(data=data)
 
@@ -1371,13 +1409,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         if account.balance == 0 or empty(account.balance):
             return
 
-        if (
-            account.type == Account.TYPE_LIFE_INSURANCE
-            and re.match(
-                r'(rothschild)|(^(patrimoine|prestige) st honor)|(^open (perspective|strat))',
-                account.label,
-                re.I
-            )
+        if account.type == Account.TYPE_LIFE_INSURANCE and re.match(
+            r"(rothschild)|(^(patrimoine|prestige) st honor)|(^open (perspective|strat))", account.label, re.I
         ):
             # We must go to the right perimeter before trying to access the Life Insurance investments
             self.go_to_account_space(account._contract)
@@ -1386,16 +1419,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 for inv in self.page.iter_investments():
                     yield inv
             else:
-                self.logger.warning('Failed to reach investment details for account %s', account.id)
+                self.logger.warning("Failed to reach investment details for account %s", account.id)
             return
 
-        elif (
-            account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION)
-            and re.search(
-                'vendome|aster (sélection|excellence)|espace gestion|Paraphe|Excellence 2 Capitalisation',
-                account.label,
-                re.I
-            )
+        elif account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION) and re.search(
+            "vendome|aster (sélection|excellence)|espace gestion|Paraphe|Excellence 2 Capitalisation",
+            account.label,
+            re.I,
         ):
             # 'Vendome Optimum Euro', 'Vendome Patrimoine', 'Espace Gestion', 'Aster sélection' and
             # 'Excellence 2 Capitalisation' investments are on the BGPI space
@@ -1414,19 +1444,19 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             self.token_page.go()
             token = self.page.get_token()
             data = {
-                'situation_travail': 'BGPI',
-                ':cq_csrf_token': token,
+                "situation_travail": "BGPI",
+                ":cq_csrf_token": token,
             }
             self.bgpi_redirection.go(space=self.space, data=data)
             bgpi_url = self.page.get_bgpi_url()
             if not bgpi_url:
-                self.logger.warning('Could not access BGPI space for account %s.', account.label)
+                self.logger.warning("Could not access BGPI space for account %s.", account.label)
                 return
 
             self.location(bgpi_url)
             account.url = self.page.get_account_url(account.id)
             if not account.url:
-                self.logger.warning('Account %s URL was not found on the BGPI space.', account.id)
+                self.logger.warning("Account %s URL was not found on the BGPI space.", account.id)
                 return
 
             self.location(account.url)
@@ -1449,16 +1479,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             try:
                 self.predica_investments.go()
             except ServerError:
-                self.logger.warning('Got ServerError when fetching investments for account %s', account.id)
+                self.logger.warning("Got ServerError when fetching investments for account %s", account.id)
                 return
             else:
                 for inv in self.page.iter_investments():
                     yield inv
 
-        elif (
-            account.type in (Account.TYPE_MARKET, Account.TYPE_PEA)
-            and account._is_liquidity
-        ):
+        elif account.type in (Account.TYPE_MARKET, Account.TYPE_PEA) and account._is_liquidity:
             yield create_french_liquidity(account.balance)
             return
 
@@ -1469,7 +1496,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
                 return []
 
             for inv in self.netfinca.iter_investments(account):
-                if inv.code == 'XX-liquidity' and account.type == Account.TYPE_PEA:
+                if inv.code == "XX-liquidity" and account.type == Account.TYPE_PEA:
                     # Liquidities are already fetched on the "PEA espèces"
                     continue
                 yield inv
@@ -1478,11 +1505,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_market_orders(self, account):
-        if (
-            account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA)
-            or account._is_liquidity
-            or account.balance == 0
-        ):
+        if account.type not in (Account.TYPE_MARKET, Account.TYPE_PEA) or account._is_liquidity or account.balance == 0:
             # Do not try to go to Netfinca if there is no money on the
             # account otherwise the server will return a 500 error
             return []
@@ -1501,12 +1524,12 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.go_to_account_space(0)
         owner_type = self.page.get_owner_type()
         self.profile_page.go(space=self.space)
-        if owner_type == 'PRIV':
+        if owner_type == "PRIV":
             advisor = self.page.get_advisor()
             self.profile_details.go(space=self.space)
             self.page.fill_advisor(obj=advisor)
             yield advisor
-        elif owner_type == 'ORGA':
+        elif owner_type == "ORGA":
             advisor = self.page.get_advisor()
             self.pro_profile_details.go(space=self.space)
             self.page.fill_advisor(obj=advisor)
@@ -1520,13 +1543,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         profile_details = self.page.has_profile_details()
         self.profile_page.go(space=self.space)
 
-        if owner_type == 'PRIV':
+        if owner_type == "PRIV":
             profile = self.page.get_user_profile()
             if profile_details:
                 self.profile_details.go(space=self.space)
                 self.page.fill_profile(obj=profile)
             return profile
-        elif owner_type == 'ORGA':
+        elif owner_type == "ORGA":
             profile = self.page.get_company_profile()
             if profile_details:
                 self.pro_profile_details.go(space=self.space)
@@ -1535,16 +1558,16 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
 
     def get_space_info(self):
         operations = {
-            'particulier': 'moyens-paiement',
-            'professionnel': 'paiements-encaissements',
-            'association': 'paiements-encaissements',
-            'entreprise': 'paiements-encaissements',
-            'banque-privee': 'moyens-paiement',
-            'agriculteur': 'paiements-encaissements',
-            'promoteurs': 'paiements-encaissements',
+            "particulier": "moyens-paiement",
+            "professionnel": "paiements-encaissements",
+            "association": "paiements-encaissements",
+            "entreprise": "paiements-encaissements",
+            "banque-privee": "moyens-paiement",
+            "agriculteur": "paiements-encaissements",
+            "promoteurs": "paiements-encaissements",
         }
 
-        referer = self.absurl('/%s/operations/%s/virement.html.html' % (self.space, operations[self.space]))
+        referer = self.absurl("/%s/operations/%s/virement.html.html" % (self.space, operations[self.space]))
 
         return operations[self.space], referer
 
@@ -1592,7 +1615,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             space, operation, referer, _ = self.get_account_transfer_space_info(account, ignore_connection_id=True)
 
         self.go_to_account_space(account._contract)
-        self.recipients.go(space=space, op=operation, headers={'Referer': referer})
+        self.recipients.go(space=space, op=operation, headers={"Referer": referer})
 
         if not self.page.is_sender_account(account.id):
             return
@@ -1624,63 +1647,63 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         recipient = strict_find_object(
             self.iter_transfer_recipients(_account, transfer_space_info=(space, operation, referer)),
             id=transfer.recipient_id,
-            error=RecipientNotFound
+            error=RecipientNotFound,
         )
         # Then, get account on transfer account list to get index and other information
         account = strict_find_object(self.iter_debit_accounts(), id=_account.id, error=AccountNotFound)
 
         # get token and transfer token to init transfer
         token = self.token_page.go().get_token()
-        transfer_token = self.transfer_token.go(space=space, op=operation, headers={'Referer': referer}).get_token()
+        transfer_token = self.transfer_token.go(space=space, op=operation, headers={"Referer": referer}).get_token()
 
         if transfer.label:
-            label = transfer.label[:33].encode('ISO-8859-15', errors='ignore').decode('ISO-8859-15')
-            transfer.label = re.sub(r'[+!]', '', label)
+            label = transfer.label[:33].encode("ISO-8859-15", errors="ignore").decode("ISO-8859-15")
+            transfer.label = re.sub(r"[+!]", "", label)
 
         data = {
-            'connexionId': connection_id,
-            'cr': self.session.cookies['caisse-regionale'],
-            'creditAccountIban': recipient.iban,
-            'creditAccountIndex': recipient._index,
-            'debitAccountIndex': account._index,
-            'debitAccountNumber': account.number,
-            'externalAccount': recipient.category == 'Externe',
-            'recipientName': recipient.label,
-            'transferAmount': str(transfer.amount.quantize(Decimal('0.00'))),
-            'transferComplementaryInformation1': transfer.label,
-            'transferComplementaryInformation2': '',
-            'transferComplementaryInformation3': '',
-            'transferComplementaryInformation4': '',
-            'transferCurrencyCode': account.currency,
-            'transferDate': transfer.exec_date.strftime('%d/%m/%Y'),
-            'transferFrequency': 'U',
-            'transferRef': transfer.label,
-            'transferType': 'UNIQUE',
-            'typeCompte': account.label,
+            "connexionId": connection_id,
+            "cr": self.session.cookies["caisse-regionale"],
+            "creditAccountIban": recipient.iban,
+            "creditAccountIndex": recipient._index,
+            "debitAccountIndex": account._index,
+            "debitAccountNumber": account.number,
+            "externalAccount": recipient.category == "Externe",
+            "recipientName": recipient.label,
+            "transferAmount": str(transfer.amount.quantize(Decimal("0.00"))),
+            "transferComplementaryInformation1": transfer.label,
+            "transferComplementaryInformation2": "",
+            "transferComplementaryInformation3": "",
+            "transferComplementaryInformation4": "",
+            "transferCurrencyCode": account.currency,
+            "transferDate": transfer.exec_date.strftime("%d/%m/%Y"),
+            "transferFrequency": "U",
+            "transferRef": transfer.label,
+            "transferType": "UNIQUE",
+            "typeCompte": account.label,
         }
 
         # update transfer data according to recipient category
-        if recipient.category == 'Interne':
-            data['creditAccountNumber'] = recipient.id
-            data['recipientName'] = recipient._owner_name
+        if recipient.category == "Interne":
+            data["creditAccountNumber"] = recipient.id
+            data["recipientName"] = recipient._owner_name
 
         # init transfer request
         self.transfer.go(
             space=space,
             op=operation,
             headers={
-                'Referer': referer,
-                'CSRF-Token': token,
-                'NPC-Generated-Token': transfer_token,
+                "Referer": referer,
+                "CSRF-Token": token,
+                "NPC-Generated-Token": transfer_token,
             },
-            json=data
+            json=data,
         )
         assert self.page.check_transfer()
         # get recap because it's not returned by init transfer request
         self.transfer_recap.go(
             space=space,
             op=operation,
-            headers={'Referer': self.absurl('/%s/operations/%s/virement.postredirect.html' % (space, operation))}
+            headers={"Referer": self.absurl("/%s/operations/%s/virement.postredirect.html" % (space, operation))},
         )
         # information needed to exec transfer
         transfer._space = space
@@ -1695,46 +1718,46 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             space=transfer._space,
             op=transfer._operation,
             headers={
-                'Referer': self.absurl(
-                    '/%s/operations/%s/virement.postredirect.html' % (transfer._space, transfer._operation)
+                "Referer": self.absurl(
+                    "/%s/operations/%s/virement.postredirect.html" % (transfer._space, transfer._operation)
                 ),
-                'CSRF-Token': transfer._token,
+                "CSRF-Token": transfer._token,
             },
-            json={'connexionId': transfer._connection_id}
+            json={"connexionId": transfer._connection_id},
         )
         assert self.page.check_transfer_exec()
         return transfer
 
     def continue_sms_recipient(self, recipient, otp_sms):
         # We need those 2 to validate the otp
-        assert self.transaction_id, 'Need a transaction_id to continue adding a recipient by sms'
-        assert self.sms_csrf_token, 'Need a sms_csrf_token to continue adding a recipient by sms'
+        assert self.transaction_id, "Need a transaction_id to continue adding a recipient by sms"
+        assert self.sms_csrf_token, "Need a sms_csrf_token to continue adding a recipient by sms"
 
-        if len(otp_sms) != 6 or not re.match(r'(?:[0-9]*[A-Z][0-9]*)\Z', otp_sms):
+        if len(otp_sms) != 6 or not re.match(r"(?:[0-9]*[A-Z][0-9]*)\Z", otp_sms):
             # When the code does not match the regex, a generic error
             # message is sent by the website, so we need to manually handle
             # it to avoid catching other errors in the `except` below.
-            raise RecipientInvalidOTP(message='Code SMS invalide')
+            raise RecipientInvalidOTP(message="Code SMS invalide")
 
         try:
             self.validate_sms.go(
                 space=self.space,
                 headers={
-                    'CSRF-Token': self.sms_csrf_token,
-                    'Referer': self.new_recipient_sms.build(
+                    "CSRF-Token": self.sms_csrf_token,
+                    "Referer": self.new_recipient_sms.build(
                         space=self.space,
                         transaction_id=self.transaction_id,
                     ),
                 },
                 data={
-                    'codeVirtuel': otp_sms,
-                    'transactionId': self.transaction_id,
+                    "codeVirtuel": otp_sms,
+                    "transactionId": self.transaction_id,
                 },
             )
         except ServerError as e:
             if e.response.status_code == 500:
-                message = e.response.json()['message']
-                if 'Le code saisi est incorrect' in message:
+                message = e.response.json()["message"]
+                if "Le code saisi est incorrect" in message:
                     raise RecipientInvalidOTP(message=message)
             raise
 
@@ -1756,18 +1779,18 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             space=self.space,
             transaction_id=self.transaction_id,
             headers={
-                'CSRF-Token': token,
-                'NPC-Generated-Token': recipient_token,
+                "CSRF-Token": token,
+                "NPC-Generated-Token": recipient_token,
             },
             data={
-                'iban_code': recipient.iban,
-                'recipient_name': recipient.label,
+                "iban_code": recipient.iban,
+                "recipient_name": recipient.label,
             },
         )
 
         self.add_new_recipient.go(
             space=self.space,
-            params={'transactionId': self.transaction_id},
+            params={"transactionId": self.transaction_id},
         )
 
         error = self.page.get_error()
@@ -1780,13 +1803,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.validate_new_recipient.go(
             space=self.space,
             transaction_id=self.transaction_id,
-            method='POST',
-            headers={'CSRF-Token': token},
+            method="POST",
+            headers={"CSRF-Token": token},
         )
 
         # The redirect URL is a relative url, we either
         # land on add_new_recipient or end_new_recipient
-        url = '../' + self.page.get_redirect_url()
+        url = "../" + self.page.get_redirect_url()
         url = urljoin(self.url, url)
         self.location(url)
 
@@ -1795,7 +1818,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             raise AddRecipientBankError(message=error)
 
         message = self.page.get_validated_message()
-        if 'un délai de quelques jours peut être nécessaire' in message:
+        if "un délai de quelques jours peut être nécessaire" in message:
             # Full message is :
             # Pour garantir votre sécurité, un délai de quelques jours peut être
             # nécessaire avant que cet ajout soit validé
@@ -1807,11 +1830,11 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     def init_new_recipient(self, recipient, **params):
         recipient.id = recipient.iban
         recipient.enabled_at = datetime.now().replace(microsecond=0)
-        recipient.currency = 'EUR'
+        recipient.currency = "EUR"
         recipient.bank_name = NotAvailable
         # Remove characters that are not supported by the website.
-        recipient.label = re.sub(r'[^0-9a-zA-Z /?:.,"()-]', '', recipient.label)
-        recipient.label = re.sub(r'\s+', ' ', recipient.label).strip()
+        recipient.label = re.sub(r'[^0-9a-zA-Z /?:.,"()-]', "", recipient.label)
+        recipient.label = re.sub(r"\s+", " ", recipient.label).strip()
 
         # This url redirects us on a page asking for an sms code (/sms.otp.html)
         # or an app validation (/securipass.securipass.html).
@@ -1823,18 +1846,18 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             # User cannot add external recipients
             raise AddRecipientBankError(message="Impossible d'ajouter un bénéficiaire externe")
 
-        if 'sms.otp' not in self.response.headers['Location']:
+        if "sms.otp" not in self.response.headers["Location"]:
             raise AuthMethodNotImplemented()
 
-        self.location(self.response.headers['Location'])
+        self.location(self.response.headers["Location"])
 
         # Even if we already validated the sms for the current session,
         # we still need to validate one each time we want to add a new
         # recipient.
-        assert self.new_recipient_sms.is_here(), 'Landed on the wrong page'
+        assert self.new_recipient_sms.is_here(), "Landed on the wrong page"
 
         url_params = parse_qs(urlparse(self.url).query)
-        self.transaction_id = url_params['transactionId'][0]
+        self.transaction_id = url_params["transactionId"][0]
 
         self.token_page.go()
         self.sms_csrf_token = self.page.get_token()
@@ -1843,13 +1866,13 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         self.send_sms.go(
             space=self.space,
             headers={
-                'CSRF-Token': self.sms_csrf_token,
-                'Referer': self.new_recipient_sms.build(
+                "CSRF-Token": self.sms_csrf_token,
+                "Referer": self.new_recipient_sms.build(
                     space=self.space,
                     transaction_id=self.transaction_id,
                 ),
             },
-            data={'transactionId': self.transaction_id},
+            data={"transactionId": self.transaction_id},
         )
 
         self.need_reload_state = True
@@ -1857,14 +1880,14 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
         raise AddRecipientStep(
             recipient,
             Value(
-                'otp_sms',
-                label='Veuillez saisir le code reçu par SMS',
+                "otp_sms",
+                label="Veuillez saisir le code reçu par SMS",
             ),
         )
 
     def new_recipient(self, recipient, **params):
-        if 'otp_sms' in params:
-            return self.continue_sms_recipient(recipient, params['otp_sms'])
+        if "otp_sms" in params:
+            return self.continue_sms_recipient(recipient, params["otp_sms"])
 
         return self.init_new_recipient(recipient, **params)
 
@@ -1879,7 +1902,7 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
             self.do_login()
         for _ in self.iter_spaces():
             operation, referer = self.get_space_info()
-            self.recipients.go(space=self.space, op=operation, headers={'Referer': referer})
+            self.recipients.go(space=self.space, op=operation, headers={"Referer": referer})
             for emitter in self.page.iter_emitters():
                 yield emitter
 
@@ -1908,8 +1931,8 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     def iter_documents(self, subscription):
         if not self.check_space_connection(subscription._contract):
             self.logger.warning(
-                'Server returned error 500 twice when trying to access space %s, this space will be skipped',
-                subscription._contract
+                "Server returned error 500 twice when trying to access space %s, this space will be skipped",
+                subscription._contract,
             )
             return
 
@@ -1930,10 +1953,10 @@ class CreditAgricoleBrowser(LoginBrowser, StatesMixin):
     @need_login
     def download_document(self, document):
         params = {
-            'typeaction': 'telechargement',
+            "typeaction": "telechargement",
         }
         response = self.open(document.url, params=params)
         if response.page.has_error():
-            self.logger.warning('Server returned html page instead of PDF for document %s', document.id)
+            self.logger.warning("Server returned html page instead of PDF for document %s", document.id)
             return
         return response.content

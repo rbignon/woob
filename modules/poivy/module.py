@@ -25,29 +25,25 @@ from woob.tools.value import ValueBackendPassword
 from .browser import PoivyBrowser
 
 
-__all__ = ['PoivyModule']
+__all__ = ["PoivyModule"]
 
 
 class PoivyModule(Module, CapDocument):
-    NAME = 'poivy'
-    MAINTAINER = u'Florent Fourcot'
-    EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.7'
-    LICENSE = 'LGPLv3+'
-    DESCRIPTION = 'Poivy website'
-    CONFIG = BackendConfig(ValueBackendPassword('login',
-                                                label='login',
-                                                masked=False),
-                           ValueBackendPassword('password',
-                                                label='Password')
-                           )
+    NAME = "poivy"
+    MAINTAINER = "Florent Fourcot"
+    EMAIL = "weboob@flo.fourcot.fr"
+    VERSION = "3.7"
+    LICENSE = "LGPLv3+"
+    DESCRIPTION = "Poivy website"
+    CONFIG = BackendConfig(
+        ValueBackendPassword("login", label="login", masked=False), ValueBackendPassword("password", label="Password")
+    )
     BROWSER = PoivyBrowser
 
     document_categories = {DocumentCategory.INTERNET_TELEPHONY}
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def iter_subscription(self):
         return self.browser.get_subscription_list()
@@ -68,6 +64,6 @@ class PoivyModule(Module, CapDocument):
         balance = Detail()
         balance.id = "%s-balance" % subscription.id
         balance.price = subscription._balance
-        balance.label = u"Balance %s" % subscription.id
-        balance.currency = u'EUR'
+        balance.label = "Balance %s" % subscription.id
+        balance.currency = "EUR"
         return balance

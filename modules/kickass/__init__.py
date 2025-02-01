@@ -1,4 +1,4 @@
 from .module import KickassModule
 
 
-__all__ = ['KickassModule']
+__all__ = ["KickassModule"]

@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class AmeliProTest(BackendTest):
-    MODULE = 'amelipro'
+    MODULE = "amelipro"
 
     def test_AmeliPro(self):
         for subscription in self.backend.iter_subscription():

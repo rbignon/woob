@@ -26,21 +26,21 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import NRJMobileBrowser
 
 
-__all__ = ['NRJMobileModule']
+__all__ = ["NRJMobileModule"]
 
 
 class NRJMobileModule(Module, CapDocument, CapProfile):
-    NAME = 'nrjmobile'
-    DESCRIPTION = 'NRJ Mobile'
-    MAINTAINER = 'Powens'
-    EMAIL = 'dev@powens.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "nrjmobile"
+    DESCRIPTION = "NRJ Mobile"
+    MAINTAINER = "Powens"
+    EMAIL = "dev@powens.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code confidentiel'),
-        ValueTransient('captcha_response'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Code confidentiel"),
+        ValueTransient("captcha_response"),
     )
 
     BROWSER = NRJMobileBrowser

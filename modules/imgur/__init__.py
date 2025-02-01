@@ -21,4 +21,4 @@
 from .module import ImgurModule
 
 
-__all__ = ['ImgurModule']
+__all__ = ["ImgurModule"]

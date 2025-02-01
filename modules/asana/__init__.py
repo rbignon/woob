@@ -21,4 +21,4 @@
 from .module import AsanaModule
 
 
-__all__ = ['AsanaModule']
+__all__ = ["AsanaModule"]

@@ -18,7 +18,6 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-
 from woob.capabilities.bands import BandNotFound, CapBands
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
@@ -26,31 +25,31 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import MetalArchivesBrowser
 
 
-__all__ = ['MetalarchivesModule']
+__all__ = ["MetalarchivesModule"]
+
 
 class MetalarchivesModule(Module, CapBands):
-    NAME = 'metalarchives'
-    DESCRIPTION = 'Metal Archives: Encyclopedia Metallum'
-    MAINTAINER = 'Quentin Defenouillère'
-    EMAIL = 'quentin.defenouillere@gmail.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "metalarchives"
+    DESCRIPTION = "Metal Archives: Encyclopedia Metallum"
+    MAINTAINER = "Quentin Defenouillère"
+    EMAIL = "quentin.defenouillere@gmail.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     BROWSER = MetalArchivesBrowser
 
     CONFIG = BackendConfig(
-        Value('login', label='Metal archives ID'),
-        ValueBackendPassword('password', label='Metal archives password')
+        Value("login", label="Metal archives ID"), ValueBackendPassword("password", label="Metal archives password")
     )
 
     def create_default_browser(self, *args, **kwargs):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get(), *args, **kwargs)
+        return self.create_browser(self.config["login"].get(), self.config["password"].get(), *args, **kwargs)
 
     # Method to search for a band pattern:
     def iter_band_search(self, pattern):
         bands_list = list(self.browser.iter_band_search(pattern))
         # In case the band search returns no results:
         if not bands_list:
-            raise BandNotFound('No band result matched your search query.')
+            raise BandNotFound("No band result matched your search query.")
         return bands_list
 
     # Method to retrieve a band's discography:

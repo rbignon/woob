@@ -25,25 +25,22 @@ from .browser import HybrideBrowser
 from .calendar import HybrideCalendarEvent
 
 
-__all__ = ['HybrideModule']
+__all__ = ["HybrideModule"]
 
 
 class HybrideModule(Module, CapCalendarEvent):
-    NAME = 'hybride'
-    DESCRIPTION = u'hybride website'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "hybride"
+    DESCRIPTION = "hybride website"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
     ASSOCIATED_CATEGORIES = [CATEGORIES.CINE]
     BROWSER = HybrideBrowser
 
     def search_events(self, query):
         if self.has_matching_categories(query):
-            return self.browser.list_events(query.start_date,
-                                            query.end_date,
-                                            query.city,
-                                            query.categories)
+            return self.browser.list_events(query.start_date, query.end_date, query.city, query.categories)
 
     def list_events(self, date_from, date_to=None):
         return self.browser.list_events(date_from, date_to)

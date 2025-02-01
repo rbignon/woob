@@ -23,14 +23,16 @@ from .pages import ImageSearch
 
 
 class UnsplashBrowser(PagesBrowser):
-    BASEURL = 'https://unsplash.com'
+    BASEURL = "https://unsplash.com"
 
-    collection_search = URL(r'/napi/search/collections\?query=(?P<term>[^&]+)&page=(?P<page>\d+)&per_page=20')
-    image_search = URL(r'/napi/search/photos\?query=(?P<term>[^&]+)&page=(?P<page>\d+)&per_page=20', ImageSearch)
+    collection_search = URL(r"/napi/search/collections\?query=(?P<term>[^&]+)&page=(?P<page>\d+)&per_page=20")
+    image_search = URL(r"/napi/search/photos\?query=(?P<term>[^&]+)&page=(?P<page>\d+)&per_page=20", ImageSearch)
 
     def __init__(self, *args, **kwargs):
         super(UnsplashBrowser, self).__init__(*args, **kwargs)
-        self.session.headers['Authorization'] = 'Client-ID d69927c7ea5c770fa2ce9a2f1e3589bd896454f7068f689d8e41a25b54fa6042'
+        self.session.headers["Authorization"] = (
+            "Client-ID d69927c7ea5c770fa2ce9a2f1e3589bd896454f7068f689d8e41a25b54fa6042"
+        )
 
     def search_image(self, term):
         n = 1

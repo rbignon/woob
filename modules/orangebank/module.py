@@ -25,30 +25,30 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import OrangeBankBrowser
 
 
-__all__ = ['OrangeBankModule']
+__all__ = ["OrangeBankModule"]
 
 
 class OrangeBankModule(Module, CapBankTransferAddRecipient, CapProfile):
-    NAME = 'orangebank'
-    DESCRIPTION = 'Orange Bank'
-    MAINTAINER = 'Powens'
-    EMAIL = 'dev@powens.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "orangebank"
+    DESCRIPTION = "Orange Bank"
+    MAINTAINER = "Powens"
+    EMAIL = "dev@powens.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = OrangeBankBrowser
 
     CONFIG = BackendConfig(
         ValueBackendPassword(
-            'login',
-            label='Identifiant',
-            regexp=r'^[0-9]{8}$',
+            "login",
+            label="Identifiant",
+            regexp=r"^[0-9]{8}$",
             masked=False,
             required=True,
         ),
-        ValueTransient('captcha_response'),
-        ValueTransient('resume'),
-        ValueTransient('request_information'),
+        ValueTransient("captcha_response"),
+        ValueTransient("resume"),
+        ValueTransient("request_information"),
     )
 
     accepted_execution_date_types = (TransferDateType.FIRST_OPEN_DAY,)

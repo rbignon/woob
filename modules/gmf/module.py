@@ -24,19 +24,19 @@ from woob.tools.value import ValueBackendPassword
 from .browser import GmfBrowser
 
 
-__all__ = ['GmfModule']
+__all__ = ["GmfModule"]
 
 
 class GmfModule(Module, CapBankWealth):
-    NAME = 'gmf'
-    DESCRIPTION = 'GMF'
-    MAINTAINER = 'Tony Malto'
-    EMAIL = 'tmalto.bi@gmail.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "gmf"
+    DESCRIPTION = "GMF"
+    MAINTAINER = "Tony Malto"
+    EMAIL = "tmalto.bi@gmail.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Numéro de sociétaire', masked=False),
-        ValueBackendPassword('password', label='Code personnel'),
+        ValueBackendPassword("login", label="Numéro de sociétaire", masked=False),
+        ValueBackendPassword("password", label="Code personnel"),
     )
 
     BROWSER = GmfBrowser

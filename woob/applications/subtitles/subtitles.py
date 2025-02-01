@@ -21,81 +21,125 @@ from woob.tools.application.formatters.iformatter import IFormatter, PrettyForma
 from woob.tools.application.repl import ReplApplication, defaultcount
 
 
-__all__ = ['AppSubtitles']
+__all__ = ["AppSubtitles"]
 
 LANGUAGE_CONV = {
-    'ar': 'ara', 'eo': 'epo',  'ga': '',    'ru': 'rus',
-    'af': '', 'et': 'est',  'it': 'ita', 'sr': 'scc',
-    'sq': 'alb', 'tl': '',  'ja': 'jpn', 'sk': 'slo',
-    'hy': 'arm', 'fi': 'fin',  'kn': '',    'sl': 'slv',
-    'az': '', 'fr': 'fre',  'ko': 'kor', 'es': 'spa',
-    'eu': 'baq', 'gl': 'glg',  'la': '',    'sw': 'swa',
-    'be': '', 'ka': 'geo',  'lv': 'lav', 'sv': 'swe',
-    'bn': 'ben', 'de': 'ger',  'lt': 'lit', 'ta': '',
-    'bg': 'bul', 'gr': 'ell',  'mk': 'mac', 'te': 'tel',
-    'ca': 'cat', 'gu': '',  'ms': 'may', 'th': 'tha',
-    'zh': 'chi', 'ht': '',  'mt': '',    'tr': 'tur',
-    'hr': 'hrv', 'iw': 'heb',  'no': 'nor', 'uk': 'ukr',
-    'cz': 'cze', 'hi': 'hin',  'fa': 'per', 'ur': 'urd',
-    'da': 'dan', 'hu': 'hun',  'pl': 'pol', 'vi': 'vie',
-    'nl': 'dut', 'is': 'ice',  'pt': 'por', 'cy': '',
-    'en': 'eng', 'id': 'ind',  'ro': 'rum', 'yi': ''}
+    "ar": "ara",
+    "eo": "epo",
+    "ga": "",
+    "ru": "rus",
+    "af": "",
+    "et": "est",
+    "it": "ita",
+    "sr": "scc",
+    "sq": "alb",
+    "tl": "",
+    "ja": "jpn",
+    "sk": "slo",
+    "hy": "arm",
+    "fi": "fin",
+    "kn": "",
+    "sl": "slv",
+    "az": "",
+    "fr": "fre",
+    "ko": "kor",
+    "es": "spa",
+    "eu": "baq",
+    "gl": "glg",
+    "la": "",
+    "sw": "swa",
+    "be": "",
+    "ka": "geo",
+    "lv": "lav",
+    "sv": "swe",
+    "bn": "ben",
+    "de": "ger",
+    "lt": "lit",
+    "ta": "",
+    "bg": "bul",
+    "gr": "ell",
+    "mk": "mac",
+    "te": "tel",
+    "ca": "cat",
+    "gu": "",
+    "ms": "may",
+    "th": "tha",
+    "zh": "chi",
+    "ht": "",
+    "mt": "",
+    "tr": "tur",
+    "hr": "hrv",
+    "iw": "heb",
+    "no": "nor",
+    "uk": "ukr",
+    "cz": "cze",
+    "hi": "hin",
+    "fa": "per",
+    "ur": "urd",
+    "da": "dan",
+    "hu": "hun",
+    "pl": "pol",
+    "vi": "vie",
+    "nl": "dut",
+    "is": "ice",
+    "pt": "por",
+    "cy": "",
+    "en": "eng",
+    "id": "ind",
+    "ro": "rum",
+    "yi": "",
+}
 
 
 def sizeof_fmt(num):
-    for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+    for x in ["bytes", "KB", "MB", "GB", "TB"]:
         if num < 1024.0:
             return "%-4.1f%s" % (num, x)
         num /= 1024.0
 
 
 class SubtitleInfoFormatter(IFormatter):
-    MANDATORY_FIELDS = ('id', 'name', 'url', 'description')
+    MANDATORY_FIELDS = ("id", "name", "url", "description")
 
     def format_obj(self, obj, alias):
-        result = '%s%s%s\n' % (self.BOLD, obj.name, self.NC)
-        result += 'ID: %s\n' % obj.fullid
-        result += 'URL: %s\n' % obj.url
+        result = "%s%s%s\n" % (self.BOLD, obj.name, self.NC)
+        result += "ID: %s\n" % obj.fullid
+        result += "URL: %s\n" % obj.url
         if not empty(obj.language):
-            result += 'LANG: %s\n' % obj.language
+            result += "LANG: %s\n" % obj.language
         if not empty(obj.nb_cd):
-            result += 'NB CD: %s\n' % obj.nb_cd
-        result += '\n%sDescription%s\n' % (self.BOLD, self.NC)
-        result += '%s' % obj.description
+            result += "NB CD: %s\n" % obj.nb_cd
+        result += "\n%sDescription%s\n" % (self.BOLD, self.NC)
+        result += "%s" % obj.description
         return result
 
 
 class SubtitleListFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'name')
+    MANDATORY_FIELDS = ("id", "name")
 
     def get_title(self, obj):
         return obj.name
 
     def get_description(self, obj):
-        result = 'lang : %s' % obj.language
-        result += ' ; %s CD' % obj.nb_cd
+        result = "lang : %s" % obj.language
+        result += " ; %s CD" % obj.nb_cd
         if not empty(obj.url):
-            result += ' ; url : %s' % obj.url
+            result += " ; url : %s" % obj.url
         return result
 
 
 class AppSubtitles(ReplApplication):
-    APPNAME = 'subtitles'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2013-YEAR Julien Veyssier'
-    DESCRIPTION = "Console application allowing to search for subtitles on various services " \
-                  "and download them."
+    APPNAME = "subtitles"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2013-YEAR Julien Veyssier"
+    DESCRIPTION = "Console application allowing to search for subtitles on various services " "and download them."
     SHORT_DESCRIPTION = "search and download subtitles"
     CAPS = CapSubtitle
-    EXTRA_FORMATTERS = {'subtitle_list': SubtitleListFormatter,
-                        'subtitle_info': SubtitleInfoFormatter
-                        }
-    COMMANDS_FORMATTERS = {'search':    'subtitle_list',
-                           'info':      'subtitle_info'
-                           }
+    EXTRA_FORMATTERS = {"subtitle_list": SubtitleListFormatter, "subtitle_info": SubtitleInfoFormatter}
+    COMMANDS_FORMATTERS = {"search": "subtitle_list", "info": "subtitle_info"}
 
     def complete_info(self, text, line, *ignored):
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) == 2:
             return self._complete_object()
 
@@ -106,16 +150,16 @@ class AppSubtitles(ReplApplication):
         Get information about a subtitle.
         """
 
-        subtitle = self.get_object(id, 'get_subtitle')
+        subtitle = self.get_object(id, "get_subtitle")
         if not subtitle:
-            print('Subtitle not found: %s' % id, file=self.stderr)
+            print("Subtitle not found: %s" % id, file=self.stderr)
             return 3
 
         self.start_format()
         self.format(subtitle)
 
     def complete_download(self, text, line, *ignored):
-        args = line.split(' ', 2)
+        args = line.split(" ", 2)
         if len(args) == 2:
             return self._complete_object()
         elif len(args) >= 3:
@@ -131,30 +175,30 @@ class AppSubtitles(ReplApplication):
         """
         id, dest = self.parse_command_args(line, 2, 1)
 
-        subtitle = self.get_object(id, 'get_subtitle')
+        subtitle = self.get_object(id, "get_subtitle")
         if not subtitle:
-            print('Subtitle not found: %s' % id, file=self.stderr)
+            print("Subtitle not found: %s" % id, file=self.stderr)
             return 3
 
         if dest is None:
             ext = subtitle.ext
             if empty(ext):
-                ext = 'zip'
-            dest = '%s.%s' % (subtitle.name, ext)
+                ext = "zip"
+            dest = "%s.%s" % (subtitle.name, ext)
 
-        for buf in self.do('get_subtitle_file', subtitle.id, backends=subtitle.backend):
+        for buf in self.do("get_subtitle_file", subtitle.id, backends=subtitle.backend):
             if buf:
-                if dest == '-':
+                if dest == "-":
                     self.stdout.buffer.write(buf)
                 else:
                     try:
-                        with open(dest, 'wb') as f:
+                        with open(dest, "wb") as f:
                             f.write(buf)
                     except IOError as e:
                         print('Unable to write file in "%s": %s' % (dest, e), file=self.stderr)
                         return 1
                     else:
-                        print('Saved to %s' % dest)
+                        print("Saved to %s" % dest)
                 return
 
     @defaultcount(10)
@@ -185,10 +229,10 @@ class AppSubtitles(ReplApplication):
         ----------------------
         """
         language, pattern = self.parse_command_args(line, 2, 1)
-        self.change_path(['search'])
+        self.change_path(["search"])
         if not pattern:
             pattern = None
 
         self.start_format(pattern=pattern)
-        for subtitle in self.do('iter_subtitles', language=language, pattern=pattern):
+        for subtitle in self.do("iter_subtitles", language=language, pattern=pattern):
             self.cached_format(subtitle)

@@ -23,10 +23,10 @@ from woob.tools.test import BackendTest
 
 
 class CuisineazTest(BackendTest):
-    MODULE = 'cuisineaz'
+    MODULE = "cuisineaz"
 
     def test_recipe(self):
-        recipes = list(itertools.islice(self.backend.iter_recipes(u'purée'), 0, 20))
+        recipes = list(itertools.islice(self.backend.iter_recipes("purée"), 0, 20))
         assert len(recipes)
         full_recipe = self.backend.get_recipe(recipes[-1].id)
         assert full_recipe.instructions

@@ -26,69 +26,69 @@ from .tools import rssid
 
 
 class NewspaperFigaroModule(GenericNewspaperModule, CapMessages):
-    MAINTAINER = 'Julien Hebert'
-    EMAIL = 'juke@free.fr'
-    VERSION = '3.7'
-    DEPENDENCIES = ('genericnewspaper',)
-    LICENSE = 'AGPLv3+'
-    STORAGE = {'seen': {}}
-    NAME = 'lefigaro'
-    DESCRIPTION = 'Le Figaro French newspaper website'
+    MAINTAINER = "Julien Hebert"
+    EMAIL = "juke@free.fr"
+    VERSION = "3.7"
+    DEPENDENCIES = ("genericnewspaper",)
+    LICENSE = "AGPLv3+"
+    STORAGE = {"seen": {}}
+    NAME = "lefigaro"
+    DESCRIPTION = "Le Figaro French newspaper website"
     BROWSER = NewspaperFigaroBrowser
-    RSS_FEED = 'http://rss.lefigaro.fr/lefigaro/laune?format=xml'
+    RSS_FEED = "http://rss.lefigaro.fr/lefigaro/laune?format=xml"
     RSSID = staticmethod(rssid)
     RSSSIZE = 30
     CONFIG = BackendConfig(
         Value(
-            'feed',
-            label='RSS feed',
+            "feed",
+            label="RSS feed",
             choices={
-                'actualites': 'actualites',
-                'flash-actu': 'flash-actu',
-                'politique': 'politique',
-                'international': 'international',
-                'actualite-france': 'actualite-france',
-                'hightech': 'hightech',
-                'sciences': 'sciences',
-                'sante': 'sante',
-                'lefigaromagazine': 'lefigaromagazine',
-                'photos': 'photos',
-                'economie': 'economie',
-                'societes': 'societes',
-                'medias': 'medias',
-                'immobilier': 'immobilier',
-                'assurance': 'assurance',
-                'retraite': 'retraite',
-                'placement': 'placement',
-                'impots': 'impots',
-                'conso': 'conso',
-                'emploi': 'emploi',
-                'culture': 'culture',
-                'cinema': 'cinema',
-                'musique': 'musique',
-                'livres': 'livres',
-                'theatre': 'theatre',
-                'lifestyle': 'lifestyle',
-                'automobile': 'automobile',
-                'gastronomie': 'gastronomie',
-                'horlogerie': 'horlogerie',
-                'mode-homme': 'mode-homme',
-                'sortir-paris': 'sortir-paris',
-                'vins': 'vins',
-                'voyages': 'voyages',
-                'sport': 'sport',
-                'football': 'football',
-                'rugby': 'rugby',
-                'tennis': 'tennis',
-                'cyclisme': 'cyclisme',
-                'sport-business': 'sport-business'
-            }
+                "actualites": "actualites",
+                "flash-actu": "flash-actu",
+                "politique": "politique",
+                "international": "international",
+                "actualite-france": "actualite-france",
+                "hightech": "hightech",
+                "sciences": "sciences",
+                "sante": "sante",
+                "lefigaromagazine": "lefigaromagazine",
+                "photos": "photos",
+                "economie": "economie",
+                "societes": "societes",
+                "medias": "medias",
+                "immobilier": "immobilier",
+                "assurance": "assurance",
+                "retraite": "retraite",
+                "placement": "placement",
+                "impots": "impots",
+                "conso": "conso",
+                "emploi": "emploi",
+                "culture": "culture",
+                "cinema": "cinema",
+                "musique": "musique",
+                "livres": "livres",
+                "theatre": "theatre",
+                "lifestyle": "lifestyle",
+                "automobile": "automobile",
+                "gastronomie": "gastronomie",
+                "horlogerie": "horlogerie",
+                "mode-homme": "mode-homme",
+                "sortir-paris": "sortir-paris",
+                "vins": "vins",
+                "voyages": "voyages",
+                "sport": "sport",
+                "football": "football",
+                "rugby": "rugby",
+                "tennis": "tennis",
+                "cyclisme": "cyclisme",
+                "sport-business": "sport-business",
+            },
         )
     )
 
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
-        self.RSS_FEED = "http://www.lefigaro.fr/rss/figaro_%s.xml" % self.config['feed'].get()
+        self.RSS_FEED = "http://www.lefigaro.fr/rss/figaro_%s.xml" % self.config["feed"].get()
 
     def iter_threads(self):
         for article in Newsfeed(self.RSS_FEED, self.RSSID).iter_entries():

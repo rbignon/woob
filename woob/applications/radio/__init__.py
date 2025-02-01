@@ -19,4 +19,4 @@
 from .radio import AppRadio
 
 
-__all__ = ['AppRadio']
+__all__ = ["AppRadio"]

@@ -26,20 +26,20 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import CarrefourBanqueBrowser
 
 
-__all__ = ['CarrefourBanqueModule']
+__all__ = ["CarrefourBanqueModule"]
 
 
 class CarrefourBanqueModule(Module, CapBankWealth):
-    NAME = 'carrefourbanque'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = 'Carrefour Banque'
-    LICENSE = 'LGPLv3+'
+    NAME = "carrefourbanque"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "Carrefour Banque"
+    LICENSE = "LGPLv3+"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Votre Identifiant Internet', masked=False),
-        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d+'),
-        Value('captcha_response', label='Captcha Response', default='', required=False)
+        ValueBackendPassword("login", label="Votre Identifiant Internet", masked=False),
+        ValueBackendPassword("password", label="Code d'accès", regexp=r"\d+"),
+        Value("captcha_response", label="Captcha Response", default="", required=False),
     )
     BROWSER = CarrefourBanqueBrowser
 

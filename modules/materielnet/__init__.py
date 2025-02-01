@@ -21,4 +21,4 @@
 from .module import MaterielnetModule
 
 
-__all__ = ['MaterielnetModule']
+__all__ = ["MaterielnetModule"]

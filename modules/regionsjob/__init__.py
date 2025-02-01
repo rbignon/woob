@@ -21,4 +21,4 @@
 from .module import RegionsjobModule
 
 
-__all__ = ['RegionsjobModule']
+__all__ = ["RegionsjobModule"]

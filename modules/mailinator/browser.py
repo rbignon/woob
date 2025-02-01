@@ -23,43 +23,43 @@ from woob.tools.date import datetime
 from woob.tools.decorators import retry
 
 
-__all__ = ['MailinatorBrowser']
+__all__ = ["MailinatorBrowser"]
 
 
 class MailinatorBrowser(APIBrowser):
-    BASEURL = 'https://www.mailinator.com'
-    ENCODING = 'utf-8'
+    BASEURL = "https://www.mailinator.com"
+    ENCODING = "utf-8"
 
     @retry(ClientError)
     def get_mails(self, boxid, after=None):
-        mails = self.request('/api/webinbox2?x=0&public_to=%s' % boxid)
+        mails = self.request("/api/webinbox2?x=0&public_to=%s" % boxid)
 
-        for mail in mails['public_msgs']:
+        for mail in mails["public_msgs"]:
             d = {
-                'id': mail['id'],
-                'from': mail['fromfull'],
-                'to': mail['to'],
-                'from_name': mail['from'],
-                'datetime': frommillis(mail['time']),
-                'subject': mail['subject'],
-                'box': boxid
+                "id": mail["id"],
+                "from": mail["fromfull"],
+                "to": mail["to"],
+                "from_name": mail["from"],
+                "datetime": frommillis(mail["time"]),
+                "subject": mail["subject"],
+                "box": boxid,
             }
             yield d
 
     @retry(ClientError)
     def get_mail_content(self, mailid):
-        data = self.request('/fetchmail?msgid=%s&zone=public' % mailid)['data']
-        if 'parts' not in data:
-            return 'text', ''
+        data = self.request("/fetchmail?msgid=%s&zone=public" % mailid)["data"]
+        if "parts" not in data:
+            return "text", ""
 
-        for part in data['parts']:
-            content_type = part['headers'].get('content-type', '')
-            if content_type.startswith('text/plain'):
-                return 'text', part['body']
-            elif content_type.startswith('text/html'):
-                return 'html', part['body']
+        for part in data["parts"]:
+            content_type = part["headers"].get("content-type", "")
+            if content_type.startswith("text/plain"):
+                return "text", part["body"]
+            elif content_type.startswith("text/html"):
+                return "html", part["body"]
 
-        return 'text', ''
+        return "text", ""
 
 
 def frommillis(millis):

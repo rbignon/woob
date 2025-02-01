@@ -23,10 +23,10 @@ from woob.tools.test import BackendTest
 
 
 class MarmitonTest(BackendTest):
-    MODULE = 'marmiton'
+    MODULE = "marmiton"
 
     def test_recipe(self):
-        recipes = list(itertools.islice(self.backend.iter_recipes('fondue'), 0, 20))
+        recipes = list(itertools.islice(self.backend.iter_recipes("fondue"), 0, 20))
 
         for recipe in recipes:
             full_recipe = self.backend.get_recipe(recipe.id)

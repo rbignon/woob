@@ -21,4 +21,4 @@
 from .module import BoursedirectModule
 
 
-__all__ = ['BoursedirectModule']
+__all__ = ["BoursedirectModule"]

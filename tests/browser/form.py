@@ -49,7 +49,8 @@ class FormTest(TestCase):
                        <option value='item2'>item2</option>
                    </select>
                    <input type='submit' name='submitForm' />
-               </form>""")
+               </form>"""
+        )
         self.elMoreSubmit = lxml.html.fromstring(
             """<form method='GET'>
                    <input type ='text' name='nom' value='Dupont'/>
@@ -64,31 +65,43 @@ class FormTest(TestCase):
                    </select>
                    <input type='submit' name='submitForm'/>
                    <input type='submit' name='submit2'/>
-                </form>""")
+                </form>"""
+        )
 
     # Checks that the dictionary is correctly initialised
     def test_init_nominal_case(self):
         form = Form(self.page, self.el, None)
-        self.assertDictEqual(form, collections.OrderedDict([
-            ('nom', 'Dupont'), ('prenom', ''), ('mySelect', 'item2'),
-            ('mySelectNotSelected', 'item1'), ('submitForm', '')]))
+        self.assertDictEqual(
+            form,
+            collections.OrderedDict(
+                [
+                    ("nom", "Dupont"),
+                    ("prenom", ""),
+                    ("mySelect", "item2"),
+                    ("mySelectNotSelected", "item1"),
+                    ("submitForm", ""),
+                ]
+            ),
+        )
 
     # Checks that submit fields are not added to the dictionary when the
     # attribute submit_el is set to False
     def test_no_submit(self):
         formNoSubmit = Form(self.page, self.el, False)
-        self.assertDictEqual(formNoSubmit, collections.OrderedDict([
-            ('nom', 'Dupont'), ('prenom', ''), ('mySelect', 'item2'),
-            ('mySelectNotSelected', 'item1')]))
+        self.assertDictEqual(
+            formNoSubmit,
+            collections.OrderedDict(
+                [("nom", "Dupont"), ("prenom", ""), ("mySelect", "item2"), ("mySelectNotSelected", "item1")]
+            ),
+        )
 
     # Checks that the right warning is issued when there are several submit
     # fields
     def test_warning_more_submit(self):
         with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter('always')
+            warnings.simplefilter("always")
             Form(self.page, self.elMoreSubmit)
-            warningMsg = "Form has more than one submit input, you" + \
-                         " should chose the correct one"
+            warningMsg = "Form has more than one submit input, you" + " should chose the correct one"
             assert len(w) == 1
             assert issubclass(w[-1].category, FormSubmitWarning)
             assert warningMsg in str(w[-1].message)
@@ -97,11 +110,9 @@ class FormTest(TestCase):
     # does not exist in the form
     def test_warning_submit_not_find(self):
         with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter('always')
-            Form(self.page, self.el, lxml.html.fromstring(
-                "<input type='submit' name='submitNotFind' />"))
-            warningMsg = "Form had a submit element provided, but" + \
-                         " it was not found"
+            warnings.simplefilter("always")
+            Form(self.page, self.el, lxml.html.fromstring("<input type='submit' name='submitNotFind' />"))
+            warningMsg = "Form had a submit element provided, but" + " it was not found"
             assert len(w) == 1
             assert issubclass(w[-1].category, FormSubmitWarning)
             assert warningMsg in str(w[-1].message)

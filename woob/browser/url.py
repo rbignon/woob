@@ -32,9 +32,9 @@ from woob.tools.regex_helper import normalize
 if TYPE_CHECKING:
     from woob.browser.browsers import Browser
 
-ABSOLUTE_URL_PATTERN_RE = re.compile(r'^[\w\?]+://[^/].*')
+ABSOLUTE_URL_PATTERN_RE = re.compile(r"^[\w\?]+://[^/].*")
 
-URLType = TypeVar('URLType', bound='URL')
+URLType = TypeVar("URLType", bound="URL")
 
 
 class UrlNotResolvable(Exception):
@@ -62,20 +62,22 @@ class URL:
     :param methods: Request HTTP methods to match the response.
     :param content_type: MIME type of the content to match the response with.
     """
+
     _creation_counter = 0
 
     def __init__(
-        self, *args,
-        base: str = 'BASEURL',
+        self,
+        *args,
+        base: str = "BASEURL",
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         methods: Tuple[str, ...] = (),
         content_type: Optional[str] = None,
     ):
-        if content_type is not None and ';' in content_type:
+        if content_type is not None and ";" in content_type:
             raise ValueError(
-                'Content-Type matching is only based on the MIME type, '
-                + 'not additional properties such as encoding or version',
+                "Content-Type matching is only based on the MIME type, "
+                + "not additional properties such as encoding or version",
             )
 
         self.urls = []
@@ -123,21 +125,18 @@ class URL:
                 return False
 
         if self._content_type is not None:
-            content_type = self.browser.response.headers.get('Content-Type')
+            content_type = self.browser.response.headers.get("Content-Type")
             if content_type is None:
                 return False
 
-            content_type, _, _ = content_type.partition(';')
+            content_type, _, _ = content_type.partition(";")
             content_type = content_type.strip()
             if content_type != self._content_type:
                 return False
 
         # XXX use unquote on current params values because if there are spaces
         # or special characters in them, it is encoded only in but not in kwargs.
-        return (
-            params is None or
-            params == {k: unquote(v) for k, v in self.browser.page.params.items()}
-        )
+        return params is None or params == {k: unquote(v) for k, v in self.browser.page.params.items()}
 
     def stay_or_go(
         self,
@@ -146,7 +145,7 @@ class URL:
         json: Dict | None = None,
         method: str | None = None,
         headers: Dict[str, str] | None = None,
-        **kwargs
+        **kwargs,
     ) -> requests.Response | Page:
         """
         Request to go on this url only if we aren't already here.
@@ -170,9 +169,9 @@ class URL:
         data: str | Dict | None = None,
         json: Dict | None = None,
         method: str | None = None,
-        headers: Dict[str, str] |  None = None,
+        headers: Dict[str, str] | None = None,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> requests.Response | Page:
         """
         Request to go on this url.
@@ -213,7 +212,7 @@ class URL:
         timeout: float | None = None,
         is_async: bool = False,
         callback: Callable[[requests.Response], requests.Response] = lambda response: response,
-        **kwargs
+        **kwargs,
     ) -> requests.Response | Page:
         """
         Request to open on this url.
@@ -243,15 +242,11 @@ class URL:
             callback=callback,
         )
 
-        if hasattr(r, 'page') and r.page:
+        if hasattr(r, "page") and r.page:
             return r.page
         return r
 
-    def get_base_url(
-        self,
-        browser: Browser | None = None,
-        for_pattern: str | None = None
-    ) -> str:
+    def get_base_url(self, browser: Browser | None = None, for_pattern: str | None = None) -> str:
         """
         Get the browser's base URL for the instance.
 
@@ -261,13 +256,13 @@ class URL:
         """
         browser = browser or self.browser
         if browser is None:
-            raise ValueError('URL browser is not set')
+            raise ValueError("URL browser is not set")
 
         value = getattr(browser, self._base, None)
         if not isinstance(value, str):
-            msg = f'Browser {self._base} property is None or not defined'
+            msg = f"Browser {self._base} property is None or not defined"
             if for_pattern:
-                msg += f', URL {for_pattern} should be defined as absolute'
+                msg += f", URL {for_pattern} should be defined as absolute"
             raise ValueError(msg)
 
         return value
@@ -281,11 +276,11 @@ class URL:
         :rtype: :class:`str`
         :raises: :class:`UrlNotResolvable` if unable to resolve a correct url with the given arguments.
         """
-        browser = kwargs.pop('browser', self.browser)
+        browser = kwargs.pop("browser", self.browser)
 
         assert browser is not None
 
-        params = kwargs.pop('params', None)
+        params = kwargs.pop("params", None)
         patterns = []
         for url in self.urls:
             patterns += normalize(url)
@@ -296,11 +291,11 @@ class URL:
             # only use full-name substitutions, to allow % in URLs
             args = kwargs.copy()
             for key in list(args.keys()):  # need to use keys() because of pop()
-                search = f'%({key})s'
+                search = f"%({key})s"
                 if search in pattern:
                     url = url.replace(search, str(args.pop(key)))
             # if there are named substitutions left, ignore pattern
-            if re.search(r'%\([A-z_]+\)s', url):
+            if re.search(r"%\([A-z_]+\)s", url):
                 continue
             # if not all args were used
             if len(args):
@@ -317,12 +312,12 @@ class URL:
                 url = p.url
             return url
 
-        raise UrlNotResolvable('Unable to resolve URL with %r. Available are %s' % (kwargs, ', '.join([pattern for pattern, _ in patterns])))
+        raise UrlNotResolvable(
+            "Unable to resolve URL with %r. Available are %s"
+            % (kwargs, ", ".join([pattern for pattern, _ in patterns]))
+        )
 
-    def match(
-        self, url: str,
-        base: str | None = None
-    ) -> re.Match | None:
+    def match(self, url: str, base: str | None = None) -> re.Match | None:
         """
         Check if the given url match this object.
 
@@ -333,7 +328,7 @@ class URL:
                 if not base:
                     base = self.get_base_url(browser=None, for_pattern=regex)
 
-                regex = re.escape(base).rstrip('/') + '/' + regex.lstrip('/')
+                regex = re.escape(base).rstrip("/") + "/" + regex.lstrip("/")
 
             m = re.match(regex, url)
             if m:
@@ -349,16 +344,16 @@ class URL:
 
         if self.klass is None:
             return None
-        if response.request.method == 'HEAD':
+        if response.request.method == "HEAD":
             return None
         if self._methods and response.request.method not in self._methods:
             return None
         if self._content_type is not None:
-            content_type = response.headers.get('Content-Type')
+            content_type = response.headers.get("Content-Type")
             if content_type is None:
                 return None
 
-            content_type, _, _ = content_type.partition(';')
+            content_type, _, _ = content_type.partition(";")
             content_type = content_type.strip()
             if content_type != self._content_type:
                 return None
@@ -366,7 +361,7 @@ class URL:
         m = self.match(response.url)
         if m:
             page = self.klass(self.browser, response, m.groupdict())
-            if hasattr(page, 'is_here'):
+            if hasattr(page, "is_here"):
                 if page.is_here is None or page.is_here is True:
                     return page
                 elif page.is_here is False:
@@ -393,7 +388,7 @@ class URL:
 
         @wraps(func)
         def inner(browser, id_or_url: str, *args, **kwargs):
-            if re.match('^https?://.*', id_or_url):
+            if re.match("^https?://.*", id_or_url):
                 base = self.get_base_url(browser=browser)
                 if not self.match(id_or_url, base=base):
                     return None
@@ -401,6 +396,7 @@ class URL:
                 id_or_url = self.build(id=id_or_url, browser=browser)
 
             return func(browser, id_or_url, *args, **kwargs)
+
         return inner
 
     def with_headers(
@@ -495,12 +491,7 @@ class URL:
         new_url.browser = None
         return new_url
 
-    def with_urls(
-        self: URLType,
-        *urls: str,
-        clear: bool = True,
-        match_new_first: bool = True
-    ) -> URLType:
+    def with_urls(self: URLType, *urls: str, clear: bool = True, match_new_first: bool = True) -> URLType:
         """Get a new URL object with the same page but with different paths.
 
         :param urls: List of urls handled by the page.
@@ -535,7 +526,7 @@ class URL:
 
     def with_base(
         self: URLType,
-        base: str = 'BASEURL',
+        base: str = "BASEURL",
     ) -> URLType:
         """Get a new URL object with a custom base.
 
@@ -619,16 +610,16 @@ class BrowserParamURL(URL):
     """
 
     def build(self, **kwargs) -> str:
-        prefix = 'browser_'
+        prefix = "browser_"
 
         for arg in kwargs:
             if arg.startswith(prefix):
-                raise ValueError('parameter %r is reserved by URL pattern')
+                raise ValueError("parameter %r is reserved by URL pattern")
 
         for url in self.urls:
             for groupname in re.compile(url).groupindex:
                 if groupname.startswith(prefix):
-                    attrname = groupname[len(prefix):]
+                    attrname = groupname[len(prefix) :]
                     kwargs[groupname] = getattr(self.browser, attrname)
 
         return super().build(**kwargs)
@@ -646,17 +637,14 @@ def normalize_url(url: str) -> str:
     def norm_domain(m):
         # don't use urlparse/urlunparse because it might do too much normalization
 
-        auth, authsep, hostport = m.group(2).rpartition('@')
-        host, portsep, port = hostport.partition(':')
+        auth, authsep, hostport = m.group(2).rpartition("@")
+        host, portsep, port = hostport.partition(":")
 
-        if (
-            (port == '443' and m.group(1) == 'https://')
-            or (port == '80' and m.group(1) == 'http://')
-        ):
-            portsep = port = ''
+        if (port == "443" and m.group(1) == "https://") or (port == "80" and m.group(1) == "http://"):
+            portsep = port = ""
 
-        host = host.lower().rstrip('.')
+        host = host.lower().rstrip(".")
 
-        return ''.join((m.group(1), auth, authsep, host, portsep, port))
+        return "".join((m.group(1), auth, authsep, host, portsep, port))
 
-    return re.sub(r'^(https?://)([^/#?]+)', norm_domain, url)
+    return re.sub(r"^(https?://)([^/#?]+)", norm_domain, url)

@@ -31,7 +31,7 @@ from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
 
 
-__all__ = ['Ideel']
+__all__ = ["Ideel"]
 
 
 class IdeelPage(HTMLPage):
@@ -43,8 +43,8 @@ class IdeelPage(HTMLPage):
 class LoginPage(IdeelPage):
     def login(self, username, password):
         form = self.get_form(xpath='//form[@id="iform"]')
-        form['login'] = username
-        form['password'] = password
+        form["login"] = username
+        form["password"] = password
         form.submit()
 
 
@@ -53,8 +53,7 @@ class HistoryPage(IdeelPage):
         return bool(self.doc.xpath('//table[@id="order_history"]'))
 
     def iter_orders(self):
-        return (tr.xpath('td[1]/a/text()')[0][1:]
-                for tr in self.doc.xpath('//table[@id="order_history"]/tbody/tr'))
+        return (tr.xpath("td[1]/a/text()")[0][1:] for tr in self.doc.xpath('//table[@id="order_history"]/tbody/tr'))
 
 
 class OrderPage(IdeelPage):
@@ -71,14 +70,13 @@ class OrderPage(IdeelPage):
         return order
 
     def items(self):
-        for tr in self.doc.xpath('//table[contains(@class,"items_table")]'
-                                 '//tr[td[@class="items_desc"]]'):
+        for tr in self.doc.xpath('//table[contains(@class,"items_table")]' '//tr[td[@class="items_desc"]]'):
             label = tr.xpath('*//div[@class="item_desc"]//span/text()')[0]
             url = tr.xpath('*//div[@class="item_img"]//@src')[0]
             onclk = tr.xpath('*//div[@class="item_img"]//@onclick')
             if onclk:
-                url = re.match(r'window.open\(\'([^\']*)\'.*', onclk[0]).group(1)
-            if url.startswith('/'):
+                url = re.match(r"window.open\(\'([^\']*)\'.*", onclk[0]).group(1)
+            if url.startswith("/"):
                 url = self.browser.BASEURL + url
             price = tr.xpath('td[@class="items_price"]/span/text()')[0]
             qty = tr.xpath('td[@class="items_qty"]//span/text()')[0]
@@ -93,52 +91,48 @@ class OrderPage(IdeelPage):
         # There's no payment information on Ideel, so we'll make one up.
         p = Payment()
         p.date = self.order_date()
-        p.method = u'DEFAULT PAYMENT'
+        p.method = "DEFAULT PAYMENT"
         p.amount = self.total()
         yield p
 
     def order_number(self):
-        return next(iter(self.doc.xpath(
-            u'//b[text()="Order Number:"]/../strong/text()')), None)
+        return next(iter(self.doc.xpath('//b[text()="Order Number:"]/../strong/text()')), None)
 
     def order_date(self):
         txt = self.doc.xpath('//div[@id="purchase-notice"]/text()')[0]
-        date = re.match(r'.* (\w+ \d+, \d+)$', txt).group(1)
-        return datetime.strptime(date, '%b %d, %Y')
+        date = re.match(r".* (\w+ \d+, \d+)$", txt).group(1)
+        return datetime.strptime(date, "%b %d, %Y")
 
     def tax(self):
-        return AmTr.decimal_amount(self.doc.xpath(
-            '//span[@id="taxes"]/text()')[0])
+        return AmTr.decimal_amount(self.doc.xpath('//span[@id="taxes"]/text()')[0])
 
     def shipping(self):
-        if self.doc.xpath('//tr[@id="shipping_fee_row"]'
-                          '//span[@class="free_shipping"]'):
-            amount = '0'
+        if self.doc.xpath('//tr[@id="shipping_fee_row"]' '//span[@class="free_shipping"]'):
+            amount = "0"
         else:
             amount = self.doc.xpath('//span[@id="shipping_fee"]/text()')[0]
         return AmTr.decimal_amount(amount)
 
     def discount(self):
-        TAGS = ['coupon_discount_amount', 'promo_discount_amount',
-                'total_rewards', 'applied_credit']
-        return -sum(AmTr.decimal_amount(x[1:][:-1]) for tag in TAGS
-                    for x in self.doc.xpath('//span[@id="%s"]/text()' % tag))
+        TAGS = ["coupon_discount_amount", "promo_discount_amount", "total_rewards", "applied_credit"]
+        return -sum(
+            AmTr.decimal_amount(x[1:][:-1]) for tag in TAGS for x in self.doc.xpath('//span[@id="%s"]/text()' % tag)
+        )
 
     def total(self):
-        return AmTr.decimal_amount(self.doc.xpath(
-            '//span[@id="total"]/text()')[0])
+        return AmTr.decimal_amount(self.doc.xpath('//span[@id="total"]/text()')[0])
 
 
 class Ideel(LoginBrowser):
-    BASEURL = 'http://www.ideel.com'
-    login = URL(r'https://www.ideel.com/login$', LoginPage)
-    history = URL(r'/my_account/orders\?page=(?P<page>\d+)$', HistoryPage)
-    order = URL(r'/my_account/orders/(?P<order>\d+)$', OrderPage)
-    unknown = URL(r'/.*$', IdeelPage)
+    BASEURL = "http://www.ideel.com"
+    login = URL(r"https://www.ideel.com/login$", LoginPage)
+    history = URL(r"/my_account/orders\?page=(?P<page>\d+)$", HistoryPage)
+    order = URL(r"/my_account/orders/(?P<order>\d+)$", OrderPage)
+    unknown = URL(r"/.*$", IdeelPage)
 
     def get_currency(self):
         # Ideel uses only U.S. dollars.
-        return Currency.get_currency(u'$')
+        return Currency.get_currency("$")
 
     @need_login
     def get_order(self, id_):

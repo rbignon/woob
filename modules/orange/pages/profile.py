@@ -34,17 +34,17 @@ class ProfileParPage(LoggedPage, HTMLPage):
         # Civilé
         # Nom
         # Prénom
-        if CleanText(template_xpath % 'Civilité')(self.doc):
+        if CleanText(template_xpath % "Civilité")(self.doc):
             subscriber = Format(
-                '%s %s %s',
-                CleanText(template_xpath % 'Civilité' + '/following::span[1]'),
-                CleanText(template_xpath % 'Nom :' + '/following::span[1]'),
-                CleanText(template_xpath % 'Prénom :' + '/following::span[1]')
+                "%s %s %s",
+                CleanText(template_xpath % "Civilité" + "/following::span[1]"),
+                CleanText(template_xpath % "Nom :" + "/following::span[1]"),
+                CleanText(template_xpath % "Prénom :" + "/following::span[1]"),
             )(self.doc)
 
         # Prénom / Nom
-        elif CleanText(template_xpath % 'Prénom / Nom')(self.doc):
-            subscriber = CleanText(template_xpath % 'Prénom / Nom' + '/following::span[1]')(self.doc)
+        elif CleanText(template_xpath % "Prénom / Nom")(self.doc):
+            subscriber = CleanText(template_xpath % "Prénom / Nom" + "/following::span[1]")(self.doc)
         # Nom
         else:
             subscriber = CleanText(
@@ -59,24 +59,24 @@ class ProfileApiParPage(LoggedPage, JsonPage):
     class get_profile(ItemElement):
         klass = Person
 
-        obj_gender = CleanText(Dict('identity/salutation', default=None), default=NotAvailable)
-        obj_firstname = CleanText(Dict('identity/firstName', default=None), default=NotAvailable)
-        obj_lastname = CleanText(Dict('identity/lastName', default=None), default=NotAvailable)
-        obj_email = CleanText(Dict('contactInformation/email/address', default=None), default=NotAvailable)
-        obj_mobile = CleanText(Dict('contactInformation/mobile/number', default=None), default=NotAvailable)
-        obj_birth_date = Date(CleanText(Dict('identity/birth/date', default='')), default=NotAvailable)
-        obj_birth_place = CleanText(Dict('identity/birth/city', default=''))
+        obj_gender = CleanText(Dict("identity/salutation", default=None), default=NotAvailable)
+        obj_firstname = CleanText(Dict("identity/firstName", default=None), default=NotAvailable)
+        obj_lastname = CleanText(Dict("identity/lastName", default=None), default=NotAvailable)
+        obj_email = CleanText(Dict("contactInformation/email/address", default=None), default=NotAvailable)
+        obj_mobile = CleanText(Dict("contactInformation/mobile/number", default=None), default=NotAvailable)
+        obj_birth_date = Date(CleanText(Dict("identity/birth/date", default="")), default=NotAvailable)
+        obj_birth_place = CleanText(Dict("identity/birth/city", default=""))
 
         def obj__subscriber(self):
-            gender = Field('gender')(self) or ''
-            firstname = Field('firstname')(self) or ''
-            lastname = Field('lastname')(self) or ''
+            gender = Field("gender")(self) or ""
+            firstname = Field("firstname")(self) or ""
+            lastname = Field("lastname")(self) or ""
 
-            subscriber = ' '.join([el for el in (gender, firstname, lastname) if el])
+            subscriber = " ".join([el for el in (gender, firstname, lastname) if el])
             return subscriber or NotAvailable
 
     def get_name(self):
-        return CleanText(Dict('identity/name', default=None), default=NotAvailable)(self.doc)
+        return CleanText(Dict("identity/name", default=None), default=NotAvailable)(self.doc)
 
 
 class ProfileProPage(LoggedPage, HTMLPage):
@@ -86,7 +86,7 @@ class ProfileProPage(LoggedPage, HTMLPage):
         pr.email = CleanText('//input[@id="profile_email"]/@value')(self.doc)
 
         pr._subscriber = pr.name = Format(
-            '%s %s',
+            "%s %s",
             CleanText('//input[@id="profile_lastName"]/@value'),
             CleanText('//input[@id="profile_firstName"]/@value'),
         )(self.doc)
@@ -101,4 +101,4 @@ class PostalAddressPage(LoggedPage, JsonPage):
     class get_postal_adress(ItemElement):
         klass = PostalAddress
 
-        obj_full_address = CleanText(Dict('postalAddress', default=None), default=NotAvailable)
+        obj_full_address = CleanText(Dict("postalAddress", default=None), default=NotAvailable)

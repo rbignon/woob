@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest
 
 
 class VicSecTest(BackendTest):
-    MODULE = 'vicsec'
+    MODULE = "vicsec"
 
     def test_history(self):
         """

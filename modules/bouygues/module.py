@@ -19,7 +19,12 @@
 
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
+    CapDocument,
+    Document,
+    DocumentCategory,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
 )
 from woob.capabilities.messages import CapMessagesPost
 from woob.capabilities.profile import CapProfile
@@ -29,27 +34,27 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import BouyguesBrowser
 
 
-__all__ = ['BouyguesModule']
+__all__ = ["BouyguesModule"]
 
 
 class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
-    NAME = 'bouygues'
-    DESCRIPTION = 'Bouygues Télécom'
-    MAINTAINER = 'Florian Duguet'
-    EMAIL = 'florian.duguet@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "bouygues"
+    DESCRIPTION = "Bouygues Télécom"
+    MAINTAINER = "Florian Duguet"
+    EMAIL = "florian.duguet@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
         ValueBackendPassword(
-            'login',
-            label='Numéro de mobile (sans espace), de clé/tablette ou e-mail en @bbox.fr',
+            "login",
+            label="Numéro de mobile (sans espace), de clé/tablette ou e-mail en @bbox.fr",
             masked=False,
         ),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueBackendPassword('lastname', label='Nom de famille', default='', masked=False),
-        ValueTransient('otp_sms', regexp=r'^[0-9]{6}$'),
-        ValueTransient('otp_email', regexp=r'^[0-9]{6}$'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueBackendPassword("lastname", label="Nom de famille", default="", masked=False),
+        ValueTransient("otp_sms", regexp=r"^[0-9]{6}$"),
+        ValueTransient("otp_email", regexp=r"^[0-9]{6}$"),
+        ValueTransient("request_information"),
     )
     BROWSER = BouyguesBrowser
     accepted_document_types = (DocumentTypes.BILL,)
@@ -60,9 +65,9 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
             # Sending a phone number with spaces between numbers will
             # automatically redirect us to the login page with no error
             self.config,
-            self.config['login'].get().replace(' ', ''),
-            self.config['password'].get(),
-            self.config['lastname'].get(),
+            self.config["login"].get().replace(" ", ""),
+            self.config["password"].get(),
+            self.config["lastname"].get(),
         )
 
     def iter_subscription(self):
@@ -74,7 +79,7 @@ class BouyguesModule(Module, CapDocument, CapMessagesPost, CapProfile):
         return self.browser.iter_documents(subscription)
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
+        subid = _id.rsplit("_", 1)[0]
         subscription = self.get_subscription(subid)
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 

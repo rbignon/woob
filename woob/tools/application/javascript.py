@@ -19,30 +19,30 @@
 import os
 
 
-__all__ = ['get_javascript']
+__all__ = ["get_javascript"]
 
 
-def get_javascript(name, load_order=('local', 'web'), minified=True):
-    if name == 'jquery':
+def get_javascript(name, load_order=("local", "web"), minified=True):
+    if name == "jquery":
         for src in load_order:
-            if src == 'local':
+            if src == "local":
                 # try Debian paths
                 if minified:
-                    filepath = '/usr/share/javascript/jquery/jquery.min.js'
+                    filepath = "/usr/share/javascript/jquery/jquery.min.js"
                 else:
-                    filepath = '/usr/share/javascript/jquery/jquery.js'
+                    filepath = "/usr/share/javascript/jquery/jquery.js"
                 if os.path.exists(filepath):
                     return filepath
-            elif src == 'web':
+            elif src == "web":
                 # return Google-hosted URLs
                 if minified:
-                    return 'https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'
+                    return "https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"
                 else:
-                    return 'https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js'
-    elif name == 'tablesorter':
-        if 'web' in load_order:
+                    return "https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"
+    elif name == "tablesorter":
+        if "web" in load_order:
             if minified:
-                return 'https://tablesorter.com/jquery.tablesorter.min.js'
+                return "https://tablesorter.com/jquery.tablesorter.min.js"
             else:
-                return 'https://tablesorter.com/jquery.tablesorter.js'
+                return "https://tablesorter.com/jquery.tablesorter.js"
     return None

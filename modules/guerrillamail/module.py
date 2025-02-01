@@ -25,23 +25,23 @@ from woob.tools.value import Value
 from .browser import GuerrillamailBrowser
 
 
-__all__ = ['GuerrillamailModule']
+__all__ = ["GuerrillamailModule"]
 
 
 class GuerrillamailModule(Module, CapMessages, CapMessagesPost):
-    NAME = 'guerrillamail'
-    DESCRIPTION = u'GuerrillaMail temp mailbox'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "guerrillamail"
+    DESCRIPTION = "GuerrillaMail temp mailbox"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = GuerrillamailBrowser
 
-    CONFIG = BackendConfig(Value('inbox', label='Inbox', default=''))
+    CONFIG = BackendConfig(Value("inbox", label="Inbox", default=""))
 
     def iter_threads(self):
-        inbox = self.config['inbox'].get()
+        inbox = self.config["inbox"].get()
         if not inbox:
             raise NotImplementedError()
         else:
@@ -49,7 +49,7 @@ class GuerrillamailModule(Module, CapMessages, CapMessagesPost):
 
     def get_thread(self, _id):
         t = Thread(_id)
-        t.title = 'Mail for %s' % _id
+        t.title = "Mail for %s" % _id
         t.flags = t.IS_DISCUSSION
 
         first = True
@@ -74,13 +74,13 @@ class GuerrillamailModule(Module, CapMessages, CapMessagesPost):
             self.browser.send_mail(m.sender, receiver, m.title, m.content)
 
     def make_message(self, d, thread):
-        m = Message(thread, d['id'])
+        m = Message(thread, d["id"])
         m.children = []
-        m.sender = d['from']
+        m.sender = d["from"]
         m.flags = 0
-        if not d.get('read', True):
+        if not d.get("read", True):
             m.flags = m.IS_UNREAD
-        m.title = d['subject']
-        m.date = d['datetime']
-        m.receivers = [d['to']]
+        m.title = d["subject"]
+        m.date = d["datetime"]
+        m.receivers = [d["to"]]
         return m

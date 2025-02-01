@@ -24,33 +24,36 @@ from woob.tools.application.formatters.iformatter import PrettyFormatter
 from woob.tools.application.repl import ReplApplication, defaultcount
 
 
-__all__ = ['AppGallery']
+__all__ = ["AppGallery"]
 
 
 class GalleryListFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'title')
+    MANDATORY_FIELDS = ("id", "title")
 
     def get_title(self, obj):
         s = obj.title
-        if hasattr(obj, 'cardinality') and not empty(obj.cardinality):
-            s += ' (%d pages)' % obj.cardinality
+        if hasattr(obj, "cardinality") and not empty(obj.cardinality):
+            s += " (%d pages)" % obj.cardinality
         return s
 
     def get_description(self, obj):
-        if hasattr(obj, 'description') and obj.description:
+        if hasattr(obj, "description") and obj.description:
             return obj.description
 
 
 class AppGallery(ReplApplication):
-    APPNAME = 'gallery'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2011-YEAR Noé Rubinstein'
-    DESCRIPTION = 'gallery browses and downloads web image galleries'
-    SHORT_DESCRIPTION = 'browse and download web image galleries'
+    APPNAME = "gallery"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2011-YEAR Noé Rubinstein"
+    DESCRIPTION = "gallery browses and downloads web image galleries"
+    SHORT_DESCRIPTION = "browse and download web image galleries"
     CAPS = CapGallery
-    EXTRA_FORMATTERS = {'gallery_list': GalleryListFormatter}
-    COMMANDS_FORMATTERS = {'search': 'gallery_list', 'ls': 'gallery_list'}
-    COLLECTION_OBJECTS = (BaseGallery, BaseImage, )
+    EXTRA_FORMATTERS = {"gallery_list": GalleryListFormatter}
+    COMMANDS_FORMATTERS = {"search": "gallery_list", "ls": "gallery_list"}
+    COLLECTION_OBJECTS = (
+        BaseGallery,
+        BaseImage,
+    )
 
     def __init__(self, *args, **kwargs):
         super(AppGallery, self).__init__(*args, **kwargs)
@@ -63,11 +66,11 @@ class AppGallery(ReplApplication):
         List galleries matching a PATTERN.
         """
         if not pattern:
-            print('This command takes an argument: %s' % self.get_command_help('search', short=True), file=self.stderr)
+            print("This command takes an argument: %s" % self.get_command_help("search", short=True), file=self.stderr)
             return 2
 
         self.start_format(pattern=pattern)
-        for gallery in self.do('search_galleries', pattern=pattern):
+        for gallery in self.do("search_galleries", pattern=pattern):
             self.cached_format(gallery)
 
     def do_download(self, line):
@@ -87,17 +90,17 @@ class AppGallery(ReplApplication):
 
         gallery = None
         _id, backend = self.parse_id(_id)
-        for result in self.do('get_gallery', _id, backends=backend):
+        for result in self.do("get_gallery", _id, backends=backend):
             if result:
                 gallery = result
 
         if not gallery:
-            print('Gallery not found: %s' % _id, file=self.stderr)
+            print("Gallery not found: %s" % _id, file=self.stderr)
             return 3
 
-        self.woob[backend].fillobj(gallery, ('title',))
+        self.woob[backend].fillobj(gallery, ("title",))
         if dest is None:
-            dest = sub('/', ' ', gallery.title)
+            dest = sub("/", " ", gallery.title)
 
         print("Downloading to %s" % dest)
 
@@ -113,9 +116,9 @@ class AppGallery(ReplApplication):
             if i < first:
                 continue
 
-            self.woob[backend].fillobj(img, ('url', 'data'))
+            self.woob[backend].fillobj(img, ("url", "data"))
             if img.data is None:
-                self.woob[backend].fillobj(img, ('url', 'data'))
+                self.woob[backend].fillobj(img, ("url", "data"))
                 if img.data is None:
                     print("Couldn't get page %d, exiting" % i, file=self.stderr)
                     break
@@ -126,10 +129,10 @@ class AppGallery(ReplApplication):
             else:
                 ext = "jpg"
 
-            name = '%03d.%s' % (i, ext)
-            print('Writing file %s' % name)
+            name = "%03d.%s" % (i, ext)
+            print("Writing file %s" % name)
 
-            with open(name, 'wb') as f:
+            with open(name, "wb") as f:
                 f.write(img.data)
 
         os.chdir(os.path.pardir)
@@ -140,11 +143,11 @@ class AppGallery(ReplApplication):
 
         Get information about a gallery.
         """
-        _id, = self.parse_command_args(line, 1, 1)
+        (_id,) = self.parse_command_args(line, 1, 1)
 
-        gallery = self.get_object(_id, 'get_gallery')
+        gallery = self.get_object(_id, "get_gallery")
         if not gallery:
-            print('Gallery not found: %s' % _id, file=self.stderr)
+            print("Gallery not found: %s" % _id, file=self.stderr)
             return 3
 
         self.start_format()

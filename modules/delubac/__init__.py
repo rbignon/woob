@@ -19,4 +19,4 @@
 from .module import DelubacModule
 
 
-__all__ = ['DelubacModule']
+__all__ = ["DelubacModule"]

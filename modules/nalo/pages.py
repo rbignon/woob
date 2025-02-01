@@ -34,38 +34,39 @@ class HtmlLoginFragment(PartialHTMLPage):
     def get_recaptcha_site_key(self):
         return Regexp(CleanText('//script[contains(text(), "sitekey")]/text()'), r'"sitekey" *: *"([^"]*)"')(self.doc)
 
+
 class LoginPage(JsonPage):
     def get_token(self):
-        return self.doc['detail']['token']
+        return self.doc["detail"]["token"]
 
 
 class AccountsPage(LoggedPage, JsonPage):
-    ENCODING = 'utf-8' # chardet is shit
+    ENCODING = "utf-8"  # chardet is shit
 
     @method
     class iter_accounts(DictElement):
-        item_xpath = 'detail'
+        item_xpath = "detail"
 
         class item(ItemElement):
             klass = Account
 
-            obj_id = Eval(str, Dict('id'))
-            obj_label = Dict('name')
-            obj_balance = Eval(float_to_decimal, Dict('current_value'))
-            obj_valuation_diff = Eval(float_to_decimal, Dict('absolute_performance'))
-            obj_currency = 'EUR'
+            obj_id = Eval(str, Dict("id"))
+            obj_label = Dict("name")
+            obj_balance = Eval(float_to_decimal, Dict("current_value"))
+            obj_valuation_diff = Eval(float_to_decimal, Dict("absolute_performance"))
+            obj_currency = "EUR"
             obj_type = Account.TYPE_LIFE_INSURANCE
 
 
 class AccountPage(LoggedPage, JsonPage):
     def get_invest_key(self):
-        return self.doc['detail']['project_kind'], self.doc['detail']['risk_level']
+        return self.doc["detail"]["project_kind"], self.doc["detail"]["risk_level"]
 
     def get_kind(self):
-        return self.doc['detail']['project_kind']
+        return self.doc["detail"]["project_kind"]
 
     def get_risk(self):
-        return self.doc['detail']['risk_level']
+        return self.doc["detail"]["risk_level"]
 
 
 class HistoryPage(LoggedPage, JsonPage):
@@ -74,32 +75,32 @@ class HistoryPage(LoggedPage, JsonPage):
 
 # using site labels
 ASSET_TYPE = {
-    'risky': 'Actions',
-    'risk_free': 'Obligations',
-    'guaranteed': 'Fonds à capital garanti',
+    "risky": "Actions",
+    "risk_free": "Obligations",
+    "guaranteed": "Fonds à capital garanti",
 }
 
 
 class InvestPage(LoggedPage, JsonPage):
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
 
     def get_invest(self, kind, risk):
-        for pk in self.doc['portfolios']:
-            if pk['kind'] == kind:
+        for pk in self.doc["portfolios"]:
+            if pk["kind"] == kind:
                 break
         else:
             assert False
 
-        for p in pk['target_portfolios']:
-            if p['risk_id'] == risk:
+        for p in pk["target_portfolios"]:
+            if p["risk_id"] == risk:
                 break
         else:
             assert False
 
-        for line in p['lines']:
+        for line in p["lines"]:
             yield {
-                'isin': line['isin'],
-                'name': line['name'],
-                'share': float_to_decimal(line['weight']) / 100,
-                'asset_type': ASSET_TYPE[line['risk_type']],
+                "isin": line["isin"],
+                "name": line["name"],
+                "share": float_to_decimal(line["weight"]) / 100,
+                "asset_type": ASSET_TYPE[line["risk_type"]],
             }

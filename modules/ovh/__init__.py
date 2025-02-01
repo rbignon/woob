@@ -21,4 +21,4 @@
 from .module import OvhModule
 
 
-__all__ = ['OvhModule']
+__all__ = ["OvhModule"]

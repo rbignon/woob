@@ -28,7 +28,7 @@ from .woob import VersionsMismatchError, Woob, WoobBase  # noqa
 __all__ = ["WoobBase", "Woob", "VersionsMismatchError", "Weboob", "WebNip"]
 
 warnings.warn(
-    'Please use woob.core.woob instead.',
+    "Please use woob.core.woob instead.",
     DeprecationWarning,
     stacklevel=2,
 )

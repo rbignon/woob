@@ -26,43 +26,43 @@ from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 from .proxy_browser import ProxyBrowser
 
 
-__all__ = ['CaisseEpargneModule']
+__all__ = ["CaisseEpargneModule"]
 
 
 class CaisseEpargneModule(Module, CapBankWealth, CapDocument):
-    NAME = 'caissedepargne'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    DEPENDENCIES = ('linebourse',)
-    DESCRIPTION = 'Caisse d\'Épargne'
-    LICENSE = 'LGPLv3+'
+    NAME = "caissedepargne"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    DEPENDENCIES = ("linebourse",)
+    DESCRIPTION = "Caisse d'Épargne"
+    LICENSE = "LGPLv3+"
     BROWSER = ProxyBrowser
 
     auth_type = {
-        'part': 'Particulier',
-        'pp': 'Personne protégée',
-        'pro': 'Professionnel',
-        'ent': 'Entreprise',
+        "part": "Particulier",
+        "pp": "Personne protégée",
+        "pro": "Professionnel",
+        "ent": "Entreprise",
     }
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant client', masked=False),
-        ValueBackendPassword('password', label='Mot de passe', regexp=r'\d+'),
-        Value('nuser', label='User ID (optional)', default='', regexp=r'[A-Z0-9]{0,8}'),
-        Value('auth_type', label='Type de compte', choices=auth_type, default=''),
-        ValueTransient('otp_emv', regexp=r'\d{8}'),
-        ValueTransient('otp_sms', regexp=r'\d{8}'),
-        ValueTransient('resume'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Identifiant client", masked=False),
+        ValueBackendPassword("password", label="Mot de passe", regexp=r"\d+"),
+        Value("nuser", label="User ID (optional)", default="", regexp=r"[A-Z0-9]{0,8}"),
+        Value("auth_type", label="Type de compte", choices=auth_type, default=""),
+        ValueTransient("otp_emv", regexp=r"\d{8}"),
+        ValueTransient("otp_sms", regexp=r"\d{8}"),
+        ValueTransient("resume"),
+        ValueTransient("request_information"),
     )
 
     accepted_document_types = (DocumentTypes.STATEMENT,)
 
     def create_default_browser(self):
         return self.create_browser(
-            nuser=self.config['nuser'].get(),
+            nuser=self.config["nuser"].get(),
             config=self.config,
-            username=self.config['login'].get(),
-            password=self.config['password'].get(),
+            username=self.config["login"].get(),
+            password=self.config["password"].get(),
         )
 
     def iter_resources(self, objs, split_path):
@@ -98,7 +98,7 @@ class CaisseEpargneModule(Module, CapBankWealth, CapDocument):
         return self.browser.iter_documents(subscription)
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
+        subid = _id.rsplit("_", 1)[0]
         subscription = self.get_subscription(subid)
 
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)

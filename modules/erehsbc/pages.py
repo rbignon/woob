@@ -33,32 +33,32 @@ class AuthenticationPage(JsonPage):
         return self.doc
 
     def get_public_key(self):
-        return self.doc['header'][10:]
+        return self.doc["header"][10:]
 
     def is_device_fingerprint_needed(self):
-        return self.doc.get('stage') == 'DeviceIdMatch2'
+        return self.doc.get("stage") == "DeviceIdMatch2"
 
     def get_pre_otp_json(self):
         return self.doc
 
     def is_pre_otp_here(self):
-        return self.doc['callbacks'][1]['output'][2]['value'][0] == 'Send the code'
+        return self.doc["callbacks"][1]["output"][2]["value"][0] == "Send the code"
 
     def get_otp_json(self):
         return self.doc
 
     def is_wrong_otp(self):
-        return self.doc['callbacks'] and 'HotpReapp2' == self.doc['stage']
+        return self.doc["callbacks"] and "HotpReapp2" == self.doc["stage"]
 
     def is_json_to_trust_device(self):
         return re.search(
-            'add to trusted devices|enregistrement de ce terminal',
-            self.doc['callbacks'][0]['output'][0]['value'],
+            "add to trusted devices|enregistrement de ce terminal",
+            self.doc["callbacks"][0]["output"][0]["value"],
             re.IGNORECASE,
         )
 
     def get_email(self):
-        return Regexp(CleanText(Dict('header', default='')), r'email=(.+),', default='')(self.doc)
+        return Regexp(CleanText(Dict("header", default="")), r"email=(.+),", default="")(self.doc)
 
 
 class FinalizeAuthenticationPage(RawPage):

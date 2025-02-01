@@ -25,29 +25,30 @@ from woob.tools.backend import Module
 from .browser import GoogleTranslateBrowser
 
 
-__all__ = ['GoogleTranslateModule']
+__all__ = ["GoogleTranslateModule"]
 
 
 class GoogleTranslateModule(Module, CapTranslate):
-    MAINTAINER = u'Lucien Loiseau'
-    EMAIL = 'loiseau.lucien@gmail.com'
-    VERSION = '3.7'
-    LICENSE = 'AGPLv3+'
-    NAME = 'googletranslate'
-    DESCRIPTION = u'Google translation web service'
+    MAINTAINER = "Lucien Loiseau"
+    EMAIL = "loiseau.lucien@gmail.com"
+    VERSION = "3.7"
+    LICENSE = "AGPLv3+"
+    NAME = "googletranslate"
+    DESCRIPTION = "Google translation web service"
     BROWSER = GoogleTranslateBrowser
 
     def translate(self, lan_from, lan_to, text):
 
         googlelanguage = self.browser.get_supported_languages()
 
-        languages_from = [k for k in googlelanguage.keys() if lan_from == k or f'{lan_from}-' in k]
-        languages_to = [k for k in googlelanguage.keys() if lan_to == k or f'{lan_to}-' in k]
+        languages_from = [k for k in googlelanguage.keys() if lan_from == k or f"{lan_from}-" in k]
+        languages_to = [k for k in googlelanguage.keys() if lan_to == k or f"{lan_to}-" in k]
 
         if not (languages_from and languages_to):
-            googlelanguage = {k.split('-')[0]: v for k, v in googlelanguage.items()}
+            googlelanguage = {k.split("-")[0]: v for k, v in googlelanguage.items()}
             raise LanguageNotSupported(
-                msg=f"This language is not supported. Please use one of the following one : {googlelanguage}")
+                msg=f"This language is not supported. Please use one of the following one : {googlelanguage}"
+            )
 
         for l_from in languages_from:
             for l_to in languages_to:

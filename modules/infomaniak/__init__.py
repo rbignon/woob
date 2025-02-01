@@ -23,4 +23,4 @@
 from .module import InfomaniakModule
 
 
-__all__ = ['InfomaniakModule']
+__all__ = ["InfomaniakModule"]

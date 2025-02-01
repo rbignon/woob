@@ -24,10 +24,10 @@ from woob.tools.test import BackendTest
 
 
 class LaCentraleTest(BackendTest):
-    MODULE = 'lacentrale'
+    MODULE = "lacentrale"
 
     def test_lacentrale(self):
-        products = list(itertools.islice(self.backend.search_products(u'10000€,pro'), 0, 20))
+        products = list(itertools.islice(self.backend.search_products("10000€,pro"), 0, 20))
         self.assertTrue(len(products) > 0)
         product = products[0]
         product.backend = self.backend.name

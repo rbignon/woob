@@ -27,22 +27,22 @@ from woob.capabilities.cinema import Movie, Person
 
 
 class ReleasePage(HTMLPage):
-    ''' Page containing releases of a movie
-    '''
+    """Page containing releases of a movie"""
 
     def get_movie_releases(self, country_filter):
-        result = ''
+        result = ""
         links = self.doc.xpath('//div[@id="releaseinfo_content"]//a')
         for a in links:
-            href = a.attrib.get('href', '')
+            href = a.attrib.get("href", "")
 
             # XXX: search() could raise an exception
-            if href.strip('/').split('/')[0] == 'calendar' and\
-                    (country_filter is None or re.search('region=([a-zA-Z]+)', href).group(1).lower() == country_filter):
+            if href.strip("/").split("/")[0] == "calendar" and (
+                country_filter is None or re.search("region=([a-zA-Z]+)", href).group(1).lower() == country_filter
+            ):
                 country = a.text.strip()
                 date = a.xpath('./../../td[has-class("release-date-item__date")]')[0].text
-                result += f'{country} : {date}\n'
-        if result == u'':
+                result += f"{country} : {date}\n"
+        if result == "":
             result = NotAvailable
         else:
             result = result.strip()
@@ -50,45 +50,43 @@ class ReleasePage(HTMLPage):
 
 
 class BiographyPage(HTMLPage):
-    ''' Page containing biography of a person
-    '''
+    """Page containing biography of a person"""
 
     def get_biography(self):
-        bio = ''
+        bio = ""
         start = False
         tn = self.doc.xpath('//div[@id="bio_content"]')[0]
-        for el in tn.xpath('./*'):
-            if el.attrib.get('name') == 'mini_bio':
+        for el in tn.xpath("./*"):
+            if el.attrib.get("name") == "mini_bio":
                 start = True
 
             if start:
-                bio += CleanHTML('.')(el)
+                bio += CleanHTML(".")(el)
 
-            content_after_bio = ['family', 'trademark', 'trivia', 'salary']
-            if el.attrib.get('name') in content_after_bio:
+            content_after_bio = ["family", "trademark", "trivia", "salary"]
+            if el.attrib.get("name") in content_after_bio:
                 break
 
         return bio
 
 
 class MovieCrewPage(HTMLPage):
-    ''' Page listing all the persons related to a movie
-    '''
+    """Page listing all the persons related to a movie"""
 
     def iter_persons(self, role_filter=None):
-        if (role_filter is None or (role_filter is not None and role_filter == 'actor')):
+        if role_filter is None or (role_filter is not None and role_filter == "actor"):
             tables = self.doc.xpath('//table[has-class("cast_list")]')
             if len(tables) > 0:
                 table = tables[0]
-                trs = table.xpath('.//tr')
+                trs = table.xpath(".//tr")
 
                 for tr in trs:
-                    a = tr.xpath('.//a')
+                    a = tr.xpath(".//a")
                     if len(a) == 3:
-                        id = a[1].attrib.get('href', '').strip('/').split('/')[1]
+                        id = a[1].attrib.get("href", "").strip("/").split("/")[1]
                         name = a[1].text
                         char_name = a[2].text
-                        thumbnail_url = a[0].xpath('.//img')[0].attrib.get('src')
+                        thumbnail_url = a[0].xpath(".//img")[0].attrib.get("src")
 
                         person = Person(id, name)
                         person.short_description = char_name
@@ -104,17 +102,17 @@ class MovieCrewPage(HTMLPage):
                         yield person
 
         for gloss_link in self.doc.xpath('//table[@cellspacing="1"]//h5//a'):
-            role = gloss_link.attrib.get('name', '').rstrip('s')
-            if (role_filter is None or (role_filter is not None and role == role_filter)):
+            role = gloss_link.attrib.get("name", "").rstrip("s")
+            if role_filter is None or (role_filter is not None and role == role_filter):
                 tbody = gloss_link.getparent().getparent().getparent().getparent()
-                for line in tbody.xpath('.//tr')[1:]:
-                    for a in line.xpath('.//a'):
+                for line in tbody.xpath(".//tr")[1:]:
+                    for a in line.xpath(".//a"):
                         role_detail = NotAvailable
-                        href = a.attrib.get('href', '')
-                        if '/name/nm' in href:
-                            id = href.strip('/').split('/')[-1]
+                        href = a.attrib.get("href", "")
+                        if "/name/nm" in href:
+                            id = href.strip("/").split("/")[-1]
                             name = a.text
-                        if 'glossary' in href:
+                        if "glossary" in href:
                             role_detail = a.text
                         person = Person(id, name)
                         person.short_description = role_detail
@@ -127,14 +125,14 @@ class MovieCrewPage(HTMLPage):
             table = tables[0]
             tds = table.xpath('.//td[has-class("character")]')
             for td in tds:
-                id = td.find('a').attrib.get('href', '').strip('/').split('/')[1]
+                id = td.find("a").attrib.get("href", "").strip("/").split("/")[1]
                 yield id
 
 
 class PersonPage(HTMLPage):
-    ''' Page informing about a person
+    """Page informing about a person
     It is used to build a Person instance and to get the movie list related to a person
-    '''
+    """
 
     def get_person(self, id):
         name = NotAvailable
@@ -157,24 +155,24 @@ class PersonPage(HTMLPage):
 
         descs = td_overview.xpath('.//div[has-class("name-trivia-bio-text")]//div[has-class("inline")]')
         if len(descs) > 0:
-            short_biography = CleanHTML('.')(descs[0])
+            short_biography = CleanHTML(".")(descs[0])
 
         birth = td_overview.xpath('.//div[@id="name-born-info"]')
         if len(birth) > 0:
-            time = birth[0].xpath('.//time')[0].attrib.get('datetime', '').split('-')
+            time = birth[0].xpath(".//time")[0].attrib.get("datetime", "").split("-")
             if len(time) == 3 and int(time[0]) >= 1900:
                 birth_date = datetime(int(time[0]), int(time[1]), int(time[2]))
-            birth_place = birth[0].xpath('.//a')[2].text
+            birth_place = birth[0].xpath(".//a")[2].text
 
         death = td_overview.xpath('.//div[@id="name-death-info"]')
         if len(death) > 0:
-            time = death[0].xpath('.//time')[0].attrib.get('datetime', '').split('-')
+            time = death[0].xpath(".//time")[0].attrib.get("datetime", "").split("-")
             if len(time) == 3 and int(time[0]) >= 1900:
                 death_date = datetime(int(time[0]), int(time[1]), int(time[2]))
 
         img_thumbnail = td_overview.xpath('.//td[@id="img_primary"]//img[@id="name-poster"]')
         if len(img_thumbnail) > 0:
-            thumbnail_url = img_thumbnail[0].attrib.get('src', '')
+            thumbnail_url = img_thumbnail[0].attrib.get("src", "")
 
         roles = self.get_roles()
 
@@ -193,25 +191,25 @@ class PersonPage(HTMLPage):
 
     def iter_movies_ids(self):
         for role_div in self.doc.xpath('//div[@id="filmography"]//div[has-class("filmo-category-section")]/div'):
-            for a in role_div.xpath('.//a'):
-                m = re.search(r'/title/(tt.*)/\.*', a.attrib.get('href'))
+            for a in role_div.xpath(".//a"):
+                m = re.search(r"/title/(tt.*)/\.*", a.attrib.get("href"))
                 if m:
                     yield m.group(1)
 
     def get_roles(self):
         roles = {}
         for role_div in self.doc.xpath('//div[@id="filmography"]/div[has-class("head")]'):
-            role = role_div.xpath('.//a')[-1].text
+            role = role_div.xpath(".//a")[-1].text
             roles[role] = []
-            category = role_div.attrib.get('data-category')
+            category = role_div.attrib.get("data-category")
             for infos in self.doc.xpath('//div[@id="filmography"]/div[has-class("filmo-category-section")]/div'):
-                if category in infos.attrib.get('id'):
-                    roles[role].append(('N/A',infos.text_content().replace('\n', ' ').strip()))
+                if category in infos.attrib.get("id"):
+                    roles[role].append(("N/A", infos.text_content().replace("\n", " ").strip()))
         return roles
 
     def iter_movies(self, role_filter=None):
         for role_div in self.doc.xpath('//div[@id="filmography"]/div[has-class("filmo-category-section")]/div'):
-            for a in role_div.xpath('.//a'):
-                m = re.search(r'/title/(tt.*)/\.*', a.attrib.get('href'))
+            for a in role_div.xpath(".//a"):
+                m = re.search(r"/title/(tt.*)/\.*", a.attrib.get("href"))
                 if m:
                     yield Movie(m.group(1), a.text)

@@ -21,4 +21,4 @@
 from .module import GithubModule
 
 
-__all__ = ['GithubModule']
+__all__ = ["GithubModule"]

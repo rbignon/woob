@@ -33,9 +33,9 @@ class AccountPage(JsonPage):
     def get_account(self):
         account = Account()
 
-        account.id = CleanText(Dict('id'))(self.doc)
-        account.iban = CleanText(Dict('iban'))(self.doc)
-        account.currency = Currency(Dict('currency'))(self.doc)
+        account.id = CleanText(Dict("id"))(self.doc)
+        account.iban = CleanText(Dict("iban"))(self.doc)
+        account.currency = Currency(Dict("currency"))(self.doc)
         account.type = Account.TYPE_CHECKING
 
         return account
@@ -44,23 +44,23 @@ class AccountPage(JsonPage):
 class SpacesPage(JsonPage):
     @method
     class fill_account(ItemElement):
-        obj_balance = CleanDecimal.SI(Dict('totalBalance'))
+        obj_balance = CleanDecimal.SI(Dict("totalBalance"))
 
         def obj_label(self):
-            for space in Dict('spaces')(self):
-                if space['isPrimary']:
-                    return CleanText().filter(space['name'])
-            raise AssertionError('There should be a primary account.')
+            for space in Dict("spaces")(self):
+                if space["isPrimary"]:
+                    return CleanText().filter(space["name"])
+            raise AssertionError("There should be a primary account.")
 
 
 TRANSACTION_TYPES = {
-    'PT': Transaction.TYPE_CARD,
-    'AA': Transaction.TYPE_CARD,
-    'CT': Transaction.TYPE_TRANSFER,
-    'WEE': Transaction.TYPE_BANK,
-    'DT': Transaction.TYPE_TRANSFER,
-    'FT': Transaction.TYPE_TRANSFER,
-    'DD': Transaction.TYPE_ORDER,
+    "PT": Transaction.TYPE_CARD,
+    "AA": Transaction.TYPE_CARD,
+    "CT": Transaction.TYPE_TRANSFER,
+    "WEE": Transaction.TYPE_BANK,
+    "DT": Transaction.TYPE_TRANSFER,
+    "FT": Transaction.TYPE_TRANSFER,
+    "DD": Transaction.TYPE_ORDER,
 }
 
 
@@ -72,30 +72,30 @@ class TransactionsPage(JsonPage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_id = CleanText(Dict('id'))
-            obj_amount = CleanDecimal.SI(Dict('amount'))
+            obj_id = CleanText(Dict("id"))
+            obj_amount = CleanDecimal.SI(Dict("amount"))
             obj_label = obj_raw = Coalesce(
-                CleanText(Dict('merchantName', default=None), default=NotAvailable),
-                CleanText(Dict('partnerName', default=None), default=NotAvailable),
-                CleanText(Dict('referenceText', default=None), default=NotAvailable),
-                default='',  # A transaction can have no label.
+                CleanText(Dict("merchantName", default=None), default=NotAvailable),
+                CleanText(Dict("partnerName", default=None), default=NotAvailable),
+                CleanText(Dict("referenceText", default=None), default=NotAvailable),
+                default="",  # A transaction can have no label.
             )
-            obj_date = FromTimestamp(Dict('createdTS'), tz=gettz('Europe/Paris'), millis=True)
-            obj_rdate = FromTimestamp(Dict('visibleTS'), tz=gettz('Europe/Paris'), millis=True)
-            obj_type = Map(Dict('type'), TRANSACTION_TYPES, default=Transaction.TYPE_UNKNOWN)
-            obj_original_currency = Currency(Dict('originalCurrency', default=None), default=NotAvailable)
-            obj_original_amount = CleanDecimal.SI(Dict('originalAmount', default=None), default=NotAvailable)
+            obj_date = FromTimestamp(Dict("createdTS"), tz=gettz("Europe/Paris"), millis=True)
+            obj_rdate = FromTimestamp(Dict("visibleTS"), tz=gettz("Europe/Paris"), millis=True)
+            obj_type = Map(Dict("type"), TRANSACTION_TYPES, default=Transaction.TYPE_UNKNOWN)
+            obj_original_currency = Currency(Dict("originalCurrency", default=None), default=NotAvailable)
+            obj_original_amount = CleanDecimal.SI(Dict("originalAmount", default=None), default=NotAvailable)
 
-            obj__category_id = Dict('category')
-            obj_coming = Dict('pending')
+            obj__category_id = Dict("category")
+            obj_coming = Dict("pending")
 
             def validate(self, obj):
-                return Env('coming')(self) == obj.coming and obj.amount != 0
+                return Env("coming")(self) == obj.coming and obj.amount != 0
 
 
 class TransactionsCategoryPage(JsonPage):
     def get_categories(self):
         categories_map = {}
         for category in self.doc:
-            categories_map[category['id']] = category['name']
+            categories_map[category["id"]] = category["name"]
         return categories_map

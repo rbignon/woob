@@ -21,4 +21,4 @@
 from .module import GanPatrimoineModule
 
 
-__all__ = ['GanPatrimoineModule']
+__all__ = ["GanPatrimoineModule"]

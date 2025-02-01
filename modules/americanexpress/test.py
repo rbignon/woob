@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class AmericanExpressTest(BackendTest):
-    MODULE = 'americanexpress'
+    MODULE = "americanexpress"
 
     def test_americanexpress(self):
         l = list(self.backend.iter_accounts())

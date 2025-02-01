@@ -27,23 +27,23 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import WiseedBrowser
 
 
-__all__ = ['WiseedModule']
+__all__ = ["WiseedModule"]
 
 
 class WiseedModule(Module, CapBankWealth, CapProfile):
-    NAME = 'wiseed'
-    DESCRIPTION = 'WiSEED'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "wiseed"
+    DESCRIPTION = "WiSEED"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = WiseedBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='E-mail', regexp='.*@.*', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('captcha_response'),
+        ValueBackendPassword("login", label="E-mail", regexp=".*@.*", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("captcha_response"),
     )
 
     def create_default_browser(self):

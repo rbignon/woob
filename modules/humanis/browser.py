@@ -21,5 +21,7 @@ from woob_modules.cmes.browser import CmesBrowser
 
 
 class HumanisBrowser(CmesBrowser):
-    login = CmesBrowser.login.with_urls('epsens/(?P<client_space>.*)fr/identification/authentification.html')
-    mfa = CmesBrowser.mfa.with_urls('https://www.gestion-epargne-salariale.fr/epsens/fr/epargnants/premiers-pas/authentification-forte/index.html')
+    login = CmesBrowser.login.with_urls("epsens/(?P<client_space>.*)fr/identification/authentification.html")
+    mfa = CmesBrowser.mfa.with_urls(
+        "https://www.gestion-epargne-salariale.fr/epsens/fr/epargnants/premiers-pas/authentification-forte/index.html"
+    )

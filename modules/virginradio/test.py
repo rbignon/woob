@@ -23,8 +23,8 @@ from woob.tools.test import BackendTest
 
 
 class VirginRadioTest(BackendTest):
-    MODULE = 'virginradio'
+    MODULE = "virginradio"
 
     def test_virginradio(self):
-        l = list(self.backend.iter_resources((Radio, ), []))
+        l = list(self.backend.iter_resources((Radio,), []))
         self.assertTrue(len(l) > 0)

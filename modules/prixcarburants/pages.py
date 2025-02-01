@@ -35,8 +35,8 @@ class IndexPage(HTMLPage):
         class item(ItemElement):
             klass = Product
 
-            obj_id = CleanText('./input/@value')
-            obj_name = CleanText('./label')
+            obj_id = CleanText("./input/@value")
+            obj_name = CleanText("./label")
 
 
 class ComparisonResultsPage(HTMLPage):
@@ -49,49 +49,51 @@ class ComparisonResultsPage(HTMLPage):
             klass = Price
 
             def condition(self):
-                return CleanText('./@id', default=False)(self)
+                return CleanText("./@id", default=False)(self)
 
-            obj_product = Env('product')
+            obj_product = Env("product")
 
             def obj_id(self):
-                product = Field('product')(self)
-                _id = CleanText('./@id')(self)
-                return u"%s.%s" % (product.id, _id)
+                product = Field("product")(self)
+                _id = CleanText("./@id")(self)
+                return "%s.%s" % (product.id, _id)
 
             def obj_shop(self):
-                _id = Field('id')(self)
+                _id = Field("id")(self)
                 shop = Shop(_id)
                 shop.name = CleanText('./td/div/div/span[@class="title"]')(self)
-                shop.location = Format("%s %s",
-                                       CleanText('(./td/div/div/span)[2]'),
-                                       CleanText('(./td/div/div/span)[3]'))(self)
+                shop.location = Format(
+                    "%s %s", CleanText("(./td/div/div/span)[2]"), CleanText("(./td/div/div/span)[3]")
+                )(self)
                 return shop
 
-            obj_date = Date(CleanText('(./td)[2]/span[2]'), dayfirst=True)
-            obj_currency = u'EUR'
-            obj_cost = CleanDecimal('(./td)[2]/span[1]')
+            obj_date = Date(CleanText("(./td)[2]/span[2]"), dayfirst=True)
+            obj_currency = "EUR"
+            obj_cost = CleanDecimal("(./td)[2]/span[1]")
 
     def get_product_name(self, product_id):
         return CleanText(
-            f'//div[@id="affinage-choix_carbu"]/ul/li/input[@value="{product_id}"]/following-sibling::label',
-            default='')(self.doc)
+            f'//div[@id="affinage-choix_carbu"]/ul/li/input[@value="{product_id}"]/following-sibling::label', default=""
+        )(self.doc)
 
 
 class ShopInfoPage(HTMLPage):
     def get_info(self):
-        return Format("""
+        return Format(
+            """
                         %s: %s<br/>
                         %s%s<br/>
                         %s:%s
                       """,
-                      CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[1]/strong'),
-                      CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[1]',
-                                children=False),
-                      CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[2]/strong'),
-                      CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[2]',
-                                children=False),
-                      CleanText('//div[@class="infos"]/div/div[@class="services"]/strong'),
-                      Join(addBefore='<ul><li>',
-                           pattern='</li><li>',
-                           addAfter='</li></ul>',
-                           selector='//div[@class="infos"]/div/div[@class="services"]/div/img/@alt'))(self.doc)
+            CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[1]/strong'),
+            CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[1]', children=False),
+            CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[2]/strong'),
+            CleanText('//div[@class="infos"]/div[@id="infos-details"]/p[2]', children=False),
+            CleanText('//div[@class="infos"]/div/div[@class="services"]/strong'),
+            Join(
+                addBefore="<ul><li>",
+                pattern="</li><li>",
+                addAfter="</li></ul>",
+                selector='//div[@class="infos"]/div/div[@class="services"]/div/img/@alt',
+            ),
+        )(self.doc)

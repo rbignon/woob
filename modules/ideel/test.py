@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest
 
 
 class IdeelTest(BackendTest):
-    MODULE = 'ideel'
+    MODULE = "ideel"
 
     def test_history(self):
         """

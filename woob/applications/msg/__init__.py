@@ -19,4 +19,4 @@
 from .msg import AppMsg
 
 
-__all__ = ['AppMsg']
+__all__ = ["AppMsg"]

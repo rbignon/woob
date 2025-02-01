@@ -31,43 +31,41 @@ from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
 
 
-__all__ = ['VicSec']
+__all__ = ["VicSec"]
 
 
 class VicSecPage(HTMLPage):
     @property
     def logged(self):
-        return bool(self.doc.xpath(
-            '//a[@href="https://www.victoriassecret.com/account/profile"]'))
+        return bool(self.doc.xpath('//a[@href="https://www.victoriassecret.com/account/profile"]'))
 
 
 class LoginPage(VicSecPage):
     def login(self, email, password):
-        form = self.get_form(name='accountLogonForm')
-        form['j_username'] = email
-        form['j_password'] = password
+        form = self.get_form(name="accountLogonForm")
+        form["j_username"] = email
+        form["j_password"] = password
         form.submit()
 
 
 class HistoryPage(VicSecPage):
     def iter_orders(self):
-        return [onum for date, onum in sorted(
-                chain(self.orders(), self.returns()), reverse=True)]
+        return [onum for date, onum in sorted(chain(self.orders(), self.returns()), reverse=True)]
 
     def orders(self):
         for tr in self.doc.xpath('//table[@class="order-status"]/tbody[1]/tr'):
-            date = datetime.strptime(tr.xpath('td[1]/text()')[0], '%m/%d/%Y')
-            num = tr.xpath('td[2]/a/text()')[0]
-            status = tr.xpath('td[4]/span/text()')[0]
-            if status == u'Delivered':
+            date = datetime.strptime(tr.xpath("td[1]/text()")[0], "%m/%d/%Y")
+            num = tr.xpath("td[2]/a/text()")[0]
+            status = tr.xpath("td[4]/span/text()")[0]
+            if status == "Delivered":
                 yield date, num
 
     def returns(self):
         for tr in self.doc.xpath('//table[@class="order-status"]/tbody[3]/tr'):
-            num = tr.xpath('td[1]/a/text()')[0]
-            date = datetime.strptime(tr.xpath('td[2]/text()')[0], '%m/%d/%Y')
-            status = tr.xpath('td[4]/span/text()')[0]
-            if status == u'Complete':
+            num = tr.xpath("td[1]/a/text()")[0]
+            date = datetime.strptime(tr.xpath("td[2]/text()")[0], "%m/%d/%Y")
+            status = tr.xpath("td[4]/span/text()")[0]
+            if status == "Complete":
                 yield date, num
 
 
@@ -81,26 +79,29 @@ class OrderPage(VicSecPage):
         return order
 
     def payments(self):
-        for tr in self.doc.xpath('//tbody[@class="payment-summary"]'
-                                 '//th[text()="Payment Summary"]/../../../tbody/tr'):
-            method = tr.xpath('td[1]/text()')[0]
-            amnode = tr.xpath('td[2]')[0]
-            amsign = -1 if amnode.xpath('em') else 1
+        for tr in self.doc.xpath(
+            '//tbody[@class="payment-summary"]' '//th[text()="Payment Summary"]/../../../tbody/tr'
+        ):
+            method = tr.xpath("td[1]/text()")[0]
+            amnode = tr.xpath("td[2]")[0]
+            amsign = -1 if amnode.xpath("em") else 1
             amount = amnode.text_content().strip()
             pmt = Payment()
             pmt.date = self.order_date()
             pmt.method = method
             pmt.amount = amsign * AmTr.decimal_amount(amount)
-            if pmt.method not in [u'Funds to be applied on backorder']:
+            if pmt.method not in ["Funds to be applied on backorder"]:
                 yield pmt
 
     def items(self):
         for tr in self.doc.xpath('//tbody[@class="order-items"]/tr'):
-            label = tr.xpath('*//h1')[0].text_content().strip()
-            price = AmTr.decimal_amount(re.match(r'^\s*([^\s]+)(\s+.*)?',
-                                        tr.xpath('*//div[@class="price"]')[0].text_content(),
-                                        re.DOTALL).group(1))
-            url = 'http:' + tr.xpath('*//img/@src')[0]
+            label = tr.xpath("*//h1")[0].text_content().strip()
+            price = AmTr.decimal_amount(
+                re.match(
+                    r"^\s*([^\s]+)(\s+.*)?", tr.xpath('*//div[@class="price"]')[0].text_content(), re.DOTALL
+                ).group(1)
+            )
+            url = "http:" + tr.xpath("*//img/@src")[0]
             item = Item()
             item.label = label
             item.url = url
@@ -111,55 +112,56 @@ class OrderPage(VicSecPage):
         return not self.doc.xpath('//tbody[@class="order-items"]/tr')
 
     def order_number(self):
-        return self.order_info(u'Order Number')
+        return self.order_info("Order Number")
 
     def order_date(self):
-        return datetime.strptime(self.order_info(u'Order Date'), '%m/%d/%Y')
+        return datetime.strptime(self.order_info("Order Date"), "%m/%d/%Y")
 
     def tax(self):
-        return self.payment_part(u'Sales Tax')
+        return self.payment_part("Sales Tax")
 
     def shipping(self):
-        return self.payment_part(u'Shipping & Handling')
+        return self.payment_part("Shipping & Handling")
 
     def order_info(self, which):
         info = self.doc.xpath('//p[@class="orderinfo"]')[0].text_content()
-        return re.match(u'.*%s:\\s+([^\\s]+)\\s' % which, info, re.DOTALL).group(1)
+        return re.match(".*%s:\\s+([^\\s]+)\\s" % which, info, re.DOTALL).group(1)
 
     def discount(self):
         # Sometimes subtotal doesn't add up with items.
         # I saw that "Special Offer" was actually added to the item's price,
         # instead of being subtracted. Looks like a bug on VS' side.
         # To compensate for it I'm correcting discount value.
-        dcnt = self.payment_part(u'Special Offer')
-        subt = self.payment_part(u'Merchandise Subtotal')
-        rett = self.payment_part(u'Return Merchandise Total')
+        dcnt = self.payment_part("Special Offer")
+        subt = self.payment_part("Merchandise Subtotal")
+        rett = self.payment_part("Return Merchandise Total")
         items = sum(i.price for i in self.items())
         return dcnt + subt + rett - items
 
     def payment_part(self, which):
         # The numbers notation on VS is super wierd.
         # Sometimes negative amounts are represented by <em> element.
-        for node in self.doc.xpath('//tbody[@class="payment-summary"]'
-                                   '//td[contains(text(),"%s")]/../td[2]' % which):
+        for node in self.doc.xpath('//tbody[@class="payment-summary"]' '//td[contains(text(),"%s")]/../td[2]' % which):
             strv = node.text_content().strip()
-            v = Decimal(0) if strv == u'FREE' else AmTr.decimal_amount(strv)
-            return -v if node.xpath('em') and v > 0 else v
+            v = Decimal(0) if strv == "FREE" else AmTr.decimal_amount(strv)
+            return -v if node.xpath("em") and v > 0 else v
         return Decimal(0)
 
 
 class VicSec(LoginBrowser):
-    BASEURL = 'https://www.victoriassecret.com'
-    login = URL(r'/account/signin/overlay$', LoginPage)
-    history = URL(r'/account/orderlist$', HistoryPage)
-    order = URL(r'/account/orderstatus/submit/view\?emailId=(?P<email>.*)&orderNumber=(?P<order_num>\d+)$',
-                r'/account/orderstatus.*$',
-                OrderPage)
-    unknown = URL(r'/.*$', VicSecPage)
+    BASEURL = "https://www.victoriassecret.com"
+    login = URL(r"/account/signin/overlay$", LoginPage)
+    history = URL(r"/account/orderlist$", HistoryPage)
+    order = URL(
+        r"/account/orderstatus/submit/view\?emailId=(?P<email>.*)&orderNumber=(?P<order_num>\d+)$",
+        r"/account/orderstatus.*$",
+        OrderPage,
+    )
+    unknown = URL(r"/.*$", VicSecPage)
 
     def get_currency(self):
         # Victoria's Secret uses only U.S. dollars.
-        return Currency.get_currency(u'$')
+        return Currency.get_currency("$")
 
     def get_order(self, id_):
         return self.to_order(id_).order()
@@ -184,14 +186,13 @@ class VicSec(LoginBrowser):
     @need_login
     def to_order(self, order_num):
         self.order.stay_or_go(order_num=order_num, email=self.username.upper())
-        assert self.order.is_here(order_num=order_num,
-                                  email=self.username.upper())
+        assert self.order.is_here(order_num=order_num, email=self.username.upper())
         return self.page
 
     def do_login(self):
         self.session.cookies.clear()
         # Need to go there two times. Perhaps because of cookies...
-        self.location('/secureoverlay/wrapper/medium/account/signin/overlay/show')
+        self.location("/secureoverlay/wrapper/medium/account/signin/overlay/show")
         self.login.go()
         self.login.go().login(self.username, self.password)
         self.history.go()

@@ -21,15 +21,15 @@ from woob_modules.cmso.pro.browser import CmsoProBrowser
 
 
 class CmbProBrowser(CmsoProBrowser):
-    BASEURL = 'https://api.cmb.fr'
+    BASEURL = "https://api.cmb.fr"
 
-    original_site = 'https://mon.cmb.fr'
+    original_site = "https://mon.cmb.fr"
 
-    redirect_uri = '%s/auth/checkuser' % original_site
-    error_uri = '%s/auth/errorauthn' % original_site
-    client_uri = 'com.arkea.cmb.siteaccessible'
+    redirect_uri = "%s/auth/checkuser" % original_site
+    error_uri = "%s/auth/errorauthn" % original_site
+    client_uri = "com.arkea.cmb.siteaccessible"
 
-    name = 'cmb'
-    arkea = '01'
-    arkea_si = '001'
-    arkea_client_id = 'ARCM6W0q6zHX31vvdVczlWRtGjSGbkPv'
+    name = "cmb"
+    arkea = "01"
+    arkea_si = "001"
+    arkea_client_id = "ARCM6W0q6zHX31vvdVczlWRtGjSGbkPv"

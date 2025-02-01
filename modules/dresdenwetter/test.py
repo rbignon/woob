@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest, skip_without_config
 
 
 class DresdenWetterTest(BackendTest):
-    MODULE = 'dresdenwetter'
+    MODULE = "dresdenwetter"
 
     @skip_without_config()
     def test_gauges_sensors(self):
@@ -36,13 +36,13 @@ class DresdenWetterTest(BackendTest):
     @skip_without_config()
     def test_sensors_value(self):
         temperature = self.backend.get_last_measure("dd-Temperatur2m").level
-        self.assertTrue(temperature > -50., msg="To cold")
-        self.assertTrue(temperature < 50., msg="Temperature to high")
-        self.assertTrue(self.backend.get_last_measure(u"dd-Wind10minØ").level >= 0)
-        self.assertTrue(self.backend.get_last_measure("dd-RelLuftdruck").level > 800.)
-        self.assertTrue(self.backend.get_last_measure("dd-RelLuftfeuchtigkeit").level >= 0.)
-        self.assertTrue(self.backend.get_last_measure("dd-Niederschlagseit001Uhr").level >= 0.)
-        self.assertTrue(self.backend.get_last_measure("dd-Globalstrahlung").level >= 0.)
+        self.assertTrue(temperature > -50.0, msg="To cold")
+        self.assertTrue(temperature < 50.0, msg="Temperature to high")
+        self.assertTrue(self.backend.get_last_measure("dd-Wind10minØ").level >= 0)
+        self.assertTrue(self.backend.get_last_measure("dd-RelLuftdruck").level > 800.0)
+        self.assertTrue(self.backend.get_last_measure("dd-RelLuftfeuchtigkeit").level >= 0.0)
+        self.assertTrue(self.backend.get_last_measure("dd-Niederschlagseit001Uhr").level >= 0.0)
+        self.assertTrue(self.backend.get_last_measure("dd-Globalstrahlung").level >= 0.0)
 
     @skip_without_config()
     def test_temperature(self):
@@ -50,8 +50,8 @@ class DresdenWetterTest(BackendTest):
         test the first sensor return by module"
         """
         temperature = list(self.backend.iter_sensors("wetter", "Temperatur"))
-        assert temperature[0].name == u"Temperatur 2m"
-        assert temperature[0].unit == u"°C"
+        assert temperature[0].name == "Temperatur 2m"
+        assert temperature[0].unit == "°C"
 
     @skip_without_config()
     def test_globalstrahlung(self):
@@ -59,4 +59,4 @@ class DresdenWetterTest(BackendTest):
         Test the last sensor return by module"
         """
         sensor = list(self.backend.iter_sensors("wetter", "Globalstrahlung"))
-        assert sensor[0].unit == u"W/m²"
+        assert sensor[0].unit == "W/m²"

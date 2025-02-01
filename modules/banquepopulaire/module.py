@@ -27,45 +27,45 @@ from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 from .browser import BanquePopulaire
 
 
-__all__ = ['BanquePopulaireModule']
+__all__ = ["BanquePopulaireModule"]
 
 
 class BanquePopulaireModule(Module, CapBankWealth):
-    NAME = 'banquepopulaire'
-    MAINTAINER = 'Etienne RABY'
-    EMAIL = 'mail@eraby.fr'
-    DEPENDENCIES = ('caissedepargne', 'linebourse')
-    DESCRIPTION = 'Banque Populaire'
-    LICENSE = 'LGPLv3+'
+    NAME = "banquepopulaire"
+    MAINTAINER = "Etienne RABY"
+    EMAIL = "mail@eraby.fr"
+    DEPENDENCIES = ("caissedepargne", "linebourse")
+    DESCRIPTION = "Banque Populaire"
+    LICENSE = "LGPLv3+"
 
-#   Could be updated just by checking https://www.icgauth.banquepopulaire.fr/ria/pas/configuration/config.json
+    #   Could be updated just by checking https://www.icgauth.banquepopulaire.fr/ria/pas/configuration/config.json
     cdetab_choices = {
-        '13807': 'Grand Ouest',
-        '14707': 'Alsace Lorraine Champagne',
-        '10907': 'Aquitaine Centre Atlantique',
-        '16807': 'Auvergne Rhone Alpes',
-        '10807': 'Bourgogne Franche Comté',
-        '13507': 'Nord',
-        '16607': 'Sud',
-        '14607': 'Mediterranée',
-        '17807': 'Occitane',
-        '10207': 'Rives de Paris',
-        '18707': 'Val de France',
-        'Padding': 'ZZ Do not use that entry',  # Ugly hack to avoid "v.tiny = True" in console.py:ask()
+        "13807": "Grand Ouest",
+        "14707": "Alsace Lorraine Champagne",
+        "10907": "Aquitaine Centre Atlantique",
+        "16807": "Auvergne Rhone Alpes",
+        "10807": "Bourgogne Franche Comté",
+        "13507": "Nord",
+        "16607": "Sud",
+        "14607": "Mediterranée",
+        "17807": "Occitane",
+        "10207": "Rives de Paris",
+        "18707": "Val de France",
+        "Padding": "ZZ Do not use that entry",  # Ugly hack to avoid "v.tiny = True" in console.py:ask()
     }
 
-    cdetab_choices = OrderedDict([
-        (k, '%s ( %s )' % (v, k))
-        for k, v in sorted(cdetab_choices.items(), key=lambda k_v: (k_v[1], k_v[0]))])
+    cdetab_choices = OrderedDict(
+        [(k, "%s ( %s )" % (v, k)) for k, v in sorted(cdetab_choices.items(), key=lambda k_v: (k_v[1], k_v[0]))]
+    )
 
     CONFIG = BackendConfig(
-        Value('cdetab', label='Région', choices=cdetab_choices, regexp=r'\d{5}'),
-        ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'[a-zA-Z0-9]+'),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('code_sms', regexp=r'\d{8}'),
-        ValueTransient('code_emv', regexp=r'\d{8}'),
-        ValueTransient('resume'),
-        ValueTransient('request_information'),
+        Value("cdetab", label="Région", choices=cdetab_choices, regexp=r"\d{5}"),
+        ValueBackendPassword("login", label="Identifiant", masked=False, regexp=r"[a-zA-Z0-9]+"),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("code_sms", regexp=r"\d{8}"),
+        ValueTransient("code_emv", regexp=r"\d{8}"),
+        ValueTransient("resume"),
+        ValueTransient("request_information"),
     )
 
     BROWSER = BanquePopulaire

@@ -25,11 +25,12 @@ from woob.capabilities.parcel import Event, Parcel, ParcelNotFound
 
 class SearchPage(JsonPage):
     STATUSES = {
-            "WAITING": Parcel.STATUS_PLANNED,
-            "IN_TRANSPORT": Parcel.STATUS_IN_TRANSIT,
-            "READY_FOR_PICKUP": Parcel.STATUS_ARRIVED,
-            "DELIVERED": Parcel.STATUS_ARRIVED,
-            }
+        "WAITING": Parcel.STATUS_PLANNED,
+        "IN_TRANSPORT": Parcel.STATUS_IN_TRANSIT,
+        "READY_FOR_PICKUP": Parcel.STATUS_ARRIVED,
+        "DELIVERED": Parcel.STATUS_ARRIVED,
+    }
+
     def get_info(self, _id):
         shipments = self.doc["shipments"]
         if not shipments:

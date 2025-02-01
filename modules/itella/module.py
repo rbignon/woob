@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import ItellaBrowser
 
 
-__all__ = ['ItellaModule']
+__all__ = ["ItellaModule"]
 
 
 class ItellaModule(Module, CapParcel):
-    NAME = 'itella'
-    DESCRIPTION = u'Itella website'
-    MAINTAINER = u'Matthieu Weber'
-    EMAIL = 'mweber+weboob@free.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "itella"
+    DESCRIPTION = "Itella website"
+    MAINTAINER = "Matthieu Weber"
+    EMAIL = "mweber+weboob@free.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = ItellaBrowser
 

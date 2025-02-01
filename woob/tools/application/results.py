@@ -18,7 +18,7 @@
 from woob.capabilities import UserError
 
 
-__all__ = ['ResultsCondition', 'ResultsConditionError']
+__all__ = ["ResultsCondition", "ResultsConditionError"]
 
 
 class IResultsCondition:
@@ -57,7 +57,7 @@ def is_in(left, right):
     return left in right
 
 
-functions = {'!=': is_notegal, '=': is_egal, '>': is_sup, '<': is_inf, '|': is_in}
+functions = {"!=": is_notegal, "=": is_egal, ">": is_sup, "<": is_inf, "|": is_in}
 
 
 class ResultsCondition(IResultsCondition):
@@ -70,27 +70,30 @@ class ResultsCondition(IResultsCondition):
     def __init__(self, condition_str):
         self.limit = None
         or_list = []
-        _condition_str = condition_str.split(' LIMIT ')
+        _condition_str = condition_str.split(" LIMIT ")
         if len(_condition_str) == 2:
             try:
                 self.limit = int(_condition_str[1])
             except ValueError:
-                raise ResultsConditionError('Syntax error in the condition expression, please check documentation')
+                raise ResultsConditionError("Syntax error in the condition expression, please check documentation")
         condition_str = _condition_str[0]
-        for _or in condition_str.split(' OR '):
+        for _or in condition_str.split(" OR "):
             and_list = []
-            for _and in _or.split(' AND '):
+            for _and in _or.split(" AND "):
                 operator = None
-                for op in ['!=', '=', '>', '<', '|']:
+                for op in ["!=", "=", ">", "<", "|"]:
                     if op in _and:
                         operator = op
                         break
                 if operator is None:
-                    raise ResultsConditionError('Could not find a valid operator in sub-expression "%s". Protect the complete condition expression with quotes, or read the documentation in the man manual.' % _and)
+                    raise ResultsConditionError(
+                        'Could not find a valid operator in sub-expression "%s". Protect the complete condition expression with quotes, or read the documentation in the man manual.'
+                        % _and
+                    )
                 try:
                     l, r = _and.split(operator)
                 except ValueError:
-                    raise ResultsConditionError('Syntax error in the condition expression, please check documentation')
+                    raise ResultsConditionError("Syntax error in the condition expression, please check documentation")
                 and_list.append(Condition(l.strip(), operator, r.strip()))
             or_list.append(and_list)
         self.condition = or_list
@@ -101,6 +104,7 @@ class ResultsCondition(IResultsCondition):
         from datetime import date, datetime, timedelta
 
         import woob.tools.date as date_utils
+
         d = obj.to_dict()
         # We evaluate all member of a list at each iteration.
         for _or in self.condition:
@@ -108,9 +112,9 @@ class ResultsCondition(IResultsCondition):
             for condition in _or:
                 if condition.left in d:
                     # in the case of id, test id@backend and id
-                    if condition.left == 'id':
+                    if condition.left == "id":
                         tocompare = condition.right
-                        evalfullid = functions[condition.op](tocompare, d['id'])
+                        evalfullid = functions[condition.op](tocompare, d["id"])
                         evalid = functions[condition.op](tocompare, obj.id)
                         myeval = evalfullid or evalid
                     else:
@@ -118,17 +122,25 @@ class ResultsCondition(IResultsCondition):
                         typed = type(d[condition.left])
                         try:
                             if isinstance(d[condition.left], date_utils.date):
-                                tocompare = date(*[int(x) for x in condition.right.split('-')])
+                                tocompare = date(*[int(x) for x in condition.right.split("-")])
                             elif isinstance(d[condition.left], date_utils.datetime):
-                                splitted_datetime = condition.right.split(' ')
-                                tocompare = datetime(*([int(x) for x in splitted_datetime[0].split('-')] +
-                                                       [int(x) for x in splitted_datetime[1].split(':')]))
+                                splitted_datetime = condition.right.split(" ")
+                                tocompare = datetime(
+                                    *(
+                                        [int(x) for x in splitted_datetime[0].split("-")]
+                                        + [int(x) for x in splitted_datetime[1].split(":")]
+                                    )
+                                )
                             elif isinstance(d[condition.left], timedelta):
-                                time_dict = re.match(r'^\s*((?P<hours>\d+)\s*h)?\s*((?P<minutes>\d+)\s*m)?\s*((?P<seconds>\d+)\s*s)?\s*$',
-                                                     condition.right).groupdict()
-                                tocompare = timedelta(seconds=int(time_dict['seconds'] or "0"),
-                                                      minutes=int(time_dict['minutes'] or "0"),
-                                                      hours=int(time_dict['hours'] or "0"))
+                                time_dict = re.match(
+                                    r"^\s*((?P<hours>\d+)\s*h)?\s*((?P<minutes>\d+)\s*m)?\s*((?P<seconds>\d+)\s*s)?\s*$",
+                                    condition.right,
+                                ).groupdict()
+                                tocompare = timedelta(
+                                    seconds=int(time_dict["seconds"] or "0"),
+                                    minutes=int(time_dict["minutes"] or "0"),
+                                    hours=int(time_dict["hours"] or "0"),
+                                )
                             else:
                                 tocompare = typed(condition.right)
                             myeval = functions[condition.op](tocompare, d[condition.left])

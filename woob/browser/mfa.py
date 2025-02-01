@@ -48,7 +48,7 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
     dump.
     """
 
-    INTERACTIVE_NAME: ClassVar[str] = 'request_information'
+    INTERACTIVE_NAME: ClassVar[str] = "request_information"
     """
     Config's key which is set to a non-empty value when we are in interactive mode.
     """
@@ -93,7 +93,7 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
         self.clear_not_2fa_cookies()
         state = super().dump_state()
         if self.twofa_logged_date:
-            state['twofa_logged_date'] = str(self.twofa_logged_date)
+            state["twofa_logged_date"] = str(self.twofa_logged_date)
 
         return state
 
@@ -117,8 +117,8 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
     def load_state(self, state: Dict[str, Any]):
         super().load_state(state)
         self.twofa_logged_date = None
-        if state.get('twofa_logged_date') not in (None, '', 'None'):
-            twofa_logged_date = parser.parse(state['twofa_logged_date'])
+        if state.get("twofa_logged_date") not in (None, "", "None"):
+            twofa_logged_date = parser.parse(state["twofa_logged_date"])
             if not twofa_logged_date.tzinfo:
                 twofa_logged_date = twofa_logged_date.replace(tzinfo=tz.tzlocal())
             self.twofa_logged_date = twofa_logged_date
@@ -165,7 +165,7 @@ class TwoFactorBrowser(LoginBrowser, StatesMixin):
             if value is not None:
                 value.set(value.default)
 
-        assert self.AUTHENTICATION_METHODS, 'There is no config for the double authentication.'
+        assert self.AUTHENTICATION_METHODS, "There is no config for the double authentication."
 
         for config_key, handle_method in self.AUTHENTICATION_METHODS.items():
             config_value = self.config.get(config_key, Value())

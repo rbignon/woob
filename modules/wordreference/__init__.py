@@ -21,4 +21,4 @@
 from .module import WordReferenceModule
 
 
-__all__ = ['WordReferenceModule']
+__all__ = ["WordReferenceModule"]

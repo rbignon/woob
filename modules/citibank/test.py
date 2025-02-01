@@ -23,7 +23,7 @@ from woob.tools.test import BackendTest
 
 
 class CitibankTest(BackendTest):
-    MODULE = 'citibank'
+    MODULE = "citibank"
 
     def test_history(self):
         """

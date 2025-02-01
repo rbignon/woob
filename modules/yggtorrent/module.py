@@ -25,21 +25,21 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import YggtorrentBrowser
 
 
-__all__ = ['YggtorrentModule']
+__all__ = ["YggtorrentModule"]
 
 
 class YggtorrentModule(Module, CapTorrent):
-    NAME = 'yggtorrent'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'eneiluj@posteo.net'
-    VERSION = '3.7'
-    DESCRIPTION = 'YGG BitTorrent tracker'
-    LICENSE = 'AGPLv3+'
-    CONFIG = BackendConfig(Value('username', label='Username'), ValueBackendPassword('password', label='Password'))
+    NAME = "yggtorrent"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "eneiluj@posteo.net"
+    VERSION = "3.7"
+    DESCRIPTION = "YGG BitTorrent tracker"
+    LICENSE = "AGPLv3+"
+    CONFIG = BackendConfig(Value("username", label="Username"), ValueBackendPassword("password", label="Password"))
     BROWSER = YggtorrentBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['username'].get(), self.config['password'].get())
+        return self.create_browser(self.config["username"].get(), self.config["password"].get())
 
     def get_torrent(self, id):
         return self.browser.get_torrent(id)
@@ -53,14 +53,12 @@ class YggtorrentModule(Module, CapTorrent):
         return resp.content
 
     def iter_torrents(self, pattern):
-        return self.browser.iter_torrents(quote_plus(pattern.encode('utf-8')))
+        return self.browser.iter_torrents(quote_plus(pattern.encode("utf-8")))
 
     def fill_torrent(self, torrent, fields):
-        if 'description' in fields:
+        if "description" in fields:
             t = self.browser.get_torrent(torrent.id)
             torrent.description = t.description
         return torrent
 
-    OBJECTS = {
-        Torrent: fill_torrent
-    }
+    OBJECTS = {Torrent: fill_torrent}

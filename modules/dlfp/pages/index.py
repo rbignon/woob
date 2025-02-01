@@ -25,7 +25,7 @@ class DLFPPage(HTMLPage):
     @property
     def logged(self):
         try:
-            self.get_form(id='new_account_sidebar')
+            self.get_form(id="new_account_sidebar")
             return False
         except FormNotFound:
             return True
@@ -34,7 +34,7 @@ class DLFPPage(HTMLPage):
 class IndexPage(DLFPPage):
     def get_login_token(self):
         form = self.get_form(id="new_account_sidebar")
-        return form.get('authenticity_token')
+        return form.get("authenticity_token")
 
 
 class LoginPage(DLFPPage):

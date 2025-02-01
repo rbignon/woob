@@ -25,33 +25,28 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import NefBrowser
 
 
-__all__ = ['NefModule']
+__all__ = ["NefModule"]
 
 
 class NefModule(Module, CapBankWealth, CapBankTransfer):
-    NAME = 'nef'
-    DESCRIPTION = 'La Nef'
-    MAINTAINER = 'Damien Cassou'
-    EMAIL = 'damien@cassou.me'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "nef"
+    DESCRIPTION = "La Nef"
+    MAINTAINER = "Damien Cassou"
+    EMAIL = "damien@cassou.me"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = NefBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='username', masked=False, regexp='.+'),
-        ValueBackendPassword('password', label='Password'),
-        ValueTransient('request_information'),
-        ValueTransient('otp_sms', regexp=r'^\d{6}$'),
-
+        ValueBackendPassword("login", label="username", masked=False, regexp=".+"),
+        ValueBackendPassword("password", label="Password"),
+        ValueTransient("request_information"),
+        ValueTransient("otp_sms", regexp=r"^\d{6}$"),
     )
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config,
-            self.config['login'].get(),
-            self.config['password'].get()
-        )
+        return self.create_browser(self.config, self.config["login"].get(), self.config["password"].get())
 
     # CapBank
     def iter_accounts(self):

@@ -21,4 +21,4 @@
 from .module import PrivatebinModule
 
 
-__all__ = ['PrivatebinModule']
+__all__ = ["PrivatebinModule"]

@@ -33,11 +33,11 @@ from woob.tools.application.repl import ReplApplication, defaultcount
 from woob.tools.html import html2text
 
 
-__all__ = ['AppMsg']
+__all__ = ["AppMsg"]
 
 
 class AtomFormatter(IFormatter):
-    MANDATORY_FIELDS = ('title', 'date', 'sender', 'content')
+    MANDATORY_FIELDS = ("title", "date", "sender", "content")
 
     def _format_date(self, dt):
         return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -48,7 +48,7 @@ class AtomFormatter(IFormatter):
         self.output('<?xml version="1.0" encoding="utf-8"?>')
         self.output('<feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">')
         self.output('  <title type="text">Atom feed by Woob</title>')  # TODO : get backend name
-        self.output('  <updated>%s</updated>' % self._format_date(gen_time))
+        self.output("  <updated>%s</updated>" % self._format_date(gen_time))
 
         m = hashlib.new("md5")  # nosec
         m.update(self._format_date(gen_time).encode("ascii"))
@@ -80,7 +80,7 @@ class AtomFormatter(IFormatter):
         date = etree.SubElement(elem, "updated")
         date.text = self._format_date(obj.date)
 
-        content = etree.SubElement(elem, 'content')
+        content = etree.SubElement(elem, "content")
         content.text = obj.content
         content.attrib["type"] = "html"
 
@@ -91,13 +91,13 @@ class AtomFormatter(IFormatter):
 
 
 class XHtmlFormatter(IFormatter):
-    MANDATORY_FIELDS = ('title', 'date', 'sender', 'signature', 'content')
+    MANDATORY_FIELDS = ("title", "date", "sender", "signature", "content")
 
     def format_obj(self, obj, alias):
-        result  = "<div>\n"
+        result = "<div>\n"
         result += "<h1>%s</h1>" % (obj.title)
         result += "<dl>"
-        result += "<dt>Date</dt><dd>%s</dd>" % (obj.date.strftime('%Y-%m-%d %H:%M'))
+        result += "<dt>Date</dt><dd>%s</dd>" % (obj.date.strftime("%Y-%m-%d %H:%M"))
         result += "<dt>Sender</dt><dd>%s</dd>" % (obj.sender)
         result += "<dt>Signature</dt><dd>%s</dd>" % (obj.signature)
         result += "</dl>"
@@ -107,26 +107,21 @@ class XHtmlFormatter(IFormatter):
 
 
 class MessageFormatter(IFormatter):
-    MANDATORY_FIELDS = ('title', 'date', 'sender', 'signature', 'content')
+    MANDATORY_FIELDS = ("title", "date", "sender", "signature", "content")
 
     def format_obj(self, obj, alias):
-        result = '%sTitle:%s %s\n' % (self.BOLD,
-                                      self.NC, obj.title)
-        result += '%sDate:%s %s\n' % (self.BOLD,
-                                      self.NC, obj.date.strftime('%Y-%m-%d %H:%M'))
-        result += '%sFrom:%s %s\n' % (self.BOLD,
-                                      self.NC, obj.sender)
-        if hasattr(obj, 'receivers') and obj.receivers:
-            result += '%sTo:%s %s\n' % (self.BOLD,
-                                        self.NC,
-                                        ', '.join(obj.receivers))
+        result = "%sTitle:%s %s\n" % (self.BOLD, self.NC, obj.title)
+        result += "%sDate:%s %s\n" % (self.BOLD, self.NC, obj.date.strftime("%Y-%m-%d %H:%M"))
+        result += "%sFrom:%s %s\n" % (self.BOLD, self.NC, obj.sender)
+        if hasattr(obj, "receivers") and obj.receivers:
+            result += "%sTo:%s %s\n" % (self.BOLD, self.NC, ", ".join(obj.receivers))
 
         if obj.flags & Message.IS_HTML:
             content = html2text(obj.content)
         else:
             content = obj.content
 
-        result += '\n%s' % content
+        result += "\n%s" % content
 
         if obj.signature:
             if obj.flags & Message.IS_HTML:
@@ -134,7 +129,7 @@ class MessageFormatter(IFormatter):
             else:
                 signature = obj.signature
 
-            result += '\n-- \n%s' % signature
+            result += "\n-- \n%s" % signature
         return result
 
 
@@ -155,16 +150,11 @@ class MessagesListFormatter(IFormatter):
     def format_dict_thread(self, obj, alias):
         self.count += 1
         if self.interactive:
-            result = '%s* (%d) %s (%s)%s' % (self.BOLD,
-                                             self.count,
-                                             obj.title, obj.backend,
-                                             self.NC)
+            result = "%s* (%d) %s (%s)%s" % (self.BOLD, self.count, obj.title, obj.backend, self.NC)
         else:
-            result = '%s* (%s) %s%s' % (self.BOLD, obj.id,
-                                        obj.title,
-                                        self.NC)
+            result = "%s* (%s) %s%s" % (self.BOLD, obj.id, obj.title, self.NC)
         if obj.date:
-            result += '\n             %s' % obj.date
+            result += "\n             %s" % obj.date
         return result
 
     def format_dict_messages(self, obj, alias):
@@ -178,41 +168,45 @@ class MessagesListFormatter(IFormatter):
 
     def format_message(self, backend, message, depth=0):
         if not message:
-            return ''
+            return ""
         self.count += 1
 
-        flags = '['
+        flags = "["
         if message.flags & message.IS_UNREAD:
-            flags += 'N'
+            flags += "N"
         else:
-            flags += '-'
+            flags += "-"
         if message.flags & message.IS_NOT_RECEIVED:
-            flags += 'U'
+            flags += "U"
         elif message.flags & message.IS_RECEIVED:
-            flags += 'R'
+            flags += "R"
         else:
-            flags += '-'
-        flags += ']'
+            flags += "-"
+        flags += "]"
 
         if self.interactive:
-            result = '%s%s* (%d)%s %s <%s> %s (%s)\n' % (depth * '  ',
-                                                         self.BOLD,
-                                                         self.count,
-                                                         self.NC,
-                                                         flags,
-                                                         message.sender,
-                                                         message.title,
-                                                         backend)
+            result = "%s%s* (%d)%s %s <%s> %s (%s)\n" % (
+                depth * "  ",
+                self.BOLD,
+                self.count,
+                self.NC,
+                flags,
+                message.sender,
+                message.title,
+                backend,
+            )
         else:
-            result = '%s%s* (%s.%s@%s)%s %s <%s> %s\n' % (depth * '  ',
-                                                          self.BOLD,
-                                                          message.thread.id,
-                                                          message.id,
-                                                          backend,
-                                                          self.NC,
-                                                          flags,
-                                                          message.sender,
-                                                          message.title)
+            result = "%s%s* (%s.%s@%s)%s %s <%s> %s\n" % (
+                depth * "  ",
+                self.BOLD,
+                message.thread.id,
+                message.id,
+                backend,
+                self.NC,
+                flags,
+                message.sender,
+                message.title,
+            )
         if message.children:
             if depth >= 0:
                 depth += 1
@@ -230,34 +224,42 @@ class ProfileFormatter(IFormatter):
 
 
 class AppMsg(ReplApplication):
-    APPNAME = 'msg'
-    OLD_APPNAME = 'boobmsg'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz'
-    DESCRIPTION = "Console application allowing to send messages on various websites and " \
-                  "to display message threads and contents."
+    APPNAME = "msg"
+    OLD_APPNAME = "boobmsg"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2010-YEAR Christophe Benz"
+    DESCRIPTION = (
+        "Console application allowing to send messages on various websites and "
+        "to display message threads and contents."
+    )
     SHORT_DESCRIPTION = "send and receive message threads"
     CAPS = CapMessages
-    EXTRA_FORMATTERS = {'msglist':  MessagesListFormatter,
-                        'msg':      MessageFormatter,
-                        'xhtml':    XHtmlFormatter,
-                        'atom':     AtomFormatter,
-                        'profile':  ProfileFormatter,
-                        }
-    COMMANDS_FORMATTERS = {'list':          'msglist',
-                           'show':          'msg',
-                           'export_thread': 'msg',
-                           'export_all':    'msg',
-                           'ls':            'msglist',
-                           'profile':       'profile',
-                           }
+    EXTRA_FORMATTERS = {
+        "msglist": MessagesListFormatter,
+        "msg": MessageFormatter,
+        "xhtml": XHtmlFormatter,
+        "atom": AtomFormatter,
+        "profile": ProfileFormatter,
+    }
+    COMMANDS_FORMATTERS = {
+        "list": "msglist",
+        "show": "msg",
+        "export_thread": "msg",
+        "export_all": "msg",
+        "ls": "msglist",
+        "profile": "profile",
+    }
 
     def add_application_options(self, group):
-        group.add_option('-E', '--accept-empty',  action='store_true',
-                         help='Send messages with an empty body.')
-        group.add_option('-t', '--title', action='store',
-                         help='For the "post" command, set a title to message',
-                         type='string', dest='title')
+        group.add_option("-E", "--accept-empty", action="store_true", help="Send messages with an empty body.")
+        group.add_option(
+            "-t",
+            "--title",
+            action="store",
+            help='For the "post" command, set a title to message',
+            type="string",
+            dest="title",
+        )
 
     def load_default_backends(self):
         self.load_backends(CapMessages, storage=self.create_storage())
@@ -278,23 +280,21 @@ class AppMsg(ReplApplication):
             backend_name = None
 
         results = {}
-        for field in self.do('get_account_status',
-                             backends=backend_name,
-                             caps=CapAccount):
+        for field in self.do("get_account_status", backends=backend_name, caps=CapAccount):
             if field.backend in results:
                 results[field.backend].append(field)
             else:
                 results[field.backend] = [field]
 
         for name, fields in results.items():
-            print(':: %s ::' % name)
+            print(":: %s ::" % name)
             for f in fields:
                 if f.flags & f.FIELD_HTML:
                     value = html2text(f.value)
                 else:
                     value = f.value
-                print('%s: %s' % (f.label, value))
-            print('')
+                print("%s: %s" % (f.label, value))
+            print("")
 
     def do_post(self, line):
         """
@@ -310,22 +310,21 @@ class AppMsg(ReplApplication):
             text = self.acquire_input()
 
         if not self.options.accept_empty and not text.strip():
-            self.logger.warning('The message body is empty, use option --accept_empty to send empty messages')
+            self.logger.warning("The message body is empty, use option --accept_empty to send empty messages")
             return
 
-        for receiver in receivers.strip().split(','):
-            receiver, backend_name = self.parse_id(receiver.strip(),
-                                                   unique_backend=True)
+        for receiver in receivers.strip().split(","):
+            receiver, backend_name = self.parse_id(receiver.strip(), unique_backend=True)
             if not backend_name and len(self.enabled_backends) > 1:
                 self.logger.warning(
                     'No backend specified for receiver "%s": message will be sent with all the enabled backends (%s)',
                     receiver,
-                    ','.join(backend.name for backend in self.enabled_backends)
+                    ",".join(backend.name for backend in self.enabled_backends),
                 )
 
-            if '.' in receiver:
+            if "." in receiver:
                 # It's a reply
-                thread_id, parent_id = receiver.rsplit('.', 1)
+                thread_id, parent_id = receiver.rsplit(".", 1)
             else:
                 # It's an original message
                 thread_id = receiver
@@ -336,19 +335,21 @@ class AppMsg(ReplApplication):
                     pass
 
             thread = Thread(thread_id)
-            message = Message(thread,
-                              0,
-                              title=self.options.title,
-                              parent=Message(thread, parent_id) if parent_id else None,
-                              content=text)
+            message = Message(
+                thread,
+                0,
+                title=self.options.title,
+                parent=Message(thread, parent_id) if parent_id else None,
+                content=text,
+            )
 
             try:
-                self.do('post_message', message, backends=backend_name).wait()
+                self.do("post_message", message, backends=backend_name).wait()
             except CallErrors as errors:
                 self.bcall_errors_handler(errors)
             else:
                 if self.interactive:
-                    print('Message sent sucessfully to %s' % receiver)
+                    print("Message sent sucessfully to %s" % receiver)
 
     threads = []
     messages = []
@@ -370,11 +371,11 @@ class AppMsg(ReplApplication):
                 backend_name = thread.backend
 
             self.messages = []
-            cmd = self.do('get_thread', id, backends=backend_name)
+            cmd = self.do("get_thread", id, backends=backend_name)
             self.formatter._list_messages = True
         else:
             self.threads = []
-            cmd = self.do('iter_threads')
+            cmd = self.do("iter_threads")
             self.formatter._list_messages = False
 
         self.start_format()
@@ -383,16 +384,16 @@ class AppMsg(ReplApplication):
                 continue
             if len(arg) > 0:
                 if not thread.root:
-                    thread, = self.do("fillobj", thread, ("root",), backends=thread.backend)
+                    (thread,) = self.do("fillobj", thread, ("root",), backends=thread.backend)
                 if thread.root:
-                    thread.root, = self.do("fillobj", thread.root, ("children",), backends=thread.backend)
+                    (thread.root,) = self.do("fillobj", thread.root, ("children",), backends=thread.backend)
 
                 for m in thread.iter_all_messages():
                     if not m.backend:
                         m.backend = thread.backend
                     self.messages.append(m)
             else:
-                thread, = self.do("fillobj", thread, ("title", "date"), backends=thread.backend)
+                (thread,) = self.do("fillobj", thread, ("title", "date"), backends=thread.backend)
                 self.threads.append(thread)
             self.format(thread)
 
@@ -429,13 +430,13 @@ class AppMsg(ReplApplication):
             _id = thread.id
             backend_name = thread.backend
 
-        cmd = self.do('get_thread', _id, backends=backend_name)
+        cmd = self.do("get_thread", _id, backends=backend_name)
         self.start_format()
         for thread in cmd:
             if thread is not None:
-                thread, = self.do('fillobj', thread, None, backends=thread.backend)
+                (thread,) = self.do("fillobj", thread, None, backends=thread.backend)
                 for msg in thread.iter_all_messages():
-                    msg, = self.do('fillobj', msg, None, backends=thread.backend)
+                    (msg,) = self.do("fillobj", msg, None, backends=thread.backend)
                     self.format(msg)
 
     def do_show(self, arg):
@@ -446,7 +447,7 @@ class AppMsg(ReplApplication):
         """
         message = None
         if len(arg) == 0:
-            print('Please give a message ID.', file=self.stderr)
+            print("Please give a message ID.", file=self.stderr)
             return 2
 
         try:
@@ -460,27 +461,27 @@ class AppMsg(ReplApplication):
                 if not empty(thread.root):
                     message = thread.root
                 else:
-                    for thread in self.do('get_thread', thread.id, backends=thread.backend):
+                    for thread in self.do("get_thread", thread.id, backends=thread.backend):
                         if thread is not None:
                             if not thread.root:
-                                thread, = self.do('fillobj', thread, ('root',), backends=thread.backend)
+                                (thread,) = self.do("fillobj", thread, ("root",), backends=thread.backend)
                             message = thread.root
             except (IndexError, ValueError):
                 _id, backend_name = self.parse_id(arg)
-                for thread in self.do('get_thread', _id, backends=backend_name):
+                for thread in self.do("get_thread", _id, backends=backend_name):
                     if thread is not None:
                         if not thread.root:
-                            thread, = self.do('fillobj', thread, ('root',), backends=thread.backend)
+                            (thread,) = self.do("fillobj", thread, ("root",), backends=thread.backend)
                         message = thread.root
         if not empty(message):
-            message, = self.do("fillobj", message, backends=message.backend)
+            (message,) = self.do("fillobj", message, backends=message.backend)
 
             self.start_format()
             self.format(message)
-            self.woob.do('set_message_read', message, backends=message.backend)
+            self.woob.do("set_message_read", message, backends=message.backend)
             return
         else:
-            print('Message not found', file=self.stderr)
+            print("Message not found", file=self.stderr)
             return 3
 
     def do_profile(self, id):
@@ -492,13 +493,13 @@ class AppMsg(ReplApplication):
         _id, backend_name = self.parse_id(id, unique_backend=True)
 
         found = 0
-        for contact in self.do('get_contact', _id, backends=backend_name, caps=CapContact):
+        for contact in self.do("get_contact", _id, backends=backend_name, caps=CapContact):
             if contact:
                 self.format(contact)
                 found = 1
 
         if not found:
-            self.logger.error('Profile not found')
+            self.logger.error("Profile not found")
 
     def do_photos(self, id):
         """
@@ -506,29 +507,29 @@ class AppMsg(ReplApplication):
 
         Display photos of a profile
         """
-        photo_cmd = self.config.get('photo_viewer')
+        photo_cmd = self.config.get("photo_viewer")
         if photo_cmd is None:
             print("Configuration error: photo_viewer is undefined", file=self.stderr)
             return
 
         photo_cmd = shlex.split(photo_cmd)
-        if photo_cmd[-1] == '%s':
+        if photo_cmd[-1] == "%s":
             del photo_cmd
 
         _id, backend_name = self.parse_id(id, unique_backend=True)
 
         found = 0
-        for contact in self.do('get_contact', _id, backends=backend_name):
+        for contact in self.do("get_contact", _id, backends=backend_name):
             if contact:
                 # Write photo to temporary files
                 tmp_files = []
                 for photo in contact.photos.values():
-                    suffix = '.jpg'
-                    if '.' in photo.url.split('/')[-1]:
-                        suffix = '.%s' % photo.url.split('/')[-1].split('.')[-1]
+                    suffix = ".jpg"
+                    if "." in photo.url.split("/")[-1]:
+                        suffix = ".%s" % photo.url.split("/")[-1].split(".")[-1]
                     f = NamedTemporaryFile(suffix=suffix)
 
-                    photo = self.woob[contact.backend].fillobj(photo, 'data')
+                    photo = self.woob[contact.backend].fillobj(photo, "data")
                     f.write(photo.data)
                     tmp_files.append(f)
 
@@ -536,4 +537,4 @@ class AppMsg(ReplApplication):
                 found = 1
 
         if not found:
-            self.logger.error('Profile not found')
+            self.logger.error("Profile not found")

@@ -23,7 +23,7 @@ from io import BytesIO, StringIO
 from tempfile import mkstemp
 
 
-__all__ = ['decompress_pdf', 'get_pdf_rows']
+__all__ = ["decompress_pdf", "get_pdf_rows"]
 
 
 def decompress_pdf(inpdf: bytes) -> bytes:
@@ -35,23 +35,23 @@ def decompress_pdf(inpdf: bytes) -> bytes:
     MuPDF (https://www.mupdf.com).
     """
 
-    inh, inname = mkstemp(suffix='.pdf')
-    outh, outname = mkstemp(suffix='.pdf')
+    inh, inname = mkstemp(suffix=".pdf")
+    outh, outname = mkstemp(suffix=".pdf")
     os.write(inh, inpdf)
     os.close(inh)
     os.close(outh)
 
-    subprocess.call(['mutool', 'clean', '-d', inname, outname])
+    subprocess.call(["mutool", "clean", "-d", inname, outname])
 
-    with open(outname, 'rb') as f:
+    with open(outname, "rb") as f:
         outpdf = f.read()
     os.remove(inname)
     os.remove(outname)
     return outpdf
 
 
-Rect = namedtuple('Rect', ('x0', 'y0', 'x1', 'y1'))
-TextRect = namedtuple('TextRect', ('x0', 'y0', 'x1', 'y1', 'text'))
+Rect = namedtuple("Rect", ("x0", "y0", "x1", "y1"))
+TextRect = namedtuple("TextRect", ("x0", "y0", "x1", "y1", "text"))
 
 
 def almost_eq(a, b):
@@ -62,10 +62,10 @@ def lt_to_coords(obj, ltpage):
     # in a pdf, 'y' coords are bottom-to-top
     # in a pdf, coordinates are very often almost equal but not strictly equal
 
-    x0 = (min(obj.x0, obj.x1))
-    y0 = (min(ltpage.y1 - obj.y0, ltpage.y1 - obj.y1))
-    x1 = (max(obj.x0, obj.x1))
-    y1 = (max(ltpage.y1 - obj.y0, ltpage.y1 - obj.y1))
+    x0 = min(obj.x0, obj.x1)
+    y0 = min(ltpage.y1 - obj.y0, ltpage.y1 - obj.y1)
+    x1 = max(obj.x0, obj.x1)
+    y1 = max(ltpage.y1 - obj.y0, ltpage.y1 - obj.y1)
 
     x0 = round(x0)
     y0 = round(y0)
@@ -83,12 +83,12 @@ def lt_to_coords(obj, ltpage):
 
 def lttext_to_multilines(obj, ltpage):
     # text lines within 'obj' are probably the same height
-    x0 = (min(obj.x0, obj.x1))
-    y0 = (min(ltpage.y1 - obj.y0, ltpage.y1 - obj.y1))
-    x1 = (max(obj.x0, obj.x1))
-    y1 = (max(ltpage.y1 - obj.y0, ltpage.y1 - obj.y1))
+    x0 = min(obj.x0, obj.x1)
+    y0 = min(ltpage.y1 - obj.y0, ltpage.y1 - obj.y1)
+    x1 = max(obj.x0, obj.x1)
+    y1 = max(ltpage.y1 - obj.y0, ltpage.y1 - obj.y1)
 
-    lines = obj.get_text().rstrip('\n').split('\n')
+    lines = obj.get_text().rstrip("\n").split("\n")
     h = (y1 - y0) / len(lines)
 
     for n, line in enumerate(lines):
@@ -139,7 +139,7 @@ class ApproxVecDict(dict):
         for i in (0, -1, 1):
             for j in (0, -1, 1):
                 try:
-                    return super(ApproxVecDict, self).__getitem__((x+i, y+j))
+                    return super(ApproxVecDict, self).__getitem__((x + i, y + j))
                 except KeyError:
                     pass
         raise KeyError()
@@ -161,13 +161,13 @@ class ApproxRectDict(dict):
                 if x0 == x1:
                     for j2 in (0, -1, 1):
                         try:
-                            return super(ApproxRectDict, self).__getitem__((x0+i, y0+j, x0+i, y1+j2))
+                            return super(ApproxRectDict, self).__getitem__((x0 + i, y0 + j, x0 + i, y1 + j2))
                         except KeyError:
                             pass
                 elif y0 == y1:
                     for i2 in (0, -1, 1):
                         try:
-                            return super(ApproxRectDict, self).__getitem__((x0+i, y0+j, x1+i2, y0+j))
+                            return super(ApproxRectDict, self).__getitem__((x0 + i, y0 + j, x1 + i2, y0 + j))
                         except KeyError:
                             pass
                 else:
@@ -246,7 +246,7 @@ def build_rows(lines):
     for row in rows:
         row.sort(key=lambda box: box.x0)
         if row:
-            row = [row[0]] + [c for n, c in enumerate(row[1:], 1) if row[n-1].x0 != c.x0]
+            row = [row[0]] + [c for n, c in enumerate(row[1:], 1) if row[n - 1].x0 != c.x0]
         new_rows.append(row)
 
     rows = new_rows
@@ -302,14 +302,16 @@ def get_pdf_rows(data, miner_layout=True):
     try:
         from pdfminer.pdfparser import PDFParser, PDFSyntaxError
     except ImportError:
-        raise ImportError('Please install python3-pdfminer')
+        raise ImportError("Please install python3-pdfminer")
 
     try:
         from pdfminer.pdfdocument import PDFDocument
         from pdfminer.pdfpage import PDFPage
+
         newapi = True
     except ImportError:
         from pdfminer.pdfparser import PDFDocument
+
         newapi = False
     from pdfminer.converter import PDFPageAggregator
     from pdfminer.layout import LAParams, LTChar, LTCurve, LTLine, LTRect, LTTextBox, LTTextLine
@@ -346,78 +348,88 @@ def get_pdf_rows(data, miner_layout=True):
         import PIL.Image as Image
         import PIL.ImageDraw as ImageDraw
 
-        path = tempfile.mkdtemp(prefix='pdf')
+        path = tempfile.mkdtemp(prefix="pdf")
 
     for npage, page in enumerate(pages):
-        LOGGER.debug('processing page %s', npage)
+        LOGGER.debug("processing page %s", npage)
         interpreter.process_page(page)
         page_layout = device.get_result()
 
-        texts = sum([list(lttext_to_multilines(obj, page_layout)) for obj in page_layout._objs if isinstance(obj, (LTTextBox, LTTextLine, LTChar))], [])
-        LOGGER.debug('found %d text objects', len(texts))
+        texts = sum(
+            [
+                list(lttext_to_multilines(obj, page_layout))
+                for obj in page_layout._objs
+                if isinstance(obj, (LTTextBox, LTTextLine, LTChar))
+            ],
+            [],
+        )
+        LOGGER.debug("found %d text objects", len(texts))
         if LOGGER.isEnabledFor(DEBUGFILES):
-            img = Image.new('RGB', (int(page.mediabox[2]), int(page.mediabox[3])), (255, 255, 255))
+            img = Image.new("RGB", (int(page.mediabox[2]), int(page.mediabox[3])), (255, 255, 255))
             draw = ImageDraw.Draw(img)
             for t in texts:
                 color = (random.randint(127, 255), random.randint(127, 255), random.randint(127, 255))
                 draw.rectangle((t.x0, t.y0, t.x1, t.y1), outline=color)
-                draw.text((t.x0, t.y0), t.text.encode('utf-8'), color)
-            fpath = '%s/1text-%03d.png' % (path, npage)
+                draw.text((t.x0, t.y0), t.text.encode("utf-8"), color)
+            fpath = "%s/1text-%03d.png" % (path, npage)
             img.save(fpath)
-            LOGGER.log(DEBUGFILES, 'saved %r', fpath)
+            LOGGER.log(DEBUGFILES, "saved %r", fpath)
 
         if not miner_layout:
             texts.sort(key=lambda t: (t.y0, t.x0))
 
         # TODO filter ltcurves that are not lines?
         # TODO convert rects to 4 lines?
-        lines = [lt_to_coords(obj, page_layout) for obj in page_layout._objs if isinstance(obj, (LTRect, LTLine, LTCurve))]
-        LOGGER.debug('found %d lines', len(lines))
+        lines = [
+            lt_to_coords(obj, page_layout) for obj in page_layout._objs if isinstance(obj, (LTRect, LTLine, LTCurve))
+        ]
+        LOGGER.debug("found %d lines", len(lines))
         if LOGGER.isEnabledFor(DEBUGFILES):
-            img = Image.new('RGB', (int(page.mediabox[2]), int(page.mediabox[3])), (255, 255, 255))
+            img = Image.new("RGB", (int(page.mediabox[2]), int(page.mediabox[3])), (255, 255, 255))
             draw = ImageDraw.Draw(img)
             for l in lines:
                 color = (random.randint(127, 255), random.randint(127, 255), random.randint(127, 255))
                 draw.rectangle((l.x0, l.y0, l.x1, l.y1), outline=color)
-            fpath = '%s/2lines-%03d.png' % (path, npage)
+            fpath = "%s/2lines-%03d.png" % (path, npage)
             img.save(fpath)
-            LOGGER.log(DEBUGFILES, 'saved %r', fpath)
+            LOGGER.log(DEBUGFILES, "saved %r", fpath)
 
         lines = list(uniq_lines(lines))
-        LOGGER.debug('found %d unique lines', len(lines))
+        LOGGER.debug("found %d unique lines", len(lines))
 
         rows = build_rows(lines)
-        LOGGER.debug('built %d rows (%d boxes)', len(rows), sum(len(row) for row in rows))
+        LOGGER.debug("built %d rows (%d boxes)", len(rows), sum(len(row) for row in rows))
         if LOGGER.isEnabledFor(DEBUGFILES):
-            img = Image.new('RGB', (int(page.mediabox[2]), int(page.mediabox[3])), (255, 255, 255))
+            img = Image.new("RGB", (int(page.mediabox[2]), int(page.mediabox[3])), (255, 255, 255))
             draw = ImageDraw.Draw(img)
             for r in rows:
                 for b in r:
                     color = (random.randint(127, 255), random.randint(127, 255), random.randint(127, 255))
                     draw.rectangle((b.x0 + 1, b.y0 + 1, b.x1 - 1, b.y1 - 1), outline=color)
-            fpath = '%s/3rows-%03d.png' % (path, npage)
+            fpath = "%s/3rows-%03d.png" % (path, npage)
             img.save(fpath)
-            LOGGER.log(DEBUGFILES, 'saved %r', fpath)
+            LOGGER.log(DEBUGFILES, "saved %r", fpath)
 
         textrows = arrange_texts_in_rows(rows, texts)
-        LOGGER.debug('assigned %d strings', sum(sum(len(c) for c in r) for r in textrows))
+        LOGGER.debug("assigned %d strings", sum(sum(len(c) for c in r) for r in textrows))
         if LOGGER.isEnabledFor(DEBUGFILES):
-            img = Image.new('RGB', (int(page.mediabox[2]), int(page.mediabox[3])), (255, 255, 255))
+            img = Image.new("RGB", (int(page.mediabox[2]), int(page.mediabox[3])), (255, 255, 255))
             draw = ImageDraw.Draw(img)
             for row, trow in zip(rows, textrows):
                 for b, tlines in zip(row, trow):
                     color = (random.randint(127, 255), random.randint(127, 255), random.randint(127, 255))
                     draw.rectangle((b.x0 + 1, b.y0 + 1, b.x1 - 1, b.y1 - 1), outline=color)
-                    draw.text((b.x0 + 1, b.y0 + 1), '\n'.join(tlines).encode('utf-8'), color)
-            fpath = '%s/4cells-%03d.png' % (path, npage)
+                    draw.text((b.x0 + 1, b.y0 + 1), "\n".join(tlines).encode("utf-8"), color)
+            fpath = "%s/4cells-%03d.png" % (path, npage)
             img.save(fpath)
-            LOGGER.log(DEBUGFILES, 'saved %r', fpath)
+            LOGGER.log(DEBUGFILES, "saved %r", fpath)
 
         yield textrows
     device.close()
 
 
 # Export part #
+
 
 def html_to_pdf(browser, url=None, data=None, extra_options=None):
     """
@@ -432,9 +444,9 @@ def html_to_pdf(browser, url=None, data=None, extra_options=None):
     try:
         import pdfkit  # https://pypi.python.org/pypi/pdfkit
     except ImportError:
-        raise ImportError('Please install python3-pdfkit')
+        raise ImportError("Please install python3-pdfkit")
 
-    assert (url or data) and not (url and data), 'Please give only url or data parameter'
+    assert (url or data) and not (url and data), "Please give only url or data parameter"
 
     callback = pdfkit.from_url if url else pdfkit.from_string
     options = {}
@@ -444,9 +456,11 @@ def html_to_pdf(browser, url=None, data=None, extra_options=None):
     except AttributeError:
         pass
     else:
-        options.update({
-            'cookie': [(cookie, value) for cookie, value in cookies.items() if value],  # cookies of browser
-        })
+        options.update(
+            {
+                "cookie": [(cookie, value) for cookie, value in cookies.items() if value],  # cookies of browser
+            }
+        )
 
     if extra_options:
         options.update(extra_options)
@@ -465,12 +479,12 @@ def blinkpdf(browser, url, extra_options=None, filter_cookie=None, start_xvfb=Tr
 
     xvfb_exists = False
     blinkpdf_exists = False
-    paths = os.getenv('PATH', os.defpath).split(os.pathsep)
+    paths = os.getenv("PATH", os.defpath).split(os.pathsep)
     for path in paths:
-        fpath = os.path.join(path, 'xvfb-run')
+        fpath = os.path.join(path, "xvfb-run")
         if os.path.exists(fpath) and os.access(fpath, os.X_OK):
             xvfb_exists = True
-        fpath = os.path.join(path, 'blinkpdf')
+        fpath = os.path.join(path, "blinkpdf")
         if os.path.exists(fpath) and os.access(fpath, os.X_OK):
             blinkpdf_exists = True
 
@@ -481,26 +495,26 @@ def blinkpdf(browser, url, extra_options=None, filter_cookie=None, start_xvfb=Tr
     for c in browser.session.cookies:
         if c.value:
             if not filter_cookie or filter_cookie(c):
-                args.append('--cookie')
-                args.append('%s=%s' % (c.name, c.value))
+                args.append("--cookie")
+                args.append("%s=%s" % (c.name, c.value))
 
     for key, value in browser.session.headers.items():
-        args.append('--header')
-        args.append('%s=%s' % (key, value))
+        args.append("--header")
+        args.append("%s=%s" % (key, value))
 
-    if extra_options and 'run-script' in extra_options:
-        args.append('--run-script')
-        args.append(extra_options['run-script'][0])
+    if extra_options and "run-script" in extra_options:
+        args.append("--run-script")
+        args.append(extra_options["run-script"][0])
 
     args.append(url)
-    args.append('-')  # - : don't write it on disk, simply return value
+    args.append("-")  # - : don't write it on disk, simply return value
 
     if start_xvfb:
         # put a very small resolution to reduce used memory, because we don't really need it, it doesn't influence pdf size
         # -screen 0 width*height*bit depth
-        prepend = ['xvfb-run', '-a', '-s', '-screen 0 2x2x8', 'blinkpdf']
+        prepend = ["xvfb-run", "-a", "-s", "-screen 0 2x2x8", "blinkpdf"]
     else:
-        prepend = ['blinkpdf']
+        prepend = ["blinkpdf"]
 
     cmd = list(prepend) + list(args)
 
@@ -514,11 +528,11 @@ def blinkpdf(browser, url, extra_options=None, filter_cookie=None, start_xvfb=Tr
         # Log the error output after the end of the process. 20 seconds should
         # be enough for the process to terminate cleanly
         _, stderr = proc.communicate(timeout=20)
-        LOGGER.error('The blinkpdf process took too long to complete. Error output: %s', stderr.decode('utf-8'))
+        LOGGER.error("The blinkpdf process took too long to complete. Error output: %s", stderr.decode("utf-8"))
         raise
 
     if proc.returncode != 0:
-        raise BlinkPdfError('command returned non-zero exit status 1: %s' % stderr.decode('utf-8'))
+        raise BlinkPdfError("command returned non-zero exit status 1: %s" % stderr.decode("utf-8"))
     return stdout
 
 
@@ -528,15 +542,17 @@ def extract_text(data):
         try:
             from pdfminer.pdfdocument import PDFDocument
             from pdfminer.pdfpage import PDFPage
+
             newapi = True
         except ImportError:
             from pdfminer.pdfparser import PDFDocument
+
             newapi = False
         from pdfminer.converter import TextConverter
         from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
         from pdfminer.pdfparser import PDFParser, PDFSyntaxError
     except ImportError:
-        raise ImportError('Please install python3-pdfminer to parse PDF')
+        raise ImportError("Please install python3-pdfminer to parse PDF")
     else:
         parser = PDFParser(BytesIO(data))
         try:

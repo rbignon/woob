@@ -33,25 +33,25 @@ from .pages import AssetPairsPage, AssetsPage, BalancePage, HistoryPage, TickerP
 
 
 class KrakenBrowser(PagesBrowser, StatesMixin):
-    BASEURL = 'https://api.kraken.com'
+    BASEURL = "https://api.kraken.com"
 
-    balance = URL(r'/0/private/Balance', BalancePage)
-    history = URL(r'/0/private/Ledgers', HistoryPage)
-    trade = URL(r'/0/private/AddOrder', TradePage)
+    balance = URL(r"/0/private/Balance", BalancePage)
+    history = URL(r"/0/private/Ledgers", HistoryPage)
+    trade = URL(r"/0/private/AddOrder", TradePage)
 
-    assets = URL(r'/0/public/Assets', AssetsPage)
-    assetpairs = URL(r'/0/public/AssetPairs', AssetPairsPage)
-    ticker = URL(r'/0/public/Ticker\?pair=(?P<asset_pair>.*)', TickerPage)
+    assets = URL(r"/0/public/Assets", AssetsPage)
+    assetpairs = URL(r"/0/public/AssetPairs", AssetPairsPage)
+    ticker = URL(r"/0/public/Ticker\?pair=(?P<asset_pair>.*)", TickerPage)
 
-    __states__ = ('otp_expire', 'otp')
+    __states__ = ("otp_expire", "otp")
 
     def __init__(self, config, *args, **kwargs):
         super(KrakenBrowser, self).__init__(*args, **kwargs)
         self.config = config
 
-        self.api_key = self.config['api_key'].get()
-        self.private_key = self.config['private_api_key'].get()
-        self.otp_enabled = self.config['otp_enabled'].get()
+        self.api_key = self.config["api_key"].get()
+        self.private_key = self.config["private_api_key"].get()
+        self.otp_enabled = self.config["otp_enabled"].get()
 
         self.otp_expire = None
         self.otp = None
@@ -70,23 +70,18 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         # Minimum availability for otp is 15 minutes, users can change that
         # settings but we can't check how much time a session last with the api.
         # So we use 15 minutes as maximum otp life.
-        if (
-            self.otp_enabled and (
-                self.otp_expire is None
-                or (self.otp_expire and time.time() >= self.otp_expire)
-            )
-        ):
-            if self.config['request_information'].get() is None:
+        if self.otp_enabled and (self.otp_expire is None or (self.otp_expire and time.time() >= self.otp_expire)):
+            if self.config["request_information"].get() is None:
                 raise NeedInteractiveFor2FA()
 
-            if not self.config['otp'].get():
-                raise BrowserQuestion(Value('otp', label='Two factor authentication password'))
+            if not self.config["otp"].get():
+                raise BrowserQuestion(Value("otp", label="Two factor authentication password"))
 
-            self.otp = self.config['otp'].get()
+            self.otp = self.config["otp"].get()
             self.otp_expire = int(time.time() + 900)
 
         self.update_request_data()
-        self.update_request_headers('Balance')
+        self.update_request_headers("Balance")
         self.balance.go(data=self.data, headers=self.headers)
 
     def sleep_for_rate_limit(self):
@@ -122,17 +117,18 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
     def open(self, *args, **kwargs):
         self.sleep_for_rate_limit()
         resp = super(KrakenBrowser, self).open(*args, **kwargs)
-        error = resp.page.get_error() or ''
+        error = resp.page.get_error() or ""
         if not error:
             return resp
-        if 'limit exceeded' in error:
-            raise AssertionError('The module is supposed to handle rate limiting correctly')
-        elif 'Permission denied' in error:
+        if "limit exceeded" in error:
+            raise AssertionError("The module is supposed to handle rate limiting correctly")
+        elif "Permission denied" in error:
             # The API key lacks permissions needed to access the page
             raise ActionNeeded(
-                locale="fr-FR", message="Merci de configurer les autorisations de votre clé API",
+                locale="fr-FR",
+                message="Merci de configurer les autorisations de votre clé API",
             )
-        elif 'Invalid signature' in error or 'Invalid key' in error:
+        elif "Invalid signature" in error or "Invalid key" in error:
             raise BrowserIncorrectPassword()
         else:
             raise AssertionError('Unhandled error : "%s"' % error)
@@ -142,7 +138,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
         postdata = urlencode(data)
 
         # unicode-objects must be encoded before hashing
-        encoded = (str(data['nonce']) + postdata).encode(encoding="ascii")
+        encoded = (str(data["nonce"]) + postdata).encode(encoding="ascii")
         message = urlpath.encode() + hashlib.sha256(encoded).digest()
 
         if len(self.private_key) % 4 != 0:
@@ -153,30 +149,26 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
             # with their website password
             raise BrowserIncorrectPassword()
 
-        signature = hmac.new(base64.b64decode(self.private_key),
-                             message, hashlib.sha512)
+        signature = hmac.new(base64.b64decode(self.private_key), message, hashlib.sha512)
         sigdigest = base64.b64encode(signature.digest())
 
         return sigdigest.decode(encoding="ascii")
 
     def update_request_headers(self, method):
-        urlpath = '/0/private/' + method
+        urlpath = "/0/private/" + method
 
-        self.headers = {
-            'API-Key': self.api_key,
-            'API-Sign': self._sign(self.data, urlpath)
-        }
+        self.headers = {"API-Key": self.api_key, "API-Sign": self._sign(self.data, urlpath)}
 
     def update_request_data(self):
         # nonce counter: returns: an always-increasing unsigned integer (up to 64 bits wide)
-        self.data['nonce'] = int(1000 * time.time())
+        self.data["nonce"] = int(1000 * time.time())
         if self.otp:
-            self.data['otp'] = self.otp
+            self.data["otp"] = self.otp
 
     @need_login
     def iter_accounts(self):
         self.update_request_data()
-        self.update_request_headers('Balance')
+        self.update_request_headers("Balance")
         self.balance.go(data=self.data, headers=self.headers)
 
         return self.page.iter_accounts()
@@ -184,7 +176,7 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
     @need_login
     def iter_history(self, account_currency):
         self.update_request_data()
-        self.update_request_headers('Ledgers')
+        self.update_request_headers("Ledgers")
         self.history.go(data=self.data, headers=self.headers)
 
         return self.page.get_tradehistory(account_currency)
@@ -205,32 +197,32 @@ class KrakenBrowser(PagesBrowser, StatesMixin):
                 if asset_data:
                     recipient = Recipient()
                     recipient.label = asset_data
-                    recipient.category = 'Interne'
+                    recipient.category = "Interne"
                     recipient.enabled_at = datetime.now().replace(microsecond=0)
-                    recipient.id = account_from.label + '@' + account_to.label
+                    recipient.id = account_from.label + "@" + account_to.label
                     yield recipient
 
     @need_login
     def execute_transfer(self, account, recipient, transfer):
         if recipient.label.find(account.label) > recipient.label.find(recipient.label):
-            trade_type = 'buy'
+            trade_type = "buy"
         else:
-            trade_type = 'sell'
+            trade_type = "sell"
         self.data = {
-            'pair': recipient.label,
-            'type': trade_type,
-            'ordertype': 'market',
-            'volume': transfer.amount,
+            "pair": recipient.label,
+            "type": trade_type,
+            "ordertype": "market",
+            "volume": transfer.amount,
         }
         self.update_request_data()
-        self.update_request_headers('AddOrder')
+        self.update_request_headers("AddOrder")
         self.trade.go(data=self.data, headers=self.headers)
         self.data = {}
         transfer_error = self.page.get_error()
 
         if transfer_error:
-            if 'EOrder' in transfer_error[0]:
-                if 'Insufficient funds' in transfer_error[0]:
+            if "EOrder" in transfer_error[0]:
+                if "Insufficient funds" in transfer_error[0]:
                     raise TransferInsufficientFunds()
                 raise TransferInvalidAmount(message=transfer_error[0])
             raise TransferBankError(message=transfer_error[0])

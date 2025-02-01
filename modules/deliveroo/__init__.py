@@ -21,4 +21,4 @@
 from .module import DeliverooModule
 
 
-__all__ = ['DeliverooModule']
+__all__ = ["DeliverooModule"]

@@ -24,39 +24,39 @@ from woob.capabilities.bank import Account
 
 class LoginPage(JsonPage):
     def get_token(self):
-        return CleanText(Dict('token'))(self.doc)
+        return CleanText(Dict("token"))(self.doc)
 
     def get_logged_user(self):
-        return CleanText(Dict('login'))(self.doc)
+        return CleanText(Dict("login"))(self.doc)
 
     def get_accounts_params(self):
-        return Dict('possibleCardsToSee')(self.doc)
+        return Dict("possibleCardsToSee")(self.doc)
 
     @method
     class iter_accounts(DictElement):
-        item_xpath = 'possibleCardsToSee'
+        item_xpath = "possibleCardsToSee"
 
         class item(ItemElement):
             klass = Account
 
             obj_label = Format(
-                '%s %s - %s',
-                CleanText(Dict('contract/personne/firstName')),
-                CleanText(Dict('contract/personne/lastName')),
-                CleanText(Dict('cardNumberEncrypted')),
+                "%s %s - %s",
+                CleanText(Dict("contract/personne/firstName")),
+                CleanText(Dict("contract/personne/lastName")),
+                CleanText(Dict("cardNumberEncrypted")),
             )
             obj_id = Format(
-                '%s%s%s',
-                CleanText(Dict('contract/personne/firstName')),
-                CleanText(Dict('contract/personne/lastName')),
-                Regexp(CleanText(Dict('cardNumberEncrypted')), r'(\d+)'),
+                "%s%s%s",
+                CleanText(Dict("contract/personne/firstName")),
+                CleanText(Dict("contract/personne/lastName")),
+                Regexp(CleanText(Dict("cardNumberEncrypted")), r"(\d+)"),
             )
             obj_type = Account.TYPE_CARD
-            obj_number = CleanText(Dict('cardNumberEncrypted'))
-            obj_currency = 'EUR'
-            obj__card_id = CleanText(Dict('cardId'))
+            obj_number = CleanText(Dict("cardNumberEncrypted"))
+            obj_currency = "EUR"
+            obj__card_id = CleanText(Dict("cardId"))
 
 
 class PeriodsPage(LoggedPage, JsonPage):
     def get_periods(self):
-        return [period['periodeId'] for period in self.doc]
+        return [period["periodeId"] for period in self.doc]

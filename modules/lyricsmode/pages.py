@@ -34,16 +34,18 @@ class SearchPage(HTMLPage):
         class item(ItemElement):
             klass = SongLyrics
 
-            obj_id = CleanText('./@href', default=NotAvailable)
+            obj_id = CleanText("./@href", default=NotAvailable)
+
             def obj_id(self):
-                href = CleanText('./td[2]/a/@href', default=NotAvailable)(self)
-                spl = href.replace('.html', '').split('/')
+                href = CleanText("./td[2]/a/@href", default=NotAvailable)(self)
+                spl = href.replace(".html", "").split("/")
                 lid = spl[2]
                 aid = spl[3]
                 sid = spl[4]
-                return '%s|%s|%s' % (lid, aid, sid)
-            obj_title = Regexp(CleanText('./td[2]', default=NotAvailable), '(.*) lyrics$')
-            obj_artist = CleanText('./td[1]/a', default=NotAvailable)
+                return "%s|%s|%s" % (lid, aid, sid)
+
+            obj_title = Regexp(CleanText("./td[2]", default=NotAvailable), "(.*) lyrics$")
+            obj_artist = CleanText("./td[1]/a", default=NotAvailable)
             obj_content = NotLoaded
 
 
@@ -53,12 +55,12 @@ class LyricsPage(HTMLPage):
         klass = SongLyrics
 
         def obj_id(self):
-            spl = self.page.url.replace('http://', '').replace('.html', '').split('/')
+            spl = self.page.url.replace("http://", "").replace(".html", "").split("/")
             lid = spl[2]
             aid = spl[3]
             sid = spl[4]
-            return '%s|%s|%s' % (lid, aid, sid)
+            return "%s|%s|%s" % (lid, aid, sid)
 
         obj_content = CleanText(CleanHTML('//p[@id="lyrics_text"]', default=NotAvailable), newlines=False)
         obj_artist = CleanText('//a[has-class("artist_name")]', default=NotAvailable)
-        obj_title = Regexp(CleanText('//h1[has-class("song_name")]', default=NotAvailable), '(.*) lyrics$')
+        obj_title = Regexp(CleanText('//h1[has-class("song_name")]', default=NotAvailable), "(.*) lyrics$")

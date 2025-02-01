@@ -29,7 +29,7 @@ from .video import CanalplusVideo
 
 
 class ChannelsPage(XMLPage):
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
 
     def get_channels(self):
         """
@@ -53,74 +53,74 @@ class ChannelsPage(XMLPage):
         name = name.strip()
         if name == name.upper():
             name = name.capitalize()
-        friendly_id = re.sub(r"['/_ \(\)\-\+]+", u'-', name).strip(u'-').lower()
+        friendly_id = re.sub(r"['/_ \(\)\-\+]+", "-", name).strip("-").lower()
         return friendly_id, name
 
 
 class VideoPage(XMLPage):
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
 
     def parse_video(self, el, video=None):
-        _id = el.find('ID').text
-        if _id == '-1':
+        _id = el.find("ID").text
+        if _id == "-1":
             # means the video is not found
             return None
 
         if not video:
             video = CanalplusVideo(_id)
 
-        infos = el.find('INFOS')
-        video.title = u''
-        for part in infos.find('TITRAGE'):
+        infos = el.find("INFOS")
+        video.title = ""
+        for part in infos.find("TITRAGE"):
             if len(part.text.strip()) == 0:
                 continue
             if len(video.title) > 0:
-                video.title += u' — '
+                video.title += " — "
             video.title += part.text.strip()
-        video.description = infos.find('DESCRIPTION').text
+        video.description = infos.find("DESCRIPTION").text
 
-        media = el.find('MEDIA')
-        url = media.find('IMAGES').find('PETIT').text
+        media = el.find("MEDIA")
+        url = media.find("IMAGES").find("PETIT").text
         if url:
             video.thumbnail = Thumbnail(url)
             video.thumbnail.url = video.thumbnail.id
         else:
             video.thumbnail = NotAvailable
-        for format in media.find('VIDEOS'):
+        for format in media.find("VIDEOS"):
             if format.text is None:
                 continue
 
-            if format.tag == 'HLS':
-                video.ext = u'm3u8'
+            if format.tag == "HLS":
+                video.ext = "m3u8"
                 video.url = format.text
                 break
 
-        day, month, year = map(int, infos.find('PUBLICATION').find('DATE').text.split('/'))
-        hour, minute, second = map(int, infos.find('PUBLICATION').find('HEURE').text.split(':'))
+        day, month, year = map(int, infos.find("PUBLICATION").find("DATE").text.split("/"))
+        hour, minute, second = map(int, infos.find("PUBLICATION").find("HEURE").text.split(":"))
         video.date = datetime(year, month, day, hour, minute, second)
 
         return video
 
     def iter_results(self):
-        for vid in self.doc.iter(tag='VIDEO'):
+        for vid in self.doc.iter(tag="VIDEO"):
             video = self.parse_video(vid)
             video.url = NotLoaded
             yield video
 
     def iter_channel(self):
-        for vid in self.doc.iter(tag='VIDEO'):
+        for vid in self.doc.iter(tag="VIDEO"):
             yield self.parse_video_channel(vid)
 
     def parse_video_channel(self, el):
         _id = el[0].text
         video = CanalplusVideo(_id)
-        video.title = u'%s' % el[2][5][0].text
+        video.title = "%s" % el[2][5][0].text
         video.date = datetime.now()
         return video
 
     def get_video(self, video):
-        _id = self.params.get('id')
-        for vid in self.doc.iter(tag='VIDEO'):
-            if _id not in vid.find('ID').text:
+        _id = self.params.get("id")
+        for vid in self.doc.iter(tag="VIDEO"):
+            if _id not in vid.find("ID").text:
                 continue
             return self.parse_video(vid, video)

@@ -26,20 +26,20 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import MyedenredBrowser
 
 
-__all__ = ['MyedenredModule']
+__all__ = ["MyedenredModule"]
 
 
 class MyedenredModule(Module, CapBank):
-    NAME = 'myedenred'
-    DESCRIPTION = 'MyEdenRed'
-    MAINTAINER = 'Théo Dorée'
-    EMAIL = 'tdoree@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "myedenred"
+    DESCRIPTION = "MyEdenRed"
+    MAINTAINER = "Théo Dorée"
+    EMAIL = "tdoree@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Adresse email', masked=False, regexp=r'[^@]{1,}@([^\.]{1,}\.)+\S{2,}$'),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('captcha_response', label='Captcha Response'),
+        ValueBackendPassword("login", label="Adresse email", masked=False, regexp=r"[^@]{1,}@([^\.]{1,}\.)+\S{2,}$"),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("captcha_response", label="Captcha Response"),
     )
 
     BROWSER = MyedenredBrowser

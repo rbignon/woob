@@ -26,111 +26,108 @@ from .pages import ArteJsonPage, GuidePage
 from .video import LANG, QUALITY, VERSION_VIDEO
 
 
-__all__ = ['ArteBrowser']
+__all__ = ["ArteBrowser"]
 
 
 class ArteBrowser(PagesBrowser):
-    BASEURL = 'https://www.arte.tv'
-    webservice = URL(r'/guide/api/api/zones/(?P<lang>\w{2})/(?P<method_name>(videos_HOME_CREATIVE|magazines|collections|playlists|videos_subcategory|listing_MAGAZINES|listing_SEARCH|collection_videos))/\?limit=20&page=(?P<page>\d*)&(?P<pattern>.*)',
-                     r'/guide/api/api/pages/(?P<_lang>\w{2})/TV_GUIDE/\?day=(?P<day>\d{4}-\d{2}-\d{2})',
-                     r'https://api.arte.tv/api/player/v1/config/(?P<__lang>\w{2})/(?P<vid>.*)',
-                     ArteJsonPage)
+    BASEURL = "https://www.arte.tv"
+    webservice = URL(
+        r"/guide/api/api/zones/(?P<lang>\w{2})/(?P<method_name>(videos_HOME_CREATIVE|magazines|collections|playlists|videos_subcategory|listing_MAGAZINES|listing_SEARCH|collection_videos))/\?limit=20&page=(?P<page>\d*)&(?P<pattern>.*)",
+        r"/guide/api/api/pages/(?P<_lang>\w{2})/TV_GUIDE/\?day=(?P<day>\d{4}-\d{2}-\d{2})",
+        r"https://api.arte.tv/api/player/v1/config/(?P<__lang>\w{2})/(?P<vid>.*)",
+        ArteJsonPage,
+    )
 
-    guide = URL(r'/(?P<lang>\w{2})/guide/', GuidePage)
+    guide = URL(r"/(?P<lang>\w{2})/guide/", GuidePage)
 
     def __init__(self, lang, quality, order, format, version, *args, **kwargs):
         super(ArteBrowser, self).__init__(*args, **kwargs)
         self.order = order
         self.lang = next(value for key, value in LANG.items if key == lang)
-        self.version = next(value for key, value in VERSION_VIDEO.items
-                            if self.lang.get('label') in value.keys() and version == key)
+        self.version = next(
+            value for key, value in VERSION_VIDEO.items if self.lang.get("label") in value.keys() and version == key
+        )
         self.quality = next(value for key, value in QUALITY.items if key == quality)
         self.format = format
 
-        if self.lang.get('label') not in self.version.keys():
-            raise UserError('%s is not available for %s' % (self.lang.get('label'), version))
+        if self.lang.get("label") not in self.version.keys():
+            raise UserError("%s is not available for %s" % (self.lang.get("label"), version))
 
     def search_videos(self, pattern):
-        return self.webservice.go(lang=self.lang['site'],
-                                  method_name='listing_SEARCH',
-                                  page=1,
-                                  pattern=r'query={}'.format(pattern)).iter_videos()
+        return self.webservice.go(
+            lang=self.lang["site"], method_name="listing_SEARCH", page=1, pattern=r"query={}".format(pattern)
+        ).iter_videos()
 
     def get_arte_guide_days(self, split_path):
-        return self.guide.go(lang=self.lang.get('site')).iter_days(split_path=split_path)
+        return self.guide.go(lang=self.lang.get("site")).iter_days(split_path=split_path)
 
     def get_arte_guide_videos(self, split_path):
-        return self.webservice.go(_lang=self.lang.get('site'),
-                                  day=split_path[-1]).iter_guide_videos()
+        return self.webservice.go(_lang=self.lang.get("site"), day=split_path[-1]).iter_guide_videos()
 
     def get_arte_programs(self, split_path, pattern=""):
-        return self.webservice.go(lang=self.lang['site'],
-                                  method_name='listing_MAGAZINES',
-                                  page=1,
-                                  pattern=pattern).iter_programs(split_path=split_path)
+        return self.webservice.go(
+            lang=self.lang["site"], method_name="listing_MAGAZINES", page=1, pattern=pattern
+        ).iter_programs(split_path=split_path)
 
     def get_arte_creative_videos(self):
-        return self.webservice.go(lang=self.lang['site'],
-                                  method_name='videos_HOME_CREATIVE',
-                                  page=1,
-                                  pattern="").iter_videos()
+        return self.webservice.go(
+            lang=self.lang["site"], method_name="videos_HOME_CREATIVE", page=1, pattern=""
+        ).iter_videos()
 
-    def get_arte_navigation(self, split_path, collections=r'', playlists=r'', magazines=r''):
+    def get_arte_navigation(self, split_path, collections=r"", playlists=r"", magazines=r""):
         cat = split_path[-1]
 
         if cat == collections or cat == playlists or cat == magazines:
-            method_name, id = cat.split('_')
+            method_name, id = cat.split("_")
 
-            return self.webservice.go(lang=self.lang['site'],
-                                      method_name=method_name,
-                                      page=1,
-                                      pattern="id={}".format(id)).iter_programs(split_path=split_path)
+            return self.webservice.go(
+                lang=self.lang["site"], method_name=method_name, page=1, pattern="id={}".format(id)
+            ).iter_programs(split_path=split_path)
         else:
-            method_name = r'collection_videos' if cat.startswith('RC-') else r'videos_subcategory'
+            method_name = r"collection_videos" if cat.startswith("RC-") else r"videos_subcategory"
 
-            return self.webservice.go(lang=self.lang['site'],
-                                      method_name=method_name,
-                                      page=1,
-                                      pattern="id={}".format(cat)).iter_videos()
+            return self.webservice.go(
+                lang=self.lang["site"], method_name=method_name, page=1, pattern="id={}".format(cat)
+            ).iter_videos()
 
     def get_arte_generic_subsites(self, split_path, subsite):
         for item in subsite.values:
-            yield Collection(split_path + [str(item.get('id'))], str(item.get('label')))
+            yield Collection(split_path + [str(item.get("id"))], str(item.get("label")))
 
     def get_video(self, id, video=None):
-        video = self.webservice.go(__lang=self.lang['site'], vid=id).get_video(obj=video)
+        video = self.webservice.go(__lang=self.lang["site"], vid=id).get_video(obj=video)
 
         video.ext, video.url = self.get_url()
         return video
 
     def get_url(self):
-        url, found_format = self.page.get_video_url(self.quality.get('label'), self.format,
-                                                    self.version.get(self.lang.get('label')),
-                                                    self.lang.get('version'))
-        if found_format.startswith('HLS'):
-            ext = u'm3u8'
+        url, found_format = self.page.get_video_url(
+            self.quality.get("label"), self.format, self.version.get(self.lang.get("label")), self.lang.get("version")
+        )
+        if found_format.startswith("HLS"):
+            ext = "m3u8"
             url = self.get_m3u8_link(url)
         else:
-            ext = u'mp4'
+            ext = "mp4"
             url = url
         return ext, url
 
     def get_m3u8_link(self, url):
-        r = self.open(url).text.split('\n')
-        baseurl = url.rpartition('/')[0]
+        r = self.open(url).text.split("\n")
+        baseurl = url.rpartition("/")[0]
 
         links_by_quality = []
         for line in r:
-            if not line.startswith('#'):
+            if not line.startswith("#"):
                 if baseurl not in line:
-                    link = u'%s/%s' % (baseurl, line.replace('\n', ''))
+                    link = "%s/%s" % (baseurl, line.replace("\n", ""))
                 else:
-                    link = str(line.replace('\n', ''))
+                    link = str(line.replace("\n", ""))
                 links_by_quality.append(link)
 
         if len(links_by_quality):
             try:
-                return links_by_quality[self.quality.get('order')]
+                return links_by_quality[self.quality.get("order")]
             except (IndexError, TypeError):
                 return links_by_quality[0]
         return NotAvailable

@@ -14,9 +14,9 @@ if len(sys.argv) < 2:
     actions[constants.DISPLAY_MENU]()._do()
 else:
     params = common_xbmc.parse_params(sys.argv[1])
-    #print params
+    # print params
     action = params.get("action")
-    if (action):
+    if action:
         actions[action]()._do(params)
     else:
         common_xbmc.display_error(" ARGV Nothing done.. verify params " + repr(params))

@@ -23,17 +23,17 @@ from woob.tools.test import BackendTest
 
 
 class SomaFMTest(BackendTest):
-    MODULE = 'somafm'
+    MODULE = "somafm"
 
     def test_somafm(self):
-        ls = list(self.backend.iter_resources((Radio, ), []))
+        ls = list(self.backend.iter_resources((Radio,), []))
         self.assertTrue(len(ls) > 0)
 
-        search = list(self.backend.iter_radios_search('blend'))
+        search = list(self.backend.iter_radios_search("blend"))
         self.assertTrue(len(search) > 0)
         self.assertTrue(len(search) < len(ls))
 
-        radio = self.backend.get_radio('beatblender')
+        radio = self.backend.get_radio("beatblender")
         self.assertTrue(radio.title)
         self.assertTrue(radio.description)
         self.assertTrue(radio.current.who)

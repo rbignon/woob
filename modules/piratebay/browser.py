@@ -24,16 +24,16 @@ from .pages.index import IndexPage
 from .pages.torrents import FilesPage, TorrentPage, TorrentsPage
 
 
-__all__ = ['PiratebayBrowser']
+__all__ = ["PiratebayBrowser"]
 
 
 class PiratebayBrowser(PagesBrowser):
-    BASEURL = 'https://thepiratebay.org/'
+    BASEURL = "https://thepiratebay.org/"
 
-    index_page = URL(r'$', IndexPage)
-    torrents_page = URL(r'search/(?P<query>.+)/0/7/0', TorrentsPage)
-    torrent_page = URL(r'torrent/(?P<id>.+)', TorrentPage)
-    files_page = URL(r'ajax_details_filelist\.php\?id=(?P<id>.+)', FilesPage)
+    index_page = URL(r"$", IndexPage)
+    torrents_page = URL(r"search/(?P<query>.+)/0/7/0", TorrentsPage)
+    torrent_page = URL(r"torrent/(?P<id>.+)", TorrentPage)
+    files_page = URL(r"ajax_details_filelist\.php\?id=(?P<id>.+)", FilesPage)
 
     def iter_torrents(self, pattern):
         self.torrents_page.go(query=pattern)

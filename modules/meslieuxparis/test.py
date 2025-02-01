@@ -22,25 +22,25 @@ from woob.tools.test import BackendTest
 
 
 class MeslieuxparisTest(BackendTest):
-    MODULE = 'meslieuxparis'
+    MODULE = "meslieuxparis"
 
     def test_search(self):
         q = SearchQuery()
-        q.name = 'champ-de-mars' # site has no result for "champ de mars"...
+        q.name = "champ-de-mars"  # site has no result for "champ de mars"...
 
         res = list(self.backend.search_contacts(q, None))
         self.assertEqual(len(res), 1)
-        self.assertEqual(res[0].name, 'Parc du Champ-de-Mars')
-        self.assertEqual(res[0].city, 'Paris')
-        self.assertEqual(res[0].postcode, '75007')
-        self.assertEqual(res[0].country, 'FR')
-        self.assertEqual(res[0].address, '2 allée Adrienne-Lecouvreur')
+        self.assertEqual(res[0].name, "Parc du Champ-de-Mars")
+        self.assertEqual(res[0].city, "Paris")
+        self.assertEqual(res[0].postcode, "75007")
+        self.assertEqual(res[0].country, "FR")
+        self.assertEqual(res[0].address, "2 allée Adrienne-Lecouvreur")
         self.assertTrue(res[0].opening.is_open_now)
 
     def test_not(self):
         q = SearchQuery()
-        q.name = 'champ de mars'
-        q.city = 'marseille'
+        q.name = "champ de mars"
+        q.city = "marseille"
 
         res = list(self.backend.search_contacts(q, None))
         self.assertFalse(res)

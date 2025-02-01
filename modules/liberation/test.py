@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class LiberationTest(BackendTest):
-    MODULE = 'liberation'
+    MODULE = "liberation"
 
     def test_new_messages(self):
         for message in self.backend.iter_unread_messages():

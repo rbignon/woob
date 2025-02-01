@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class TrainlineTest(BackendTest):
-    MODULE = 'trainline'
+    MODULE = "trainline"
 
     def test_trainline(self):
         raise NotImplementedError()

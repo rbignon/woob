@@ -21,14 +21,19 @@ from woob.tools.application.repl import ReplApplication, defaultcount
 
 
 class AppRPG(ReplApplication):
-    APPNAME = 'rpg'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2019-YEAR Célande Adrien'
+    APPNAME = "rpg"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2019-YEAR Célande Adrien"
     CAPS = CapRPG
-    DESCRIPTION = 'Console application allowing to list informations from a RPG.'
-    SHORT_DESCRIPTION = 'manage RPG data'
-    DEFAULT_FORMATTER = 'table'
-    COLLECTION_OBJECTS = (Character, Skill, CharacterClass, CollectableItem, )
+    DESCRIPTION = "Console application allowing to list informations from a RPG."
+    SHORT_DESCRIPTION = "manage RPG data"
+    DEFAULT_FORMATTER = "table"
+    COLLECTION_OBJECTS = (
+        Character,
+        Skill,
+        CharacterClass,
+        CollectableItem,
+    )
 
     def do_characters(self, line):
         """
@@ -36,7 +41,7 @@ class AppRPG(ReplApplication):
 
         List all characters
         """
-        print('do characterS')
+        print("do characterS")
         print(f'line: "{line}"')
         return self.do_ls(line)
 
@@ -46,10 +51,10 @@ class AppRPG(ReplApplication):
 
         Get data on one character
         """
-        character_id, = self.parse_command_args(line, 1, 1)
+        (character_id,) = self.parse_command_args(line, 1, 1)
         self.start_format()
         # cannot use get_object because it can be skipped after a ls
-        for c in self.do('get_character', character_id):
+        for c in self.do("get_character", character_id):
             self.format(c)
 
     @defaultcount(20)
@@ -59,11 +64,11 @@ class AppRPG(ReplApplication):
 
         List all skills
         """
-        print('do skills')
-        skill_type, = self.parse_command_args(line, 1, 0)
-        print('skill type', skill_type)
+        print("do skills")
+        (skill_type,) = self.parse_command_args(line, 1, 0)
+        print("skill type", skill_type)
         self.start_format()
-        for skill in self.do('iter_skills', skill_type):
+        for skill in self.do("iter_skills", skill_type):
             self.format(skill)
 
     def do_skill(self, line):
@@ -72,9 +77,9 @@ class AppRPG(ReplApplication):
 
         Details for one skill
         """
-        skill_id, = self.parse_command_args(line, 1, 1)
+        (skill_id,) = self.parse_command_args(line, 1, 1)
         self.start_format()
-        skill = self.get_object(skill_id, 'get_skill', [])
+        skill = self.get_object(skill_id, "get_skill", [])
         self.format(skill)
 
     @defaultcount(20)
@@ -86,7 +91,7 @@ class AppRPG(ReplApplication):
         """
         character_id, skill_type = self.parse_command_args(line, 2, 1)
         self.start_format()
-        for skill in self.do('iter_skill_set', character_id, skill_type):
+        for skill in self.do("iter_skill_set", character_id, skill_type):
             self.format(skill)
 
     @defaultcount(20)
@@ -97,7 +102,7 @@ class AppRPG(ReplApplication):
         List all character classes
         """
         self.start_format()
-        for character_class in self.do('iter_character_classes'):
+        for character_class in self.do("iter_character_classes"):
             self.format(character_class)
 
     def do_class(self, line):
@@ -106,9 +111,9 @@ class AppRPG(ReplApplication):
 
         Details for one character class
         """
-        class_id, = self.parse_command_args(line, 1, 1)
+        (class_id,) = self.parse_command_args(line, 1, 1)
         self.start_format()
-        character_class = self.get_object(class_id, 'get_character_class', [])
+        character_class = self.get_object(class_id, "get_character_class", [])
         self.format(character_class)
 
     @defaultcount(20)
@@ -119,7 +124,7 @@ class AppRPG(ReplApplication):
         List all collectable items
         """
         self.start_format()
-        for item in self.do('iter_collectable_items'):
+        for item in self.do("iter_collectable_items"):
             self.format(item)
 
     def do_item(self, line):
@@ -128,7 +133,7 @@ class AppRPG(ReplApplication):
 
         Details for one collectable item
         """
-        item_id, = self.parse_command_args(line, 1, 1)
+        (item_id,) = self.parse_command_args(line, 1, 1)
         self.start_format()
-        item = self.get_object(item_id, 'get_collectable_item', [])
+        item = self.get_object(item_id, "get_collectable_item", [])
         self.format(item)

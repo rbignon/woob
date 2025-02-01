@@ -26,14 +26,14 @@ def test_expiration():
             self.EXPIRATIONS = expirations
 
     # all expirations are too high
-    assert MockPasteModule({1337: '', 42: '', False: ''}).get_closest_expiration(1) is None
+    assert MockPasteModule({1337: "", 42: "", False: ""}).get_closest_expiration(1) is None
     # we found a suitable lower or equal expiration
-    assert MockPasteModule({1337: '', 42: '', False: ''}).get_closest_expiration(84) == 42
-    assert MockPasteModule({1337: '', 42: '', False: ''}).get_closest_expiration(False) is False
-    assert MockPasteModule({1337: '', 42: ''}).get_closest_expiration(False) == 1337
-    assert MockPasteModule({1337: '', 42: '', False: ''}).get_closest_expiration(1336) == 42
-    assert MockPasteModule({1337: '', 42: '', False: ''}).get_closest_expiration(1337) == 1337
-    assert MockPasteModule({1337: '', 42: '', False: ''}).get_closest_expiration(1338) == 1337
+    assert MockPasteModule({1337: "", 42: "", False: ""}).get_closest_expiration(84) == 42
+    assert MockPasteModule({1337: "", 42: "", False: ""}).get_closest_expiration(False) is False
+    assert MockPasteModule({1337: "", 42: ""}).get_closest_expiration(False) == 1337
+    assert MockPasteModule({1337: "", 42: "", False: ""}).get_closest_expiration(1336) == 42
+    assert MockPasteModule({1337: "", 42: "", False: ""}).get_closest_expiration(1337) == 1337
+    assert MockPasteModule({1337: "", 42: "", False: ""}).get_closest_expiration(1338) == 1337
     # this format should work, though of doubtful usage
     assert MockPasteModule([1337, 42, False]).get_closest_expiration(84) == 42
 

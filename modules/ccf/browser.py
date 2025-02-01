@@ -37,17 +37,12 @@ class CCFBrowser(CmsoParBrowser):
     arkea_si = None
     AUTH_CLIENT_ID = "S4dgkKwTA7FQzWxGRHPXe6xNvihEATOY"
 
-    subscriptions = URL(
-        r"/distri-account-api/api/v1/customers/me/accounts", SubscriptionsPage
-    )
+    subscriptions = URL(r"/distri-account-api/api/v1/customers/me/accounts", SubscriptionsPage)
     documents = URL(r"/documentapi/api/v2/documents\?type=RELEVE$", DocumentsPage)
-    document_pdf = URL(
-        r"/documentapi/api/v2/documents/(?P<document_id>.*)/content\?database=(?P<database>.*)"
-    )
+    document_pdf = URL(r"/documentapi/api/v2/documents/(?P<document_id>.*)/content\?database=(?P<database>.*)")
     rib_details = URL(r"/domiapi/oauth/json/accounts/recupererRib$", RibPage)
     transactions = URL(
-        r'/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/transactions',
-        TransactionsPage
+        r"/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/transactions", TransactionsPage
     )
 
     def __init__(self, *args, **kwargs):

@@ -22,11 +22,11 @@ from .pages import ArticlePage
 
 
 class NewspaperFigaroBrowser(GenericNewspaperBrowser):
-    BASEURL = 'http://lefigaro.fr'
+    BASEURL = "http://lefigaro.fr"
 
     article_page = URL(
-        r'http://lefigaro.fr/(.*)/(\d{4})/(\d{2})/(\d{2})/(.*$)',
-        r'http://\w+.lefigaro.fr/(.*)/(\d{4})/(\d{2})/(\d{2})/(.*$)',
-        r'http://\w+.lefigaro.fr/(.*)',
-        ArticlePage
+        r"http://lefigaro.fr/(.*)/(\d{4})/(\d{2})/(\d{2})/(.*$)",
+        r"http://\w+.lefigaro.fr/(.*)/(\d{4})/(\d{2})/(\d{2})/(.*$)",
+        r"http://\w+.lefigaro.fr/(.*)",
+        ArticlePage,
     )

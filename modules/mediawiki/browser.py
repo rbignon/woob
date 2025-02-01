@@ -29,7 +29,7 @@ from woob.capabilities.content import Revision
 from woob.exceptions import BrowserIncorrectPassword
 
 
-__all__ = ['MediawikiBrowser']
+__all__ = ["MediawikiBrowser"]
 
 
 class APIError(Exception):
@@ -38,14 +38,14 @@ class APIError(Exception):
 
 # Browser
 class MediawikiBrowser(DomainBrowser):
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
 
     def __init__(self, url, apiurl, username, password, *args, **kwargs):
         url_parsed = urlsplit(url)
         self.PROTOCOL = url_parsed.scheme
         self.DOMAIN = url_parsed.netloc
         self.BASEPATH = url_parsed.path
-        if self.BASEPATH.endswith('/'):
+        if self.BASEPATH.endswith("/"):
             self.BASEPATH = self.BASEPATH[:-1]
 
         self.apiurl = apiurl
@@ -54,8 +54,8 @@ class MediawikiBrowser(DomainBrowser):
         DomainBrowser.__init__(self, *args, **kwargs)
 
     def url2page(self, page):
-        baseurl = self.PROTOCOL + '://' + self.DOMAIN + self.BASEPATH
-        m = re.match('^' + urljoin(baseurl, 'wiki/(.+)$'), page)
+        baseurl = self.PROTOCOL + "://" + self.DOMAIN + self.BASEPATH
+        m = re.match("^" + urljoin(baseurl, "wiki/(.+)$"), page)
         if m:
             return m.group(1)
         else:
@@ -64,85 +64,91 @@ class MediawikiBrowser(DomainBrowser):
     def get_wiki_source(self, page, rev=None):
         page = self.url2page(page)
 
-        data = {'action':           'query',
-                'prop':             'revisions|info',
-                'titles':           page,
-                'rvprop':           'content|timestamp|ids',
-                'rvlimit':          '1',
-                }
+        data = {
+            "action": "query",
+            "prop": "revisions|info",
+            "titles": page,
+            "rvprop": "content|timestamp|ids",
+            "rvlimit": "1",
+        }
         if rev:
-            data['rvstartid'] = rev
+            data["rvstartid"] = rev
 
         result = self.API_get(data)
-        pageid = list(result['query']['pages'].keys())[0]
-        if pageid == "-1":    # Page does not exist
+        pageid = list(result["query"]["pages"].keys())[0]
+        if pageid == "-1":  # Page does not exist
             return ""
 
-        if 'revisions' not in repr(result['query']['pages'][str(pageid)]):
-            raise APIError('Revision %s does not exist' % rev)
-        if rev and result['query']['pages'][str(pageid)]['revisions'][0]['revid'] != int(rev):
-            raise APIError('Revision %s does not exist' % rev)
+        if "revisions" not in repr(result["query"]["pages"][str(pageid)]):
+            raise APIError("Revision %s does not exist" % rev)
+        if rev and result["query"]["pages"][str(pageid)]["revisions"][0]["revid"] != int(rev):
+            raise APIError("Revision %s does not exist" % rev)
 
-        return result['query']['pages'][str(pageid)]['revisions'][0]['*']
+        return result["query"]["pages"][str(pageid)]["revisions"][0]["*"]
 
     def get_token(self, page, _type):
-        ''' _type can be edit, delete, protect, move, block, unblock, email or import'''
+        """_type can be edit, delete, protect, move, block, unblock, email or import"""
         if len(self.username) > 0 and not self.is_logged():
             self.login()
 
-        data = {'action':      'query',
-                'meta':        'tokens',
-                'type':        'csrf',
-                }
+        data = {
+            "action": "query",
+            "meta": "tokens",
+            "type": "csrf",
+        }
         result = self.API_get(data)
-        return result['query']['tokens']['csrftoken']
+        return result["query"]["tokens"]["csrftoken"]
 
     def set_wiki_source(self, content, message=None, minor=False):
         if len(self.username) > 0 and not self.is_logged():
             self.login()
 
         page = content.id
-        token = self.get_token(page, 'edit')
+        token = self.get_token(page, "edit")
 
-        data = {'action':      'edit',
-                'title':       page,
-                'text':        content.content.encode('utf-8'),
-                'summary':     message,
-                }
+        data = {
+            "action": "edit",
+            "title": page,
+            "text": content.content.encode("utf-8"),
+            "summary": message,
+        }
         if minor:
-            data['minor'] = 'true'
+            data["minor"] = "true"
         data = OrderedDict(data)
-        data['token'] = token
+        data["token"] = token
 
         self.API_post(data)
 
     def get_wiki_preview(self, content, message=None):
-        data = {'action':     'parse',
-                'title':      content.id,
-                'text':       content.content.encode('utf-8'),
-                'summary':    message,
-                }
+        data = {
+            "action": "parse",
+            "title": content.id,
+            "text": content.content.encode("utf-8"),
+            "summary": message,
+        }
         result = self.API_post(data)
-        return result['parse']['text']['*']
+        return result["parse"]["text"]["*"]
 
     def is_logged(self):
-        data = {'action':     'query',
-                'meta':       'userinfo',
-                }
+        data = {
+            "action": "query",
+            "meta": "userinfo",
+        }
         result = self.API_get(data)
-        return result['query']['userinfo']['id'] != 0
+        return result["query"]["userinfo"]["id"] != 0
 
     def login(self):
-        data = {'action':       'login',
-                'lgname':       self.username,
-                'lgpassword':   self.password,
-                }
+        data = {
+            "action": "login",
+            "lgname": self.username,
+            "lgpassword": self.password,
+        }
         result = self.API_post(data)
-        if result['login']['result'] == 'WrongPass':
+        if result["login"]["result"] == "WrongPass":
             raise BrowserIncorrectPassword()
 
-        if result['login']['result'] == 'NeedToken':
-            data['lgtoken'] = result['login']['token']
+        if result["login"]["result"] == "NeedToken":
+            data["lgtoken"] = result["login"]["token"]
             self.API_post(data)
 
     def iter_wiki_revisions(self, page):
@@ -157,150 +163,157 @@ class MediawikiBrowser(DomainBrowser):
         last_id = None
 
         while results == MAX_RESULTS:
-            data = {'action':       'query',
-                    'titles':       page,
-                    'prop':         'revisions',
-                    'rvprop':       'ids|timestamp|comment|user|flags',
-                    'rvlimit':      str(MAX_RESULTS),
-                    }
+            data = {
+                "action": "query",
+                "titles": page,
+                "prop": "revisions",
+                "rvprop": "ids|timestamp|comment|user|flags",
+                "rvlimit": str(MAX_RESULTS),
+            }
 
             if last_id is not None:
-                data['rvstartid'] = last_id
+                data["rvstartid"] = last_id
 
             result = self.API_get(data)
-            pageid = str(list(result['query']['pages'].keys())[0])
+            pageid = str(list(result["query"]["pages"].keys())[0])
 
             results = 0
             if pageid != "-1":
-                for rev in result['query']['pages'][pageid]['revisions']:
-                    rev_content = Revision(str(rev['revid']))
-                    rev_content.comment = rev['comment']
-                    rev_content.author = rev['user']
-                    rev_content.timestamp = datetime.datetime.strptime(rev['timestamp'], '%Y-%m-%dT%H:%M:%SZ')
-                    rev_content.minor = 'minor' in rev
+                for rev in result["query"]["pages"][pageid]["revisions"]:
+                    rev_content = Revision(str(rev["revid"]))
+                    rev_content.comment = rev["comment"]
+                    rev_content.author = rev["user"]
+                    rev_content.timestamp = datetime.datetime.strptime(rev["timestamp"], "%Y-%m-%dT%H:%M:%SZ")
+                    rev_content.minor = "minor" in rev
                     yield rev_content
 
                     last_id = rev_content.id
                     results += 1
 
     def _common_file_request(self):
-        return {'action':       'query',
-                'prop':         'info|imageinfo',
-                'inprop':       'url',
-                'iiprop':       'extmetadata|size|url|canonicaltitle',
-                'iiurlwidth':   512,
-                'iiurlheight':  512,
-               }
+        return {
+            "action": "query",
+            "prop": "info|imageinfo",
+            "inprop": "url",
+            "iiprop": "extmetadata|size|url|canonicaltitle",
+            "iiurlwidth": 512,
+            "iiurlheight": 512,
+        }
 
     def _common_parse_file(self, info):
-        res = {'canonicalurl': info['canonicalurl'],
-               'title':        info['title'],
-               'size':         info['imageinfo'][0]['size'],
-              }
+        res = {
+            "canonicalurl": info["canonicalurl"],
+            "title": info["title"],
+            "size": info["imageinfo"][0]["size"],
+        }
 
-        iinfo = info['imageinfo'][0]
-        if 'url' in iinfo:
-            res['original'] = iinfo['url']
-        if 'thumburl' in iinfo:
-            res['thumbnail'] = iinfo['thumburl']
+        iinfo = info["imageinfo"][0]
+        if "url" in iinfo:
+            res["original"] = iinfo["url"]
+        if "thumburl" in iinfo:
+            res["thumbnail"] = iinfo["thumburl"]
         return res
 
     def search_file(self, pattern):
         data = self._common_file_request()
-        data['generator'] = 'search'
-        data['gsrnamespace'] = 6 # File: namespace
-        data['gsrsearch'] = pattern
+        data["generator"] = "search"
+        data["gsrnamespace"] = 6  # File: namespace
+        data["gsrsearch"] = pattern
 
         while True:
             response = self.API_get(data)
-            for fdict in response['query']['pages'].values():
+            for fdict in response["query"]["pages"].values():
                 yield self._common_parse_file(fdict)
 
-            if 'continue' in response:
-                data.update(response['continue'])
+            if "continue" in response:
+                data.update(response["continue"])
             else:
                 break
 
     def get_image(self, page):
         page = self.url2page(page)
         data = self._common_file_request()
-        data['titles'] = page
+        data["titles"] = page
 
         response = self.API_get(data)
-        pageid = list(response['query']['pages'].keys())[0]
-        info = response['query']['pages'][pageid]
+        pageid = list(response["query"]["pages"].keys())[0]
+        info = response["query"]["pages"][pageid]
         return self._common_parse_file(info)
 
     def search_categories(self, pattern):
         request = {
-            'action': 'query',
-            'prop': 'info|categoryinfo',
-            'inprop': 'url',
+            "action": "query",
+            "prop": "info|categoryinfo",
+            "inprop": "url",
         }
 
-        request.update({
-            'generator': 'search',
-            'gsrnamespace': 14, # 'Category:' namespace
-            'gsrsearch': pattern,
-        })
+        request.update(
+            {
+                "generator": "search",
+                "gsrnamespace": 14,  # 'Category:' namespace
+                "gsrsearch": pattern,
+            }
+        )
 
         while True:
             response = self.API_get(request)
-            for cdict in response['query']['pages'].values():
-                if not cdict['categoryinfo'].get('files', 0):
+            for cdict in response["query"]["pages"].values():
+                if not cdict["categoryinfo"].get("files", 0):
                     continue
                 yield {
-                    'id': cdict['title'],
-                    'title': cdict['title'],
-                    'url': cdict['canonicalurl'],
+                    "id": cdict["title"],
+                    "title": cdict["title"],
+                    "url": cdict["canonicalurl"],
                 }
 
-            if 'continue' in response:
-                request.update(response['continue'])
+            if "continue" in response:
+                request.update(response["continue"])
             else:
                 break
 
     def iter_images(self, category):
         request = self._common_file_request()
-        request.update({
-            'generator': 'categorymembers',
-            'gcmtitle': category,
-            'gcmtype': 'file',
-        })
+        request.update(
+            {
+                "generator": "categorymembers",
+                "gcmtitle": category,
+                "gcmtype": "file",
+            }
+        )
 
         while True:
             response = self.API_get(request)
-            for fdict in response['query']['pages'].values():
+            for fdict in response["query"]["pages"].values():
                 yield self._common_parse_file(fdict)
 
-            if 'continue' in response:
-                request.update(response['continue'])
+            if "continue" in response:
+                request.update(response["continue"])
             else:
                 break
 
     def fill_file(self, obj, fields):
         response = self.open(obj.url)
-        if 'data' in fields:
+        if "data" in fields:
             obj.data = response.content
-        if 'size' in fields:
+        if "size" in fields:
             obj.size = len(response.content)
-        if 'date' in fields:
-            obj.date = dateutil.parser.parse(response.headers.get('Date'))
+        if "date" in fields:
+            obj.date = dateutil.parser.parse(response.headers.get("Date"))
 
     def home(self):
         # We don't need to change location, we're using the JSON API here.
         pass
 
     def check_result(self, result):
-        if 'error' in result:
-            raise APIError(result['error']['info'])
+        if "error" in result:
+            raise APIError(result["error"]["info"])
 
     def API_get(self, data):
         """
         Submit a GET request to the website
         The JSON data is parsed and returned as a dictionary
         """
-        data['format'] = 'json'
+        data["format"] = "json"
         result = self.open(self.apiurl, params=data).json()
         self.check_result(result)
         return result
@@ -310,7 +323,7 @@ class MediawikiBrowser(DomainBrowser):
         Submit a POST request to the website
         The JSON data is parsed and returned as a dictionary
         """
-        data['format'] = 'json'
+        data["format"] = "json"
         result = self.open(self.apiurl, data=data).json()
         self.check_result(result)
         return result

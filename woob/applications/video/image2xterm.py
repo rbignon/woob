@@ -33,7 +33,7 @@ XTerm can decode sequences and display 256 colors:
 Other terminals do support these 256 colors escape codes, e.g. roxterm, xfce-terminal.
 """
 
-__all__ = ('make256xterm', 'imageRGB_to_256', 'image2xterm', 'image256_to_ansi')
+__all__ = ("make256xterm", "imageRGB_to_256", "image2xterm", "image256_to_ansi")
 
 
 def make256xterm():
@@ -43,11 +43,16 @@ def make256xterm():
     """
     color256 = []
     # standard 16 colors
-    color256 += list(sum((
-        PILColor.getrgb(c) for c in
-        '''black maroon green olive navy purple teal silver
-        gray red lime yellow blue fuchsia aqua white'''.split()
-    ), ()))
+    color256 += list(
+        sum(
+            (
+                PILColor.getrgb(c)
+                for c in """black maroon green olive navy purple teal silver
+        gray red lime yellow blue fuchsia aqua white""".split()
+            ),
+            (),
+        )
+    )
 
     steps = (0, 95, 135, 175, 215, 255)
     for r in steps:
@@ -72,7 +77,7 @@ def imageRGB_to_256(im):
 
     The image should be resized *before* applying this function.
     """
-    paletter = Image.new('P', (1, 1))
+    paletter = Image.new("P", (1, 1))
     paletter.putpalette(TABLE_XTERM_256)
     return im.quantize(palette=paletter)
 
@@ -97,13 +102,13 @@ def image256_to_ansi(im, halfblocks):
         for x in range(w):
             if halfblocks:
                 if y + 1 >= h:
-                    buf.append('\x1b[38;5;%dm\u2580' % pix[x, y])
+                    buf.append("\x1b[38;5;%dm\u2580" % pix[x, y])
                 else:
-                    buf.append('\x1b[38;5;%dm\x1b[48;5;%dm\u2580' % (pix[x, y], pix[x, y + 1]))
+                    buf.append("\x1b[38;5;%dm\x1b[48;5;%dm\u2580" % (pix[x, y], pix[x, y + 1]))
             else:
-                buf.append('\x1b[48;5;%dm ' % pix[x, y])
-        buf.append('\x1b[0m%s' % os.linesep)
-    return ''.join(buf)
+                buf.append("\x1b[48;5;%dm " % pix[x, y])
+        buf.append("\x1b[0m%s" % os.linesep)
+    return "".join(buf)
 
 
 def image2xterm(imagepath, newsize=(80, 24), halfblocks=True):
@@ -118,7 +123,7 @@ def image2xterm(imagepath, newsize=(80, 24), halfblocks=True):
     if halfblocks:
         targetsize = targetsize[0], targetsize[1] * 2
 
-    image = image.convert('RGB')
+    image = image.convert("RGB")
     image = image.resize(targetsize, Image.ANTIALIAS)
     image2 = imageRGB_to_256(image)
     return image256_to_ansi(image2, halfblocks=halfblocks)
@@ -128,6 +133,7 @@ def _getoutsize(infoname, default):
     """Get suitable dimension for tty or default"""
     if sys.stdout.isatty():
         import curses
+
         curses.setupterm()
         return curses.tigetnum(infoname)
     else:
@@ -135,27 +141,27 @@ def _getoutsize(infoname, default):
 
 
 def get_term_size():
-    return (_getoutsize('cols', 80), _getoutsize('lines', 24))
+    return (_getoutsize("cols", 80), _getoutsize("lines", 24))
 
 
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Print an image on terminal with 256 colors palette')
-    parser.add_argument('-r', '--rows', dest='rows', metavar='SIZE', type=int)
-    parser.add_argument('-c', '--columns', dest='cols', metavar='SIZE', type=int)
-    parser.add_argument('--spaces', action='store_true')
-    parser.add_argument('file')
+    parser = argparse.ArgumentParser(description="Print an image on terminal with 256 colors palette")
+    parser.add_argument("-r", "--rows", dest="rows", metavar="SIZE", type=int)
+    parser.add_argument("-c", "--columns", dest="cols", metavar="SIZE", type=int)
+    parser.add_argument("--spaces", action="store_true")
+    parser.add_argument("file")
     opts = parser.parse_args()
 
     if opts.rows is None:
-        opts.rows = _getoutsize('lines', 24)
+        opts.rows = _getoutsize("lines", 24)
     if opts.cols is None:
-        opts.cols = _getoutsize('cols', 80)
+        opts.cols = _getoutsize("cols", 80)
 
     data = image2xterm(opts.file, (opts.cols, opts.rows), halfblocks=not opts.spaces)
     sys.stdout.write(data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

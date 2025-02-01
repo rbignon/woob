@@ -22,6 +22,6 @@ from .pages import ArticlePage
 
 
 class NewspaperLibeBrowser(GenericNewspaperBrowser):
-    BASEURL = ''
+    BASEURL = ""
 
-    article = URL('http://.*liberation.fr/.*', ArticlePage)
+    article = URL("http://.*liberation.fr/.*", ArticlePage)

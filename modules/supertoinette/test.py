@@ -21,10 +21,10 @@ from woob.tools.test import BackendTest
 
 
 class SupertoinetteTest(BackendTest):
-    MODULE = 'supertoinette'
+    MODULE = "supertoinette"
 
     def test_recipe(self):
-        recipes = self.backend.iter_recipes('fondue')
+        recipes = self.backend.iter_recipes("fondue")
         for recipe in recipes:
             full_recipe = self.backend.get_recipe(recipe.id)
             assert full_recipe.instructions

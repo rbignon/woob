@@ -21,4 +21,4 @@
 from .module import TinderModule
 
 
-__all__ = ['TinderModule']
+__all__ = ["TinderModule"]

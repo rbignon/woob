@@ -25,32 +25,32 @@ from woob.tools.backend import Module
 from .browser import WordReferenceBrowser
 
 
-__all__ = ['WordReferenceModule']
+__all__ = ["WordReferenceModule"]
 
 
 class WordReferenceModule(Module, CapTranslate):
-    MAINTAINER = u'Lucien Loiseau'
-    EMAIL = 'loiseau.lucien@gmail.com'
-    VERSION = '3.7'
-    LICENSE = 'AGPLv3+'
-    NAME = 'wordreference'
-    DESCRIPTION = u'Free online translator'
+    MAINTAINER = "Lucien Loiseau"
+    EMAIL = "loiseau.lucien@gmail.com"
+    VERSION = "3.7"
+    LICENSE = "AGPLv3+"
+    NAME = "wordreference"
+    DESCRIPTION = "Free online translator"
     BROWSER = WordReferenceBrowser
     WRLANGUAGE = [
-        'ar',
-        'zh',
-        'cz',
-        'en',
-        'fr',
-        'gr',
-        'it',
-        'ja',
-        'ko',
-        'pl',
-        'pt',
-        'ro',
-        'es',
-        'tr',
+        "ar",
+        "zh",
+        "cz",
+        "en",
+        "fr",
+        "gr",
+        "it",
+        "ja",
+        "ko",
+        "pl",
+        "pt",
+        "ro",
+        "es",
+        "tr",
     ]
 
     def translate(self, lan_from, lan_to, text):

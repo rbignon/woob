@@ -24,15 +24,15 @@ from woob_modules.creditdunord.module import CreditDuNordModule
 from .browser import RhonealpeBrowser
 
 
-__all__ = ['RhonealpeModule']
+__all__ = ["RhonealpeModule"]
 
 
 class RhonealpeModule(CreditDuNordModule, CapBankWealth, CapProfile):
-    NAME = 'rhonealpe'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DEPENDENCIES = ('creditdunord',)
-    DESCRIPTION = 'Banque Rhône alpes'
-    LICENSE = 'LGPLv3+'
+    NAME = "rhonealpe"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DEPENDENCIES = ("creditdunord",)
+    DESCRIPTION = "Banque Rhône alpes"
+    LICENSE = "LGPLv3+"
     BROWSER = RhonealpeBrowser

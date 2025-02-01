@@ -22,4 +22,4 @@
 from .module import WiseedModule
 
 
-__all__ = ['WiseedModule']
+__all__ = ["WiseedModule"]

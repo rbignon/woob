@@ -43,11 +43,11 @@ class HomePage(LoggedPage, HTMLPage):
 
 class LoginPage(HTMLPage):
     def login(self, type, username, password):
-        form = self.get_form(name='connecterForm')
-        form['type'] = type
-        form['login'] = username
-        form['pwd'] = password[:8]
-        form.url = '/ce_internet_public/seConnecter.event.do'
+        form = self.get_form(name="connecterForm")
+        form["type"] = type
+        form["login"] = username
+        form["pwd"] = password[:8]
+        form.url = "/ce_internet_public/seConnecter.event.do"
         form.submit()
 
 
@@ -55,17 +55,17 @@ class ExpandablePage(LoggedPage, HTMLPage):
     def expand(self, account=None, rib=None, company=None):
         form = self.get_form()
         if rib is not None:
-            form['ribSaisi'] = rib
+            form["ribSaisi"] = rib
         if account is not None:
-            form['nomCarteSaisi'] = account.label  # some forms use 'nomCarteSaisi' some use 'titulaireSaisie'
-            form['titulaireSaisie'] = account.label
+            form["nomCarteSaisi"] = account.label  # some forms use 'nomCarteSaisi' some use 'titulaireSaisie'
+            form["titulaireSaisie"] = account.label
         if company is not None:
-            if 'entrepriseSaisie' in form.keys():  # some forms use 'entrepriseSaisie' some use 'entrepriseSaisi'
-                form['entrepriseSaisie'] = company
+            if "entrepriseSaisie" in form.keys():  # some forms use 'entrepriseSaisie' some use 'entrepriseSaisi'
+                form["entrepriseSaisie"] = company
             else:
-                form['entrepriseSaisi'] = company
+                form["entrepriseSaisi"] = company
         # needed if coporate titulaire
-        form.url = form.url.replace('Appliquer', 'Afficher')
+        form.url = form.url.replace("Appliquer", "Afficher")
         form.submit()
 
     def get_rib_list(self):
@@ -75,8 +75,8 @@ class ExpandablePage(LoggedPage, HTMLPage):
 class GetableLinksPage(LoggedPage, HTMLPage):
     def get_link(self, account):
         # FIXME this will probably crash on 'titulaire' space but all credentials are wrong pass so cannot test
-        number, holder = account._completeid.split(':')
-        el = self.doc.xpath('.//tr[.//a[text()=$card]][.//td[1][text()=$name]]//a', card=number, name=holder)
+        number, holder = account._completeid.split(":")
+        el = self.doc.xpath(".//tr[.//a[text()=$card]][.//td[1][text()=$name]]//a", card=number, name=holder)
         if not el:
             return
         return el[0].get("href")
@@ -92,15 +92,15 @@ class PeriodsPage(LoggedPage, HTMLPage):
     def expand(self, period, account=None, rib=None, company=None):
         form = self.get_form(submit='//input[@value="Display"]')
         if account is not None:
-            form['nomCarteSaisi'] = account.label
-            form['titulaireSaisi'] = account.label
-        form['periodeSaisie'] = period
+            form["nomCarteSaisi"] = account.label
+            form["titulaireSaisi"] = account.label
+        form["periodeSaisie"] = period
         if rib is not None:
-            form['ribSaisi'] = rib
+            form["ribSaisi"] = rib
         if company is not None:
-            form['entrepriseSaisi'] = company
+            form["entrepriseSaisi"] = company
         # needed if coporate titulaire
-        form.url = form.url.replace('Appliquer', 'Afficher')
+        form.url = form.url.replace("Appliquer", "Afficher")
         form.submit()
 
 
@@ -117,20 +117,22 @@ class AccountsPage(ExpandablePage, GetableLinksPage):
         class item(ItemElement):
             klass = Account
 
-            obj_id = CleanText('./td[2]')
+            obj_id = CleanText("./td[2]")
 
             # Some account names have spaces in the middle which cause
             # the history search to fail if we remove them.
             # eg: `NAME  SURNAME` = `NAME++SURNAME` in the history search.
-            obj_label = Eval(lambda x: x.strip(), RawText('./td[1]'))
+            obj_label = Eval(lambda x: x.strip(), RawText("./td[1]"))
             obj_type = Account.TYPE_CARD
-            obj__rib = Env('rib')
-            obj__company = Env('company', default=None)  # this field is something used to make the module work, not something meant to be displayed to end users
-            obj_currency = 'EUR'
-            obj_number = CleanText('./td[2]', replace=[(' ', '')])
-            obj_url = AbsoluteLink('./td[2]/a')
+            obj__rib = Env("rib")
+            obj__company = Env(
+                "company", default=None
+            )  # this field is something used to make the module work, not something meant to be displayed to end users
+            obj_currency = "EUR"
+            obj_number = CleanText("./td[2]", replace=[(" ", "")])
+            obj_url = AbsoluteLink("./td[2]/a")
 
-            obj__completeid = Format('%s:%s', obj_id, obj_label)
+            obj__completeid = Format("%s:%s", obj_id, obj_label)
 
         def store(self, obj):
             return obj
@@ -142,8 +144,8 @@ class AccountsPage(ExpandablePage, GetableLinksPage):
 class ComingPage(ExpandablePage):
     def get_link(self, account):
         # FIXME this will probably crash on 'titulaire' space but all credentials are wrong pass so cannot test
-        card, holder = account._completeid.split(':')
-        el = self.doc.xpath('.//tr[.//a[text()=$card]][.//td[1][text()=$name]]//a', card=card, name=holder)
+        card, holder = account._completeid.split(":")
+        el = self.doc.xpath(".//tr[.//a[text()=$card]][.//td[1][text()=$name]]//a", card=card, name=holder)
         if not el:
             return
         link = re.search(r",'(.*)'\);", el[0].get("href"))
@@ -152,11 +154,11 @@ class ComingPage(ExpandablePage):
 
     def get_balance(self, account):
         # TODO find how pagination works on this page and find account with pagination
-        card, holder = account._completeid.split(':')
-        el = self.doc.xpath('.//tr[.//a[text()=$card]][.//td[1][text()=$name]]/td[4]', card=card, name=holder)
+        card, holder = account._completeid.split(":")
+        el = self.doc.xpath(".//tr[.//a[text()=$card]][.//td[1][text()=$name]]/td[4]", card=card, name=holder)
         if not el:
             return
-        return CleanDecimal('.', replace_dots=(',', '.'))(el[0])
+        return CleanDecimal(".", replace_dots=(",", "."))(el[0])
 
 
 class HistoPage(GetableLinksPage, PeriodsPage):
@@ -168,33 +170,37 @@ class TransactionsPage(LoggedPage, HTMLPage):
     @method
     class get_history(ListElement):
         item_xpath = '(//table[contains(@id, "datas")]/tbody/tr | //table[contains(@id, "datas")]//tr[@class])'
-        next_page = Link('(//table[@id="tgDecorationTableFoot"] | //table[@id="datas"]/tfoot)//b/following-sibling::a[1]')
+        next_page = Link(
+            '(//table[@id="tgDecorationTableFoot"] | //table[@id="datas"]/tfoot)//b/following-sibling::a[1]'
+        )
 
         class item(ItemElement):
             klass = FrenchTransaction
 
-            obj_rdate = FrenchTransaction.Date(CleanText('./td[1]'))
-            obj_date = FrenchTransaction.Date(CleanText('./td[3]'))
-            obj_raw = FrenchTransaction.Raw(CleanText('./td[2]'))
-            _obj_amnt = FrenchTransaction.Amount(CleanText('./td[5]'), replace_dots=False)
-            obj_original_amount = FrenchTransaction.Amount(CleanText('./td[4]'), replace_dots=False)
-            obj_original_currency = FrenchTransaction.Currency(CleanText('./td[4]'))
-            obj_commission = FrenchTransaction.Amount(CleanText('./td[6]'), replace_dots=False)
+            obj_rdate = FrenchTransaction.Date(CleanText("./td[1]"))
+            obj_date = FrenchTransaction.Date(CleanText("./td[3]"))
+            obj_raw = FrenchTransaction.Raw(CleanText("./td[2]"))
+            _obj_amnt = FrenchTransaction.Amount(CleanText("./td[5]"), replace_dots=False)
+            obj_original_amount = FrenchTransaction.Amount(CleanText("./td[4]"), replace_dots=False)
+            obj_original_currency = FrenchTransaction.Currency(CleanText("./td[4]"))
+            obj_commission = FrenchTransaction.Amount(CleanText("./td[6]"), replace_dots=False)
 
             def obj_coming(self) -> bool:
-                return bool(Field('date')(self) >= date.today())
+                return bool(Field("date")(self) >= date.today())
 
             def obj_amount(self):
-                if not Field('obj_commission'):
-                    return Field('_obj_amnt')
+                if not Field("obj_commission"):
+                    return Field("_obj_amnt")
                 else:
-                    return CleanDecimal(replace_dots=False).filter(self.el.xpath('./td[5]')) - CleanDecimal(replace_dots=False).filter(self.el.xpath('./td[6]'))
+                    return CleanDecimal(replace_dots=False).filter(self.el.xpath("./td[5]")) - CleanDecimal(
+                        replace_dots=False
+                    ).filter(self.el.xpath("./td[6]"))
 
 
 class ErrorPage(HTMLPage):
     def on_load(self):
         msg = CleanText('//div[@id="errors"]')(self.doc)
-        if msg == 'Your password has expired: you must change it.':
+        if msg == "Your password has expired: you must change it.":
             raise BrowserPasswordExpired(msg)
 
 
@@ -205,12 +211,14 @@ class TiCardPage(ExpandablePage, TransactionsPage):
 
         class item(ItemElement):
             klass = Account
-            obj_id = CleanText('.', replace=[(' ', '')])
-            obj_label = Format('%s %s', CleanText('//table[@class="params"]/tr/td[1]/b[2]'), Field('id'))
+            obj_id = CleanText(".", replace=[(" ", "")])
+            obj_label = Format("%s %s", CleanText('//table[@class="params"]/tr/td[1]/b[2]'), Field("id"))
             obj_type = Account.TYPE_CARD
-            obj__nav_num = Attr('.', 'value')
-            obj_currency = 'EUR'
-            obj__company = Env('company', default=None)  # this field is something used to make the module work, not something meant to be displayed to end users
+            obj__nav_num = Attr(".", "value")
+            obj_currency = "EUR"
+            obj__company = Env(
+                "company", default=None
+            )  # this field is something used to make the module work, not something meant to be displayed to end users
 
     def get_balance(self):
         if self.doc.xpath('//div[@class="messageaucunedonnee"]'):

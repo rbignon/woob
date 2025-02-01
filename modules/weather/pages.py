@@ -34,7 +34,10 @@ class WeatherDict(Filter):
         super(WeatherDict, self).__init__(selector, default)
 
     def __call__(self, item):
-        self.selector = Format(self.selector, Env('query_key'),)(item)
+        self.selector = Format(
+            self.selector,
+            Env("query_key"),
+        )(item)
         return Dict(selector=self.selector)(item)
 
 
@@ -44,30 +47,32 @@ class CityPage(JsonPage):
         item_xpath = None
 
         def parse(self, el):
-            locations = el['dal']\
-                          ['getSunV3LocationSearchUrlConfig']\
-                          [f'language:en-US;locationType:locale;query:{self.env["pattern"]}']\
-                          ['data']\
-                          ['location']
+            locations = el["dal"]["getSunV3LocationSearchUrlConfig"][
+                f'language:en-US;locationType:locale;query:{self.env["pattern"]}'
+            ]["data"]["location"]
 
-            self.el = [{'name': address, 'id': place_id}
-                       for place_id, address, city in zip(locations['placeId'], locations['address'], locations['city'])
-                       if city is not None and self.env['pattern'].lower() in city.lower()]
+            self.el = [
+                {"name": address, "id": place_id}
+                for place_id, address, city in zip(locations["placeId"], locations["address"], locations["city"])
+                if city is not None and self.env["pattern"].lower() in city.lower()
+            ]
 
         class item(ItemElement):
             klass = City
 
-            obj_id = Dict('id')
-            obj_name = Dict('name')
+            obj_id = Dict("id")
+            obj_name = Dict("name")
 
 
 class WeatherPage(HTMLPage):
     def __init__(self, *args, **kwargs):
         HTMLPage.__init__(self, *args, **kwargs)
-        json_doc = Regexp(CleanText(XPath('//script[contains(text(), "window.__data=JSON.parse")]/text()')),
-                          r'window\.__data=JSON\.parse\("(.*)"\);')(self.doc)
+        json_doc = Regexp(
+            CleanText(XPath('//script[contains(text(), "window.__data=JSON.parse")]/text()')),
+            r'window\.__data=JSON\.parse\("(.*)"\);',
+        )(self.doc)
 
-        json_doc = json_doc.replace(r'\"', '"')
+        json_doc = json_doc.replace(r"\"", '"')
         json_doc = json_doc.replace(r'\\"', "'")
 
         self.doc = json.loads(json_doc)
@@ -77,37 +82,40 @@ class WeatherPage(HTMLPage):
         klass = Current
 
         def parse(self, obj):
-            self.env['query_key'] = next(iter(Dict('dal/getSunV3CurrentObservationsUrlConfig')(self).keys()))
+            self.env["query_key"] = next(iter(Dict("dal/getSunV3CurrentObservationsUrlConfig")(self).keys()))
 
-        obj_id = Env('city_id')
+        obj_id = Env("city_id")
 
         def obj_date(self):
-            dt = DateTime(WeatherDict('dal/getSunV3CurrentObservationsUrlConfig/%s/data/validTimeLocal'))(self)
+            dt = DateTime(WeatherDict("dal/getSunV3CurrentObservationsUrlConfig/%s/data/validTimeLocal"))(self)
             return dt.date()
 
         def obj_temp(self):
-            temp = WeatherDict('dal/getSunV3CurrentObservationsUrlConfig/%s/data/pressureAltimeter')(self)
-            return Temperature(float(temp), 'F')
+            temp = WeatherDict("dal/getSunV3CurrentObservationsUrlConfig/%s/data/pressureAltimeter")(self)
+            return Temperature(float(temp), "F")
 
         def obj__feel_temp(self):
-            temp = WeatherDict('dal/getSunV3CurrentObservationsUrlConfig/%s/data/temperatureFeelsLike')(self)
-            temp = Temperature(float(temp), 'F')
+            temp = WeatherDict("dal/getSunV3CurrentObservationsUrlConfig/%s/data/temperatureFeelsLike")(self)
+            temp = Temperature(float(temp), "F")
             return f"{temp.ascelsius()}/{temp.asfahrenheit()}"
 
-        obj_text = Format('%shPa (%s) - humidity %s%% - feels like %s - %s',
-                          WeatherDict('dal/getSunV3CurrentObservationsUrlConfig/%s/data/pressureMeanSeaLevel'),
-                          WeatherDict('dal/getSunV3CurrentObservationsUrlConfig/%s/data/pressureTendencyTrend'),
-                          WeatherDict('dal/getSunV3CurrentObservationsUrlConfig/%s/data/relativeHumidity'),
-                          Field('_feel_temp'),
-                          WeatherDict('dal/getSunV3CurrentObservationsUrlConfig/%s/data/wxPhraseLong'))
+        obj_text = Format(
+            "%shPa (%s) - humidity %s%% - feels like %s - %s",
+            WeatherDict("dal/getSunV3CurrentObservationsUrlConfig/%s/data/pressureMeanSeaLevel"),
+            WeatherDict("dal/getSunV3CurrentObservationsUrlConfig/%s/data/pressureTendencyTrend"),
+            WeatherDict("dal/getSunV3CurrentObservationsUrlConfig/%s/data/relativeHumidity"),
+            Field("_feel_temp"),
+            WeatherDict("dal/getSunV3CurrentObservationsUrlConfig/%s/data/wxPhraseLong"),
+        )
 
     def iter_forecast(self):
         from datetime import datetime
-        *_, forecast_key = iter(Dict('dal/getSunV3DailyForecastWithHeadersUrlConfig')(self.doc).keys())
-        forecast = Dict(f'dal/getSunV3DailyForecastWithHeadersUrlConfig/{forecast_key}/data')(self.doc)
-        for i in range(1, len(forecast['dayOfWeek'])):
-            date = datetime.strptime(forecast['validTimeLocal'][i], '%Y-%m-%dT%H:%M:%S%z')
-            tlow = float(forecast['temperatureMin'][i])
-            thigh = float(forecast['temperatureMax'][i])
-            text = forecast['narrative'][i]
-            yield Forecast(date, tlow, thigh, text, 'F')
+
+        *_, forecast_key = iter(Dict("dal/getSunV3DailyForecastWithHeadersUrlConfig")(self.doc).keys())
+        forecast = Dict(f"dal/getSunV3DailyForecastWithHeadersUrlConfig/{forecast_key}/data")(self.doc)
+        for i in range(1, len(forecast["dayOfWeek"])):
+            date = datetime.strptime(forecast["validTimeLocal"][i], "%Y-%m-%dT%H:%M:%S%z")
+            tlow = float(forecast["temperatureMin"][i])
+            thigh = float(forecast["temperatureMax"][i])
+            text = forecast["narrative"][i]
+            yield Forecast(date, tlow, thigh, text, "F")

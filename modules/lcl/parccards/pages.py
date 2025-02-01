@@ -33,74 +33,66 @@ class ErrorPage(HTMLPage):
 class LoginPage(HTMLPage):
     def login(self, username, passwd):
         form = self.get_form()
-        form['username'] = username
-        form['password'] = passwd
+        form["username"] = username
+        form["password"] = passwd
         form.submit()
 
     def get_error_url(self):
         return Link('.//link[contains(@href, "js/app")]')(self.doc)
 
     def get_error_msg(self, error):
-        msg = Regexp(
-            pattern=fr'{error}.+?errorMessage=\"(.+?)\":',
-            default=''
-        ).filter(self.content.decode('utf-8'))
+        msg = Regexp(pattern=rf"{error}.+?errorMessage=\"(.+?)\":", default="").filter(self.content.decode("utf-8"))
         if msg:
             return msg
-        self.logger.warning('error message not found')
+        self.logger.warning("error message not found")
 
 
 class AccountsPage(LoggedPage, JsonPage):
     def get_end_index(self):
-        return self.response.json().get('nbTotalCards')
+        return self.response.json().get("nbTotalCards")
 
     @method
     class iter_accounts(DictElement):
-        item_xpath = 'porteursList'
+        item_xpath = "porteursList"
 
         class item(ItemElement):
             klass = Account
 
             def condition(self):
-                return FromTimestamp(Dict('closeDate')(self) // 1000)(self).year == 9999
+                return FromTimestamp(Dict("closeDate")(self) // 1000)(self).year == 9999
 
             def obj_label(self):
-                civility_id = CleanText(Dict('contract/personne/civility'))(self)
+                civility_id = CleanText(Dict("contract/personne/civility"))(self)
 
-                if civility_id == '1':
+                if civility_id == "1":
                     civility = "M."
-                elif civility_id == '2':
+                elif civility_id == "2":
                     civility = "Mme"
-                elif civility_id == '3':
+                elif civility_id == "3":
                     civility = "Mlle"
                 else:
-                    raise AssertionError('Unexpected civility %s' % civility_id)
+                    raise AssertionError("Unexpected civility %s" % civility_id)
 
-                return '%s %s %s' % (
+                return "%s %s %s" % (
                     civility,
-                    CleanText(Dict('contract/personne/firstName'))(self),
-                    CleanText(Dict('contract/personne/lastName'))(self)
+                    CleanText(Dict("contract/personne/firstName"))(self),
+                    CleanText(Dict("contract/personne/lastName"))(self),
                 )
 
             obj_id = Format(
-                '%s%s',
-                CleanText(Dict('contract/personne/login')),
-                CleanDecimal(Dict('cardNumberEncrypted'))
+                "%s%s", CleanText(Dict("contract/personne/login")), CleanDecimal(Dict("cardNumberEncrypted"))
             )
 
             obj_type = Account.TYPE_CARD
-            obj__card_num = Regexp(Dict('cardNumberEncrypted'), r'(\d+)')
-            obj__card_id = Dict('cardId')
-            obj_number = CleanText(Dict('cardNumberEncrypted'))
-            obj_currency = u'EUR'
+            obj__card_num = Regexp(Dict("cardNumberEncrypted"), r"(\d+)")
+            obj__card_id = Dict("cardId")
+            obj_number = CleanText(Dict("cardNumberEncrypted"))
+            obj_currency = "EUR"
 
 
 class PeriodsPage(LoggedPage, JsonPage):
     def get_periods(self):
-        return [
-            p['periodeId']
-            for p in Dict('periodeDebitCreditGestList')(self.doc)
-        ]
+        return [p["periodeId"] for p in Dict("periodeDebitCreditGestList")(self.doc)]
 
 
 class HistoryPage(LoggedPage, JsonPage):
@@ -110,34 +102,29 @@ class HistoryPage(LoggedPage, JsonPage):
             klass = Transaction
 
             TYPES = {
-                'RETRAIT': Transaction.TYPE_WITHDRAWAL,
-                'ACHAT': Transaction.TYPE_CARD,
-                'COTIS': Transaction.TYPE_UNKNOWN,
+                "RETRAIT": Transaction.TYPE_WITHDRAWAL,
+                "ACHAT": Transaction.TYPE_CARD,
+                "COTIS": Transaction.TYPE_UNKNOWN,
             }
 
             def condition(self):
                 # Check if date is available, if not then we do not return the transaction
-                return Dict('echeanceDebitCreditList/echeanceDebitCreditList')(self)
+                return Dict("echeanceDebitCreditList/echeanceDebitCreditList")(self)
 
             def obj_date(self):
-                if Dict('echeanceDebitCreditList/echeanceDebitCreditList')(self):
+                if Dict("echeanceDebitCreditList/echeanceDebitCreditList")(self):
                     # The date is in timestamp format but with extra zeros at the end
                     # we muste devide
                     return FromTimestamp(
-                        Dict(
-                            'echeanceDebitCreditList/echeanceDebitCreditList/0/dateEcheance'
-                        )(self) // 1000
+                        Dict("echeanceDebitCreditList/echeanceDebitCreditList/0/dateEcheance")(self) // 1000
                     )(self)
                 return NotAvailable
 
-            obj_raw = Dict('libelle')
+            obj_raw = Dict("libelle")
             # Default "-" is because some "COTIS" transactions just have " - " as label
-            obj_label = Regexp(Dict('libelle'), r'(.+)(?= - )', default='-')
-            obj_original_amount = CleanDecimal.French(
-                Dict('mntDevise', default=NotAvailable),
-                default=NotAvailable
-            )
-            obj_amount = CleanDecimal.French(Dict('mntEuros'))
-            obj_rdate = Date(Dict('date'), dayfirst=True)
-            obj_type = Map(Dict('nature'), TYPES, Transaction.TYPE_UNKNOWN)
-            obj_original_currency = FrenchTransaction.Currency(Dict('devise'))
+            obj_label = Regexp(Dict("libelle"), r"(.+)(?= - )", default="-")
+            obj_original_amount = CleanDecimal.French(Dict("mntDevise", default=NotAvailable), default=NotAvailable)
+            obj_amount = CleanDecimal.French(Dict("mntEuros"))
+            obj_rdate = Date(Dict("date"), dayfirst=True)
+            obj_type = Map(Dict("nature"), TYPES, Transaction.TYPE_UNKNOWN)
+            obj_original_currency = FrenchTransaction.Currency(Dict("devise"))

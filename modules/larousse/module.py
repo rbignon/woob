@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import LarousseBrowser
 
 
-__all__ = ['LarousseModule']
+__all__ = ["LarousseModule"]
 
 
 class LarousseModule(Module, CapTranslate):
-    NAME = 'larousse'
-    DESCRIPTION = u'larousse dictionary translations'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "larousse"
+    DESCRIPTION = "larousse dictionary translations"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = LarousseBrowser
 

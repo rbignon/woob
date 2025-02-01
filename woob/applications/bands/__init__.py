@@ -18,4 +18,4 @@
 from .bands import Appbands
 
 
-__all__ = ['Appbands']
+__all__ = ["Appbands"]

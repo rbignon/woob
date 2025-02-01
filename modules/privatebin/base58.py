@@ -39,7 +39,7 @@ def encode(input):
 
 
 def decode(input):
-    nb = sum(ralphabet[val] * 58 ** pos for pos, val in enumerate(reversed(input)))
+    nb = sum(ralphabet[val] * 58**pos for pos, val in enumerate(reversed(input)))
     output = bytearray()
     # warning: might ignore trailing nulls
     while nb:

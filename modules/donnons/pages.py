@@ -37,36 +37,35 @@ from woob.tools.json import json
 # dedicated cap objects
 # TODO new cap?
 
+
 class Ad(BaseObject):
-    title = StringField('Ad title')
-    image_url = StringField('Ad image URL')
+    title = StringField("Ad title")
+    image_url = StringField("Ad image URL")
 
 
 class Thread(BaseThread):
-    ad = Field('Ad', Ad)
-    last_activity = DateField('Last activity time')
-    sender = StringField('Author')
-    is_preferred = BoolField('Is favorite?')
-    last_is_us = BoolField('Is last message from us?')
+    ad = Field("Ad", Ad)
+    last_activity = DateField("Last activity time")
+    sender = StringField("Author")
+    is_preferred = BoolField("Is favorite?")
+    last_is_us = BoolField("Is last message from us?")
 
 
 class Message(BaseMessage):
-    is_sent = BoolField('Is it sent?')
+    is_sent = BoolField("Is it sent?")
 
 
 # helpers
 
+
 def parse_fuzzy_date(txt):
     txt = txt.lower()
-    txt = re.sub(r"\baujourd'hui\b", datetime.date.today().strftime('%Y-%m-%d'), txt)
-    txt = re.sub(r"\bune\b", '1', txt)
-    txt = re.sub(
-        r"\bhier\b",
-        (datetime.date.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'), txt
-    )
-    txt = re.sub(r'\b(à|le)\b', '', txt)
+    txt = re.sub(r"\baujourd'hui\b", datetime.date.today().strftime("%Y-%m-%d"), txt)
+    txt = re.sub(r"\bune\b", "1", txt)
+    txt = re.sub(r"\bhier\b", (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"), txt)
+    txt = re.sub(r"\b(à|le)\b", "", txt)
 
-    match = re.search(r'il y a (\d+) minutes?', txt)
+    match = re.search(r"il y a (\d+) minutes?", txt)
     if match:
         return datetime.datetime.now() - datetime.timedelta(minutes=int(match[1]))
 
@@ -74,6 +73,7 @@ def parse_fuzzy_date(txt):
 
 
 # pages
+
 
 class AdsThreadsPage(LoggedPage, HTMLPage):
     @method
@@ -85,8 +85,8 @@ class AdsThreadsPage(LoggedPage, HTMLPage):
 
             obj_title = CleanText('.//div[has-class("titre")]')
             obj_url = AbsoluteLink('.//div[has-class("titre")]/parent::a')
-            obj_id = Regexp(obj_url, r'/(\d+)')
-            obj_image_url = Attr('.//div[has-class("thumb-item")]/img', 'src')
+            obj_id = Regexp(obj_url, r"/(\d+)")
+            obj_image_url = Attr('.//div[has-class("thumb-item")]/img', "src")
 
 
 class ThreadsPage(LoggedPage, HTMLPage):
@@ -107,13 +107,13 @@ class ThreadsPage(LoggedPage, HTMLPage):
                 return parse_fuzzy_date(CleanText('.//div[has-class("date")]')(self))
 
             # nickname is present multiple times
-            obj_sender = CleanText('(.//div/@data-pseudo)[1]')
+            obj_sender = CleanText("(.//div/@data-pseudo)[1]")
 
             def obj_is_preferred(self):
                 return bool(self.el.xpath('.//div[has-class("non-potentiel")]'))
 
             obj_url = AbsoluteLink('.//a[contains(@href, "/messagerie")]')
-            obj_id = Regexp(obj_url, r'/(\d+)/(\d+)', r'\1.\2')
+            obj_id = Regexp(obj_url, r"/(\d+)/(\d+)", r"\1.\2")
 
             def obj_last_is_us(self):
                 return bool(self.el.xpath('.//i[has-class("fa-reply")]'))
@@ -122,7 +122,7 @@ class ThreadsPage(LoggedPage, HTMLPage):
 class ThreadPage(LoggedPage, HTMLPage):
     def get_total_count(self):
         try:
-            text, = self.doc.xpath("//button[@id='load-messages']/@data-max")
+            (text,) = self.doc.xpath("//button[@id='load-messages']/@data-max")
         except ValueError:
             return 0
         else:
@@ -178,6 +178,6 @@ class ThreadNextPage(LoggedPage, HTMLPage):
 class LoginPage(HTMLPage):
     def do_login(self, username, password):
         form = self.get_form(nr=0)
-        form['email'] = username
-        form['password'] = password
+        form["email"] = username
+        form["password"] = password
         form.submit()

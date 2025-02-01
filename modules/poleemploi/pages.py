@@ -30,12 +30,12 @@ from woob.capabilities.job import BaseJobAdvert
 class PoleEmploiDate(Filter):
     def filter(self, el):
         days = 0
-        if el == u'Publié aujourd\'hui':
+        if el == "Publié aujourd'hui":
             days = 0
-        elif el == u'Publié hier':
+        elif el == "Publié hier":
             days = 1
         else:
-            m = re.search(r'Publié il y a (\d*) jours', el)
+            m = re.search(r"Publié il y a (\d*) jours", el)
             if m:
                 days = int(m.group(1))
 
@@ -50,11 +50,10 @@ class SearchPage(HTMLPage):
         class item(ItemElement):
             klass = BaseJobAdvert
 
-            obj_id = CleanText('./@data-id-offre')
+            obj_id = CleanText("./@data-id-offre")
             obj_contract_type = CleanText('./div/div/p[@class="contrat"]')
-            obj_title = CleanText('./div/div/h2')
-            obj_society_name = CleanText('./div/div/p[@class="subtext"]',
-                                         children=False, replace=[('-', '')])
+            obj_title = CleanText("./div/div/h2")
+            obj_society_name = CleanText('./div/div/p[@class="subtext"]', children=False, replace=[("-", "")])
             obj_place = CleanText('./div/div/p[@class="subtext"]/span')
             obj_publication_date = PoleEmploiDate(CleanText('./div/div/p[@class="date"]'))
 
@@ -64,29 +63,32 @@ class AdvertPage(HTMLPage):
     class get_job_advert(ItemElement):
         klass = BaseJobAdvert
 
-        obj_id = Env('id')
-        obj_url = BrowserURL('advert', id=Env('id'))
+        obj_id = Env("id")
+        obj_url = BrowserURL("advert", id=Env("id"))
         obj_title = CleanText('//div[@class="modal-body"]/h2')
         obj_job_name = CleanText('//div[@class="modal-body"]/h2')
         obj_description = CleanText('//div[has-class("description")]/p')
         obj_society_name = CleanText('//div[@class="media-body"]/h4')
-        obj_experience = Join(u'- ',
-                              '//h4[contains(text(), "Exp")]/following-sibling::ul[has-class("skill-list")][1]/li',
-                              newline=True,
-                              addBefore='\n- ')
-        obj_formation = Join(u'- ',
-                             '//h4[contains(text(), "For")]/following-sibling::ul[has-class("skill-list")][1]/li',
-                             newline=True,
-                             addBefore='\n- ')
+        obj_experience = Join(
+            "- ",
+            '//h4[contains(text(), "Exp")]/following-sibling::ul[has-class("skill-list")][1]/li',
+            newline=True,
+            addBefore="\n- ",
+        )
+        obj_formation = Join(
+            "- ",
+            '//h4[contains(text(), "For")]/following-sibling::ul[has-class("skill-list")][1]/li',
+            newline=True,
+            addBefore="\n- ",
+        )
 
         obj_place = CleanText('//div[@class="modal-body"]/h2/following-sibling::p[1]')
         obj_publication_date = PoleEmploiDate(CleanText('//div[@class="modal-body"]/h2/following-sibling::p[2]'))
 
         def parse(self, el):
             for el in XPath('//dl[@class="icon-group"]/dt')(el):
-                dt = CleanText('.')(el)
-                if dt == u'Type de contrat':
-                    self.obj.contract_type = CleanText('./following-sibling::dd[1]')(el)
-                elif dt == u'Salaire':
-                    self.obj.pay = Regexp(CleanText('./following-sibling::dd[1]'),
-                                          u'Salaire : (.*)')(el)
+                dt = CleanText(".")(el)
+                if dt == "Type de contrat":
+                    self.obj.contract_type = CleanText("./following-sibling::dd[1]")(el)
+                elif dt == "Salaire":
+                    self.obj.pay = Regexp(CleanText("./following-sibling::dd[1]"), "Salaire : (.*)")(el)

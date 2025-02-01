@@ -9,7 +9,7 @@ import requests
 from woob.tools.json import json
 
 
-__all__ = ['to_curl']
+__all__ = ["to_curl"]
 
 
 def to_curl(request: requests.PreparedRequest | dict) -> str:
@@ -26,27 +26,27 @@ def to_curl(request: requests.PreparedRequest | dict) -> str:
         headers: dict[str, str] = request.headers
         body: bytes | None = request.body
     else:
-        method = request['method']
-        url = request['url']
-        headers = json.loads(str(request['headers']).replace("'", '"'))
-        body = request.get('body')
+        method = request["method"]
+        url = request["url"]
+        headers = json.loads(str(request["headers"]).replace("'", '"'))
+        body = request.get("body")
 
     parts = [
-        'curl',
-        '--compressed',  # Decompress encoded data before stdout
+        "curl",
+        "--compressed",  # Decompress encoded data before stdout
     ]
 
-    if method not in ('GET', 'POST'):
-        parts += ('-X', method)
+    if method not in ("GET", "POST"):
+        parts += ("-X", method)
 
     for header, value in headers.items():
-        parts += ['-H', f'{header}:{value}']
+        parts += ["-H", f"{header}:{value}"]
 
     if body:
         if isinstance(body, bytes):
-            parts += ['-d', f'{body.decode("utf-8")}']
+            parts += ["-d", f'{body.decode("utf-8")}']
         else:
-            parts += ['-d', f'{body}']
+            parts += ["-d", f"{body}"]
 
     parts += [f"{url}"]
 

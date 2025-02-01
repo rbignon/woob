@@ -23,29 +23,46 @@ from woob.tools.test import BackendTest
 
 
 class LogicimmoTest(BackendTest, HousingTest):
-    MODULE = 'logicimmo'
+    MODULE = "logicimmo"
 
     FIELDS_ALL_HOUSINGS_LIST = [
-        "id", "type", "advert_type", "house_type", "url", "title", "area",
-        "cost", "currency", "utilities", "date", "location", "text",
-        "details", "rooms"
+        "id",
+        "type",
+        "advert_type",
+        "house_type",
+        "url",
+        "title",
+        "area",
+        "cost",
+        "currency",
+        "utilities",
+        "date",
+        "location",
+        "text",
+        "details",
+        "rooms",
     ]
     FIELDS_ANY_HOUSINGS_LIST = [
         "photos",
     ]
     FIELDS_ALL_SINGLE_HOUSING = [
-        "id", "url", "type", "advert_type", "house_type", "title", "area",
-        "cost", "currency", "utilities", "date", "location", "text",
-        "phone", "details"
-    ]
-    FIELDS_ANY_SINGLE_HOUSING = [
-        "photos",
-        "station",
-        "rooms",
+        "id",
+        "url",
+        "type",
+        "advert_type",
+        "house_type",
+        "title",
+        "area",
+        "cost",
+        "currency",
+        "utilities",
+        "date",
+        "location",
+        "text",
         "phone",
-        "DPE",
-        "GES"
+        "details",
     ]
+    FIELDS_ANY_SINGLE_HOUSING = ["photos", "station", "rooms", "phone", "DPE", "GES"]
     DO_NOT_DISTINGUISH_FURNISHED_RENT = True
 
     def test_logicimmo_rent(self):
@@ -54,7 +71,7 @@ class LogicimmoTest(BackendTest, HousingTest):
         query.cost_max = 1500
         query.type = POSTS_TYPES.RENT
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
             if len(query.cities) == 3:
@@ -66,7 +83,7 @@ class LogicimmoTest(BackendTest, HousingTest):
         query.area_min = 20
         query.type = POSTS_TYPES.SALE
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
             if len(query.cities) == 3:
@@ -79,7 +96,7 @@ class LogicimmoTest(BackendTest, HousingTest):
         query.cost_max = 1500
         query.type = POSTS_TYPES.FURNISHED_RENT
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
             if len(query.cities) == 3:
@@ -90,7 +107,7 @@ class LogicimmoTest(BackendTest, HousingTest):
         query = Query()
         query.type = POSTS_TYPES.VIAGER
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
             if len(query.cities) == 3:
@@ -104,7 +121,7 @@ class LogicimmoTest(BackendTest, HousingTest):
         query.type = POSTS_TYPES.RENT
         query.advert_types = [ADVERT_TYPES.PERSONAL]
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
 

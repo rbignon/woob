@@ -33,18 +33,20 @@ class IndexPage(HTMLPage):
     class iter_videos(ListElement):
         item_xpath = '//li[has-class("videoblock")]'
 
-        next_page = Link(u'//a[text()="Next"]')
+        next_page = Link('//a[text()="Next"]')
 
         class item(ItemElement):
             klass = BaseVideo
 
-            obj_id = CSS('a') & Link & Regexp(pattern=r'viewkey=(.+)')
-            obj_title = Attr('.//span[has-class("title")]/a', 'title') & CleanText
-            obj_duration = CSS('var.duration') & CleanText & Duration | NotAvailable
+            obj_id = CSS("a") & Link & Regexp(pattern=r"viewkey=(.+)")
+            obj_title = Attr('.//span[has-class("title")]/a', "title") & CleanText
+            obj_duration = CSS("var.duration") & CleanText & Duration | NotAvailable
             obj_nsfw = True
 
             def obj_thumbnail(self):
-                thumbnail = Thumbnail(Attr('.//img[has-class("js-videoThumb")]', 'data-path')(self).replace('{index}', '1'))
+                thumbnail = Thumbnail(
+                    Attr('.//img[has-class("js-videoThumb")]', "data-path")(self).replace("{index}", "1")
+                )
                 thumbnail.url = thumbnail.id
                 return thumbnail
 
@@ -54,8 +56,10 @@ class VideoPage(HTMLPage):
     class get_video(ItemElement):
         klass = BaseVideo
 
-        obj_id = Env('id')
-        obj_title = CleanText('//title')
+        obj_id = Env("id")
+        obj_title = CleanText("//title")
         obj_nsfw = True
-        obj_ext = u'mp4'
-        obj_url = CleanText('//script') & Regexp(pattern=r'(https:\\/\\/[^"]+\.mp4[^"]+)"') & CleanText(replace=[('\\', '')])
+        obj_ext = "mp4"
+        obj_url = (
+            CleanText("//script") & Regexp(pattern=r'(https:\\/\\/[^"]+\.mp4[^"]+)"') & CleanText(replace=[("\\", "")])
+        )

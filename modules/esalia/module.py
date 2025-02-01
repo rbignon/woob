@@ -27,23 +27,23 @@ from woob_modules.erehsbc.module import ErehsbcModule
 from .browser import EsaliaBrowser
 
 
-__all__ = ['EsaliaModule']
+__all__ = ["EsaliaModule"]
 
 
 class EsaliaModule(ErehsbcModule, CapBankWealth, CapDocument, CapProfile):
-    NAME = 'esalia'
-    DESCRIPTION = 'Société Générale Épargne Salariale'
-    MAINTAINER = 'Edouard Lambert'
-    EMAIL = 'elambert@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('erehsbc',)
+    NAME = "esalia"
+    DESCRIPTION = "Société Générale Épargne Salariale"
+    MAINTAINER = "Edouard Lambert"
+    EMAIL = "elambert@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("erehsbc",)
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
-        Value('otp', label='Code unique temporaire', default=''),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Code secret", regexp=r"^(\d{6})$"),
+        Value("otp", label="Code unique temporaire", default=""),
+        ValueTransient("request_information"),
     )
 
     BROWSER = EsaliaBrowser

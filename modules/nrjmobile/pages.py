@@ -44,15 +44,15 @@ class LoginPage(BaseHTMLPage):
     def get_site_key(self):
         return Attr(
             '//div[@class="g-recaptcha"]',
-            'data-sitekey',
+            "data-sitekey",
             default=None,
         )(self.doc)
 
     def do_login(self, username, password, captcha_response):
-        form = self.get_form(id='bloc_ident')
-        form['_cm_user'] = username
-        form['_cm_pwd'] = password
-        form['g-recaptcha-response'] = captcha_response
+        form = self.get_form(id="bloc_ident")
+        form["_cm_user"] = username
+        form["_cm_pwd"] = password
+        form["g-recaptcha-response"] = captcha_response
         form.submit()
 
 
@@ -72,19 +72,20 @@ class SubscriptionPage(LoggedPage, BaseHTMLPage):
 
         def obj_renewdate(self):
             # "le XX de chaque mois"
-            renew_day = CleanDecimal.SI(Regexp(
-                CleanText(
-                    '//span[contains(text(), "Renouvellement de votre forfait")]'
-                    + '/following-sibling::span',
-                ),
-                r'le ([0-9]+) de chaque mois',
-                default=None,
-            ))(self)
+            renew_day = CleanDecimal.SI(
+                Regexp(
+                    CleanText(
+                        '//span[contains(text(), "Renouvellement de votre forfait")]' + "/following-sibling::span",
+                    ),
+                    r"le ([0-9]+) de chaque mois",
+                    default=None,
+                )
+            )(self)
 
             if renew_day is None:
                 return NotAvailable
 
-            renew_date = now_as_tz(tzinfo=gettz('Europe/Paris')).date()
+            renew_date = now_as_tz(tzinfo=gettz("Europe/Paris")).date()
             if renew_date.day >= renew_day:
                 renew_date += relativedelta(months=1)
 
@@ -108,18 +109,18 @@ class OrderBillsPage(LoggedPage, BaseHTMLPage):
             klass = Bill
 
             obj_id = Regexp(
-                Attr('.//input[@type="submit"]', 'name'),
-                r'cleCommande:([0-9]+)_',
-                default='',
+                Attr('.//input[@type="submit"]', "name"),
+                r"cleCommande:([0-9]+)_",
+                default="",
             )
-            obj__from = 'orders'
+            obj__from = "orders"
 
-            obj_format = 'pdf'
+            obj_format = "pdf"
 
             obj_date = Date(
                 Regexp(
-                    CleanText('.//p[@class="_c1 a_titre2 _c1"]', default=''),
-                    r'([0-9]+/[0-9]+/[0-9]+)',
+                    CleanText('.//p[@class="_c1 a_titre2 _c1"]', default=""),
+                    r"([0-9]+/[0-9]+/[0-9]+)",
                 ),
                 dayfirst=True,
                 default=NotAvailable,
@@ -136,7 +137,7 @@ class OrderBillsPage(LoggedPage, BaseHTMLPage):
     def download_document(self, id_):
         for _submit in self.doc.xpath(
             '//div[@id="C:F9:D"]//input[@name=$id_]',
-            id_=f'_FID_DoExportPdf_cleCommande:{id_}_typeDocument:Commande',
+            id_=f"_FID_DoExportPdf_cleCommande:{id_}_typeDocument:Commande",
         ):
             break
         else:
@@ -144,7 +145,7 @@ class OrderBillsPage(LoggedPage, BaseHTMLPage):
             return
 
         form = self.get_form(
-            id='C:P:F',
+            id="C:P:F",
             submit=_submit,
         )
 
@@ -157,41 +158,41 @@ class PeriodicBillsPage(LoggedPage, HTMLPage):
         head_xpath = '//div[@id="C:F6:expContent"]//tr/th'
         item_xpath = '//div[@id="C:F6:expContent"]//tr[./td[@class]]'
 
-        col_date = 'Date'
-        col_bills = 'Factures'
-        col_amount = 'Montant'
+        col_date = "Date"
+        col_bills = "Factures"
+        col_amount = "Montant"
 
         class item(ItemElement):
             klass = Bill
 
             def obj_id(self):
-                cell = TableCell('bills')(self)[0]
+                cell = TableCell("bills")(self)[0]
                 return Regexp(
-                    Attr('./input', 'name'),
-                    r'.*:([0-9]+)$',
+                    Attr("./input", "name"),
+                    r".*:([0-9]+)$",
                 )(cell)
 
-            obj__from = 'periodic'
-            obj_format = 'pdf'
+            obj__from = "periodic"
+            obj_format = "pdf"
 
             obj_date = Date(
-                CleanText(TableCell('date')),
+                CleanText(TableCell("date")),
                 dayfirst=True,
                 default=NotAvailable,
             )
             obj_total_price = CleanDecimal.French(
-                TableCell('amount'),
+                TableCell("amount"),
                 default=NotAvailable,
             )
             obj_currency = Currency(
-                TableCell('amount'),
+                TableCell("amount"),
                 default=NotAvailable,
             )
 
     def download_document(self, id_):
         for _submit in self.doc.xpath(
             '//div[@id="C:F6:D"]//input[@name=$id_]',
-            id_=f'_FID_DoExportPDF_numeroFacture:{id_}',
+            id_=f"_FID_DoExportPDF_numeroFacture:{id_}",
         ):
             break
         else:
@@ -199,7 +200,7 @@ class PeriodicBillsPage(LoggedPage, HTMLPage):
             return
 
         form = self.get_form(
-            id='C:P:F',
+            id="C:P:F",
             submit=_submit,
         )
 
@@ -237,15 +238,14 @@ class ProfilePage(LoggedPage, HTMLPage):
 
             obj_street = CleanText(
                 Format(
-                    '%s\n%s',
+                    "%s\n%s",
                     CleanText(
                         '//th[label[@for="C:Adresse"]]/following-sibling::td',
-                        default='',
+                        default="",
                     ),
                     CleanText(
-                        '//th[label[@for="C:ComplementAdresse"]]'
-                        + '/following-sibling::td',
-                        default='',
+                        '//th[label[@for="C:ComplementAdresse"]]' + "/following-sibling::td",
+                        default="",
                     ),
                 ),
                 default=NotAvailable,

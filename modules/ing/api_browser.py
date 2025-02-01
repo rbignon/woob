@@ -24,8 +24,14 @@ from functools import wraps
 from woob.browser import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.capabilities.bank import (
-    Account, AddRecipientBankError, AddRecipientStep, AddRecipientTimeout, RecipientInvalidIban, RecipientInvalidOTP,
-    TransferBankError, TransferInvalidAmount,
+    Account,
+    AddRecipientBankError,
+    AddRecipientStep,
+    AddRecipientTimeout,
+    RecipientInvalidIban,
+    RecipientInvalidOTP,
+    TransferBankError,
+    TransferInvalidAmount,
 )
 from woob.capabilities.bill import Subscription
 from woob.exceptions import ActionNeeded, ActionType, AuthMethodNotImplemented, BrowserIncorrectPassword
@@ -33,8 +39,20 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 from woob.tools.value import Value
 
 from .api import (
-    AccountInfoPage, AccountsPage, AddRecipientPage, ComingPage, ConfirmOtpPage, CreditAccountsPage, DebitAccountsPage,
-    HistoryPage, InvestTokenPage, LifeInsurancePage, LoginPage, OtpChannelsPage, ProfilePage, TransferPage,
+    AccountInfoPage,
+    AccountsPage,
+    AddRecipientPage,
+    ComingPage,
+    ConfirmOtpPage,
+    CreditAccountsPage,
+    DebitAccountsPage,
+    HistoryPage,
+    InvestTokenPage,
+    LifeInsurancePage,
+    LoginPage,
+    OtpChannelsPage,
+    ProfilePage,
+    TransferPage,
 )
 from .api.accounts_page import BourseLandingPage, RedirectBourseToApi, RedirectOldPage
 from .api.documents import StatementsPage
@@ -47,80 +65,78 @@ def start_with_main_site(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         self.go_main_site()
-        assert 'm.ing.fr' in self.url
+        assert "m.ing.fr" in self.url
         return func(self, *args, **kwargs)
 
     return wrapper
 
 
 class IngAPIBrowser(LoginBrowser, StatesMixin):
-    BASEURL = 'https://m.ing.fr'
+    BASEURL = "https://m.ing.fr"
     STATE_DURATION = 10
 
     # Login
-    context = URL(r'/secure/api-v1/session/context')
-    login = URL(r'/secure/api-v1/login/cif', LoginPage)
-    keypad = URL(r'/secure/api-v1/login/keypad', LoginPage)
-    pin_page = URL(r'/secure/api-v1/login/sca/pin', LoginPage)
+    context = URL(r"/secure/api-v1/session/context")
+    login = URL(r"/secure/api-v1/login/cif", LoginPage)
+    keypad = URL(r"/secure/api-v1/login/keypad", LoginPage)
+    pin_page = URL(r"/secure/api-v1/login/sca/pin", LoginPage)
 
     # Error on old website
-    errorpage = URL(r'https://secure.ing.fr/.*displayCoordonneesCommand.*', StopPage)
+    errorpage = URL(r"https://secure.ing.fr/.*displayCoordonneesCommand.*", StopPage)
     actioneeded = URL(
-        r'https://secure.ing.fr/general\?command=displayTRAlertMessage',
-        r'https://secure.ing.fr/protected/pages/common/eco1/moveMoneyForbidden.jsf',
-        ActionNeededPage
+        r"https://secure.ing.fr/general\?command=displayTRAlertMessage",
+        r"https://secure.ing.fr/protected/pages/common/eco1/moveMoneyForbidden.jsf",
+        ActionNeededPage,
     )
 
     # bank
     history = URL(
-        r'/secure/api-v1/accounts/(?P<account_uid>.*)/transactions/after/(?P<tr_id>\d+)/limit/50',
-        HistoryPage
+        r"/secure/api-v1/accounts/(?P<account_uid>.*)/transactions/after/(?P<tr_id>\d+)/limit/50", HistoryPage
     )
-    coming = URL(r'/secure/api-v1/accounts/(?P<account_uid>.*)/futureOperations', ComingPage)
-    account_info = URL(r'/secure/api-v1/accounts/(?P<account_uid>[^/]+)/bankRecord', AccountInfoPage)
-    accounts = URL(r'/secure/api-v1/accounts$', AccountsPage)
+    coming = URL(r"/secure/api-v1/accounts/(?P<account_uid>.*)/futureOperations", ComingPage)
+    account_info = URL(r"/secure/api-v1/accounts/(?P<account_uid>[^/]+)/bankRecord", AccountInfoPage)
+    accounts = URL(r"/secure/api-v1/accounts$", AccountsPage)
 
     # wealth
-    api_to_bourse = URL(r'/saveinvestapi/v1/bourse/redirect/uid/(?P<account_uid>.+)')
-    redirect_bourse_to_api = URL(r'/saveinvestapi/v1/bourse/redirect/goto', RedirectBourseToApi)
-    invest_token_page = URL(r'/secure/api-v1/saveInvest/token/generate', InvestTokenPage)
-    life_insurance = URL(r'/saveinvestapi/v1/lifeinsurance/contract/(?P<account_uid>)', LifeInsurancePage)
-    bourse_to_api = URL(r'https://bourse.ing.fr/priv/redirectIng.php\?pageIng=INFO')
-    redirect_old = URL(r'https://secure.ing.fr/general\?command=goToCDDCommand', RedirectOldPage)
-    bourse_landing = URL(r'https://bourse.ing.fr/fr/page/portefeuille', BourseLandingPage)
+    api_to_bourse = URL(r"/saveinvestapi/v1/bourse/redirect/uid/(?P<account_uid>.+)")
+    redirect_bourse_to_api = URL(r"/saveinvestapi/v1/bourse/redirect/goto", RedirectBourseToApi)
+    invest_token_page = URL(r"/secure/api-v1/saveInvest/token/generate", InvestTokenPage)
+    life_insurance = URL(r"/saveinvestapi/v1/lifeinsurance/contract/(?P<account_uid>)", LifeInsurancePage)
+    bourse_to_api = URL(r"https://bourse.ing.fr/priv/redirectIng.php\?pageIng=INFO")
+    redirect_old = URL(r"https://secure.ing.fr/general\?command=goToCDDCommand", RedirectOldPage)
+    bourse_landing = URL(r"https://bourse.ing.fr/fr/page/portefeuille", BourseLandingPage)
 
     # transfer
     credit_accounts = URL(
-        r'/secure/api-v1/transfers/debitAccounts/(?P<account_uid>.*)/creditAccounts',
-        CreditAccountsPage
+        r"/secure/api-v1/transfers/debitAccounts/(?P<account_uid>.*)/creditAccounts", CreditAccountsPage
     )
-    debit_accounts = URL(r'/secure/api-v1/transfers/debitAccounts', DebitAccountsPage)
-    init_transfer_page = URL(r'/secure/api-v1/transfers/v2/new/validate', TransferPage)
-    exec_transfer_page = URL(r'/secure/api-v1/transfers/v2/new/execute/pin', TransferPage)
+    debit_accounts = URL(r"/secure/api-v1/transfers/debitAccounts", DebitAccountsPage)
+    init_transfer_page = URL(r"/secure/api-v1/transfers/v2/new/validate", TransferPage)
+    exec_transfer_page = URL(r"/secure/api-v1/transfers/v2/new/execute/pin", TransferPage)
 
     # recipient
-    add_recipient = URL(r'secure/api-v1/externalAccounts/add/validateRequest', AddRecipientPage)
-    otp_channels = URL(r'secure/api-v1/sensitiveoperation/ADD_TRANSFER_BENEFICIARY/otpChannels', OtpChannelsPage)
-    confirm_otp = URL(r'secure/api-v1/sca/confirmOtp', ConfirmOtpPage)
+    add_recipient = URL(r"secure/api-v1/externalAccounts/add/validateRequest", AddRecipientPage)
+    otp_channels = URL(r"secure/api-v1/sensitiveoperation/ADD_TRANSFER_BENEFICIARY/otpChannels", OtpChannelsPage)
+    confirm_otp = URL(r"secure/api-v1/sca/confirmOtp", ConfirmOtpPage)
 
     # profile
-    informations = URL(r'/secure/api-v1/customer/info', ProfilePage)
-    useless_profile = URL(r'/secure/personal-data/information', UselessProfilePage)
+    informations = URL(r"/secure/api-v1/customer/info", ProfilePage)
+    useless_profile = URL(r"/secure/personal-data/information", UselessProfilePage)
 
     # document
-    statements = URL(r'/secure/api-v1/accounts/statement/metadata/(?P<account_uid>.+)', StatementsPage)
-    statement_dl = URL(r'/secure/api-v1/accounts/statement/bank/(?P<account_uid>.+)/(?P<year>\d+)/(?P<month>\d+)')
+    statements = URL(r"/secure/api-v1/accounts/statement/metadata/(?P<account_uid>.+)", StatementsPage)
+    statement_dl = URL(r"/secure/api-v1/accounts/statement/bank/(?P<account_uid>.+)/(?P<year>\d+)/(?P<month>\d+)")
 
-    __states__ = ('need_reload_state', 'add_recipient_info')
+    __states__ = ("need_reload_state", "add_recipient_info")
 
     def __init__(self, *args, **kwargs):
-        self.birthday = kwargs.pop('birthday')
+        self.birthday = kwargs.pop("birthday")
         super(IngAPIBrowser, self).__init__(*args, **kwargs)
 
         dirname = self.responses_dirname
         if dirname:
-            dirname += '/bourse'
-        kwargs['responses_dirname'] = dirname
+            dirname += "/bourse"
+        kwargs["responses_dirname"] = dirname
         self.bourse = IngBourseDirectBrowser(None, None, **kwargs)
 
         self.transfer_data = None
@@ -130,38 +146,38 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
     def load_state(self, state):
         # reload state only for new recipient
-        if state.get('need_reload_state'):
-            state.pop('url', None)
+        if state.get("need_reload_state"):
+            state.pop("url", None)
             self.need_reload_state = None
             super(IngAPIBrowser, self).load_state(state)
 
     WRONGPASS_CODES = (
-        'AUTHENTICATION.INVALID_PIN_CODE',
-        'AUTHENTICATION.INVALID_CIF_AND_BIRTHDATE_COMBINATION',
-        'AUTHENTICATION.FIRST_WRONG_PIN_ATTEMPT',
-        'AUTHENTICATION.SECOND_WRONG_PIN_ATTEMPT',
-        'AUTHENTICATION.CUSTOMER_DECEASED',
-        'SCA.WRONG_AUTHENTICATION',
+        "AUTHENTICATION.INVALID_PIN_CODE",
+        "AUTHENTICATION.INVALID_CIF_AND_BIRTHDATE_COMBINATION",
+        "AUTHENTICATION.FIRST_WRONG_PIN_ATTEMPT",
+        "AUTHENTICATION.SECOND_WRONG_PIN_ATTEMPT",
+        "AUTHENTICATION.CUSTOMER_DECEASED",
+        "SCA.WRONG_AUTHENTICATION",
     )
 
     ACTIONNEEDED_CODES = (
-        'AUTHENTICATION.ACCOUNT_INACTIVE',
-        'AUTHENTICATION.ACCOUNT_LOCKED',
-        'AUTHENTICATION.NO_COMPLETE_ACCOUNT_FOUND',
-        'SCA.ACCOUNT_LOCKED',
+        "AUTHENTICATION.ACCOUNT_INACTIVE",
+        "AUTHENTICATION.ACCOUNT_LOCKED",
+        "AUTHENTICATION.NO_COMPLETE_ACCOUNT_FOUND",
+        "SCA.ACCOUNT_LOCKED",
     )
 
     def handle_login_error(self, r):
         error_page = r.response.json()
-        assert 'error' in error_page, "Something went wrong in login"
-        error = error_page['error']
+        assert "error" in error_page, "Something went wrong in login"
+        error = error_page["error"]
 
-        if error['code'] in self.WRONGPASS_CODES:
-            raise BrowserIncorrectPassword(error['message'])
-        elif error['code'] in self.ACTIONNEEDED_CODES:
-            raise ActionNeeded(error['message'])
+        if error["code"] in self.WRONGPASS_CODES:
+            raise BrowserIncorrectPassword(error["message"])
+        elif error["code"] in self.ACTIONNEEDED_CODES:
+            raise ActionNeeded(error["message"])
 
-        raise Exception("%r code isn't handled yet: %s" % (error['code'], error['message']))
+        raise Exception("%r code isn't handled yet: %s" % (error["code"], error["message"]))
 
     def do_login(self):
         if not self.password.isdigit():
@@ -171,36 +187,39 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         # update cookies
         self.context.go()
 
-        data = OrderedDict([
-            ('birthDate', self.birthday.strftime('%d%m%Y')),
-            ('cif', self.username),
-        ])
+        data = OrderedDict(
+            [
+                ("birthDate", self.birthday.strftime("%d%m%Y")),
+                ("cif", self.username),
+            ]
+        )
         try:
             self.login.go(json=data)
         except ClientError as e:
             self.handle_login_error(e)
 
         data = '{"keyPadSize":{"width":3800,"height":1520},"mode":""}'
-        self.keypad.go(data=data, headers={'Content-Type': 'application/json'})
+        self.keypad.go(data=data, headers={"Content-Type": "application/json"})
 
         keypad_url = self.page.get_keypad_url()
-        img = self.open('/secure/api-v1%s' % keypad_url).content
+        img = self.open("/secure/api-v1%s" % keypad_url).content
         data = {
-            'clickPositions': self.page.get_password_coord(img, self.password),
+            "clickPositions": self.page.get_password_coord(img, self.password),
         }
 
         try:
-            self.pin_page.go(json=data, headers={'Referer': self.pin_page.build()})
+            self.pin_page.go(json=data, headers={"Referer": self.pin_page.build()})
         except ClientError as e:
             self.handle_login_error(e)
 
         if not self.page.has_strong_authentication():
-            self.auth_token = self.page.response.headers['Ingdf-Auth-Token']
-            self.session.headers['Ingdf-Auth-Token'] = self.auth_token
-            self.session.cookies.set('ingdfAuthToken', self.auth_token, domain='m.ing.fr')
+            self.auth_token = self.page.response.headers["Ingdf-Auth-Token"]
+            self.session.headers["Ingdf-Auth-Token"] = self.auth_token
+            self.session.cookies.set("ingdfAuthToken", self.auth_token, domain="m.ing.fr")
         else:
             raise ActionNeeded(
-                locale="fr-FR", message="Vous devez réaliser la double authentification sur le portail internet",
+                locale="fr-FR",
+                message="Vous devez réaliser la double authentification sur le portail internet",
                 action_type=ActionType.ENABLE_MFA,
             )
 
@@ -238,7 +257,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         dups_detection = Counter(account.number for account in api_accounts)
         for number, qty in dups_detection.items():
             if qty > 1:
-                self.logger.error('account number %r is present %r times', number, qty)
+                self.logger.error("account number %r is present %r times", number, qty)
         api_by_number = {acc.number[-4:]: acc for acc in api_accounts}
 
         for account in api_accounts:
@@ -257,9 +276,9 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
                     page = self.life_insurance.open(
                         account_uid=account._uid,
                         headers={
-                            'Accept': 'application/json',
-                            'Authorization': 'Bearer %s' % self.get_invest_token(),
-                        }
+                            "Accept": "application/json",
+                            "Authorization": "Bearer %s" % self.get_invest_token(),
+                        },
                     )
                     page.fill_account(obj=account)
 
@@ -274,7 +293,7 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
             for bourse_account in bourse_accounts:
                 # bourse number is in format 111TI11111119999EUR
                 # where XXXX9999 is the corresponding API account number
-                common = re.search(r'(\d{4})[A-Z]{3}$', bourse_account.number).group(1)
+                common = re.search(r"(\d{4})[A-Z]{3}$", bourse_account.number).group(1)
                 if common not in api_by_number:
                     continue
                 account = api_by_number[common]
@@ -369,28 +388,28 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     @need_login
     def go_to_bourse_landing_page(self, account):
         self.api_to_bourse.go(
-            account_uid=account._uid,
-            headers={'Authorization': 'Bearer %s' % self.get_invest_token()}
+            account_uid=account._uid, headers={"Authorization": "Bearer %s" % self.get_invest_token()}
         )
-        bourse_url = self.response.json()['url']
-        self.location(bourse_url, data='')
+        bourse_url = self.response.json()["url"]
+        self.location(bourse_url, data="")
 
     @need_login
     def go_bourse(self, account):
-        if 'bourse.ing.fr' in self.url:
-            self.logger.debug('already on bourse site')
+        if "bourse.ing.fr" in self.url:
+            self.logger.debug("already on bourse site")
             return
 
         assert account.type in (Account.TYPE_PEA, Account.TYPE_MARKET)
 
-        self.logger.debug('going to bourse site')
+        self.logger.debug("going to bourse site")
         try:
             self.go_to_bourse_landing_page(account)
         except ClientError as e:
             # Sometimes a 403 can appear with a message asking to reconnect and retry while trying to access
             # the bourse's landing page
             if (
-                e.response.status_code == 403 and self.bourse_landing.match(e.request.url)
+                e.response.status_code == 403
+                and self.bourse_landing.match(e.request.url)
                 and not BourseLandingPage(self, e.response).logged
             ):
                 self.go_to_bourse_landing_page(account)
@@ -402,24 +421,24 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def go_main_site(self):
-        if 'm.ing.fr' in self.url:
-            self.logger.debug('already on main site')
+        if "m.ing.fr" in self.url:
+            self.logger.debug("already on main site")
             return
 
-        self.logger.debug('going to main site')
-        if 'bourse.ing.fr' in self.url:
+        self.logger.debug("going to main site")
+        if "bourse.ing.fr" in self.url:
             try:
                 self.bourse_to_api.go()
             except ServerError:
-                self.logger.debug('bourse_to_api failed...')
+                self.logger.debug("bourse_to_api failed...")
                 # this is an absolute clusterfuck
-                self.location(self.absurl('/secure', base=True))
+                self.location(self.absurl("/secure", base=True))
                 self.accounts.go()
             else:
                 if self.redirect_bourse_to_api.is_here():
                     self.page.submit_form()
 
-                self.logger.info('bourse_to_api did work, hurray!')
+                self.logger.info("bourse_to_api did work, hurray!")
 
     ############# CapWealth #############
     @need_login
@@ -434,10 +453,11 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
             self.go_main_site()
             page = self.life_insurance.open(
-                account_uid=account._uid, headers={
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer %s' % self.get_invest_token(),
-                }
+                account_uid=account._uid,
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": "Bearer %s" % self.get_invest_token(),
+                },
             )
             return page.iter_investments()
 
@@ -466,16 +486,16 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
 
     def handle_transfer_errors(self, r):
         error_page = r.response.json()
-        assert 'error' in error_page, "Something went wrong, transfer is not created"
+        assert "error" in error_page, "Something went wrong, transfer is not created"
 
-        error = error_page['error']
-        error_msg = error['message']
+        error = error_page["error"]
+        error_msg = error["message"]
 
-        if error['code'] == 'TRANSFER.INVALID_AMOUNT_MINIMUM':
+        if error["code"] == "TRANSFER.INVALID_AMOUNT_MINIMUM":
             raise TransferInvalidAmount(message=error_msg)
-        elif error['code'] == 'INPUT_INVALID' and len(error['values']):
-            for value in error['values']:
-                error_msg = '%s %s %s.' % (error_msg, value, error['values'][value])
+        elif error["code"] == "INPUT_INVALID" and len(error["values"]):
+            for value in error["values"]:
+                error_msg = "%s %s %s." % (error_msg, value, error["values"][value])
 
         raise TransferBankError(message=error_msg)
 
@@ -483,15 +503,15 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     @start_with_main_site
     def init_transfer(self, account, recipient, transfer):
         data = {
-            'amount': transfer.amount,
-            'executionDate': transfer.exec_date.strftime('%Y-%m-%d'),
-            'keyPadSize': {'width': 3800, 'height': 1520},
-            'label': transfer.label,
-            'fromAccount': account._uid,
-            'toAccount': recipient.id,
+            "amount": transfer.amount,
+            "executionDate": transfer.exec_date.strftime("%Y-%m-%d"),
+            "keyPadSize": {"width": 3800, "height": 1520},
+            "label": transfer.label,
+            "fromAccount": account._uid,
+            "toAccount": recipient.id,
         }
         try:
-            self.init_transfer_page.go(json=data, headers={'Referer': self.absurl('/secure/transfers/new')})
+            self.init_transfer_page.go(json=data, headers={"Referer": self.absurl("/secure/transfers/new")})
         except ClientError as e:
             self.handle_transfer_errors(e)
 
@@ -504,8 +524,8 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         assert suggested_date == transfer.exec_date, "Transfer date is not valid"
 
         self.transfer_data = data
-        self.transfer_data.pop('keyPadSize')
-        self.transfer_data['clickPositions'] = self.page.get_password_coord(self.password)
+        self.transfer_data.pop("keyPadSize")
+        self.transfer_data["clickPositions"] = self.page.get_password_coord(self.password)
 
         return transfer
 
@@ -513,8 +533,8 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     @start_with_main_site
     def execute_transfer(self, transfer):
         headers = {
-            'Referer': self.absurl('/secure/transfers/new'),
-            'Accept': 'application/json, text/plain, */*',
+            "Referer": self.absurl("/secure/transfers/new"),
+            "Accept": "application/json, text/plain, */*",
         }
         self.exec_transfer_page.go(json=self.transfer_data, headers=headers)
 
@@ -525,18 +545,18 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     def send_sms_to_user(self, recipient, sms_info):
         """Add recipient with OTP SMS authentication"""
         data = {
-            'channelType': sms_info['type'],
-            'externalAccountsRequest': self.add_recipient_info,
-            'sensitiveOperationAction': 'ADD_TRANSFER_BENEFICIARY',
+            "channelType": sms_info["type"],
+            "externalAccountsRequest": self.add_recipient_info,
+            "sensitiveOperationAction": "ADD_TRANSFER_BENEFICIARY",
         }
 
-        phone_id = sms_info['phone']
-        data['channelValue'] = phone_id
-        self.add_recipient_info['phoneUid'] = phone_id
+        phone_id = sms_info["phone"]
+        data["channelValue"] = phone_id
+        self.add_recipient_info["phoneUid"] = phone_id
 
-        self.location(self.absurl('/secure/api-v1/sca/sendOtp', base=True), json=data)
+        self.location(self.absurl("/secure/api-v1/sca/sendOtp", base=True), json=data)
         self.need_reload_state = True
-        raise AddRecipientStep(recipient, Value('code', label='Veuillez saisir le code temporaire envoyé par SMS'))
+        raise AddRecipientStep(recipient, Value("code", label="Veuillez saisir le code temporaire envoyé par SMS"))
 
     def handle_recipient_error(self, r):
         # The bank gives an error message when an error occures.
@@ -547,30 +567,33 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         # * None: message of the bank
         # * String: custom message
         RECIPIENT_ERROR = {
-            'SENSITIVE_OPERATION.SENSITIVE_OPERATION_NOT_FOUND': (AddRecipientTimeout,),
-            'SENSITIVE_OPERATION.EXPIRED_TEMPORARY_CODE': (AddRecipientTimeout, None),
-            'EXTERNAL_ACCOUNT.EXTERNAL_ACCOUNT_ALREADY_EXISTS': (AddRecipientBankError, None),
-            'EXTERNAL_ACCOUNT.ACCOUNT_RESTRICTION': (AddRecipientBankError, None),
-            'EXTERNAL_ACCOUNT.EXTERNAL_ACCOUNT_IS_INTERNAL_ACCOUT': (AddRecipientBankError, None),  # nice spelling
-            'EXTERNAL_ACCOUNT.IBAN_NOT_FRENCH': (RecipientInvalidIban, "L'IBAN doit correpondre à celui d'une banque domiciliée en France."),
-            'SCA.WRONG_OTP_ATTEMPT': (RecipientInvalidOTP, None),
-            'INPUT_INVALID': (AssertionError, None),  # invalid request
+            "SENSITIVE_OPERATION.SENSITIVE_OPERATION_NOT_FOUND": (AddRecipientTimeout,),
+            "SENSITIVE_OPERATION.EXPIRED_TEMPORARY_CODE": (AddRecipientTimeout, None),
+            "EXTERNAL_ACCOUNT.EXTERNAL_ACCOUNT_ALREADY_EXISTS": (AddRecipientBankError, None),
+            "EXTERNAL_ACCOUNT.ACCOUNT_RESTRICTION": (AddRecipientBankError, None),
+            "EXTERNAL_ACCOUNT.EXTERNAL_ACCOUNT_IS_INTERNAL_ACCOUT": (AddRecipientBankError, None),  # nice spelling
+            "EXTERNAL_ACCOUNT.IBAN_NOT_FRENCH": (
+                RecipientInvalidIban,
+                "L'IBAN doit correpondre à celui d'une banque domiciliée en France.",
+            ),
+            "SCA.WRONG_OTP_ATTEMPT": (RecipientInvalidOTP, None),
+            "INPUT_INVALID": (AssertionError, None),  # invalid request
         }
 
         error_page = r.response.json()
-        if 'error' in error_page:
-            error = error_page['error']
+        if "error" in error_page:
+            error = error_page["error"]
 
-            error_exception = RECIPIENT_ERROR.get(error['code'])
+            error_exception = RECIPIENT_ERROR.get(error["code"])
             if error_exception:
                 if len(error_exception) == 1:
                     raise error_exception[0]()
                 elif error_exception[1] is None:
-                    raise error_exception[0](message=error['message'])
+                    raise error_exception[0](message=error["message"])
                 else:
                     raise error_exception[0](message=error_exception[1])
 
-            raise AssertionError('Recipient error "%s" not handled' % error['code'])
+            raise AssertionError('Recipient error "%s" not handled' % error["code"])
 
     @need_login
     def end_sms_recipient(self, recipient, code):
@@ -580,13 +603,13 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         rcpt_info = self.add_recipient_info
         self.add_recipient_info = None
 
-        if not re.match(r'^\d{6}$', code):
+        if not re.match(r"^\d{6}$", code):
             raise RecipientInvalidOTP()
 
         data = {
-            'externalAccountsRequest': rcpt_info,
-            'otp': code,
-            'sensitiveOperationAction': 'ADD_TRANSFER_BENEFICIARY',
+            "externalAccountsRequest": rcpt_info,
+            "otp": code,
+            "sensitiveOperationAction": "ADD_TRANSFER_BENEFICIARY",
         }
 
         try:
@@ -599,9 +622,9 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
     @start_with_main_site
     def new_recipient(self, recipient, **params):
         # sms only, we don't handle the call
-        if 'code' in params:
+        if "code" in params:
             # part 2 - finalization
-            self.end_sms_recipient(recipient, params['code'])
+            self.end_sms_recipient(recipient, params["code"])
 
             # WARNING: On the recipient list, the IBAN is masked
             # so I cannot match it
@@ -615,10 +638,12 @@ class IngAPIBrowser(LoginBrowser, StatesMixin):
         sms_info = self.page.get_sms_info()
 
         try:
-            self.add_recipient.go(json={
-                'accountHolderName': recipient.label,
-                'iban': recipient.iban,
-            })
+            self.add_recipient.go(
+                json={
+                    "accountHolderName": recipient.label,
+                    "iban": recipient.iban,
+                }
+            )
         except ClientError as e:
             self.handle_recipient_error(e)
             raise

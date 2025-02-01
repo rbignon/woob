@@ -22,14 +22,15 @@ from .base import BaseObject, Capability, DecimalField, StringField, UserError
 from .date import DateField, DeltaField, TimeField
 
 
-__all__ = ['Station', 'Departure', 'RoadStep', 'RoadmapError', 'RoadmapFilters', 'CapTravel']
+__all__ = ["Station", "Departure", "RoadStep", "RoadmapError", "RoadmapFilters", "CapTravel"]
 
 
 class Station(BaseObject):
     """
     Describes a station.
     """
-    name =  StringField('Name of station')
+
+    name = StringField("Name of station")
 
     def __init__(self, id=None, name=None, url=None):
         super(Station, self).__init__(id, url)
@@ -43,16 +44,17 @@ class Departure(BaseObject):
     """
     Describes a departure.
     """
-    type =              StringField('Type of train')
-    time =              TimeField('Departure time')
-    departure_station = StringField('Departure station')
-    arrival_station =   StringField('Destination of the train')
-    arrival_time =      TimeField('Arrival time')
-    late =              TimeField('Optional late', default=datetime.time())
-    information =       StringField('Informations')
-    plateform =         StringField('Where the train will leave')
-    price =             DecimalField('Price of ticket')
-    currency =          StringField('Currency', default=None)
+
+    type = StringField("Type of train")
+    time = TimeField("Departure time")
+    departure_station = StringField("Departure station")
+    arrival_station = StringField("Destination of the train")
+    arrival_time = TimeField("Arrival time")
+    late = TimeField("Optional late", default=datetime.time())
+    information = StringField("Informations")
+    plateform = StringField("Where the train will leave")
+    price = DecimalField("Price of ticket")
+    currency = StringField("Currency", default=None)
 
     def __init__(self, id=None, _type=None, _time=None, url=None):
         super(Departure, self).__init__(id, url)
@@ -62,19 +64,25 @@ class Departure(BaseObject):
 
     def __repr__(self):
         return "<Departure id=%r type=%r time=%r departure=%r arrival=%r>" % (
-            self.id, self.type, self.time.strftime('%H:%M'), self.departure_station, self.arrival_station)
+            self.id,
+            self.type,
+            self.time.strftime("%H:%M"),
+            self.departure_station,
+            self.arrival_station,
+        )
 
 
 class RoadStep(BaseObject):
     """
     A step on a roadmap.
     """
-    line =          StringField('When line')
-    start_time =    TimeField('Start of step')
-    end_time =      TimeField('End of step')
-    departure =     StringField('Departure station')
-    arrival =       StringField('Arrival station')
-    duration =      DeltaField('Duration of this step')
+
+    line = StringField("When line")
+    start_time = TimeField("Start of step")
+    end_time = TimeField("End of step")
+    departure = StringField("Departure station")
+    arrival = StringField("Arrival station")
+    duration = DeltaField("Duration of this step")
 
 
 class RoadmapError(UserError):
@@ -87,10 +95,11 @@ class RoadmapFilters(BaseObject):
     """
     Filters to get a roadmap.
     """
-    departure_time =    DateField('Wanted departure time')
-    arrival_time =      DateField('Wanted arrival time')
 
-    def __init__(self, id='', url=None):
+    departure_time = DateField("Wanted departure time")
+    arrival_time = DateField("Wanted arrival time")
+
+    def __init__(self, id="", url=None):
         super(RoadmapFilters, self).__init__(id, url)
 
 

@@ -19,4 +19,4 @@
 from .module import ApivieModule
 
 
-__all__ = ['ApivieModule']
+__all__ = ["ApivieModule"]

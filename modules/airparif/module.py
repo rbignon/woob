@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import AirparifBrowser
 
 
-__all__ = ['AirparifModule']
+__all__ = ["AirparifModule"]
 
 
 class AirparifModule(Module, CapGauge):
-    NAME = 'airparif'
-    DESCRIPTION = 'airparif website'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "airparif"
+    DESCRIPTION = "airparif website"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = AirparifBrowser
 
@@ -66,7 +66,7 @@ class AirparifModule(Module, CapGauge):
                     yield sensor
 
     def _get_sensor_by_id(self, id):
-        gid = id.partition('.')[0]
+        gid = id.partition(".")[0]
         return find_object(self.iter_sensors(gid), id=id)
 
     def get_last_measure(self, sensor):

@@ -21,4 +21,4 @@
 from .module import PoivyModule
 
 
-__all__ = ['PoivyModule']
+__all__ = ["PoivyModule"]

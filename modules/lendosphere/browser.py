@@ -41,13 +41,13 @@ class AttrURL(URL):
 
 
 class LendosphereBrowser(LoginBrowser):
-    BASEURL = 'https://www.lendosphere.com'
+    BASEURL = "https://www.lendosphere.com"
 
-    login = URL(r'/membres/se-connecter', LoginPage)
-    dashboard = AttrURL(r'/membres/(?P<user_id>[a-z0-9-]+)/tableau-de-bord', SummaryPage)
-    global_summary = AttrURL(r'/membres/(?P<user_id>[a-z0-9-]+)/dashboard_global_info', GSummaryPage)
-    coming = AttrURL(r'/membres/(?P<user_id>[a-z0-9-]+)/mes-echeanciers.csv', ComingPage)
-    profile = AttrURL(r'/membres/(?P<user_id>[a-z0-9-]+)', ProfilePage)
+    login = URL(r"/membres/se-connecter", LoginPage)
+    dashboard = AttrURL(r"/membres/(?P<user_id>[a-z0-9-]+)/tableau-de-bord", SummaryPage)
+    global_summary = AttrURL(r"/membres/(?P<user_id>[a-z0-9-]+)/dashboard_global_info", GSummaryPage)
+    coming = AttrURL(r"/membres/(?P<user_id>[a-z0-9-]+)/mes-echeanciers.csv", ComingPage)
+    profile = AttrURL(r"/membres/(?P<user_id>[a-z0-9-]+)", ProfilePage)
 
     user_id = None
 
@@ -58,7 +58,7 @@ class LendosphereBrowser(LoginBrowser):
         if self.login.is_here():
             self.page.raise_error()
 
-        self.user_id = self.page.params['user_id']
+        self.user_id = self.page.params["user_id"]
 
     @need_login
     def iter_accounts(self):

@@ -22,111 +22,111 @@ from woob.tools.application.formatters.iformatter import PrettyFormatter
 from woob.tools.application.repl import ReplApplication, defaultcount
 
 
-__all__ = ['Appbands', 'BandInfoFormatter', 'BandListFormatter', 'FavoritesFormatter']
+__all__ = ["Appbands", "BandInfoFormatter", "BandListFormatter", "FavoritesFormatter"]
 
 
 class BandInfoFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'name', 'genre', 'year', 'country', 'description')
+    MANDATORY_FIELDS = ("id", "name", "genre", "year", "country", "description")
 
     def format_obj(self, obj, alias):
-        result = '\n%s%s%s\n' % (self.BOLD, obj.name, self.NC)
+        result = "\n%s%s%s\n" % (self.BOLD, obj.name, self.NC)
         if not empty(obj.genre):
-            result += 'Genre: %s\n' % obj.genre
+            result += "Genre: %s\n" % obj.genre
         if not empty(obj.country):
-            result += 'Country: %s\n' % obj.country
+            result += "Country: %s\n" % obj.country
         if not empty(obj.year):
-            result += 'Formed in: %s\n' % obj.year
+            result += "Formed in: %s\n" % obj.year
         if not empty(obj.description):
-            result += '%sDescription:%s\n' % (self.BOLD, self.NC)
-            result += '%s\n' % obj.description
+            result += "%sDescription:%s\n" % (self.BOLD, self.NC)
+            result += "%s\n" % obj.description
         return result.strip()
 
 
 class BandListFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'name', 'short_description')
+    MANDATORY_FIELDS = ("id", "name", "short_description")
 
     def get_title(self, obj):
         return obj.name
 
     def get_description(self, obj):
-        result = ''
+        result = ""
         if not empty(obj.short_description):
-            result += '%s\n' % obj.short_description
-        result += '---------------------------------------------------------------------------'
+            result += "%s\n" % obj.short_description
+        result += "---------------------------------------------------------------------------"
         return result.strip()
 
 
 class FavoritesFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'name', 'band_url', 'short_description')
+    MANDATORY_FIELDS = ("id", "name", "band_url", "short_description")
 
     def get_title(self, obj):
         return obj.name
 
     def get_description(self, obj):
-        result = ''
+        result = ""
         if not empty(obj.short_description):
-            result += '%s\n' % obj.short_description
+            result += "%s\n" % obj.short_description
         if not empty(obj.band_url):
-            result += '\t%s\n' % obj.band_url
-        result += '---------------------------------------------------------------------------'
+            result += "\t%s\n" % obj.band_url
+        result += "---------------------------------------------------------------------------"
         return result.strip()
 
 
 class AlbumsFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'name', 'album_type', 'year', 'reviews')
+    MANDATORY_FIELDS = ("id", "name", "album_type", "year", "reviews")
 
     def format_obj(self, obj, alias):
-        result = '\n%s%s%s\n' % (self.BOLD, obj.name, self.NC)
+        result = "\n%s%s%s\n" % (self.BOLD, obj.name, self.NC)
         if not empty(obj.album_type):
-            result += 'Album type: %s\n' % obj.album_type
+            result += "Album type: %s\n" % obj.album_type
         if not empty(obj.id):
-            result += 'Link to album: %s\n' % obj.id
+            result += "Link to album: %s\n" % obj.id
         if not empty(obj.year):
-            result += 'Year of release: %s\n' % obj.year
+            result += "Year of release: %s\n" % obj.year
         if not empty(obj.reviews):
-            result += 'Reviews: %s\n' % obj.reviews
-        result += '---------------------------------------------------------------------------'
+            result += "Reviews: %s\n" % obj.reviews
+        result += "---------------------------------------------------------------------------"
         return result.strip()
 
 
 class SuggestionsFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'name', 'description', 'url')
+    MANDATORY_FIELDS = ("id", "name", "description", "url")
 
     def get_title(self, obj):
         return obj.name
 
     def get_description(self, obj):
-        result = ''
+        result = ""
         if not empty(obj.description):
-            result += '%s\n' % obj.description
+            result += "%s\n" % obj.description
         if not empty(obj.url):
-            result += '\tLink to band: %s\n' % obj.url
-        result += '---------------------------------------------------------------------------'
+            result += "\tLink to band: %s\n" % obj.url
+        result += "---------------------------------------------------------------------------"
         return result.strip()
 
 
 class Appbands(ReplApplication):
-    APPNAME = 'bands'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2018-YEAR Quentin Defenouillere'
+    APPNAME = "bands"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2018-YEAR Quentin Defenouillere"
     DESCRIPTION = "Console application allowing to display music bands and offer music suggestions."
     SHORT_DESCRIPTION = "display bands and suggestions"
     CAPS = CapBands
-    DEFAULT_FORMATTER = 'table'
+    DEFAULT_FORMATTER = "table"
     EXTRA_FORMATTERS = {
-        'band_search': BandListFormatter,
-        'band_info': BandInfoFormatter,
-        'get_favorites': FavoritesFormatter,
-        'get_albums': AlbumsFormatter,
-        'suggestion': SuggestionsFormatter
+        "band_search": BandListFormatter,
+        "band_info": BandInfoFormatter,
+        "get_favorites": FavoritesFormatter,
+        "get_albums": AlbumsFormatter,
+        "suggestion": SuggestionsFormatter,
     }
 
     COMMANDS_FORMATTERS = {
-        'search': 'band_search',
-        'info': 'band_info',
-        'favorites': 'get_favorites',
-        'albums': 'get_albums',
-        'suggestions': 'suggestion'
+        "search": "band_search",
+        "info": "band_info",
+        "favorites": "get_favorites",
+        "albums": "get_albums",
+        "suggestions": "suggestion",
     }
 
     def main(self, argv):
@@ -139,9 +139,9 @@ class Appbands(ReplApplication):
         band PATTERN
         Search bands.
         """
-        self.change_path(['search'])
+        self.change_path(["search"])
         self.start_format()
-        for band in self.do('iter_band_search', pattern, caps=CapBands):
+        for band in self.do("iter_band_search", pattern, caps=CapBands):
             self.cached_format(band)
 
     def do_info(self, line):
@@ -149,11 +149,11 @@ class Appbands(ReplApplication):
         info BAND_ID
         Get detailed info for specified band. Use the 'search' command to find bands.
         """
-        band, = self.parse_command_args(line, 1, 1)
+        (band,) = self.parse_command_args(line, 1, 1)
         _id, backend_name = self.parse_id(band)
 
         self.start_format()
-        for info in self.do('get_info', _id, backends=backend_name, caps=CapBands):
+        for info in self.do("get_info", _id, backends=backend_name, caps=CapBands):
             if info:
                 self.format(info)
 
@@ -163,11 +163,11 @@ class Appbands(ReplApplication):
         albums BAND_ID
         Get the discography of a band.
         """
-        albums, = self.parse_command_args(line, 1, 1)
+        (albums,) = self.parse_command_args(line, 1, 1)
         _id, backend_name = self.parse_id(albums)
 
         self.start_format()
-        for album in self.do('get_albums', _id, backends=backend_name, caps=CapBands):
+        for album in self.do("get_albums", _id, backends=backend_name, caps=CapBands):
             self.cached_format(album)
 
     @defaultcount(100)
@@ -176,9 +176,9 @@ class Appbands(ReplApplication):
         favorites
         Displays your favorite bands.
         """
-        self.change_path(['favorites'])
+        self.change_path(["favorites"])
         self.start_format()
-        for favorite in self.do('get_favorites', caps=CapBands):
+        for favorite in self.do("get_favorites", caps=CapBands):
             self.cached_format(favorite)
 
     @defaultcount(100)
@@ -187,7 +187,7 @@ class Appbands(ReplApplication):
         suggestions
         Suggests bands depending on your favorite bands.
         """
-        self.change_path(['suggestions'])
+        self.change_path(["suggestions"])
         self.start_format()
-        for suggestion in self.do('suggestions', caps=CapBands):
+        for suggestion in self.do("suggestions", caps=CapBands):
             self.cached_format(suggestion)

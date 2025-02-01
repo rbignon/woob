@@ -35,19 +35,21 @@ class SearchPage(HTMLPage):
 
         class item(ItemElement):
             klass = Torrent
+
             def obj_url(self):
-                url = Regexp(AbsoluteLink('.//div[has-class("tt-name")]/a[1]'), r'(^.*)\?.*', '\\1')(self)
-                return url.replace('http://', 'https://')
-            obj_id = Regexp(CleanText('.//div[has-class("tt-name")]/a[2]/@href'), r'/.*-torrent-([0-9]+)\.html$', '\\1')
+                url = Regexp(AbsoluteLink('.//div[has-class("tt-name")]/a[1]'), r"(^.*)\?.*", "\\1")(self)
+                return url.replace("http://", "https://")
+
+            obj_id = Regexp(CleanText('.//div[has-class("tt-name")]/a[2]/@href'), r"/.*-torrent-([0-9]+)\.html$", "\\1")
             obj_name = CleanText('.//div[has-class("tt-name")]/a[2]/text()')
             obj_seeders = CleanDecimal('.//td[has-class("tdseed")]', default=0)
             obj_leechers = CleanDecimal('.//td[has-class("tdleech")]', default=0)
-            obj_filename = Format('%s.torrent', obj_name)
+            obj_filename = Format("%s.torrent", obj_name)
 
             def obj_size(self):
                 rawsize = CleanText('(.//td[has-class("tdnormal")])[2]')(self)
-                nsize = float(re.sub(r'[A-Za-z]', '', rawsize))
-                usize = re.sub(r'[.0-9 ]', '', rawsize).upper()
+                nsize = float(re.sub(r"[A-Za-z]", "", rawsize))
+                usize = re.sub(r"[.0-9 ]", "", rawsize).upper()
                 size = get_bytes_size(nsize, usize)
                 return size
 
@@ -57,22 +59,35 @@ class TorrentPage(HTMLPage):
     class get_torrent(ItemElement):
         klass = Torrent
         obj_name = CleanText('.//div[@id="content"]/h1')
-        obj_id = Regexp(CleanText('//div[@id="updatestatslink"]/a/@onclick'), 'torrent_id=([0-9]+)&', '\\1')
+        obj_id = Regexp(CleanText('//div[@id="updatestatslink"]/a/@onclick'), "torrent_id=([0-9]+)&", "\\1")
+
         def obj_url(self):
-            url = Regexp(AbsoluteLink('//div[has-class("torrentinfo")]//div[has-class("dltorrent")]//a[text()="Download torrent"]'), r'(^.*)\?.*', '\\1')(self)
-            return url.replace('http://', 'https://')
-        obj_filename = Format('%s.torrent', obj_name)
+            url = Regexp(
+                AbsoluteLink(
+                    '//div[has-class("torrentinfo")]//div[has-class("dltorrent")]//a[text()="Download torrent"]'
+                ),
+                r"(^.*)\?.*",
+                "\\1",
+            )(self)
+            return url.replace("http://", "https://")
+
+        obj_filename = Format("%s.torrent", obj_name)
+
         def obj_size(self):
             s = CleanText('//td/b[text()="Size"]/../../td[2]')(self)
-            nsize = float(re.sub(r'[A-Za-z]', '', s))
-            usize = re.sub(r'[.0-9 ]', '', s).upper()
+            nsize = float(re.sub(r"[A-Za-z]", "", s))
+            usize = re.sub(r"[.0-9 ]", "", s).upper()
             size = get_bytes_size(nsize, usize)
             return size
+
         def obj_files(self):
             res = []
             for f in self.xpath('//div[has-class("fileline")]'):
                 res.append(CleanText(f)(self))
             return res
+
         obj_seeders = CleanDecimal('//div[@id="content"]/span[has-class("greenish")]', default=0)
         obj_leechers = CleanDecimal('//div[@id="content"]/span[has-class("reddish")]', default=0)
-        obj_magnet = AbsoluteLink('//div[has-class("torrentinfo")]//div[has-class("dltorrent")]//a[text()="Magnet Link"]')
+        obj_magnet = AbsoluteLink(
+            '//div[has-class("torrentinfo")]//div[has-class("dltorrent")]//a[text()="Magnet Link"]'
+        )

@@ -22,7 +22,7 @@ from woob_modules.creditdunord.browser import CreditDuNordBrowser
 
 
 class LaydernierBrowser(CreditDuNordBrowser):
-    BASEURL = 'https://www.banque-laydernier.fr/'
+    BASEURL = "https://www.banque-laydernier.fr/"
 
     def do_login(self):
         raise BrowserUnavailable()

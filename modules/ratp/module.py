@@ -25,7 +25,7 @@ from woob.tools.backend import Module
 from .browser import RATPBrowser
 
 
-__all__ = ['RATPModule']
+__all__ = ["RATPModule"]
 
 
 class RATPSensor(GaugeSensor):
@@ -35,12 +35,12 @@ class RATPSensor(GaugeSensor):
 
 
 class RATPModule(Module, CapGauge):
-    NAME = 'ratp'
-    DESCRIPTION = u'RATP network status'
-    MAINTAINER = u'Phyks (Lucas Verney)'
-    EMAIL = 'phyks@phyks.me'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "ratp"
+    DESCRIPTION = "RATP network status"
+    MAINTAINER = "Phyks (Lucas Verney)"
+    EMAIL = "phyks@phyks.me"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = RATPBrowser
 
@@ -69,11 +69,7 @@ class RATPModule(Module, CapGauge):
         if not pattern:
             return self.browser.list_gauges()
         else:
-            return [
-                gauge
-                for gauge in self.browser.list_gauges()
-                if pattern in gauge.name
-            ]
+            return [gauge for gauge in self.browser.list_gauges() if pattern in gauge.name]
 
     def iter_sensors(self, gauge, pattern=None):
         """

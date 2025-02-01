@@ -21,4 +21,4 @@
 from .module import LutimModule
 
 
-__all__ = ['LutimModule']
+__all__ = ["LutimModule"]

@@ -25,43 +25,42 @@ from woob.tools.application.formatters.iformatter import IFormatter
 from woob.tools.application.repl import ReplApplication
 
 
-__all__ = ['AppTranslate']
+__all__ = ["AppTranslate"]
 
 
 class TranslationFormatter(IFormatter):
-    MANDATORY_FIELDS = ('id', 'text')
+    MANDATORY_FIELDS = ("id", "text")
 
     def format_obj(self, obj, alias):
-        return '%s* %s%s\n\t[%s] %s' % (self.BOLD, obj.backend, self.NC, obj.lang_dst, obj.text.replace('\n', '\n\t'))
+        return "%s* %s%s\n\t[%s] %s" % (self.BOLD, obj.backend, self.NC, obj.lang_dst, obj.text.replace("\n", "\n\t"))
 
 
 class XmlTranslationFormatter(IFormatter):
-    MANDATORY_FIELDS = ('id', 'text')
+    MANDATORY_FIELDS = ("id", "text")
 
     def start_format(self, **kwargs):
-        if 'source' in kwargs:
-            self.output('<source>\n%s\n</source>' % kwargs['source'])
+        if "source" in kwargs:
+            self.output("<source>\n%s\n</source>" % kwargs["source"])
 
     def format_obj(self, obj, alias):
-        return '<translation %s>\n%s\n</translation>' % (obj.backend, obj.text)
+        return "<translation %s>\n%s\n</translation>" % (obj.backend, obj.text)
 
 
 class AppTranslate(ReplApplication):
-    APPNAME = 'translate'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2012-YEAR Lucien Loiseau'
+    APPNAME = "translate"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2012-YEAR Lucien Loiseau"
     DESCRIPTION = "Console application to translate text from one language to another"
     SHORT_DESCRIPTION = "translate text from one language to another"
     CAPS = CapTranslate
-    EXTRA_FORMATTERS = {'translation': TranslationFormatter,
-                        'xmltrans':    XmlTranslationFormatter}
-    COMMANDS_FORMATTERS = {'translate': 'translation'}
+    EXTRA_FORMATTERS = {"translation": TranslationFormatter, "xmltrans": XmlTranslationFormatter}
+    COMMANDS_FORMATTERS = {"translate": "translation"}
 
     def parse_lang(self, s):
         try:
-            locale = Locale.parse(s.replace('-', '_'))
+            locale = Locale.parse(s.replace("-", "_"))
         except UnknownLocaleError:
-            pattern = re.compile(r'\b%s\b' % re.escape(s), re.I)
+            pattern = re.compile(r"\b%s\b" % re.escape(s), re.I)
             for locale_id in locale_identifiers():
                 locale = Locale.parse(locale_id)
                 if pattern.search(locale.english_name):
@@ -107,11 +106,11 @@ class AppTranslate(ReplApplication):
             lan_from = self.parse_lang(lan_from)
             lan_to = self.parse_lang(lan_to)
 
-            if not text or text == '-':
+            if not text or text == "-":
                 text = self.acquire_input()
 
             self.start_format(source=text)
-            for translation in self.do('translate', lan_from, lan_to, text):
+            for translation in self.do("translate", lan_from, lan_to, text):
                 self.format(translation)
         except (TranslationFail, LanguageNotSupported) as error:
             print(error, file=self.stderr)

@@ -32,7 +32,7 @@ from woob.exceptions import ParseError
 
 class LocationPage(JsonPage):
     def get_location(self):
-        return Dict('0/value', default='')(self.doc)
+        return Dict("0/value", default="")(self.doc)
 
 
 class SearchPage(HTMLPage):
@@ -42,35 +42,31 @@ class SearchPage(HTMLPage):
         item_xpath = '//div[@class="offer--content"]'
 
         def next_page(self):
-            p = re.match(r'https:\/\/www(.+)\&p=(\d+)\&mode=pagination(.*)', self.page.url)
+            p = re.match(r"https:\/\/www(.+)\&p=(\d+)\&mode=pagination(.*)", self.page.url)
             if p is not None:
-                return f'https://www{p.group(1)}&p={int(p.group(2))+1}&mode=pagination{p.group(3)}'
+                return f"https://www{p.group(1)}&p={int(p.group(2))+1}&mode=pagination{p.group(3)}"
             else:
-                return self.page.url + '&p=2&mode=pagination'
+                return self.page.url + "&p=2&mode=pagination"
 
         class item(ItemElement):
             klass = BaseJobAdvert
 
             def condition(self):
-                return Regexp(CleanText('./div/h3/a/@href'),
-                              r'/emplois/(.*)\.html',
-                              default=None)(self)
+                return Regexp(CleanText("./div/h3/a/@href"), r"/emplois/(.*)\.html", default=None)(self)
 
             def obj_id(self):
-                site = Regexp(CleanText('./div/h3/a/@href'),
-                              r'https://www\.(.*)\.com', default=None)(self)
+                site = Regexp(CleanText("./div/h3/a/@href"), r"https://www\.(.*)\.com", default=None)(self)
                 if site is None:
-                    site = Regexp(Env('domain'), r'https://www\.(.*)\.com')(self)
+                    site = Regexp(Env("domain"), r"https://www\.(.*)\.com")(self)
 
-                _id = Regexp(CleanText('./div/h3/a/@href'), r'/emplois/(.*)\.html')(self)
-                return u'%s#%s' % (site, _id)
+                _id = Regexp(CleanText("./div/h3/a/@href"), r"/emplois/(.*)\.html")(self)
+                return "%s#%s" % (site, _id)
 
-            obj_url = CleanText('./div/h3/a/@href')
-            obj_title = CleanText('./div/h3/a/@title')
+            obj_url = CleanText("./div/h3/a/@href")
+            obj_title = CleanText("./div/h3/a/@title")
             obj_society_name = CleanText('./div/span[@class="entname"]')
             obj_place = CleanText('./div/div/span[@class="loc "]/span')
             obj_contract_type = CleanText('./div/div/span[@class="contract"]/span')
-
 
             def obj_publication_date(self):
                 _date = CleanText('./div/div/span[@class="time"]')
@@ -78,7 +74,7 @@ class SearchPage(HTMLPage):
                     return Date(_date)(self)
                 except ParseError:
                     str_date = _date(self)
-                    if 'hier' in str_date:
+                    if "hier" in str_date:
                         return date.today() - timedelta(days=1)
                     else:
                         return date.today()
@@ -89,12 +85,14 @@ class AdvertPage(HTMLPage):
     class get_job_advert(ItemElement):
         klass = BaseJobAdvert
 
-        obj_description = CleanText(Join('\n', '//section[@class="content modal"]', textCleaner=CleanHTML))
-        obj_id = Env('_id')
-        obj_url = BrowserURL('advert_page', _id=Env('_id'))
-        obj_publication_date = Date(Regexp(CleanText('//span[@class="retrait"]/span'),
-                                           r'(\d{2}/\d{2}/\d{4})', default=NotAvailable), default=NotAvailable)
-        obj_title = CleanText('//h1/span')
+        obj_description = CleanText(Join("\n", '//section[@class="content modal"]', textCleaner=CleanHTML))
+        obj_id = Env("_id")
+        obj_url = BrowserURL("advert_page", _id=Env("_id"))
+        obj_publication_date = Date(
+            Regexp(CleanText('//span[@class="retrait"]/span'), r"(\d{2}/\d{2}/\d{4})", default=NotAvailable),
+            default=NotAvailable,
+        )
+        obj_title = CleanText("//h1/span")
         obj_society_name = CleanText('//a[@id="link-company"]')
 
         obj_contract_type = CleanText('//li/span[text() = "Type de contrat : "]/following-sibling::span[1]')

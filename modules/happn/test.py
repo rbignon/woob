@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class HappnTest(BackendTest):
-    MODULE = 'happn'
+    MODULE = "happn"
 
     def test_happn(self):
         for m in self.backend.iter_unread_messages():

@@ -20,6 +20,6 @@ import warnings
 from woob.launcher import Launcher as WoobMain
 
 
-__all__ = ['WoobMain']
+__all__ = ["WoobMain"]
 
-warnings.warn('Use woob.launcher instead', DeprecationWarning)
+warnings.warn("Use woob.launcher instead", DeprecationWarning)

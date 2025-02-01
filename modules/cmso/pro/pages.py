@@ -26,7 +26,18 @@ from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import Attr, Link, TableCell
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    CleanDecimal, CleanText, Coalesce, Currency, Date, DateGuesser, Env, Field, Filter, Format, Lower, Regexp,
+    CleanDecimal,
+    CleanText,
+    Coalesce,
+    Currency,
+    Date,
+    DateGuesser,
+    Env,
+    Field,
+    Filter,
+    Format,
+    Lower,
+    Regexp,
 )
 from woob.browser.pages import HTMLPage, JsonPage, LoggedPage, pagination
 from woob.capabilities.bank import Account, Loan
@@ -56,8 +67,8 @@ class CMSOPage(HTMLPage):
 
 class AccountsPage(CMSOPage):
     TYPES = {
-        'COMPTE CHEQUES': Account.TYPE_CHECKING,
-        'COMPTE TITRES': Account.TYPE_MARKET,
+        "COMPTE CHEQUES": Account.TYPE_CHECKING,
+        "COMPTE TITRES": Account.TYPE_MARKET,
         "ACTIV'EPARGNE": Account.TYPE_SAVINGS,
         "TRESO'VIV": Account.TYPE_SAVINGS,
     }
@@ -76,12 +87,12 @@ class AccountsPage(CMSOPage):
                             return actype
                     return Account.TYPE_UNKNOWN
 
-            obj__history_url = Link('.//a[1]')
-            obj_id = CleanText('.//span[has-class("numero-compte")]') & Regexp(pattern=r'(\d{3,}[\w]+)', default='')
+            obj__history_url = Link(".//a[1]")
+            obj_id = CleanText('.//span[has-class("numero-compte")]') & Regexp(pattern=r"(\d{3,}[\w]+)", default="")
             obj_label = CleanText('.//span[has-class("libelle")][1]')
             obj_currency = Currency('//span[has-class("montant")]')
             obj_balance = CleanDecimal('.//span[has-class("montant")]', replace_dots=True)
-            obj_type = Type(Field('label'))
+            obj_type = Type(Field("label"))
             # Last numbers replaced with XX... or we have to send sms to get RIB.
             obj_iban = NotAvailable
 
@@ -90,12 +101,14 @@ class AccountsPage(CMSOPage):
 
             def validate(self, obj):
                 if obj.id is None:
-                    obj.id = obj.label.replace(' ', '')
+                    obj.id = obj.label.replace(" ", "")
                 return True
 
     def on_load(self):
         if self.doc.xpath('//p[contains(text(), "incident technique")]'):
-            raise BrowserIncorrectPassword("Vous n'avez aucun compte sur cet espace. Veuillez choisir un autre type de compte.")
+            raise BrowserIncorrectPassword(
+                "Vous n'avez aucun compte sur cet espace. Veuillez choisir un autre type de compte."
+            )
 
 
 class LoansPage(CMSOPage):
@@ -108,21 +121,20 @@ class LoansPage(CMSOPage):
 
             obj__history_url = None
             obj_type = Account.TYPE_LOAN
-            obj_label = CleanText('./a/span[1]//strong')
+            obj_label = CleanText("./a/span[1]//strong")
             obj_maturity_date = Date(
-                Regexp(CleanText('.//span[contains(@text, "Date de fin")]'), r'Date de fin : (.*)', default=''),
+                Regexp(CleanText('.//span[contains(@text, "Date de fin")]'), r"Date de fin : (.*)", default=""),
                 dayfirst=True,
-                default=NotAvailable
+                default=NotAvailable,
             )
             obj_balance = CleanDecimal.SI(
-                './/i[contains(text(), "Montant restant dû")]/../following-sibling::span[1]',
-                sign='-'
+                './/i[contains(text(), "Montant restant dû")]/../following-sibling::span[1]', sign="-"
             )
             obj_currency = Currency('.//i[contains(text(), "Montant restant dû")]/../following-sibling::span[1]')
             obj_next_payment_date = Date(
                 CleanText('.//i[contains(text(), "Date échéance")]/../following-sibling::span[1]'),
                 dayfirst=True,
-                default=NotAvailable
+                default=NotAvailable,
             )
             obj_next_payment_amount = CleanDecimal.SI(
                 './/i[contains(text(), "Montant échéance")]/../following-sibling::span[1]'
@@ -131,9 +143,9 @@ class LoansPage(CMSOPage):
             # There is no actual ID or number for loans
             # The credit index is not stable, it's based on javascript code but it's necessary to avoid duplicate IDs
             obj_id = Format(
-                '%s-%s',
-                Lower('./a/span[1]//strong', replace=[(' ', '_')]),
-                Regexp(Attr('./a', 'onclick'), r'indCredit, (\d+),'),
+                "%s-%s",
+                Lower("./a/span[1]//strong", replace=[(" ", "_")]),
+                Regexp(Attr("./a", "onclick"), r"indCredit, (\d+),"),
             )
 
 
@@ -151,32 +163,32 @@ class InvestmentPage(CMSOPage):
             def obj_id(self):
                 area_id = Regexp(
                     CleanText('(./preceding-sibling::tr[@class="LnMnTiers"][1])//span[@class="CelMnTiersT1"]'),
-                    r'\((\d+)\)',
-                    default=''
+                    r"\((\d+)\)",
+                    default="",
                 )(self)
 
-                acc_id = Regexp(CleanText('./td[1]'), r'(\d+)\s*(\d+)', r'\1\2')(self)
+                acc_id = Regexp(CleanText("./td[1]"), r"(\d+)\s*(\d+)", r"\1\2")(self)
                 if area_id:
-                    return '%s.%s' % (area_id, acc_id)
+                    return "%s.%s" % (area_id, acc_id)
                 return acc_id
 
             def obj__formdata(self):
-                js = Attr('./td/a[1]', 'onclick', default=None)(self)
+                js = Attr("./td/a[1]", "onclick", default=None)(self)
                 if js is None:
                     return
-                args = re.search(r'\((.*)\)', js).group(1).split(',')
+                args = re.search(r"\((.*)\)", js).group(1).split(",")
 
-                form = args[0].strip().split('.')[1]
+                form = args[0].strip().split(".")[1]
                 idx = args[2].strip()
                 idroot = args[4].strip().replace("'", "")
                 return (form, idx, idroot)
 
-            obj_url = Link('./td/a[1]', default=None)
+            obj_url = Link("./td/a[1]", default=None)
 
     def go_account(self, form, idx, idroot):
         form = self.get_form(name=form)
-        form['indiceCompte'] = idx
-        form['idRacine'] = idroot
+        form["indiceCompte"] = idx
+        form["idRacine"] = idroot
         form.submit()
 
 
@@ -188,33 +200,33 @@ class CmsoTableElement(TableElement):
 class InvestmentAccountPage(CMSOPage):
     @method
     class iter_investments(CmsoTableElement):
-        col_label = 'Valeur'
-        col_code = 'Code'
-        col_quantity = 'Qté'
-        col_unitvalue = 'Cours'
-        col_valuation = 'Valorisation'
-        col_vdate = 'Date cours'
+        col_label = "Valeur"
+        col_code = "Code"
+        col_quantity = "Qté"
+        col_unitvalue = "Cours"
+        col_valuation = "Valorisation"
+        col_vdate = "Date cours"
 
         class item(ItemElement):
             klass = Investment
 
-            obj_label = CleanText(TableCell('label'))
-            obj_quantity = CleanDecimal(TableCell('quantity'), replace_dots=True)
-            obj_unitvalue = CleanDecimal(TableCell('unitvalue'), replace_dots=True)
-            obj_valuation = CleanDecimal(TableCell('valuation'), replace_dots=True)
-            obj_vdate = Date(CleanText(TableCell('vdate')), dayfirst=True, default=NotAvailable)
+            obj_label = CleanText(TableCell("label"))
+            obj_quantity = CleanDecimal(TableCell("quantity"), replace_dots=True)
+            obj_unitvalue = CleanDecimal(TableCell("unitvalue"), replace_dots=True)
+            obj_valuation = CleanDecimal(TableCell("valuation"), replace_dots=True)
+            obj_vdate = Date(CleanText(TableCell("vdate")), dayfirst=True, default=NotAvailable)
 
             def obj_code(self):
-                if Field('label')(self) == "LIQUIDITES":
-                    return 'XX-liquidity'
+                if Field("label")(self) == "LIQUIDITES":
+                    return "XX-liquidity"
 
-                code = CleanText(TableCell('code'))(self)
+                code = CleanText(TableCell("code"))(self)
                 if is_isin_valid(code):
                     return code
                 return NotAvailable
 
             def obj_code_type(self):
-                if is_isin_valid(Field('code')(self)):
+                if is_isin_valid(Field("code")(self)):
                     return Investment.CODE_TYPE_ISIN
                 return NotAvailable
 
@@ -222,22 +234,22 @@ class InvestmentAccountPage(CMSOPage):
 class Transaction(FrenchTransaction):
     PATTERNS = [
         (
-            re.compile(r'^RET DAB (?P<dd>\d{2})/?(?P<mm>\d{2})(/?(?P<yy>\d{2}))? (?P<text>.*)'),
+            re.compile(r"^RET DAB (?P<dd>\d{2})/?(?P<mm>\d{2})(/?(?P<yy>\d{2}))? (?P<text>.*)"),
             FrenchTransaction.TYPE_WITHDRAWAL,
         ),
-        (re.compile(r'CARTE (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_CARD),
+        (re.compile(r"CARTE (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)"), FrenchTransaction.TYPE_CARD),
         (
-            re.compile(r'^(?P<category>VIR(EMEN)?T? (SEPA)?(RECU|FAVEUR)?)( /FRM)?(?P<text>.*)'),
+            re.compile(r"^(?P<category>VIR(EMEN)?T? (SEPA)?(RECU|FAVEUR)?)( /FRM)?(?P<text>.*)"),
             FrenchTransaction.TYPE_TRANSFER,
         ),
-        (re.compile(r'^PRLV (?P<text>.*)( \d+)?$'), FrenchTransaction.TYPE_ORDER),
-        (re.compile(r'^(CHQ|CHEQUE) .*$'), FrenchTransaction.TYPE_CHECK),
-        (re.compile(r'^(AGIOS /|FRAIS) (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^(CONVENTION \d+ |F )?COTIS(ATION)? (?P<text>.*)'), FrenchTransaction.TYPE_BANK),
-        (re.compile(r'^REMISE (?P<text>.*)'), FrenchTransaction.TYPE_DEPOSIT),
-        (re.compile(r'^(?P<text>.*)( \d+)? QUITTANCE .*'), FrenchTransaction.TYPE_ORDER),
-        (re.compile(r'^.* LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})$'), FrenchTransaction.TYPE_UNKNOWN),
-        (re.compile(r'^.* PAIEMENT (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)'), FrenchTransaction.TYPE_UNKNOWN),
+        (re.compile(r"^PRLV (?P<text>.*)( \d+)?$"), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r"^(CHQ|CHEQUE) .*$"), FrenchTransaction.TYPE_CHECK),
+        (re.compile(r"^(AGIOS /|FRAIS) (?P<text>.*)"), FrenchTransaction.TYPE_BANK),
+        (re.compile(r"^(CONVENTION \d+ |F )?COTIS(ATION)? (?P<text>.*)"), FrenchTransaction.TYPE_BANK),
+        (re.compile(r"^REMISE (?P<text>.*)"), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r"^(?P<text>.*)( \d+)? QUITTANCE .*"), FrenchTransaction.TYPE_ORDER),
+        (re.compile(r"^.* LE (?P<dd>\d{2})/(?P<mm>\d{2})/(?P<yy>\d{2})$"), FrenchTransaction.TYPE_UNKNOWN),
+        (re.compile(r"^.* PAIEMENT (?P<dd>\d{2})/(?P<mm>\d{2}) (?P<text>.*)"), FrenchTransaction.TYPE_UNKNOWN),
     ]
 
 
@@ -245,7 +257,7 @@ class CmsoTransactionElement(ItemElement):
     klass = Transaction
 
     def condition(self):
-        return len(self.el) >= 5 and not self.el.get('id', '').startswith('libelleLong')
+        return len(self.el) >= 5 and not self.el.get("id", "").startswith("libelleLong")
 
 
 class HistoryPage(CMSOPage):
@@ -264,35 +276,36 @@ class HistoryPage(CMSOPage):
 
                 next_links = pager[0].xpath('./span/following-sibling::a[@class="page"]')
                 if next_links:
-                    url_next_page = Link('.')(next_links[0])
+                    url_next_page = Link(".")(next_links[0])
                     url_next_page = urljoin(self.page.url, url_next_page)
                     return self.page.browser.build_request(url_next_page)
 
         class item(CmsoTransactionElement):
             def date(selector):
-                return (
-                    DateGuesser(Regexp(CleanText(selector), r'\w+ (\d{2}/\d{2})'), Env('date_guesser'))
-                    | Transaction.Date(selector)
-                )
+                return DateGuesser(
+                    Regexp(CleanText(selector), r"\w+ (\d{2}/\d{2})"), Env("date_guesser")
+                ) | Transaction.Date(selector)
 
             # CAUTION: this website write a 'Date valeur' inside a div with a class == 'c-ope'
             # and a 'Date opération' inside a div with a class == 'c-val'
             # so actually i assume 'c-val' class is the real operation date and 'c-ope' is value date
             obj_date = date('./div[contains(@class, "c-val")]')
             obj_vdate = date('./div[contains(@class, "c-ope")]')
-            obj_raw = Transaction.Raw(Regexp(CleanText('./div[contains(@class, "c-libelle-long")]'), r'Libellé étendu (.+)'))
+            obj_raw = Transaction.Raw(
+                Regexp(CleanText('./div[contains(@class, "c-libelle-long")]'), r"Libellé étendu (.+)")
+            )
             obj_amount = Transaction.Amount('./div[contains(@class, "c-credit")]', './div[contains(@class, "c-debit")]')
 
 
 class UpdateTokenMixin(object):
     def on_load(self):
-        if 'Authentication' in self.response.headers:
-            self.browser.token = self.response.headers['Authentication'].split(' ')[-1]
+        if "Authentication" in self.response.headers:
+            self.browser.token = self.response.headers["Authentication"].split(" ")[-1]
 
 
 class SSODomiPage(JsonPage, UpdateTokenMixin):
     def get_sso_url(self):
-        return self.doc['urlSSO']
+        return self.doc["urlSSO"]
 
 
 class AuthCheckUser(HTMLPage):
@@ -305,14 +318,14 @@ class ProfilePage(LoggedPage, JsonPage):
         klass = Profile
 
         obj_id = Coalesce(
-            Dict('identifiantExterne', default=NotAvailable),
-            Dict('login', default=NotAvailable),
+            Dict("identifiantExterne", default=NotAvailable),
+            Dict("login", default=NotAvailable),
         )
 
-        obj_name = Format('%s %s', Dict('firstName'), Dict('lastName'))
+        obj_name = Format("%s %s", Dict("firstName"), Dict("lastName"))
 
     def get_token(self):
-        return Dict('loginEncrypted')(self.doc)
+        return Dict("loginEncrypted")(self.doc)
 
 
 class EmptyPage(LoggedPage, HTMLPage):

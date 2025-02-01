@@ -30,8 +30,14 @@ from woob.browser.url import URL
 from woob.capabilities.bank import AccountNotFound
 from woob.capabilities.base import find_object
 from woob.exceptions import (
-    AppValidation, AppValidationCancelled, AppValidationExpired, BrowserIncorrectPassword, BrowserUnavailable,
-    BrowserUserBanned, OTPSentType, SentOTPQuestion,
+    AppValidation,
+    AppValidationCancelled,
+    AppValidationExpired,
+    BrowserIncorrectPassword,
+    BrowserUnavailable,
+    BrowserUserBanned,
+    OTPSentType,
+    SentOTPQuestion,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.date import now_as_utc
@@ -42,20 +48,20 @@ from .pages import AccountPage, SpacesPage, TransactionsCategoryPage, Transactio
 class Number26Browser(TwoFactorBrowser):
     # Password encoded in base64 for the initial basic-auth scheme used to
     # get an access token.
-    INITIAL_TOKEN = 'bmF0aXZld2ViOg=='
+    INITIAL_TOKEN = "bmF0aXZld2ViOg=="
 
     HAS_CREDENTIALS_ONLY = True
 
-    twofa_challenge = URL(r'/api/mfa/challenge')
-    access_token_url = URL(r'/oauth2/token')
-    account = URL(r'/api/accounts', AccountPage)
-    spaces = URL(r'/api/spaces', SpacesPage)
-    transactions = URL(r'/api/smrt/transactions', TransactionsPage)
-    categories = URL(r'/api/smrt/categories', TransactionsCategoryPage)
+    twofa_challenge = URL(r"/api/mfa/challenge")
+    access_token_url = URL(r"/oauth2/token")
+    account = URL(r"/api/accounts", AccountPage)
+    spaces = URL(r"/api/spaces", SpacesPage)
+    transactions = URL(r"/api/smrt/transactions", TransactionsPage)
+    categories = URL(r"/api/smrt/categories", TransactionsCategoryPage)
 
     def __init__(self, config, *args, **kwargs):
-        kwargs['username'] = config['login'].get()
-        kwargs['password'] = config['password'].get()
+        kwargs["username"] = config["login"].get()
+        kwargs["password"] = config["password"].get()
         super(Number26Browser, self).__init__(config, *args, **kwargs)
         self.mfa_token = None  # Token associated with a 2FA session.
         self.refresh_token = None
@@ -67,27 +73,31 @@ class Number26Browser(TwoFactorBrowser):
         self.is_first_sync = False
         # do not delete, useful for a child connector
         self.direct_access = True
-        self.BASEURL = 'https://api.tech26.de'
+        self.BASEURL = "https://api.tech26.de"
 
         self.__states__ = (
-            'access_token', 'device_token', 'is_first_sync', 'mfa_token',
-            'refresh_token', 'token_expire',
+            "access_token",
+            "device_token",
+            "is_first_sync",
+            "mfa_token",
+            "refresh_token",
+            "token_expire",
         )
 
         self.AUTHENTICATION_METHODS = {
-            'resume': self.handle_polling,
-            'otp': self.handle_otp,
+            "resume": self.handle_polling,
+            "otp": self.handle_otp,
         }
 
     def build_request(self, *args, **kwargs):
-        headers = kwargs.setdefault('headers', {})
+        headers = kwargs.setdefault("headers", {})
 
-        headers['Authorization'] = 'Basic %s' % self.INITIAL_TOKEN
+        headers["Authorization"] = "Basic %s" % self.INITIAL_TOKEN
         if self.logged:
-            headers['Authorization'] = 'Bearer %s' % self.access_token
+            headers["Authorization"] = "Bearer %s" % self.access_token
 
-        headers['Accept'] = 'application/json'
-        headers['device-token'] = self.device_token
+        headers["Accept"] = "application/json"
+        headers["device-token"] = self.device_token
 
         req = super(Number26Browser, self).build_request(*args, **kwargs)
         return req
@@ -106,7 +116,7 @@ class Number26Browser(TwoFactorBrowser):
         return (
             self.access_token
             and self.token_expire
-            and datetime.strptime(self.token_expire, '%Y-%m-%d %H:%M:%S') > datetime.now()
+            and datetime.strptime(self.token_expire, "%Y-%m-%d %H:%M:%S") > datetime.now()
         )
 
     def init_login(self):
@@ -121,9 +131,9 @@ class Number26Browser(TwoFactorBrowser):
         self.check_interactive()
 
         data = {
-            'username': self.username,
-            'password': self.password,
-            'grant_type': 'password',
+            "username": self.username,
+            "password": self.password,
+            "grant_type": "password",
         }
         try:
             self.access_token_url.go(data=data)
@@ -145,26 +155,26 @@ class Number26Browser(TwoFactorBrowser):
                 raise AssertionError("No x-tpp-userip header was provided")
 
             json_response = e.response.json()
-            if json_response.get('title') == 'A second authentication factor is required.':
+            if json_response.get("title") == "A second authentication factor is required.":
 
                 self.is_first_sync = True
-                self.mfa_token = json_response['mfaToken']
+                self.mfa_token = json_response["mfaToken"]
                 self.trigger_2fa()
 
-            elif json_response.get('error') == 'invalid_grant':
-                raise BrowserIncorrectPassword(json_response['error_description'])
+            elif json_response.get("error") == "invalid_grant":
+                raise BrowserIncorrectPassword(json_response["error_description"])
 
-            elif json_response.get('title') == 'Error':
-                raise BrowserUnavailable(json_response['message'])
+            elif json_response.get("title") == "Error":
+                raise BrowserUnavailable(json_response["message"])
             raise
 
         result = self.response.json()
-        self.update_token(result['access_token'], result['refresh_token'], result['expires_in'])
+        self.update_token(result["access_token"], result["refresh_token"], result["expires_in"])
 
     def has_refreshed(self):
         data = {
-            'refresh_token': self.refresh_token,
-            'grant_type': 'refresh_token',
+            "refresh_token": self.refresh_token,
+            "grant_type": "refresh_token",
         }
         try:
             self.access_token_url.go(data=data)
@@ -183,18 +193,18 @@ class Number26Browser(TwoFactorBrowser):
             raise
 
         result = self.response.json()
-        self.update_token(result['access_token'], result['refresh_token'], result['expires_in'])
+        self.update_token(result["access_token"], result["refresh_token"], result["expires_in"])
         return True
 
     def update_token(self, access_token, refresh_token, expires_in):
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self.token_expire = (datetime.now() + timedelta(seconds=expires_in)).strftime('%Y-%m-%d %H:%M:%S')
+        self.token_expire = (datetime.now() + timedelta(seconds=expires_in)).strftime("%Y-%m-%d %H:%M:%S")
 
     def trigger_2fa(self):
         data = {
-            'challengeType': 'oob',  # AppVal
-            'mfaToken': self.mfa_token,
+            "challengeType": "oob",  # AppVal
+            "mfaToken": self.mfa_token,
         }
         try:
             # We first check if we can do an AppVal as it is better than SMS
@@ -210,7 +220,7 @@ class Number26Browser(TwoFactorBrowser):
                 "Veuillez autoriser la demande d'accès aux informations de votre compte dans l'application."
             )
 
-        data['challengeType'] = 'otp'
+        data["challengeType"] = "otp"
 
         try:
             self.twofa_challenge.go(json=data)
@@ -219,20 +229,20 @@ class Number26Browser(TwoFactorBrowser):
             # if we send more than 5 otp without success, the server will warn the user to
             # wait 12h before retrying, but in fact it seems that we can resend otp 5 mins later
             if e.response.status_code == 429:
-                raise BrowserUserBanned(json_response['detail'])
+                raise BrowserUserBanned(json_response["detail"])
             raise
 
         result = self.response.json()
         raise SentOTPQuestion(
-            'otp',
+            "otp",
             medium_type=OTPSentType.SMS,
-            message='Veuillez entrer le code reçu par sms au %s' % result['obfuscatedPhoneNumber'],
+            message="Veuillez entrer le code reçu par sms au %s" % result["obfuscatedPhoneNumber"],
         )
 
     def handle_polling(self):
         data = {
-            'mfaToken': self.mfa_token,
-            'grant_type': 'mfa_oob',
+            "mfaToken": self.mfa_token,
+            "grant_type": "mfa_oob",
         }
         self.mfa_token = None  # To make sure we don't reuse it if something goes wrong.
 
@@ -242,17 +252,17 @@ class Number26Browser(TwoFactorBrowser):
                 self.access_token_url.go(data=data)
             except ClientError as e:
                 json_response = e.response.json()
-                error = json_response.get('error')
+                error = json_response.get("error")
                 if error:
-                    if error == 'authorization_pending':
+                    if error == "authorization_pending":
                         time.sleep(5)
                         continue
-                    elif error == 'invalid_grant':
+                    elif error == "invalid_grant":
                         raise AppValidationCancelled("L'opération dans votre application a été annulée.")
                 raise
             else:
                 result = self.response.json()
-                self.update_token(result['access_token'], result['refresh_token'], result['expires_in'])
+                self.update_token(result["access_token"], result["refresh_token"], result["expires_in"])
                 return
 
         raise AppValidationExpired("L'opération dans votre application a expiré.")
@@ -262,36 +272,36 @@ class Number26Browser(TwoFactorBrowser):
         self.mfa_token = None
 
         data = {
-            'mfaToken': mfa_token,
-            'grant_type': 'mfa_otp',
-            'otp': self.otp,
+            "mfaToken": mfa_token,
+            "grant_type": "mfa_otp",
+            "otp": self.otp,
         }
 
         try:
             self.access_token_url.go(data=data)
         except ClientError as e:
             json_response = e.response.json()
-            error = json_response.get('error')
+            error = json_response.get("error")
             if error:
-                if error == 'invalid_otp':
+                if error == "invalid_otp":
                     # In case of a wrong OTP, we need to keep the same mfaToken before prompting
                     # the PSU to try again as it's the same 2FA session.
                     self.mfa_token = mfa_token
                     raise SentOTPQuestion(
-                        'otp',
+                        "otp",
                         medium_type=OTPSentType.SMS,
-                        message='Le code que vous avez entré est invalide, veuillez réessayer.',
+                        message="Le code que vous avez entré est invalide, veuillez réessayer.",
                     )
-                elif error == 'too_many_attempts':
+                elif error == "too_many_attempts":
                     # We need to resend an SMS.
                     self.init_login()
-                elif error == 'invalid_grant':
+                elif error == "invalid_grant":
                     # The mfaToken has expired, this 2FA session is no longer valid.
                     self.init_login()
             raise
 
         result = self.response.json()
-        self.update_token(result['access_token'], result['refresh_token'], result['expires_in'])
+        self.update_token(result["access_token"], result["refresh_token"], result["expires_in"])
 
     @need_login
     def iter_accounts(self):
@@ -333,13 +343,13 @@ class Number26Browser(TwoFactorBrowser):
 
     @need_login
     def _iter_transactions(self, categories, coming=False):
-        params = {'limit': 1000}
+        params = {"limit": 1000}
         if not self.is_first_sync:
             # When using an access token generated using a refresh token,
             # we can only retrieve 90 days of transactions.
             now = now_as_utc()
-            params['from'] = int((now - timedelta(days=90)).timestamp() * 1000),
-            params['to'] = int(now.timestamp() * 1000),
+            params["from"] = (int((now - timedelta(days=90)).timestamp() * 1000),)
+            params["to"] = (int(now.timestamp() * 1000),)
         else:
             self.is_first_sync = False
 

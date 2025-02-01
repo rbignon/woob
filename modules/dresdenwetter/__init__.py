@@ -20,4 +20,4 @@
 from .module import DresdenWetterModule
 
 
-__all__ = ['DresdenWetterModule']
+__all__ = ["DresdenWetterModule"]

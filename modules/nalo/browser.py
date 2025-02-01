@@ -27,22 +27,23 @@ from .pages import AccountPage, AccountsPage, HtmlLoginFragment, InvestPage, Log
 
 
 class NaloBrowser(LoginBrowser):
-    BASEURL = 'https://api.nalo.fr'
+    BASEURL = "https://api.nalo.fr"
 
-    login_page = URL(r'https://app.nalo.fr/components/auth/views/login.html', HtmlLoginFragment)
-    login = URL(r'/api/v1/login', LoginPage)
-    accounts = URL(r'/api/v1/projects/mine/without-details', AccountsPage)
-    history = URL(r'/api/v1/projects/(?P<id>\d+)/history')
-    account = URL(r'/api/v1/projects/(?P<id>\d+)', AccountPage)
-    invests = URL(r'https://app.nalo.fr/scripts/data/data.json', InvestPage)
+    login_page = URL(r"https://app.nalo.fr/components/auth/views/login.html", HtmlLoginFragment)
+    login = URL(r"/api/v1/login", LoginPage)
+    accounts = URL(r"/api/v1/projects/mine/without-details", AccountsPage)
+    history = URL(r"/api/v1/projects/(?P<id>\d+)/history")
+    account = URL(r"/api/v1/projects/(?P<id>\d+)", AccountPage)
+    invests = URL(r"https://app.nalo.fr/scripts/data/data.json", InvestPage)
 
     token = None
 
     def __init__(self, config, *args, **kwargs):
         super().__init__(
-            config['login'].get(),
-            config['password'].get(),
-            *args, **kwargs,
+            config["login"].get(),
+            config["password"].get(),
+            *args,
+            **kwargs,
         )
 
         self.config = config
@@ -50,7 +51,7 @@ class NaloBrowser(LoginBrowser):
     def do_login(self):
         try:
             self.login_page.stay_or_go()
-            captcha_response = self.config['captcha_response'].get()
+            captcha_response = self.config["captcha_response"].get()
 
             if not captcha_response:
                 raise RecaptchaV2Question(
@@ -59,25 +60,25 @@ class NaloBrowser(LoginBrowser):
                 )
 
             data = {
-                'email': self.username,
-                'password': self.password,
-                'userToken': False,
-                'recaptcha': captcha_response,
+                "email": self.username,
+                "password": self.password,
+                "userToken": False,
+                "recaptcha": captcha_response,
             }
 
             self.login.go(json=data)
         except ClientError as e:
-            message = e.response.json().get('detail', '')
-            if 'Email ou mot de passe incorrect' in message:
+            message = e.response.json().get("detail", "")
+            if "Email ou mot de passe incorrect" in message:
                 raise BrowserIncorrectPassword(message)
-            raise AssertionError('An unexpected error occurred: %s' % message)
+            raise AssertionError("An unexpected error occurred: %s" % message)
         self.token = self.page.get_token()
 
     def build_request(self, *args, **kwargs):
-        if 'json' in kwargs:
-            kwargs.setdefault('headers', {})['Accept'] = 'application/json'
+        if "json" in kwargs:
+            kwargs.setdefault("headers", {})["Accept"] = "application/json"
         if self.token:
-            kwargs.setdefault('headers', {})['Authorization'] = 'Token %s' % self.token
+            kwargs.setdefault("headers", {})["Authorization"] = "Token %s" % self.token
         return super(NaloBrowser, self).build_request(*args, **kwargs)
 
     @need_login
@@ -99,9 +100,9 @@ class NaloBrowser(LoginBrowser):
         data = self.page.get_invest(*key)
         for item in data:
             inv = Investment()
-            inv.code = item['isin']
-            inv.label = item['name']
-            inv.portfolio_share = item['share']
+            inv.code = item["isin"]
+            inv.label = item["name"]
+            inv.portfolio_share = item["share"]
             inv.valuation = account.balance * inv.portfolio_share
-            inv.asset_category = item['asset_type']
+            inv.asset_category = item["asset_type"]
             yield inv

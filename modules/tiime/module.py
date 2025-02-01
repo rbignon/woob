@@ -25,26 +25,25 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import TiimeBrowser
 
 
-__all__ = ['TiimeModule']
+__all__ = ["TiimeModule"]
 
 
 class TiimeModule(Module, CapBank, CapProfile):
-    NAME = 'tiime'
-    DESCRIPTION = 'Tiime'
-    MAINTAINER = 'Jeremy Demange'
-    EMAIL = 'jeremy@scrapfast.io'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "tiime"
+    DESCRIPTION = "Tiime"
+    MAINTAINER = "Jeremy Demange"
+    EMAIL = "jeremy@scrapfast.io"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     CONFIG = BackendConfig(
-        Value('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe')
+        Value("login", label="Identifiant", masked=False), ValueBackendPassword("password", label="Mot de passe")
     )
 
     BROWSER = TiimeBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def get_profile(self):
         return self.browser.get_profile()

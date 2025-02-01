@@ -4,7 +4,7 @@ from woob.capabilities.captcha import CapCaptchaSolver
 from woob.core import Woob
 
 
-__all__ = ['CaptchaMixin']
+__all__ = ["CaptchaMixin"]
 
 
 class CaptchaMixin:
@@ -17,20 +17,23 @@ class CaptchaMixin:
         def call_solver(solver_backend, job):
             with lock:
                 if solved.is_set():
-                    solver_backend.logger.info('already solved, ignoring')
+                    solver_backend.logger.info("already solved, ignoring")
                     return
 
                 ret = solver_backend.solve_captcha_blocking(job)
                 if ret:
-                    solver_backend.logger.info('backend solved job')
-                    backend.config['captcha_response'].set(ret.solution)
+                    solver_backend.logger.info("backend solved job")
+                    backend.config["captcha_response"].set(ret.solution)
                     solved.set()
 
         def all_solvers_finished():
             if not solved.is_set():
-                print('Error(%s): CAPTCHA could not be solved.' % backend.name, file=self.stderr)
+                print("Error(%s): CAPTCHA could not be solved." % backend.name, file=self.stderr)
             else:
-                print('Info(%s): CAPTCHA was successfully solved. Please retry operation.' % backend.name, file=self.stderr)
+                print(
+                    "Info(%s): CAPTCHA was successfully solved. Please retry operation." % backend.name,
+                    file=self.stderr,
+                )
 
         lock = Lock()
         solved = Event()

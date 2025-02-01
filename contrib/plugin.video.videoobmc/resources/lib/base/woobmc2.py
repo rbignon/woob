@@ -34,20 +34,20 @@ class Woobmc(Application):
         """
 
         if default is None:
-            default = '{id}-{title}.{ext}'
+            default = "{id}-{title}.{ext}"
         if dest is None:
-            dest = '.'
+            dest = "."
         if os.path.isdir(dest):
             dest = os.path.join(dest, default)
 
         def repl(m):
             field = m.group(1)
             if hasattr(obj, field):
-                return re.sub('[?:/]', '-', '%s' % getattr(obj, field))
+                return re.sub("[?:/]", "-", "%s" % getattr(obj, field))
             else:
                 return m.group(0)
 
-        return re.sub(r'\{(.+?)\}', repl, dest)
+        return re.sub(r"\{(.+?)\}", repl, dest)
 
     def download_obj(self, obj, dest):
 
@@ -58,23 +58,23 @@ class Woobmc(Application):
             return True
 
         dest = self.obj_to_filename(obj, dest)
-        if obj.url.startswith('rtmp'):
-            if not check_exec('rtmpdump'):
+        if obj.url.startswith("rtmp"):
+            if not check_exec("rtmpdump"):
                 return 1
-            args = ('rtmpdump', '-e', '-r', obj.url, '-o', dest)
-        elif obj.url.startswith('mms'):
-            if not check_exec('mimms'):
+            args = ("rtmpdump", "-e", "-r", obj.url, "-o", dest)
+        elif obj.url.startswith("mms"):
+            if not check_exec("mimms"):
                 return 1
-            args = ('mimms', '-r', obj.url, dest)
-        elif u'm3u8' == obj.ext:
+            args = ("mimms", "-r", obj.url, dest)
+        elif "m3u8" == obj.ext:
             _dest, _ = os.path.splitext(dest)
-            dest = u'%s.%s' % (_dest, 'mp4')
-            args = ('wget',) + tuple(line for line in self.read_url(obj.url) if not line.startswith('#')) + ('-O', dest)
+            dest = "%s.%s" % (_dest, "mp4")
+            args = ("wget",) + tuple(line for line in self.read_url(obj.url) if not line.startswith("#")) + ("-O", dest)
         else:
-            if check_exec('wget'):
-                args = ('wget', '-c', obj.url, '-O', dest)
-            elif check_exec('curl'):
-                args = ('curl', '-C', '-', obj.url, '-o', dest)
+            if check_exec("wget"):
+                args = ("wget", "-c", obj.url, "-O", dest)
+            elif check_exec("curl"):
+                args = ("curl", "-C", "-", obj.url, "-o", dest)
             else:
                 return 1
         os.spawnlp(os.P_WAIT, args[0], *args)

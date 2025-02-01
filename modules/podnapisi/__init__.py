@@ -20,4 +20,4 @@
 from .module import PodnapisiModule
 
 
-__all__ = ['PodnapisiModule']
+__all__ = ["PodnapisiModule"]

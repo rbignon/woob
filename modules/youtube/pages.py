@@ -52,7 +52,9 @@ class ResultsPage(JsonPage):
             obj_id = Dict("videoId")
             obj_title = Dict("title/runs/0/text")
             obj_description = Dict("detailedMetadataSnippets/0/snippetText/runs/0/text", default=NotAvailable)
-            obj_duration = Duration(Dict("lengthText/simpleText", default='00:00:00'))  # Duration is set to "00:00:00" for live videos
+            obj_duration = Duration(
+                Dict("lengthText/simpleText", default="00:00:00")
+            )  # Duration is set to "00:00:00" for live videos
             obj_author = Dict("ownerText/runs/0/text")
             # obj_url = BrowserURL("video", id=obj_id)  # let ytdl fill it
 

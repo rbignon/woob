@@ -26,11 +26,11 @@ from .pages import BillsPage, LoginPage
 
 
 class LampirisBrowser(LoginBrowser):
-    BASEURL = 'https://espaceclient.total-spring.fr/'
+    BASEURL = "https://espaceclient.total-spring.fr/"
 
-    loginpage = URL('/user/login', LoginPage)
-    billspage = URL('/factures-et-paiements', BillsPage)
-    selectcus = URL('/set_selected_cus')
+    loginpage = URL("/user/login", LoginPage)
+    billspage = URL("/factures-et-paiements", BillsPage)
+    selectcus = URL("/set_selected_cus")
 
     def __init__(self, *args, **kwargs):
         self.logged = False
@@ -54,7 +54,7 @@ class LampirisBrowser(LoginBrowser):
     @need_login
     def get_documents(self, subscription):
         # Select subscription
-        self.selectcus.go(params={'cus': subscription.id})
+        self.selectcus.go(params={"cus": subscription.id})
 
         # Then, fetch documents
         for doc in self.billspage.go().get_documents():

@@ -21,10 +21,10 @@ from woob.tools.test import BackendTest
 
 
 class UnsplashTest(BackendTest):
-    MODULE = 'unsplash'
+    MODULE = "unsplash"
 
     def test_search_img(self):
-        it = self.backend.search_image('tree')
+        it = self.backend.search_image("tree")
         images = [img for _, img in zip(range(20), it)]
 
         self.assertEqual(len(images), 20)
@@ -36,8 +36,8 @@ class UnsplashTest(BackendTest):
             assert img.date
             assert img.url
 
-        self.backend.fillobj(img, 'data')
+        self.backend.fillobj(img, "data")
         assert img.data
 
-        self.backend.fillobj(img, 'thumbnail')
+        self.backend.fillobj(img, "thumbnail")
         assert img.thumbnail.data

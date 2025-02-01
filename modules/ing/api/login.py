@@ -30,10 +30,10 @@ from .transfer_page import TransferINGVirtKeyboard
 class LoginPage(JsonPage):
     @property
     def is_logged(self):
-        return 'firstName' in self.doc
+        return "firstName" in self.doc
 
     def init_vk(self, img, password):
-        pin_position = Dict('pinPositions')(self.doc)
+        pin_position = Dict("pinPositions")(self.doc)
         image = BytesIO(img)
 
         vk = TransferINGVirtKeyboard(image, cols=5, rows=2, browser=self.browser)
@@ -43,29 +43,29 @@ class LoginPage(JsonPage):
 
     def has_strong_authentication(self):
         # If this value is at False, this mean there is an OTP needed to login
-        return not Dict('strongAuthenticationLoginExempted')(self.doc)
+        return not Dict("strongAuthenticationLoginExempted")(self.doc)
 
     def get_password_coord(self, img, password):
-        assert 'pinPositions' in self.doc, 'Virtualkeyboard position has failed'
-        assert 'keyPadUrl' in self.doc, 'Virtualkeyboard image url is missing'
+        assert "pinPositions" in self.doc, "Virtualkeyboard position has failed"
+        assert "keyPadUrl" in self.doc, "Virtualkeyboard image url is missing"
         return self.init_vk(img, password)
 
     def get_keypad_url(self):
-        return Dict('keyPadUrl')(self.doc)
+        return Dict("keyPadUrl")(self.doc)
 
 
 class ActionNeededPage(HTMLPage):
     def on_load(self):
         if self.doc.xpath('//form//h1[1][contains(text(), "Accusé de reception du chéquier")]'):
-            form = self.get_form(name='Alert')
-            form['command'] = 'validateAlertMessage'
-            form['radioValide_1_2_40003039944'] = 'Non'
+            form = self.get_form(name="Alert")
+            form["command"] = "validateAlertMessage"
+            form["radioValide_1_2_40003039944"] = "Non"
             form.submit()
         elif self.doc.xpath('//p[@class="cddErrorMessage"]'):
             error_message = CleanText('//p[@class="cddErrorMessage"]')(self.doc)
             raise ActionNeeded(error_message)
         else:
-            raise ActionNeeded(CleanText('//form//h1[1]')(self.doc))
+            raise ActionNeeded(CleanText("//form//h1[1]")(self.doc))
 
 
 class StopPage(HTMLPage):

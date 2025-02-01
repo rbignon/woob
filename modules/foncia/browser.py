@@ -38,7 +38,7 @@ class FonciaSeleniumBrowser(SeleniumBrowser):
     DRIVER = webdriver.Chrome
     WINDOW_SIZE = (1920, 1080)
 
-    home = URL('/$', IndexPage)
+    home = URL("/$", IndexPage)
 
     def __init__(self, config, *args, **kwargs):
         super(FonciaSeleniumBrowser, self).__init__(*args, **kwargs)
@@ -49,9 +49,9 @@ class FonciaSeleniumBrowser(SeleniumBrowser):
         # To successfully pass the login, we have to
         options = super(FonciaSeleniumBrowser, self)._build_options(preferences)
         # Hide the fact that the navigator is controlled by webdriver
-        options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_argument("--disable-blink-features=AutomationControlled")
         # Hardcode an User Agent so we don't expose Chrome is in headless mode
-        options.add_argument('user-agent=Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0')
+        options.add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0")
 
         return options
 
@@ -60,36 +60,32 @@ class FonciaSeleniumBrowser(SeleniumBrowser):
 
 
 class FonciaBrowser(PagesBrowser, SubSeleniumMixin):
-    BASEURL = 'https://fnc-api.prod.fonciatech.net'
+    BASEURL = "https://fnc-api.prod.fonciatech.net"
     SELENIUM_BROWSER = FonciaSeleniumBrowser
 
-    cities = URL(r'/geo/localities/search', CitiesPage)
-    search = URL(r'/annonces/annonces/search', SearchResultsPage)
-    housing = URL(r'/annonces/annonces/(?P<housing_id>.+)', HousingPage)
-    agency = URL(r'/agences/agences/(?P<agency_id>\d+)', AgencyPage)
+    cities = URL(r"/geo/localities/search", CitiesPage)
+    search = URL(r"/annonces/annonces/search", SearchResultsPage)
+    housing = URL(r"/annonces/annonces/(?P<housing_id>.+)", HousingPage)
+    agency = URL(r"/agences/agences/(?P<agency_id>\d+)", AgencyPage)
 
     def __init__(self, *args, **kwargs):
         self.config = None
         super(FonciaBrowser, self).__init__(*args, **kwargs)
         sub_browser = self.create_selenium_browser()
         try:
-            if self.selenium_state and hasattr(sub_browser, 'load_state'):
+            if self.selenium_state and hasattr(sub_browser, "load_state"):
                 sub_browser.load_state(self.selenium_state)
             sub_browser.go_home()
             self.load_selenium_session(sub_browser)
         finally:
             try:
-                if hasattr(sub_browser, 'dump_state'):
+                if hasattr(sub_browser, "dump_state"):
                     self.selenium_state = sub_browser.dump_state()
             finally:
                 sub_browser.deinit()
 
     def get_cities(self, pattern):
-        data = {
-            'page': 1,
-            'query': pattern,
-            'size': 20
-        }
+        data = {"page": 1, "query": pattern, "size": 20}
 
         return self.cities.go(json=data).iter_cities()
 
@@ -117,12 +113,10 @@ class FonciaBrowser(PagesBrowser, SubSeleniumMixin):
 
         data = {
             "type": QUERY_TYPES[query.type],
-            "filters": {"localities": {"slugs": cities},
-                        "typesBien": types_biens
-                        },
+            "filters": {"localities": {"slugs": cities}, "typesBien": types_biens},
             "expandNearby": True,
             "size": 15,
-            "page": 1
+            "page": 1,
         }
 
         fill_min_max(data["filters"], "surface", query.area_min, query.area_max)

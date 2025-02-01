@@ -16,7 +16,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-__all__ = ['html2text']
+__all__ = ["html2text"]
 
 
 from html2text import HTML2Text

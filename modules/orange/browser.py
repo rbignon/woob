@@ -29,21 +29,30 @@ from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
 from woob.capabilities import NotAvailable
 from woob.capabilities.bill import Subscription
 from woob.exceptions import (
-    ActionNeeded, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable, ScrapingBlocked,
+    ActionNeeded,
+    BrowserIncorrectPassword,
+    BrowserPasswordExpired,
+    BrowserUnavailable,
+    ScrapingBlocked,
 )
 from woob.tools.decorators import retry
 
 from .pages import LoginPage
 from .pages.bills import (
-    BillsApiParPage, BillsApiProPage, BillsApiProRechargeablePage, ContractsApiPage, ContractsPage,
-    SubscriptionsApiPage, SubscriptionsPage,
+    BillsApiParPage,
+    BillsApiProPage,
+    BillsApiProRechargeablePage,
+    ContractsApiPage,
+    ContractsPage,
+    SubscriptionsApiPage,
+    SubscriptionsPage,
 )
 from .pages.captcha import CaptchaPage, OrangeCaptchaHandler
 from .pages.login import HomePage, ManageCGI, PasswordPage, PortalPage
 from .pages.profile import PostalAddressPage, ProfileApiParPage, ProfileParPage, ProfileProPage
 
 
-__all__ = ['OrangeBillBrowser']
+__all__ = ["OrangeBillBrowser"]
 
 
 class RetryOnCaptcha(Exception):
@@ -55,62 +64,62 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
     STATE_DURATION = 20
 
-    BASEURL = 'https://espaceclientv3.orange.fr'
+    BASEURL = "https://espaceclientv3.orange.fr"
 
-    home_page = URL(r'https://businesslounge.orange.fr/?$', HomePage)
-    portal_page = URL(r'https://www.orange.fr/portail', PortalPage)
+    home_page = URL(r"https://businesslounge.orange.fr/?$", HomePage)
+    portal_page = URL(r"https://www.orange.fr/portail", PortalPage)
     login_page = URL(
-        r'https://login.orange.fr/\?service=sosh&return_url=https://www.sosh.fr/',
-        r'https://login.orange.fr/$',
+        r"https://login.orange.fr/\?service=sosh&return_url=https://www.sosh.fr/",
+        r"https://login.orange.fr/$",
         LoginPage,
     )
-    login_api = URL(r'https://login.orange.fr/api/login')
-    password_page = URL(r'https://login.orange.fr/api/password', PasswordPage)
-    captcha_page = URL(r'https://login.orange.fr/captcha', CaptchaPage)
+    login_api = URL(r"https://login.orange.fr/api/login")
+    password_page = URL(r"https://login.orange.fr/api/password", PasswordPage)
+    captcha_page = URL(r"https://login.orange.fr/captcha", CaptchaPage)
 
-    contracts = URL(r'https://espaceclientpro.orange.fr/api/contracts', ContractsPage)
+    contracts = URL(r"https://espaceclientpro.orange.fr/api/contracts", ContractsPage)
     contracts_api = URL(
-        r'https://espace-client.orange.fr/ecd_wp/portfoliomanager/contracts/users/current\?filter=telco,security',
-        ContractsApiPage
+        r"https://espace-client.orange.fr/ecd_wp/portfoliomanager/contracts/users/current\?filter=telco,security",
+        ContractsApiPage,
     )
 
     subscriptions = URL(
-        r'https://espaceclientv3.orange.fr/js/necfe.php\?zonetype=bandeau&idPage=gt-home-page',
-        SubscriptionsPage
+        r"https://espaceclientv3.orange.fr/js/necfe.php\?zonetype=bandeau&idPage=gt-home-page", SubscriptionsPage
     )
     subscriptions_api = URL(
-        r'https://sso-f.orange.fr/omoi_erb/portfoliomanager/v2.0/contractSelector/users/current',
-        SubscriptionsApiPage
+        r"https://sso-f.orange.fr/omoi_erb/portfoliomanager/v2.0/contractSelector/users/current", SubscriptionsApiPage
     )
 
-    manage_cgi = URL(r'https://eui.orange.fr/manage_eui/bin/manage.cgi', ManageCGI)
+    manage_cgi = URL(r"https://eui.orange.fr/manage_eui/bin/manage.cgi", ManageCGI)
 
     bills_api_pro = URL(
-        r'https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bills\?count=(?P<count>)',
+        r"https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bills\?count=(?P<count>)",
         BillsApiProPage,
     )
 
     bills_api_pro_rechargeable = URL(
-        r'https://businesslounge.orange.fr/api/api/3.0.0/ecu/retrieve_bill.json',
+        r"https://businesslounge.orange.fr/api/api/3.0.0/ecu/retrieve_bill.json",
         BillsApiProRechargeablePage,
     )
 
     bills_api_par = URL(
-        r'https://espace-client.orange.fr/ecd_wp/facture/v2.0/billsAndPaymentInfos/users/current/contracts/(?P<subid>\d+)',
-        BillsApiParPage
+        r"https://espace-client.orange.fr/ecd_wp/facture/v2.0/billsAndPaymentInfos/users/current/contracts/(?P<subid>\d+)",
+        BillsApiParPage,
     )
-    doc_api_par = URL(r'https://espace-client.orange.fr/ecd_wp/facture/v1.0/pdf')
+    doc_api_par = URL(r"https://espace-client.orange.fr/ecd_wp/facture/v1.0/pdf")
 
-    doc_api_pro = URL(r'https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bill/(?P<dir>.*)/(?P<fact_type>.*)/(?P<bill_name>.*)\?(?P<bill_params>.*)')
-    profile_par = URL(r'/\?page=profil-infosPerso', ProfileParPage)
-    profile_api_par = URL(r'https://espace-client.orange.fr/ecd_wp/account/identification', ProfileApiParPage)
-    profile_pro = URL(r'https://businesslounge.orange.fr/profil', ProfileProPage)
-    postal_address_page = URL(r'https://espaceclientpro.orange.fr/api/v2/customer/interlocutor', PostalAddressPage)
+    doc_api_pro = URL(
+        r"https://espaceclientpro.orange.fr/api/contract/(?P<subid>\d+)/bill/(?P<dir>.*)/(?P<fact_type>.*)/(?P<bill_name>.*)\?(?P<bill_params>.*)"
+    )
+    profile_par = URL(r"/\?page=profil-infosPerso", ProfileParPage)
+    profile_api_par = URL(r"https://espace-client.orange.fr/ecd_wp/account/identification", ProfileApiParPage)
+    profile_pro = URL(r"https://businesslounge.orange.fr/profil", ProfileProPage)
+    postal_address_page = URL(r"https://espaceclientpro.orange.fr/api/v2/customer/interlocutor", PostalAddressPage)
 
     def __init__(self, specific_header, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if specific_header:
-            key, value = specific_header.split(':')
+            key, value = specific_header.split(":")
             self.session.headers[key] = value
 
     def locate_browser(self, state):
@@ -119,14 +128,14 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         if not self.home_page.is_here():
             # If a par is connected by going to profile_par, we will not be redirected
             headers = {
-                'x-orange-caller-id': 'ECQ',
-                'accept': 'application/vnd.mason+json',
+                "x-orange-caller-id": "ECQ",
+                "accept": "application/vnd.mason+json",
             }
             self.profile_api_par.go(headers=headers)
 
     @retry(RetryOnCaptcha, tries=2)
     def go_on_login_page(self):
-        """ Little hack here.
+        """Little hack here.
         Retrying on this requests if encounter a captcha allow us to bypass
         completely said captcha and Datadome challenge.
         We receive in the response of the first request a "trust" cookie and a "datadome"
@@ -150,16 +159,16 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                 self._handle_captcha()
 
             json_data = {
-                'login': self.username,
-                'params': {
-                    'return_url': 'https://espace-client.orange.fr/page-accueil',
+                "login": self.username,
+                "params": {
+                    "return_url": "https://espace-client.orange.fr/page-accueil",
                 },
             }
             self.login_api.go(json=json_data)
 
             json_data = {
-                'password': self.password,
-                'remember': False,
+                "password": self.password,
+                "remember": False,
             }
             self.password_page.go(json=json_data)
             error_message = self.page.get_change_password_message()
@@ -170,13 +179,13 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
         except ClientError as error:
             if error.response.status_code == 401:
-                raise BrowserIncorrectPassword(error.response.json().get('message', ''))
+                raise BrowserIncorrectPassword(error.response.json().get("message", ""))
             if error.response.status_code == 403:
-                if error.response.headers['Content-Type'] == 'text/html':
+                if error.response.headers["Content-Type"] == "text/html":
                     # When we are blocked, the error page is in html
-                    if 'Cette page ne vous est pas accessible' in error.response.text:
+                    if "Cette page ne vous est pas accessible" in error.response.text:
                         raise ScrapingBlocked()
-                    raise AssertionError('Unhandled html error page at login')
+                    raise AssertionError("Unhandled html error page at login")
                 else:
                     # occur when user try several times with a bad password, orange block his account for a short time
                     raise BrowserIncorrectPassword(error.response.json())
@@ -196,17 +205,17 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
         images = self.page.download_images(data_captcha)
         # captcha resolution takes about 50 milliseconds
-        self.captcha_handler = OrangeCaptchaHandler(self.logger, data_captcha['indications'], images)
+        self.captcha_handler = OrangeCaptchaHandler(self.logger, data_captcha["indications"], images)
         captcha_response = self.captcha_handler.get_captcha_response()
 
         # we need to wait a little bit, because we are human after all^^
         waiting = random.randint(5000, 9000) / 1000
         sleep(waiting)
-        body = {'value': captcha_response}
-        self.location('https://login.orange.fr/front/captcha', json=body)
+        body = {"value": captcha_response}
+        self.location("https://login.orange.fr/front/captcha", json=body)
 
     def _iter_subscriptions_by_type(self, name, _type):
-        self.location('https://espaceclientv3.orange.fr/?page=gt-home-page&%s' % _type)
+        self.location("https://espaceclientv3.orange.fr/?page=gt-home-page&%s" % _type)
         self.subscriptions.go()
         for sub in self.page.iter_subscription():
             sub.subscriber = name
@@ -222,8 +231,8 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                 self.profile_pro.go()
             else:
                 headers = {
-                    'x-orange-caller-id': 'ECQ',
-                    'accept': 'application/vnd.mason+json',
+                    "x-orange-caller-id": "ECQ",
+                    "accept": "application/vnd.mason+json",
                 }
                 self.profile_api_par.go(headers=headers)
 
@@ -256,8 +265,8 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         subscriptions = {}
         try:
             params = {
-                'page': 1,
-                'nbcontractsbypage': 15,
+                "page": 1,
+                "nbcontractsbypage": 15,
             }
             self.contracts.go(params=params)
             for sub in self.page.iter_subscriptions():
@@ -266,7 +275,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                 sub.subscriber = subscriber
                 subscriptions[sub.id] = sub
                 subscription_id_list.append(sub.id)
-            nb_sub = self.page.doc['totalContracts']
+            nb_sub = self.page.doc["totalContracts"]
         except (ServerError, HTTPNotFound):
             pass
 
@@ -303,7 +312,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
 
             subscription = Subscription()
             subscription.id = self.username
-            subscription.label = 'Forfait rechargeable Orange Business Lounge'
+            subscription.label = "Forfait rechargeable Orange Business Lounge"
             subscription.subscriber = subscriber
             subscription._is_pro = True
 
@@ -327,26 +336,26 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                 # we can't get rid of contracts page
                 # PS: still True for some connections on 2022-10-05
                 self.logger.warning(
-                    'there is a subscription which is returned by contracts page and not by contracts_api'
+                    "there is a subscription which is returned by contracts page and not by contracts_api"
                 )
 
         if nb_sub > 0:
             return
         # if nb_sub is 0, we continue, because we can get them in next url
 
-        for sub in self._iter_subscriptions_by_type(profile.name, 'sosh'):
+        for sub in self._iter_subscriptions_by_type(profile.name, "sosh"):
             nb_sub += 1
             yield sub
-        for sub in self._iter_subscriptions_by_type(profile.name, 'orange'):
+        for sub in self._iter_subscriptions_by_type(profile.name, "orange"):
             nb_sub += 1
             yield sub
 
         if nb_sub == 0:
             # No subscriptions found, trying with the API.
             # TODO: this part may be deprecated, remove it if it's not used anymore
-            self.logger.warning('no subscription found, try with subscriptions_api URL')
+            self.logger.warning("no subscription found, try with subscriptions_api URL")
             headers = {
-                'X-Orange-Caller-Id': 'ECQ',
+                "X-Orange-Caller-Id": "ECQ",
             }
             self.subscriptions_api.go(headers=headers)
             for sub in self.page.iter_subscription():
@@ -380,16 +389,16 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
                     # find one and fix what needs to be fixed
                     if bill._download_link:
                         self.logger.warning(
-                            'The bill %s has a specified URL (unhandled case, pay attention ' % bill.id
-                            + 'when you are trying to download it). URL: %s' % bill._download_link
+                            "The bill %s has a specified URL (unhandled case, pay attention " % bill.id
+                            + "when you are trying to download it). URL: %s" % bill._download_link
                         )
 
         else:
-            headers = {'x-orange-caller-id': 'ECQ'}
+            headers = {"x-orange-caller-id": "ECQ"}
             try:
                 self.bills_api_par.go(subid=subscription.id, headers=headers)
             except ServerError as e:
-                if e.response.status_code in (503, ):
+                if e.response.status_code in (503,):
                     self.logger.info("Server Error : %d" % e.response.status_code)
                     return []
                 raise
@@ -397,7 +406,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
             except ClientError as e:
                 if e.response.status_code == 412:
                     # if the code is 412 the user is not the owner of the subscription and we can't get the invoices
-                    msg = e.response.json()['error']['customerMessage']['subMessage']
+                    msg = e.response.json()["error"]["customerMessage"]["subMessage"]
                     self.logger.info("no documents because: %s", msg)
                     return []
                 raise
@@ -409,8 +418,8 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
     @need_login
     def get_profile(self):
         headers = {
-            'x-orange-caller-id': 'ECQ',
-            'accept': 'application/vnd.mason+json',
+            "x-orange-caller-id": "ECQ",
+            "accept": "application/vnd.mason+json",
         }
         self.profile_api_par.go(headers=headers)
         if not self.profile_api_par.is_here():
@@ -430,7 +439,7 @@ class OrangeBillBrowser(LoginBrowser, StatesMixin):
         try:
             if document._is_v2:
                 # get 404 without this header
-                return self.open(document.url, headers={'x-orange-caller-id': 'ECQ'}).content
+                return self.open(document.url, headers={"x-orange-caller-id": "ECQ"}).content
             return self.open(document.url).content
         except ClientError as e:
             if e.response.status_code == 422:

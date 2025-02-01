@@ -22,8 +22,8 @@ import re
 from woob.browser.exceptions import ClientError
 
 
-EMAIL_REGEX = re.compile(r'^\w+([-_+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$')
-PHONE_NUMBER_REGEX = re.compile(r'^[\d|\W|_]+$')
+EMAIL_REGEX = re.compile(r"^\w+([-_+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$")
+PHONE_NUMBER_REGEX = re.compile(r"^[\d|\W|_]+$")
 MINIMUM_PHONE_LENGTH = 4
 
 
@@ -52,7 +52,7 @@ def is_valid_phone_number(number):
 
     if not number or len(number) < MINIMUM_PHONE_LENGTH:
         return False
-    if re.search(r'\d', number) is None:
+    if re.search(r"\d", number) is None:
         return False
     return PHONE_NUMBER_REGEX.fullmatch(number)
 
@@ -64,7 +64,7 @@ def get_username_type(username):
     """
 
     if is_valid_email(username):
-        return 'Email'
+        return "Email"
     if is_valid_phone_number(username):
-        return 'PhoneNumber'
-    return 'Username'
+        return "PhoneNumber"
+    return "Username"

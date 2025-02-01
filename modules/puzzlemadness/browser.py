@@ -26,14 +26,14 @@ from woob.capabilities.picross import PicrossNotFound, PicrossSolvedStatus
 from .pages import PicrossListPage, PicrossPage
 
 
-__all__ = ['PuzzleMadnessBrowser']
+__all__ = ["PuzzleMadnessBrowser"]
 
 
 class PuzzleMadnessBrowser(PagesBrowser):
-    BASEURL = 'https://puzzlemadness.co.uk/'
+    BASEURL = "https://puzzlemadness.co.uk/"
 
-    picross_list = URL(r'picross$', PicrossListPage)
-    picross = URL(r'picross/(?P<picross_id>\d+)', PicrossPage)
+    picross_list = URL(r"picross$", PicrossListPage)
+    picross = URL(r"picross/(?P<picross_id>\d+)", PicrossPage)
 
     # NOTE: Puzzle Madness has both nonograms and picrosses, but distinguishes
     #       them the following way:
@@ -66,9 +66,9 @@ class PuzzleMadnessBrowser(PagesBrowser):
         # way as `/picross/584`, but `/picross/5841` won't be, so we want to
         # limit to digits.
 
-        m = re.fullmatch(r'p(\d+)', id_)
+        m = re.fullmatch(r"p(\d+)", id_)
         if m is None:
-            raise PicrossNotFound('Invalid format: should be p<number>')
+            raise PicrossNotFound("Invalid format: should be p<number>")
 
         id_ = m.group(1)
 

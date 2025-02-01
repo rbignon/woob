@@ -18,4 +18,4 @@
 from .module import AmeliModule
 
 
-__all__ = ['AmeliModule']
+__all__ = ["AmeliModule"]

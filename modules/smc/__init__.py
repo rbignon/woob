@@ -20,4 +20,4 @@
 from .module import SmcModule
 
 
-__all__ = ['SmcModule']
+__all__ = ["SmcModule"]

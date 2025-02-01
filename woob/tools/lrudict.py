@@ -18,7 +18,7 @@
 from collections import OrderedDict
 
 
-__all__ = ['LimitedLRUDict', 'LRUDict']
+__all__ = ["LimitedLRUDict", "LRUDict"]
 
 
 class LRUDict(OrderedDict):

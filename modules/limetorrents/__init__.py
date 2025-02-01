@@ -20,4 +20,4 @@
 from .module import LimetorrentsModule
 
 
-__all__ = ['LimetorrentsModule']
+__all__ = ["LimetorrentsModule"]

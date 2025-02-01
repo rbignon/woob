@@ -21,4 +21,4 @@ from woob_modules.creditdunord.browser import CreditDuNordBrowser
 
 
 class KolbBrowser(CreditDuNordBrowser):
-    BASEURL = 'https://www.banque-kolb.fr'
+    BASEURL = "https://www.banque-kolb.fr"

@@ -20,4 +20,4 @@
 from .module import PuzzleMadnessModule
 
 
-__all__ = ['PuzzleMadnessModule']
+__all__ = ["PuzzleMadnessModule"]

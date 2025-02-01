@@ -25,50 +25,50 @@ from woob.capabilities.gallery import CapGallery
 
 
 class ImgurBrowser(APIBrowser):
-    BASEURL = 'https://api.imgur.com'
+    BASEURL = "https://api.imgur.com"
 
-    CLIENT_ID = '87a8e692cb09382'
+    CLIENT_ID = "87a8e692cb09382"
 
     SORT_TYPE = {
-        CapGallery.SEARCH_DATE: 'time',
-        CapGallery.SEARCH_VIEWS: 'viral',
-        CapGallery.SEARCH_RATING: 'top',
-        CapGallery.SEARCH_RELEVANCE: 'top',
+        CapGallery.SEARCH_DATE: "time",
+        CapGallery.SEARCH_VIEWS: "viral",
+        CapGallery.SEARCH_RATING: "top",
+        CapGallery.SEARCH_RELEVANCE: "top",
     }
 
-    search_url = URL(r'/3/gallery/search/(?P<sort_type>\w+)/(?P<page>\d+)/\?q=(?P<pattern>.*)')
-    get_gallery_url = URL(r'/3/album/(?P<id>\w+)')
-    get_image_url = URL(r'/3/image/(?P<id>\w+)')
+    search_url = URL(r"/3/gallery/search/(?P<sort_type>\w+)/(?P<page>\d+)/\?q=(?P<pattern>.*)")
+    get_gallery_url = URL(r"/3/album/(?P<id>\w+)")
+    get_image_url = URL(r"/3/image/(?P<id>\w+)")
 
     def open_raw(self, *args, **kwargs):
         return super(ImgurBrowser, self).open(*args, **kwargs)
 
     def fill_file(self, file, fields):
         response = self.open_raw(file.url)
-        if 'date' in fields:
-            file.date = dateutil.parser.parse(response.headers.get('Date'))
-        if 'data' in fields:
+        if "date" in fields:
+            file.date = dateutil.parser.parse(response.headers.get("Date"))
+        if "data" in fields:
             file.data = response.content
-        if 'size' in fields:
+        if "size" in fields:
             file.size = len(response.content)
 
     def open(self, *args, **kwargs):
-        kwargs.setdefault('headers', {})
-        kwargs['headers']['Authorization'] = 'Client-ID %s' % self.CLIENT_ID
+        kwargs.setdefault("headers", {})
+        kwargs["headers"]["Authorization"] = "Client-ID %s" % self.CLIENT_ID
         return super(ImgurBrowser, self).open(*args, **kwargs)
 
     def request(self, *args, **kwargs):
         reply = super(ImgurBrowser, self).request(*args, **kwargs)
-        if reply['success']:
-            return reply['data']
+        if reply["success"]:
+            return reply["data"]
 
-    def post_image(self, b64, title=''):
+    def post_image(self, b64, title=""):
         res = {}
-        params = {'image': b64, 'title': title or '', 'type': 'base64'}
-        info = self.request('https://api.imgur.com/3/image', data=params)
+        params = {"image": b64, "title": title or "", "type": "base64"}
+        info = self.request("https://api.imgur.com/3/image", data=params)
         if info is not None:
-            res['id'] = info['id']
-            res['delete_url'] = 'https://api.imgur.com/3/image/%s' % info['deletehash']
+            res["id"] = info["id"]
+            res["delete_url"] = "https://api.imgur.com/3/image/%s" % info["deletehash"]
             return res
 
     def get_image(self, id):

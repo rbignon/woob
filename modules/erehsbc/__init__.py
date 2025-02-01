@@ -21,4 +21,4 @@
 from .module import ErehsbcModule
 
 
-__all__ = ['ErehsbcModule']
+__all__ = ["ErehsbcModule"]

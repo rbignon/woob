@@ -25,6 +25,6 @@ class ProxyBrowser(SwitchingBrowser):
     # Main is the "Chief" part (the gestionnaire of the cards parc)
     # cards is the "Employee" part (single card)
     BROWSERS = {
-        'main': LCLParcCardsBrowser,
-        'cards': LCLCardsBrowser,
+        "main": LCLParcCardsBrowser,
+        "cards": LCLCardsBrowser,
     }

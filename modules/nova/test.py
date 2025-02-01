@@ -23,10 +23,10 @@ from woob.tools.test import BackendTest
 
 
 class NovaTest(BackendTest):
-    MODULE = 'nova'
+    MODULE = "nova"
 
     def test_nova(self):
-        l = list(self.backend.iter_resources((Radio, ), []))
+        l = list(self.backend.iter_resources((Radio,), []))
         self.assertTrue(len(l) > 0)
         for r in l:
             self.assertTrue(r.title)

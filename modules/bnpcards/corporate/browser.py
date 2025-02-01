@@ -25,42 +25,42 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 from .pages import AccountsPage, ErrorPage, LoginPage, TransactionsPage
 
 
-__all__ = ['BnpcartesentrepriseCorporateBrowser']
+__all__ = ["BnpcartesentrepriseCorporateBrowser"]
 
 
 class BnpcartesentrepriseCorporateBrowser(LoginBrowser):
-    BASEURL = 'https://www.cartesentreprise.bnpparibas.com'
+    BASEURL = "https://www.cartesentreprise.bnpparibas.com"
 
-    login = URL(r'/ce_internet_public/seConnecter.builder.do', LoginPage)
+    login = URL(r"/ce_internet_public/seConnecter.builder.do", LoginPage)
     error = URL(
-        r'.*.seConnecter.event.do',
-        r'.*.compteGestChgPWD.builder.do',
-        r'/ce_internet_prive_ti/compteTituChgPWD.builder.do',
+        r".*.seConnecter.event.do",
+        r".*.compteGestChgPWD.builder.do",
+        r"/ce_internet_prive_ti/compteTituChgPWD.builder.do",
         ErrorPage,
     )
-    acc_home = URL(r'/ce_internet_prive_ge/carteCorporateParc.builder.do', AccountsPage)
+    acc_home = URL(r"/ce_internet_prive_ge/carteCorporateParc.builder.do", AccountsPage)
     accounts_page = URL(
-        r'/ce_internet_prive_ge/operationVotreParcAfficherCorporate.event.do',
-        r'/ce_internet_prive_ge/operationVotreParcAppliquerCorporate.event.do.*',
+        r"/ce_internet_prive_ge/operationVotreParcAfficherCorporate.event.do",
+        r"/ce_internet_prive_ge/operationVotreParcAppliquerCorporate.event.do.*",
         AccountsPage,
     )
-    com_home = URL(r'/ce_internet_prive_ge/operationCorporateEnCours.builder.do', AccountsPage)
+    com_home = URL(r"/ce_internet_prive_ge/operationCorporateEnCours.builder.do", AccountsPage)
     coming = URL(
-        r'/ce_internet_prive_ge/operationEnCoursAfficherCorporate.event.do',
-        r'/ce_internet_prive_ge/operationEnCoursAppliquerCorporate.event.do.*',
-        r'ce_internet_prive_ge/operationEnCoursDetailAppliquerCorporate.event.do.*',
+        r"/ce_internet_prive_ge/operationEnCoursAfficherCorporate.event.do",
+        r"/ce_internet_prive_ge/operationEnCoursAppliquerCorporate.event.do.*",
+        r"ce_internet_prive_ge/operationEnCoursDetailAppliquerCorporate.event.do.*",
         AccountsPage,
     )
-    his_home = URL('/ce_internet_prive_ge/operationCorporateHisto.builder.do', AccountsPage)
+    his_home = URL("/ce_internet_prive_ge/operationCorporateHisto.builder.do", AccountsPage)
     history = URL(
-        r'/ce_internet_prive_ge/operationHistoriqueAfficherCorporate.event.do',
-        r'/ce_internet_prive_ge/operationHistoriqueAppliquerCorporate.event.do.*',
+        r"/ce_internet_prive_ge/operationHistoriqueAfficherCorporate.event.do",
+        r"/ce_internet_prive_ge/operationHistoriqueAppliquerCorporate.event.do.*",
         AccountsPage,
     )
     transactions = URL(
-        r'ce_internet_prive_ge/operationCorporateEnCoursDetail.builder.do.*',
-        r'ce_internet_prive_ge/operationCorporateDetailHistorique.builder.do.*',
-        r'ce_internet_prive_ge/operationDetail.*AppliquerCorporate.event.do.*',
+        r"ce_internet_prive_ge/operationCorporateEnCoursDetail.builder.do.*",
+        r"ce_internet_prive_ge/operationCorporateDetailHistorique.builder.do.*",
+        r"ce_internet_prive_ge/operationDetail.*AppliquerCorporate.event.do.*",
         TransactionsPage,
     )
 
@@ -89,7 +89,7 @@ class BnpcartesentrepriseCorporateBrowser(LoginBrowser):
             for acc in self.page.iter_accounts():
                 if acc.id in [a.id for a in self.accounts]:
                     # TODO apply that id to all accounts
-                    acc.id = "%s_%s" % (acc.id, ''.join(acc.label.split()))
+                    acc.id = "%s_%s" % (acc.id, "".join(acc.label.split()))
                 self.accounts.append(acc)
         for acc in self.accounts:
             yield acc

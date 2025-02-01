@@ -24,10 +24,10 @@ from woob.tools.test import BackendTest
 
 
 class ManpowerTest(BackendTest):
-    MODULE = 'manpower'
+    MODULE = "manpower"
 
     def test_manpower(self):
-        l = list(itertools.islice(self.backend.search_job(u'manutentionnaire'), 0, 20))
+        l = list(itertools.islice(self.backend.search_job("manutentionnaire"), 0, 20))
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, None)
         self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))

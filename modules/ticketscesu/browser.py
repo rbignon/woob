@@ -24,12 +24,11 @@ from .pages import AccountsPage, LoginPage, ProfilePage
 
 
 class TicketCesuBrowser(LoginBrowser):
-    BASEURL = 'https://ebeneficiaire.cesu-as.fr'
+    BASEURL = "https://ebeneficiaire.cesu-as.fr"
 
-    login_page = URL('/login.aspx', LoginPage)
-    profile_page = URL('/customerManagement/ProfileManagement.aspx', ProfilePage)
-    accounts_page = URL('/PaymentManagement/PaymentAccountInfoFullDemat.aspx', AccountsPage)
-
+    login_page = URL("/login.aspx", LoginPage)
+    profile_page = URL("/customerManagement/ProfileManagement.aspx", ProfilePage)
+    accounts_page = URL("/PaymentManagement/PaymentAccountInfoFullDemat.aspx", AccountsPage)
 
     def do_login(self):
         self.login_page.go()
@@ -37,12 +36,12 @@ class TicketCesuBrowser(LoginBrowser):
 
         if self.login_page.is_here():
             # Wrong credentials leads back here, with JS generated message, hard-coded in the exception raised.
-            raise BrowserIncorrectPassword('login et / ou mot de passe erroné')
-
+            raise BrowserIncorrectPassword("login et / ou mot de passe erroné")
 
         elif self.profile_page.is_here():
             raise ActionNeeded(
-                locale="en-US", message="Please agree CGU on the CESU website.",
+                locale="en-US",
+                message="Please agree CGU on the CESU website.",
                 action_type=ActionType.ACKNOWLEDGE,
             )
 

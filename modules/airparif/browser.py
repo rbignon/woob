@@ -24,14 +24,17 @@ from .pages import AllPage
 
 
 class AirparifBrowser(PagesBrowser):
-    BASEURL = 'https://airparif.asso.fr'
+    BASEURL = "https://airparif.asso.fr"
 
-    all_page = URL(r'/stations/indicepolluant/', AllPage)
+    all_page = URL(r"/stations/indicepolluant/", AllPage)
 
     def iter_gauges(self):
-        self.all_page.go(method='POST', headers={
-            # don't remove the following headers, site returns 404 else...
-            'X-Requested-With': 'XMLHttpRequest',
-            'Referer': 'https://airparif.asso.fr/stations/index/',
-        })
+        self.all_page.go(
+            method="POST",
+            headers={
+                # don't remove the following headers, site returns 404 else...
+                "X-Requested-With": "XMLHttpRequest",
+                "Referer": "https://airparif.asso.fr/stations/index/",
+            },
+        )
         return self.page.iter_gauges()

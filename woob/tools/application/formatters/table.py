@@ -18,7 +18,7 @@
 try:
     from prettytable import PrettyTable
 except ImportError as e:
-    raise ImportError('Please install the `prettytable` python package') from e
+    raise ImportError("Please install the `prettytable` python package") from e
 
 try:
     from prettytable import SINGLE_BORDER
@@ -30,7 +30,7 @@ from woob.capabilities.base import empty
 from .iformatter import IFormatter
 
 
-__all__ = ['TableFormatter', 'HTMLTableFormatter']
+__all__ = ["TableFormatter", "HTMLTableFormatter"]
 
 
 class TableFormatter(IFormatter):
@@ -52,20 +52,20 @@ class TableFormatter(IFormatter):
             return
 
         if self.interactive:
-            self.keys.insert(0, '#')
+            self.keys.insert(0, "#")
 
         column_headers = []
         keys = []
         # Do not display columns when all values are NotLoaded or NotAvailable
         for key in self.keys:
-            if key == '#' or any(not empty(line.get(key)) for line in self.queue):
-                column_headers.append(key.capitalize().replace('_', ' '))
+            if key == "#" or any(not empty(line.get(key)) for line in self.queue):
+                column_headers.append(key.capitalize().replace("_", " "))
                 keys.append(key)
 
-        s = ''
+        s = ""
         if self.display_header and self.header:
             if self.HTML:
-                s += '<p>%s</p>' % self.header
+                s += "<p>%s</p>" % self.header
             else:
                 s += self.header
             s += "\n"
@@ -75,15 +75,12 @@ class TableFormatter(IFormatter):
             # Note: two versions are not exactly the same...
             # (first one: header in center. Second one: left align for header too)
             try:
-                table.set_field_align(column_header, 'l')
+                table.set_field_align(column_header, "l")
             except:
-                table.align[column_header] = 'l'
+                table.align[column_header] = "l"
 
         for n, line in enumerate(self.queue, 1):
-            table.add_row([
-                self.format_cell(line.get(key)) if key != '#' else n
-                for key in keys
-            ])
+            table.add_row([self.format_cell(line.get(key)) if key != "#" else n for key in keys])
 
         if self.HTML:
             s += table.get_html_string()
@@ -98,7 +95,7 @@ class TableFormatter(IFormatter):
 
     def format_cell(self, cell):
         if isinstance(cell, list):
-            return ', '.join(['%s' % item for item in cell])
+            return ", ".join(["%s" % item for item in cell])
 
         return cell
 

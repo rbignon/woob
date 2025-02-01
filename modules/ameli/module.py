@@ -19,7 +19,12 @@
 
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
+    CapDocument,
+    Document,
+    DocumentCategory,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
 )
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig, Module
@@ -28,37 +33,33 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import AmeliBrowser
 
 
-__all__ = ['AmeliModule']
+__all__ = ["AmeliModule"]
 
 
 class AmeliModule(Module, CapDocument, CapProfile):
-    NAME = 'ameli'
+    NAME = "ameli"
     DESCRIPTION = "le site de l'Assurance Maladie en ligne"
-    MAINTAINER = 'Florian Duguet'
-    EMAIL = 'florian.duguet@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('franceconnect',)
+    MAINTAINER = "Florian Duguet"
+    EMAIL = "florian.duguet@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("franceconnect",)
 
     BROWSER = AmeliBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label="Identifiant (dépend de votre méthode d'authentification)", masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('request_information'),
-        ValueTransient('otp_email', regexp=r'\d{6}'),
-        ValueTransient('login_source', default='direct'),  # for backward compatibility purpose
+        ValueBackendPassword("login", label="Identifiant (dépend de votre méthode d'authentification)", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("request_information"),
+        ValueTransient("otp_email", regexp=r"\d{6}"),
+        ValueTransient("login_source", default="direct"),  # for backward compatibility purpose
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
     document_categories = {DocumentCategory.ADMINISTRATIVE}
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config,
-            self.config['login'].get(),
-            self.config['password'].get()
-        )
+        return self.create_browser(self.config, self.config["login"].get(), self.config["password"].get())
 
     def iter_subscription(self):
         return self.browser.iter_subscription()
@@ -70,7 +71,7 @@ class AmeliModule(Module, CapDocument, CapProfile):
         return self.browser.iter_documents(subscription)
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
+        subid = _id.rsplit("_", 1)[0]
         subscription = self.get_subscription(subid)
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 

@@ -21,4 +21,4 @@
 from .module import TicketsCesuModule
 
 
-__all__ = ['TicketsCesuModule']
+__all__ = ["TicketsCesuModule"]

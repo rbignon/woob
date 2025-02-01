@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import BlablacarBrowser
 
 
-__all__ = ['BlablacarModule']
+__all__ = ["BlablacarModule"]
 
 
 class BlablacarModule(Module, CapTravel):
-    NAME = 'blablacar'
-    DESCRIPTION = u'blablacar website'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "blablacar"
+    DESCRIPTION = "blablacar website"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = BlablacarBrowser
 

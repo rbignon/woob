@@ -32,13 +32,13 @@ from woob.tools.capabilities.audio.audio import BaseAudioIdFilter
 
 
 class InaDuration(Duration):
-    _regexp = re.compile(r'(?P<hh>\d+):(?P<mm>\d+):(?P<ss>\d+)')
-    kwargs = {'minutes': 'mm', 'seconds': 'ss'}
+    _regexp = re.compile(r"(?P<hh>\d+):(?P<mm>\d+):(?P<ss>\d+)")
+    kwargs = {"minutes": "mm", "seconds": "ss"}
 
 
 class InaDuration2(Duration):
-    _regexp = re.compile(r'(?P<mm>\d+):(?P<ss>\d+)')
-    kwargs = {'minutes': 'mm', 'seconds': 'ss'}
+    _regexp = re.compile(r"(?P<mm>\d+):(?P<ss>\d+)")
+    kwargs = {"minutes": "mm", "seconds": "ss"}
 
 
 class InaListElement(ListElement):
@@ -48,63 +48,54 @@ class InaListElement(ListElement):
         offset = CleanText('//div[@class="progress-bar"]/@aria-valuenow')(self)
         valuemax = CleanText('//div[@class="progress-bar"]/@aria-valuemax')(self)
         if offset <= valuemax:
-            first_item = int(Env('first_item')(self)) + int(offset)
-            return BrowserURL('search_page',
-                              pattern=Env('pattern'),
-                              type=Env('type'),
-                              first_item=first_item)(self)
+            first_item = int(Env("first_item")(self)) + int(offset)
+            return BrowserURL("search_page", pattern=Env("pattern"), type=Env("type"), first_item=first_item)(self)
 
 
 class InaItemElement(ItemElement):
     def obj_title(self):
         __ = CleanText('./a/div[has-class("title-bloc-small")]')(self)
-        _ = CleanText('./a/div[has-class("dateAgenda")]')(self).split('-')[0]
-        return fr"{__} - {_}"
+        _ = CleanText('./a/div[has-class("dateAgenda")]')(self).split("-")[0]
+        return rf"{__} - {_}"
 
     def obj_duration(self):
-        duration = InaDuration(CleanText('./a/div[has-class("dateAgenda")]'),
-                               default=None)(self)
+        duration = InaDuration(CleanText('./a/div[has-class("dateAgenda")]'), default=None)(self)
         if duration is None:
-            duration = InaDuration2(CleanText('./a/div[has-class("dateAgenda")]'),
-                                    default=NotAvailable)(self)
+            duration = InaDuration2(CleanText('./a/div[has-class("dateAgenda")]'), default=NotAvailable)(self)
         return duration
 
-    obj_author = u'Institut National de l’Audiovisuel'
+    obj_author = "Institut National de l’Audiovisuel"
 
     def obj_date(self):
-        dt = Regexp(CleanText('./a/div[has-class("dateAgenda")]'),
-                    r'.*- (\d{2}/\d{2}/\d{4}) -.*',
-                    default=False)(self)
+        dt = Regexp(CleanText('./a/div[has-class("dateAgenda")]'), r".*- (\d{2}/\d{2}/\d{4}) -.*", default=False)(self)
         if not dt:
-            dt = Regexp(CleanText('./a/div[has-class("dateAgenda")]'),
-                        r'(\d{4}) -.*', '01/01/\\1',
-                        default=False)(self)
+            dt = Regexp(CleanText('./a/div[has-class("dateAgenda")]'), r"(\d{4}) -.*", "01/01/\\1", default=False)(self)
 
         if not dt:
             return NotAvailable
 
-        return datetime.strptime(dt, '%d/%m/%Y')
+        return datetime.strptime(dt, "%d/%m/%Y")
 
     def obj_thumbnail(self):
-        url = CleanText('./a/div/img/@data-src')(self)
+        url = CleanText("./a/div/img/@data-src")(self)
         thumbnail = Thumbnail(url)
         thumbnail.url = thumbnail.id
         return thumbnail
 
 
 class InaMediaElement(ItemElement):
-    obj_title = Dict('title')
-    obj_description = Dict('description')
-    obj_date = Date(Dict('dateOfBroadcast'))
-    obj_author = u'Institut National de l’Audiovisuel'
-    obj_url = Dict('resourceUrl')
+    obj_title = Dict("title")
+    obj_description = Dict("description")
+    obj_date = Date(Dict("dateOfBroadcast"))
+    obj_author = "Institut National de l’Audiovisuel"
+    obj_url = Dict("resourceUrl")
 
     def obj_duration(self):
-        _ = Dict('duration')(self)
+        _ = Dict("duration")(self)
         return timedelta(seconds=_)
 
     def obj_thumbnail(self):
-        url = Dict('resourceThumbnail')(self)
+        url = Dict("resourceThumbnail")(self)
         thumbnail = Thumbnail(url)
         thumbnail.url = thumbnail.id
         return thumbnail
@@ -119,12 +110,9 @@ class SearchPage(PartialHTMLPage):
             klass = BaseAudio
 
             def condition(self):
-                return Regexp(CleanText('./a/@href'),
-                              '/ina-eclaire-actu/audio/(.*)/.*',
-                              default=None)(self)
+                return Regexp(CleanText("./a/@href"), "/ina-eclaire-actu/audio/(.*)/.*", default=None)(self)
 
-            obj_id = BaseAudioIdFilter(Regexp(CleanText('./a/@href'),
-                                              '/ina-eclaire-actu/audio/(.*)/.*'))
+            obj_id = BaseAudioIdFilter(Regexp(CleanText("./a/@href"), "/ina-eclaire-actu/audio/(.*)/.*"))
 
     @pagination
     @method
@@ -133,11 +121,9 @@ class SearchPage(PartialHTMLPage):
             klass = BaseVideo
 
             def condition(self):
-                return Regexp(CleanText('./a/@href'),
-                              '/ina-eclaire-actu/video/(.*)/.*',
-                              default=None)(self)
+                return Regexp(CleanText("./a/@href"), "/ina-eclaire-actu/video/(.*)/.*", default=None)(self)
 
-            obj_id = Regexp(CleanText('./a/@href'), '/ina-eclaire-actu/video/(.*)/.*')
+            obj_id = Regexp(CleanText("./a/@href"), "/ina-eclaire-actu/video/(.*)/.*")
 
 
 class MediaPage(HTMLPage):
@@ -150,11 +136,11 @@ class PlayerPage(JsonPage):
     @method
     class get_audio(InaMediaElement):
         klass = BaseAudio
-        obj_ext = u'mp3'
-        obj_id = Env('id')
+        obj_ext = "mp3"
+        obj_id = Env("id")
 
     @method
     class get_video(InaMediaElement):
         klass = BaseVideo
-        obj_ext = u'mp4'
-        obj_id = Env('id')
+        obj_ext = "mp4"
+        obj_id = Env("id")

@@ -34,7 +34,7 @@ except ImportError:
     from yaml import Dumper, SafeLoader
 
 
-__all__ = ['YamlConfig']
+__all__ = ["YamlConfig"]
 
 
 class WoobDumper(Dumper):
@@ -52,11 +52,9 @@ class WoobNoAliasDumper(WoobDumper):
 WeboobNoAliasDumper = WoobNoAliasDumper
 
 
-WoobDumper.add_representer(woob.tools.date.date,
-                           WoobDumper.represent_date)
+WoobDumper.add_representer(woob.tools.date.date, WoobDumper.represent_date)
 
-WoobDumper.add_representer(woob.tools.date.datetime,
-                           WoobDumper.represent_datetime)
+WoobDumper.add_representer(woob.tools.date.datetime, WoobDumper.represent_datetime)
 
 
 class YamlConfig(IConfig):
@@ -70,25 +68,25 @@ class YamlConfig(IConfig):
     def load(self, default={}):
         self.values = default.copy()
 
-        LOGGER.debug('Loading configuration file: %s.' % self.path)
+        LOGGER.debug("Loading configuration file: %s." % self.path)
         try:
-            with open(self.path, 'r') as f:
+            with open(self.path, "r") as f:
                 self.values = yaml.load(f, Loader=self.LOADER)  # nosec: bandit can't detect SafeLoader…
-            LOGGER.debug('Configuration file loaded: %s.' % self.path)
+            LOGGER.debug("Configuration file loaded: %s." % self.path)
         except IOError:
             self.save()
-            LOGGER.debug('Configuration file created with default values: %s.' % self.path)
+            LOGGER.debug("Configuration file created with default values: %s." % self.path)
 
         if self.values is None:
             self.values = {}
 
     def save(self):
         # write in a temporary file to avoid corruption problems
-        f = tempfile.NamedTemporaryFile(mode='w', dir=os.path.dirname(self.path), delete=False, encoding='utf-8')
+        f = tempfile.NamedTemporaryFile(mode="w", dir=os.path.dirname(self.path), delete=False, encoding="utf-8")
         with f:
             yaml.dump(self.values, f, Dumper=self.DUMPER, default_flow_style=False)
         replace(f.name, self.path)
-        LOGGER.debug('Configuration file saved: %s.' % self.path)
+        LOGGER.debug("Configuration file saved: %s." % self.path)
 
     def get(self, *args, **kwargs):
         v = self.values
@@ -96,8 +94,8 @@ class YamlConfig(IConfig):
             try:
                 v = v[a]
             except KeyError:
-                if 'default' in kwargs:
-                    return kwargs['default']
+                if "default" in kwargs:
+                    return kwargs["default"]
                 else:
                     raise ConfigError()
             except TypeError:
@@ -106,7 +104,7 @@ class YamlConfig(IConfig):
         try:
             v = v[args[-1]]
         except KeyError:
-            v = kwargs.get('default')
+            v = kwargs.get("default")
 
         return v
 

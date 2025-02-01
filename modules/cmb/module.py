@@ -25,15 +25,15 @@ from .par.browser import CmbParBrowser
 from .pro.browser import CmbProBrowser
 
 
-__all__ = ['CmbModule']
+__all__ = ["CmbModule"]
 
 
 class CmbModule(CmsoModule, CapBankTransfer, CapContact):
-    NAME = 'cmb'
-    MAINTAINER = 'Edouard Lambert'
-    EMAIL = 'elambert@budget-insight.com'
-    VERSION = '3.7'
-    DEPENDENCIES = ('cmso',)
-    DESCRIPTION = 'Crédit Mutuel de Bretagne'
-    LICENSE = 'LGPLv3+'
-    AVAILABLE_BROWSERS = {'par': CmbParBrowser, 'pro': CmbProBrowser}
+    NAME = "cmb"
+    MAINTAINER = "Edouard Lambert"
+    EMAIL = "elambert@budget-insight.com"
+    VERSION = "3.7"
+    DEPENDENCIES = ("cmso",)
+    DESCRIPTION = "Crédit Mutuel de Bretagne"
+    LICENSE = "LGPLv3+"
+    AVAILABLE_BROWSERS = {"par": CmbParBrowser, "pro": CmbProBrowser}

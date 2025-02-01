@@ -22,13 +22,15 @@ from woob.browser import URL, PagesBrowser
 from .pages import TrackPage
 
 
-__all__ = ['ChronopostBrowser']
+__all__ = ["ChronopostBrowser"]
 
 
 class ChronopostBrowser(PagesBrowser):
-    BASEURL = 'https://www.chronopost.fr'
-    track = URL(r'/tracking-no-cms/suivi-colis\?listeNumerosLT=(?P<id>\w+)&langue=fr', TrackPage)
+    BASEURL = "https://www.chronopost.fr"
+    track = URL(r"/tracking-no-cms/suivi-colis\?listeNumerosLT=(?P<id>\w+)&langue=fr", TrackPage)
 
     def get_tracking_info(self, _id):
-        self.track.go(id=_id, headers={'Referer': 'https://www.chronopost.fr/tracking-no-cms/suivi-page?listeNumerosLT=%s' % id})
+        self.track.go(
+            id=_id, headers={"Referer": "https://www.chronopost.fr/tracking-no-cms/suivi-page?listeNumerosLT=%s" % id}
+        )
         return self.page.get_parcel()

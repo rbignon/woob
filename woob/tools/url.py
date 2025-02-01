@@ -26,13 +26,18 @@ from woob.tools.misc import NO_DEFAULT, NoDefaultType
 
 
 __all__ = [
-    'get_url_fragment_param', 'get_url_fragment_params',
-    'get_url_param', 'get_url_params', 'get_url_with_params',
+    "get_url_fragment_param",
+    "get_url_fragment_params",
+    "get_url_param",
+    "get_url_params",
+    "get_url_with_params",
 ]
 
 
 def get_url_param(
-    url: str, name: str, *,
+    url: str,
+    name: str,
+    *,
     default: str | NoDefaultType | None = NO_DEFAULT,
 ) -> str | None:
     """Get a specific query parameter from an URL.
@@ -49,7 +54,7 @@ def get_url_param(
     if name not in params:
         if default is NO_DEFAULT:
             raise ValueError(
-                f'URL {url!r} has no query parameter named {name!r}.',
+                f"URL {url!r} has no query parameter named {name!r}.",
             )
 
         return default
@@ -58,7 +63,9 @@ def get_url_param(
 
 
 def get_url_fragment_param(
-    url: str, name: str, *,
+    url: str,
+    name: str,
+    *,
     default: str | NoDefaultType | None = NO_DEFAULT,
 ) -> str | None:
     """Get a specific fragment parameter from an URL.
@@ -78,7 +85,7 @@ def get_url_fragment_param(
     if name not in params:
         if default is NO_DEFAULT:
             raise ValueError(
-                f'URL {url!r} has no fragment parameter named {name!r}.',
+                f"URL {url!r} has no fragment parameter named {name!r}.",
             )
 
         return default

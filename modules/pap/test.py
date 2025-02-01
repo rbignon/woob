@@ -23,27 +23,43 @@ from woob.tools.test import BackendTest
 
 
 class PapTest(BackendTest, HousingTest):
-    MODULE = 'pap'
+    MODULE = "pap"
 
     FIELDS_ALL_HOUSINGS_LIST = [
-        "id", "type", "advert_type", "house_type", "url", "title", "area",
-        "cost", "currency", "utilities", "location", "text"
+        "id",
+        "type",
+        "advert_type",
+        "house_type",
+        "url",
+        "title",
+        "area",
+        "cost",
+        "currency",
+        "utilities",
+        "location",
+        "text",
     ]
     FIELDS_ANY_HOUSINGS_LIST = [
         "photos",
         "station",
     ]
     FIELDS_ALL_SINGLE_HOUSING = [
-        "id", "url", "type", "advert_type", "house_type", "title", "area",
-        "cost", "currency", "utilities", "date", "location", "text",
-        "phone"
+        "id",
+        "url",
+        "type",
+        "advert_type",
+        "house_type",
+        "title",
+        "area",
+        "cost",
+        "currency",
+        "utilities",
+        "date",
+        "location",
+        "text",
+        "phone",
     ]
-    FIELDS_ANY_SINGLE_HOUSING = [
-        "photos",
-        "rooms",
-        "bedrooms",
-        "station"
-    ]
+    FIELDS_ANY_SINGLE_HOUSING = ["photos", "rooms", "bedrooms", "station"]
 
     def test_pap_rent(self):
         self.DO_NOT_DISTINGUISH_FURNISHED_RENT = True
@@ -52,7 +68,7 @@ class PapTest(BackendTest, HousingTest):
         query.cost_max = 1500
         query.type = POSTS_TYPES.RENT
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
         self.check_against_query(query)
@@ -62,7 +78,7 @@ class PapTest(BackendTest, HousingTest):
         query.area_min = 20
         query.type = POSTS_TYPES.SALE
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
         self.check_against_query(query)
@@ -74,7 +90,7 @@ class PapTest(BackendTest, HousingTest):
         query.cost_max = 1500
         query.type = POSTS_TYPES.FURNISHED_RENT
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
         self.check_against_query(query)
@@ -83,20 +99,12 @@ class PapTest(BackendTest, HousingTest):
         query = Query()
         query.type = POSTS_TYPES.VIAGER
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
         # Remove rooms from the tested fields as viager never have them
-        self.FIELDS_ANY_HOUSINGS_LIST = [
-            "photos",
-            "station",
-            "bedrooms"
-        ]
-        self.FIELDS_ANY_SINGLE_HOUSING = [
-            "photos",
-            "bedrooms",
-            "station"
-        ]
+        self.FIELDS_ANY_HOUSINGS_LIST = ["photos", "station", "bedrooms"]
+        self.FIELDS_ANY_SINGLE_HOUSING = ["photos", "bedrooms", "station"]
         self.check_against_query(query)
 
     def test_pap_professional(self):
@@ -106,7 +114,7 @@ class PapTest(BackendTest, HousingTest):
         query.type = POSTS_TYPES.RENT
         query.advert_types = [ADVERT_TYPES.PROFESSIONAL]
         query.cities = []
-        for city in self.backend.search_city('paris'):
+        for city in self.backend.search_city("paris"):
             city.backend = self.backend.name
             query.cities.append(city)
 

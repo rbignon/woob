@@ -24,28 +24,28 @@ from woob.tools.value import ValueBackendPassword
 from .browser import LendosphereBrowser
 
 
-__all__ = ['LendosphereModule']
+__all__ = ["LendosphereModule"]
 
 
 class LendosphereModule(Module, CapBankWealth):
-    NAME = 'lendosphere'
-    DESCRIPTION = 'Lendosphere'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "lendosphere"
+    DESCRIPTION = "Lendosphere"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = LendosphereBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Email', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
+        ValueBackendPassword("login", label="Email", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
     )
 
     def create_default_browser(self):
         return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_accounts(self):

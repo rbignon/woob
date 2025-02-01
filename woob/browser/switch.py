@@ -27,7 +27,7 @@ class SiteSwitch(Exception):
                      the new browser class to use
         :type name: str
         """
-        super(SiteSwitch, self).__init__('Switching to site %s' % name)
+        super(SiteSwitch, self).__init__("Switching to site %s" % name)
         self.name = name
 
 
@@ -69,7 +69,7 @@ class SwitchingBrowser:
         self._browser_kwargs = kwargs
         self._browser = None
 
-        self.set_browser('main')
+        self.set_browser("main")
 
     def set_browser(self, name):
         klass = self.BROWSERS[name]
@@ -85,7 +85,7 @@ class SwitchingBrowser:
                 self._browser.session.close()
 
         self._browser = obj
-        self._browser.logger.info('using %r browser', name)
+        self._browser.logger.info("using %r browser", name)
 
     def __getattr__(self, attr):
         val = getattr(self._browser, attr)
@@ -114,12 +114,12 @@ class SwitchingBrowserWithState(SwitchingBrowser):
     def load_state(self, state):
         """Get the last used browser from the state, if any"""
 
-        self.set_browser(name=state.get('last_browser', 'main'))
+        self.set_browser(name=state.get("last_browser", "main"))
         self._browser.load_state(state)
 
     def dump_state(self):
         """Store the last used browser in the state"""
 
         ret = self._browser.dump_state()
-        ret['last_browser'] = self.last_browser
+        ret["last_browser"] = self.last_browser
         return ret

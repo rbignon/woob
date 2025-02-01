@@ -55,15 +55,15 @@ class BillsPage(LoggedMixin, HTMLPage):
     @pagination
     @method
     class iter_documents(ListElement):
-        item_xpath = '//div[has-class("container-fluid")]/div[@id="facture-table"]/div[has-class("js-accordion-container")]'
-        next_page = AbsoluteLink(
-            '//a[@title="Année précédente"]', default=None)
+        item_xpath = (
+            '//div[has-class("container-fluid")]/div[@id="facture-table"]/div[has-class("js-accordion-container")]'
+        )
+        next_page = AbsoluteLink('//a[@title="Année précédente"]', default=None)
 
         class item(ItemElement):
             klass = Bill
 
-            obj_id = CleanText(
-                './div[has-class("table-line")]/div/div[2]', children=False)
+            obj_id = CleanText('./div[has-class("table-line")]/div/div[2]', children=False)
 
             obj_total_price = CleanDecimal.French(
                 Regexp(
@@ -73,7 +73,7 @@ class BillsPage(LoggedMixin, HTMLPage):
                 )
             )
 
-            obj_currency = 'EUR'
+            obj_currency = "EUR"
 
             obj_date = Date(
                 Regexp(
@@ -88,7 +88,7 @@ class BillsPage(LoggedMixin, HTMLPage):
 
             obj_type = DocumentTypes.BILL
 
-            obj_format = 'pdf'
+            obj_format = "pdf"
 
             def obj_url(self):
                 url = AbsoluteLink(".//a")(self)
@@ -108,9 +108,7 @@ class SubscriptionPage(LoggedMixin, HTMLPage):
         obj_label = CleanText(root_xpath + "/span", children=False)
 
     def get_pdl_number(self):
-        text = CleanText(
-            '//div[has-class("container-fluid")]/div/div[2]/div[2]/div[has-class("value")]'
-        )(self.doc)
+        text = CleanText('//div[has-class("container-fluid")]/div/div[2]/div[2]/div[has-class("value")]')(self.doc)
         return re.search(r"(\d+)", text)[1]
 
 
@@ -122,22 +120,20 @@ class ProfilePage(LoggedMixin, HTMLPage):
         obj_name = FormValue('//input[@name="name"]')
         obj_email = FormValue('//input[@name="email"]')
         obj_phone = FormValue('//input[@name="fixed_phone1"]')
-        obj_country = 'France'
+        obj_country = "France"
 
         class obj_postal_address(ItemElement):
             klass = PostalAddress
 
-            obj_city = CleanText(
-                FormValue('//select[@id="invoicing_address_city"]'))
+            obj_city = CleanText(FormValue('//select[@id="invoicing_address_city"]'))
             obj_street = Format(
                 "%s %s",
                 FormValue('//input[@name="invoicing_address_street_number"]'),
                 FormValue('//input[@name="invoicing_address_street_name"]'),
             )
-            obj_postal_code = FormValue(
-                '//input[@name="invoicing_address_zipcode"]')
-            obj_country = 'France'
-            obj_country_code = 'FR'
+            obj_postal_code = FormValue('//input[@name="invoicing_address_zipcode"]')
+            obj_country = "France"
+            obj_country_code = "FR"
 
     def fill_sub(self, sub):
         sub._profile = self.get_profile()
@@ -163,9 +159,7 @@ class StatsPage(LoggedMixin, HTMLPage):
 
         xvalues, yvalues = self._tweak_values(xvalues, yvalues)
         if all(yv == 0 for yv in yvalues):
-            self.logger.warning(
-                "all values are 0 for %r... ignoring whole page", self.params
-            )
+            self.logger.warning("all values are 0 for %r... ignoring whole page", self.params)
             return
 
         date_builder = {"tzinfo": SITE_TZ}
@@ -174,17 +168,19 @@ class StatsPage(LoggedMixin, HTMLPage):
         for unit in units:
             date_builder[unit] = int(self.params.get(unit, 1))
 
-        if 'mixed_cadrans' in yvalues:
-            yvalues = yvalues['mixed_cadrans']
-        elif 'puissance_max' in yvalues:
-            yvalues = yvalues['puissance_max']
+        if "mixed_cadrans" in yvalues:
+            yvalues = yvalues["mixed_cadrans"]
+        elif "puissance_max" in yvalues:
+            yvalues = yvalues["puissance_max"]
         for x, y in reversed(list(zip(xvalues, yvalues))):
             date_builder.update(x)
             measure_date = datetime.datetime(**date_builder)
-            yield GaugeMeasure.from_dict({
-                "date": measure_date,
-                "level": Decimal(str(y)),
-            })
+            yield GaugeMeasure.from_dict(
+                {
+                    "date": measure_date,
+                    "level": Decimal(str(y)),
+                }
+            )
 
     def _tweak_values(self, xvalues, yvalues):
         xvalues = [{self.vary_unit: v} for v in xvalues]
@@ -230,10 +226,10 @@ class HourlyPage(StatsPage):
 
         xnew = []
         for v in xvalues:
-            (h, m) = map(int, v.split(':'))
+            (h, m) = map(int, v.split(":"))
             xnew.append({"hour": h, "minute": m})
 
-        ynew = yvalues['mixed_cadrans']
+        ynew = yvalues["mixed_cadrans"]
 
         assert len(xnew) == len(ynew)
 

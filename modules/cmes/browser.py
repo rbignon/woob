@@ -28,56 +28,61 @@ from woob.capabilities.captcha import RecaptchaV3Question
 from woob.exceptions import ActionNeeded, AuthMethodNotImplemented, BrowserIncorrectPassword
 
 from .pages import (
-    AccountsPage, ActionNeededPage, InvestmentDetailsPage, InvestmentPage, LoginPage, OperationPage, OperationsListPage,
+    AccountsPage,
+    ActionNeededPage,
+    InvestmentDetailsPage,
+    InvestmentPage,
+    LoginPage,
+    OperationPage,
+    OperationsListPage,
 )
 
 
 class CmesBrowser(LoginBrowser):
-    BASEURL = 'https://www.cic-epargnesalariale.fr'
+    BASEURL = "https://www.cic-epargnesalariale.fr"
 
-    login = URL(r'(?P<client_space>.*)fr/identification/authentification.html', LoginPage)
+    login = URL(r"(?P<client_space>.*)fr/identification/authentification.html", LoginPage)
 
-    mfa = URL(r'https://www.creditmutuel-epargnesalariale.fr/fr/epargnants/premiers-pas/authentification-forte/index.html')
+    mfa = URL(
+        r"https://www.creditmutuel-epargnesalariale.fr/fr/epargnants/premiers-pas/authentification-forte/index.html"
+    )
 
     action_needed = URL(
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/premiers-pas/saisir-vos-coordonnees',
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/premiers-pas/vos-services',
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/conditions-generales-d-utilisation/index.html',
-        ActionNeededPage
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/premiers-pas/saisir-vos-coordonnees",
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/premiers-pas/vos-services",
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/conditions-generales-d-utilisation/index.html",
+        ActionNeededPage,
     )
 
     accounts = URL(
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/mon-epargne/situation-financiere-detaillee/index.html',
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/tableau-de-bord/index.html',
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/entreprise/tableau-de-bord/index.html',
-        AccountsPage
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/mon-epargne/situation-financiere-detaillee/index.html",
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/tableau-de-bord/index.html",
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/entreprise/tableau-de-bord/index.html",
+        AccountsPage,
     )
 
     entreprise_accounts = URL(
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/entreprise/situation-financiere-detaillee/index.html',
-        AccountsPage
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/entreprise/situation-financiere-detaillee/index.html", AccountsPage
     )
 
     investments = URL(
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/fiche-du-support.html',
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/entreprise/supports/synthese-du-support.html',
-        InvestmentPage
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/fiche-du-support.html",
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/entreprise/supports/synthese-du-support.html",
+        InvestmentPage,
     )
     investment_details = URL(
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/epargne-sur-le-support.html',
-        InvestmentDetailsPage
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/epargnants/supports/epargne-sur-le-support.html", InvestmentDetailsPage
     )
     operations_list = URL(
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/(?P<sub_space>.*)/operations/index.html',
-        OperationsListPage
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/(?P<sub_space>.*)/operations/index.html", OperationsListPage
     )
 
     operation = URL(
-        r'(?P<subsite>.*)(?P<client_space>.*)fr/(?P<sub_space>.*)/operations/consulter-une-operation/index.html\?param_=(?P<idx>\d+)',
-        OperationPage
+        r"(?P<subsite>.*)(?P<client_space>.*)fr/(?P<sub_space>.*)/operations/consulter-une-operation/index.html\?param_=(?P<idx>\d+)",
+        OperationPage,
     )
 
-    client_space = ''
+    client_space = ""
 
     def __init__(self, config, username, password, website, subsite="", *args, **kwargs):
         super(LoginBrowser, self).__init__(*args, **kwargs)
@@ -89,12 +94,12 @@ class CmesBrowser(LoginBrowser):
 
     @property
     def logged(self):
-        return 'IdSes' in self.session.cookies
+        return "IdSes" in self.session.cookies
 
     def do_login(self):
         self.login.go(client_space=self.client_space)
 
-        if not self.config['captcha_response'].get():
+        if not self.config["captcha_response"].get():
             captcha_site_key = self.page.get_captcha_site_key()
             if captcha_site_key:
                 raise RecaptchaV3Question(
@@ -104,7 +109,7 @@ class CmesBrowser(LoginBrowser):
                     min_score=0.7,
                 )
 
-        self.page.login(self.username, self.password, self.config['captcha_response'].get())
+        self.page.login(self.username, self.password, self.config["captcha_response"].get())
         self.handle_mfa_page()
 
         if self.login.is_here():
@@ -112,21 +117,21 @@ class CmesBrowser(LoginBrowser):
 
     def handle_mfa_page(self):
         # check if we are being redirected to mfa page. if that's the case stop.
-        redirect = self.response.headers.get('Location', '')
+        redirect = self.response.headers.get("Location", "")
 
         if self.accounts.match(redirect):
-            self.location(self.response.headers['Location'])
+            self.location(self.response.headers["Location"])
             return
 
         if self.mfa.match(redirect):
             # if the redirect url is for mfa, we don't follow it.
             # the mfa won't be sent to the user.
-            raise AuthMethodNotImplemented('Multi Factor Authentication is not handled yet')
+            raise AuthMethodNotImplemented("Multi Factor Authentication is not handled yet")
 
-        raise AssertionError('Unexpected rediretion url')
+        raise AssertionError("Unexpected rediretion url")
 
     def go_to_investment_details(self):
-        """ Go to InvestmentDetailsPage and return True if reached """
+        """Go to InvestmentDetailsPage and return True if reached"""
         url_inv_details = self.page.get_investment_details()
         if url_inv_details:
             self.location(url_inv_details)
@@ -145,18 +150,20 @@ class CmesBrowser(LoginBrowser):
                 self.location(skip_url)
             else:
                 msg = self.page.get_message()
-                if any((
-                    "Merci de renseigner votre adresse e-mail" in msg,
-                    "Merci de renseigner votre numéro de téléphone mobile" in msg,
-                    "Veuillez accepter les conditions générales d'utilisation" in msg,
-                    "Utiliser votre adresse e-mail pour vous connecter" in msg,
-                    "Vos services" in msg,
-                )):
+                if any(
+                    (
+                        "Merci de renseigner votre adresse e-mail" in msg,
+                        "Merci de renseigner votre numéro de téléphone mobile" in msg,
+                        "Veuillez accepter les conditions générales d'utilisation" in msg,
+                        "Utiliser votre adresse e-mail pour vous connecter" in msg,
+                        "Vos services" in msg,
+                    )
+                ):
                     raise ActionNeeded(msg)
                 else:
-                    raise AssertionError('Unhandled action needed: %s' % msg)
+                    raise AssertionError("Unhandled action needed: %s" % msg)
 
-        if 'entreprise' in self.url:
+        if "entreprise" in self.url:
             is_entreprise = True
             self.entreprise_accounts.go(subsite=self.subsite, client_space=self.client_space)
 
@@ -164,11 +171,11 @@ class CmesBrowser(LoginBrowser):
 
     @need_login
     def iter_investment(self, account):
-        if 'compte courant bloqué' in account.label.lower():
+        if "compte courant bloqué" in account.label.lower():
             # CCB accounts have Pockets but no Investments
             return
 
-        if account._entreprise_or_epargnants == 'epargnants':
+        if account._entreprise_or_epargnants == "epargnants":
             self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
         else:
             self.entreprise_accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
@@ -176,7 +183,7 @@ class CmesBrowser(LoginBrowser):
         for inv in self.page.iter_investments(account=account):
             # Investments can either be fetched by submitting a form or a direct link.
             if not inv._form_param and not inv._details_url:
-                self.logger.info('No available details for investment %s.', inv.label)
+                self.logger.info("No available details for investment %s.", inv.label)
                 self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
                 yield inv
                 continue
@@ -190,7 +197,7 @@ class CmesBrowser(LoginBrowser):
                 except (ClientError, ServerError) as e:
                     raise e
                 except ConnectionError:
-                    self.logger.warning('Form could not be submitted, URL: %s escaped', form.url)
+                    self.logger.warning("Form could not be submitted, URL: %s escaped", form.url)
             elif inv._details_url:
                 self.location(inv._details_url)
 
@@ -203,16 +210,17 @@ class CmesBrowser(LoginBrowser):
                 for year in (1, 3, 5):
                     url = self.page.get_form_url()
                     if year == 1:
-                        data = {'_FID_DoFilterChart_timePeriod:1Year': ''}
+                        data = {"_FID_DoFilterChart_timePeriod:1Year": ""}
                     elif year == 3:
                         data = {
-                            '[t:dbt%3adate;]Data_StartDate': (datetime.today() - relativedelta(years=3)).strftime(
-                                '%d/%m/%Y'),
-                            '[t:dbt%3adate;]Data_EndDate': datetime.today().strftime('%d/%m/%Y'),
-                            '_FID_DoDateFilterChart': '',
+                            "[t:dbt%3adate;]Data_StartDate": (datetime.today() - relativedelta(years=3)).strftime(
+                                "%d/%m/%Y"
+                            ),
+                            "[t:dbt%3adate;]Data_EndDate": datetime.today().strftime("%d/%m/%Y"),
+                            "_FID_DoDateFilterChart": "",
                         }
                     elif year == 5:
-                        data = {'_FID_DoFilterChart_timePeriod:5Years': ''}
+                        data = {"_FID_DoFilterChart_timePeriod:5Years": ""}
                     self.location(url, data=data)
                     performances[year] = self.page.get_performance()
                 inv.performance_history = performances
@@ -222,16 +230,14 @@ class CmesBrowser(LoginBrowser):
                     self.page.fill_investment(obj=inv, account_type=account.type)
                 self.page.go_back()
             else:
-                self.logger.info('No available details for investment %s.', inv.label)
+                self.logger.info("No available details for investment %s.", inv.label)
                 self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
             yield inv
 
     @need_login
     def iter_history(self, account):
         self.operations_list.stay_or_go(
-            subsite=self.subsite,
-            client_space=self.client_space,
-            sub_space=account._entreprise_or_epargnants
+            subsite=self.subsite, client_space=self.client_space, sub_space=account._entreprise_or_epargnants
         )
 
         for idx in self.page.get_operations_idx(account._entreprise_or_epargnants):
@@ -239,10 +245,10 @@ class CmesBrowser(LoginBrowser):
                 subsite=self.subsite,
                 client_space=self.client_space,
                 sub_space=account._entreprise_or_epargnants,
-                idx=idx
+                idx=idx,
             )
 
-            if account._entreprise_or_epargnants == 'epargnants':
+            if account._entreprise_or_epargnants == "epargnants":
                 for tr in self.page.get_transactions():
                     if account.label == tr._account_label:
                         yield tr
@@ -252,7 +258,7 @@ class CmesBrowser(LoginBrowser):
     @need_login
     def iter_pocket(self, account):
         self.accounts.stay_or_go(subsite=self.subsite, client_space=self.client_space)
-        if 'compte courant bloqué' in account.label.lower():
+        if "compte courant bloqué" in account.label.lower():
             # CCB accounts have a specific table containing only Pockets
             for pocket in self.page.iter_ccb_pockets(account=account):
                 yield pocket

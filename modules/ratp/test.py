@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class RATPTest(BackendTest):
-    MODULE = 'ratp'
+    MODULE = "ratp"
 
     def test_ratp_gauges(self):
         l = list(self.backend.iter_gauges())

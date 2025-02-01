@@ -27,16 +27,18 @@ from .pages import EventPage, ListPage, LoginPage, SearchPage
 
 
 class ResidentadvisorBrowser(LoginBrowser):
-    BASEURL = 'http://www.residentadvisor.net'
+    BASEURL = "http://www.residentadvisor.net"
 
     # this ID is used by Resident Advisor
     ALBANIA_ID = 223
 
-    login = URL('https://www.residentadvisor.net/login', LoginPage)
-    event = URL(r'/event\.aspx\?(?P<id>\d+)', EventPage)
-    list_events = URL(r'/events.aspx\?ai=(?P<city>\d+)&v=(?P<v>.+)&yr=(?P<year>\d{4})&mn=(?P<month>\d\d?)&dy=(?P<day>\d\d?)', ListPage)
-    search_page = URL(r'/search.aspx\?searchstr=(?P<query>.+)&section=events&titles=1', SearchPage)
-    attends = URL('/Output/addhandler.ashx')
+    login = URL("https://www.residentadvisor.net/login", LoginPage)
+    event = URL(r"/event\.aspx\?(?P<id>\d+)", EventPage)
+    list_events = URL(
+        r"/events.aspx\?ai=(?P<city>\d+)&v=(?P<v>.+)&yr=(?P<year>\d{4})&mn=(?P<month>\d\d?)&dy=(?P<day>\d\d?)", ListPage
+    )
+    search_page = URL(r"/search.aspx\?searchstr=(?P<query>.+)&section=events&titles=1", SearchPage)
+    attends = URL("/Output/addhandler.ashx")
 
     def do_login(self):
         self.login.stay_or_go()
@@ -46,27 +48,27 @@ class ResidentadvisorBrowser(LoginBrowser):
         if self.login.is_here():
             raise BrowserIncorrectPassword()
 
-    def get_events(self, city, v = 'week', date = datetime.now()):
-        self.list_events.go(v = v, year = date.year, month = date.month, day = date.day, city = city)
+    def get_events(self, city, v="week", date=datetime.now()):
+        self.list_events.go(v=v, year=date.year, month=date.month, day=date.day, city=city)
         assert self.list_events.is_here()
 
         for event in self.page.get_events():
             yield event
 
     def get_event(self, _id):
-        self.event.go(id = _id)
+        self.event.go(id=_id)
 
         if not self.event.is_here():
             return None
 
         event = self.page.get_event()
         event.id = _id
-        event.url = self.event.build(id = _id)
+        event.url = self.event.build(id=_id)
 
         return event
 
     def search_events_by_summary(self, pattern):
-        self.search_page.go(query = pattern)
+        self.search_page.go(query=pattern)
         assert self.search_page.is_here()
 
         for event in self.page.get_events():
@@ -75,7 +77,7 @@ class ResidentadvisorBrowser(LoginBrowser):
     def get_country_city_id(self, country, city):
         now = datetime.now()
 
-        self.list_events.go(v = 'day', year = now.year, month = now.month, day = now.day, city = self.ALBANIA_ID)
+        self.list_events.go(v="day", year=now.year, month=now.month, day=now.day, city=self.ALBANIA_ID)
         assert self.list_events.is_here()
 
         country_id = self.page.get_country_id(country)
@@ -83,7 +85,7 @@ class ResidentadvisorBrowser(LoginBrowser):
         if country_id is None:
             return None
 
-        self.list_events.go(v = 'day', year = now.year, month = now.month, day = now.day, city = country_id)
+        self.list_events.go(v="day", year=now.year, month=now.month, day=now.day, city=country_id)
         assert self.list_events.is_here()
 
         city_id = self.page.get_city_id(city)
@@ -100,7 +102,7 @@ class ResidentadvisorBrowser(LoginBrowser):
         city_id = None
 
         while True:
-            self.list_events.go(v = 'day', year = now.year, month = now.month, day = now.day, city = country_id)
+            self.list_events.go(v="day", year=now.year, month=now.month, day=now.day, city=country_id)
             assert self.list_events.is_here()
 
             city_id = self.page.get_city_id(city)
@@ -115,11 +117,9 @@ class ResidentadvisorBrowser(LoginBrowser):
 
     @need_login
     def attends_event(self, id, is_attending):
-        data = {'type': 'saveFavourite',
-                'action':'attending',
-                'id': id}
+        data = {"type": "saveFavourite", "action": "attending", "id": id}
 
         if not is_attending:
-            data['type'] = 'deleteFavourite'
+            data["type"] = "deleteFavourite"
 
-        self.attends.open(data = data)
+        self.attends.open(data=data)

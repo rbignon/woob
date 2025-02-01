@@ -20,4 +20,4 @@
 from .module import ImpotsGouvFrParModule
 
 
-__all__ = ['ImpotsGouvFrParModule']
+__all__ = ["ImpotsGouvFrParModule"]

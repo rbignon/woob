@@ -22,7 +22,12 @@
 
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
+    CapDocument,
+    Document,
+    DocumentCategory,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
 )
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig, Module
@@ -31,24 +36,24 @@ from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 from .browser import EdfParticulierBrowser
 
 
-__all__ = ['EdfparticulierModule']
+__all__ = ["EdfparticulierModule"]
 
 
 class EdfparticulierModule(Module, CapDocument, CapProfile):
-    NAME = 'edfparticulier'
-    DESCRIPTION = 'edf particulier'
-    MAINTAINER = 'Florian Duguet'
-    EMAIL = 'florian.duguet@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "edfparticulier"
+    DESCRIPTION = "edf particulier"
+    MAINTAINER = "Florian Duguet"
+    EMAIL = "florian.duguet@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = EdfParticulierBrowser
 
     CONFIG = BackendConfig(
-        Value('login', label='E-mail ou Identifiant'),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('otp', label='Entrez le code reçu par SMS'),
-        ValueTransient('request_information'),
+        Value("login", label="E-mail ou Identifiant"),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("otp", label="Entrez le code reçu par SMS"),
+        ValueTransient("request_information"),
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
@@ -61,7 +66,7 @@ class EdfparticulierModule(Module, CapDocument, CapProfile):
         return self.browser.get_subscription_list()
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
+        subid = _id.rsplit("_", 1)[0]
         subscription = self.get_subscription(subid)
 
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)

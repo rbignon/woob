@@ -25,26 +25,25 @@ from woob.tools.value import ValueBackendPassword
 from .browser import ThemisBrowser
 
 
-__all__ = ['ThemisModule']
+__all__ = ["ThemisModule"]
 
 
 class ThemisModule(Module, CapBank, CapProfile):
-    NAME = 'themisbanque'
-    DESCRIPTION = 'Themis'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "themisbanque"
+    DESCRIPTION = "Themis"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label="Numéro d'abonné", masked=False),
-        ValueBackendPassword('password', label='Code secret'),
+        ValueBackendPassword("login", label="Numéro d'abonné", masked=False),
+        ValueBackendPassword("password", label="Code secret"),
     )
 
     BROWSER = ThemisBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

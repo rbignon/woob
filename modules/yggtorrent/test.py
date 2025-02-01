@@ -22,10 +22,10 @@ from woob.tools.test import BackendTest
 
 
 class YggtorrentTest(BackendTest):
-    MODULE = 'yggtorrent'
+    MODULE = "yggtorrent"
 
     def test_torrent(self):
-        torrents = list(self.backend.iter_torrents('spiderman'))[:10]
+        torrents = list(self.backend.iter_torrents("spiderman"))[:10]
         for torrent in torrents:
             assert torrent.url
             assert torrent.id

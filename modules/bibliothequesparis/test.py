@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class BibliothequesparisTest(BackendTest):
-    MODULE = 'bibliothequesparis'
+    MODULE = "bibliothequesparis"
 
     def test_rented(self):
         books = list(self.backend.iter_rented())

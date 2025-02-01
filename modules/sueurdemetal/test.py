@@ -25,7 +25,7 @@ from woob.tools.test import BackendTest
 
 
 class SueurDeMetalTest(BackendTest):
-    MODULE = 'sueurdemetal'
+    MODULE = "sueurdemetal"
 
     def check_event(self, ev, full=False):
         self.assertTrue(ev.id)
@@ -39,7 +39,7 @@ class SueurDeMetalTest(BackendTest):
 
     def test_sueurdemetal_searchcity(self):
         q = Query()
-        q.city = u'paris'
+        q.city = "paris"
         self.assertTrue(len(list(self.backend.search_events(q))) > 0)
 
         ev = next(iter(self.backend.search_events(q)))
@@ -53,7 +53,7 @@ class SueurDeMetalTest(BackendTest):
 
     def test_sueurdemetal_datefrom(self):
         q = Query()
-        later = (datetime.now() + timedelta(days=31))
+        later = datetime.now() + timedelta(days=31)
         q.start_date = later
 
         ev = next(iter(self.backend.search_events(q)))

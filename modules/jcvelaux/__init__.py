@@ -21,4 +21,4 @@
 from .module import jcvelauxModule
 
 
-__all__ = ['jcvelauxModule']
+__all__ = ["jcvelauxModule"]

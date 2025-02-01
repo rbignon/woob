@@ -20,7 +20,13 @@
 
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    Bill, CapDocument, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription, SubscriptionNotFound,
+    Bill,
+    CapDocument,
+    DocumentCategory,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
+    SubscriptionNotFound,
 )
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import Value, ValueBackendPassword
@@ -28,26 +34,23 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import LampirisBrowser
 
 
-__all__ = ['LampirisModule']
+__all__ = ["LampirisModule"]
 
 
 class LampirisModule(Module, CapDocument):
-    NAME = 'lampiris'
-    DESCRIPTION = u'French electricity provider Lampiris.fr'
-    MAINTAINER = u'Phyks (Lucas Verney)'
-    EMAIL = 'phyks@phyks.me'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "lampiris"
+    DESCRIPTION = "French electricity provider Lampiris.fr"
+    MAINTAINER = "Phyks (Lucas Verney)"
+    EMAIL = "phyks@phyks.me"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     CONFIG = BackendConfig(
         Value(
-            'email',
-            label='Email',
+            "email",
+            label="Email",
         ),
-        ValueBackendPassword(
-            'password',
-            label='Password'
-        )
+        ValueBackendPassword("password", label="Password"),
     )
 
     BROWSER = LampirisBrowser
@@ -55,10 +58,7 @@ class LampirisModule(Module, CapDocument):
     document_categories = {DocumentCategory.ENERGY}
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config['email'].get(),
-            self.config['password'].get()
-        )
+        return self.create_browser(self.config["email"].get(), self.config["password"].get())
 
     def download_document(self, id):
         """
@@ -85,9 +85,7 @@ class LampirisModule(Module, CapDocument):
         :rtype: :class:`Document`
         :raises: :class:`DocumentNotFound`
         """
-        return find_object(self.iter_documents(id.split("#")[0]),
-                           id=id,
-                           error=DocumentNotFound)
+        return find_object(self.iter_documents(id.split("#")[0]), id=id, error=DocumentNotFound)
 
     def iter_documents(self, subscription):
         """
@@ -98,9 +96,7 @@ class LampirisModule(Module, CapDocument):
         :rtype: iter[:class:`Document`]
         """
         if not isinstance(subscription, Subscription):
-            subscription = find_object(self.iter_subscription(),
-                                       id=subscription,
-                                       error=SubscriptionNotFound)
+            subscription = find_object(self.iter_subscription(), id=subscription, error=SubscriptionNotFound)
 
         return self.browser.get_documents(subscription)
 

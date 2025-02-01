@@ -23,10 +23,10 @@ from woob.tools.test import BackendTest
 
 
 class MonsterTest(BackendTest):
-    MODULE = 'monster'
+    MODULE = "monster"
 
     def test_monster_search(self):
-        l = list(itertools.islice(self.backend.search_job(u'marketing'), 0, 20))
+        l = list(itertools.islice(self.backend.search_job("marketing"), 0, 20))
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, None)
         self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))

@@ -29,8 +29,8 @@ from woob.capabilities.lyrics import SongLyrics
 class HomePage(HTMLPage):
     def search_lyrics(self, criteria, pattern):
         form = self.get_form(xpath='//form[@class="form-inline"]')
-        form['value'] = pattern
-        form['field'] = criteria.replace('song','title')
+        form["value"] = pattern
+        form["field"] = criteria.replace("song", "title")
         form.submit()
 
 
@@ -42,14 +42,14 @@ class SearchPage(HTMLPage):
         class item(ItemElement):
             klass = SongLyrics
 
-            obj_id = Regexp(CleanText('./@href', default=NotAvailable), 'id=(.*)$')
-            obj_title = Regexp(CleanText('.', default=NotAvailable), '(.*) - .*')
-            obj_artist = Regexp(CleanText('.', default=NotAvailable), '.* - (.*)')
+            obj_id = Regexp(CleanText("./@href", default=NotAvailable), "id=(.*)$")
+            obj_title = Regexp(CleanText(".", default=NotAvailable), "(.*) - .*")
+            obj_artist = Regexp(CleanText(".", default=NotAvailable), ".* - (.*)")
             obj_content = NotLoaded
 
     def get_artist_ids(self):
         artists_href = self.doc.xpath('//div[@id="search"]//div[has-class("row")]//td/a/@href')
-        aids = [href.split('value=')[-1] for href in artists_href]
+        aids = [href.split("value=")[-1] for href in artists_href]
         return aids
 
 
@@ -61,9 +61,9 @@ class ArtistPage(HTMLPage):
         class item(ItemElement):
             klass = SongLyrics
 
-            obj_id = Regexp(CleanText('./@href', default=NotAvailable), 'id=(.*)$')
-            obj_artist = Regexp(CleanText('.', default=NotAvailable), '(.*) - .*')
-            obj_title = Regexp(CleanText('.', default=NotAvailable), '.* - (.*)')
+            obj_id = Regexp(CleanText("./@href", default=NotAvailable), "id=(.*)$")
+            obj_artist = Regexp(CleanText(".", default=NotAvailable), "(.*) - .*")
+            obj_title = Regexp(CleanText(".", default=NotAvailable), ".* - (.*)")
             obj_content = NotLoaded
 
 
@@ -73,9 +73,10 @@ class LyricsPage(HTMLPage):
         klass = SongLyrics
 
         def obj_id(self):
-            return self.page.url.split('id=')[-1]
-        obj_content = CleanText(CleanHTML('//div[has-class("btn-toolbar")]/following-sibling::div[2]',
-                                          default=NotAvailable),
-                                newlines=False)
-        obj_artist = Regexp(CleanText('//title', default=NotAvailable), '(.*) - .* - .*')
-        obj_title = Regexp(CleanText('//title', default=NotAvailable), '.* - (.*) - .*')
+            return self.page.url.split("id=")[-1]
+
+        obj_content = CleanText(
+            CleanHTML('//div[has-class("btn-toolbar")]/following-sibling::div[2]', default=NotAvailable), newlines=False
+        )
+        obj_artist = Regexp(CleanText("//title", default=NotAvailable), "(.*) - .* - .*")
+        obj_title = Regexp(CleanText("//title", default=NotAvailable), ".* - (.*) - .*")

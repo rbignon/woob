@@ -28,12 +28,13 @@ try:
     import termios
     import tty
 except ImportError:
-    PROMPT = '--Press return to continue--'
+    PROMPT = "--Press return to continue--"
 
     def readch():
         return sys.stdin.readline()
+
 else:
-    PROMPT = '--Press a key to continue--'
+    PROMPT = "--Press a key to continue--"
 
     def readch():
         fd = sys.stdin.fileno()
@@ -43,23 +44,24 @@ else:
         try:
             c = sys.stdin.read(1)
             # XXX do not read magic number
-            if c == '\x03':
+            if c == "\x03":
                 raise KeyboardInterrupt()
             return c
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
 
 from woob.capabilities.base import BaseObject
 from woob.tools.application.pretty import BOLD, NC, colored
 from woob.tools.misc import classproperty, guess_encoding
 
 
-__all__ = ['IFormatter', 'MandatoryFieldsNotFound']
+__all__ = ["IFormatter", "MandatoryFieldsNotFound"]
 
 
 class MandatoryFieldsNotFound(Exception):
     def __init__(self, missing_fields):
-        super().__init__('Mandatory fields not found: %s.' % ', '.join(missing_fields))
+        super().__init__("Mandatory fields not found: %s." % ", ".join(missing_fields))
 
 
 class IFormatter:
@@ -72,29 +74,25 @@ class IFormatter:
     @classproperty
     def BOLD(self):
         warnings.warn(
-            'Use woob.tools.application.pretty.BOLD instead.\n'
-            'That\'s also better to use woob.tools.application.pretty.colored.',
+            "Use woob.tools.application.pretty.BOLD instead.\n"
+            "That's also better to use woob.tools.application.pretty.colored.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return BOLD
 
     @classproperty
     def NC(self):
         warnings.warn(
-            'Use woob.tools.application.pretty.NC instead.\n'
-            'That\'s also better to use woob.tools.application.pretty.colored.',
+            "Use woob.tools.application.pretty.NC instead.\n"
+            "That's also better to use woob.tools.application.pretty.colored.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return NC
 
     def colored(self, string, color, attrs=None, on_color=None):
-        if (
-            self.outfile != sys.stdout
-            or not self.outfile.isatty()
-            or os.getenv("NO_COLOR") is not None
-        ):
+        if self.outfile != sys.stdout or not self.outfile.isatty() or os.getenv("NO_COLOR") is not None:
             return string
 
         if isinstance(attrs, str):
@@ -114,7 +112,7 @@ class IFormatter:
         # XXX if stdin is not a tty, it seems that the command fails.
 
         if sys.stdout.isatty() and sys.stdin.isatty():
-            if sys.platform == 'win32':
+            if sys.platform == "win32":
                 from ctypes import create_string_buffer, windll
 
                 h = windll.kernel32.GetStdHandle(-12)
@@ -123,8 +121,10 @@ class IFormatter:
 
                 if res:
                     import struct
-                    (bufx, bufy, curx, cury, wattr,
-                     left, top, right, bottom, maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
+
+                    (bufx, bufy, curx, cury, wattr, left, top, right, bottom, maxx, maxy) = struct.unpack(
+                        "hhhhHhhhhhh", csbi.raw
+                    )
                     self.termrows = right - left + 1
                     self.termcols = bottom - top + 1
                 else:
@@ -138,24 +138,24 @@ class IFormatter:
     def output(self, formatted):
         if isinstance(self.outfile, (str, Path)):
             encoding = guess_encoding(sys.stdout)
-            with open(self.outfile, "a+", encoding=encoding, errors='replace') as outfile:
+            with open(self.outfile, "a+", encoding=encoding, errors="replace") as outfile:
                 outfile.write(formatted + os.linesep)
 
         else:
-            for line in formatted.split('\n'):
+            for line in formatted.split("\n"):
                 if self.termrows and (self.print_lines + 1) >= self.termrows:
                     self.outfile.write(PROMPT)
                     self.outfile.flush()
                     readch()
-                    self.outfile.write('\b \b' * len(PROMPT))
+                    self.outfile.write("\b \b" * len(PROMPT))
                     self.print_lines = 0
 
-                plen = len(line.replace(BOLD, '').replace(NC, ''))
+                plen = len(line.replace(BOLD, "").replace(NC, ""))
 
                 print(line, file=self.outfile)
 
                 if self.termcols:
-                    self.print_lines += int(plen/self.termcols) + 1
+                    self.print_lines += int(plen / self.termcols) + 1
                 else:
                     self.print_lines += 1
 
@@ -194,7 +194,7 @@ class IFormatter:
             try:
                 obj = OrderedDict(obj)
             except ValueError:
-                raise TypeError('Please give a BaseObject or a dict')
+                raise TypeError("Please give a BaseObject or a dict")
 
             if selected_fields:
                 obj = obj.copy()
@@ -246,14 +246,11 @@ class IFormatter:
         if only is False or collection.basename in only:
             if collection.basename and collection.title:
                 self.output(
-                    '%s~ (%s) %s (%s)%s' %
-                    (self.BOLD, collection.basename, collection.title, collection.backend, self.NC)
+                    "%s~ (%s) %s (%s)%s"
+                    % (self.BOLD, collection.basename, collection.title, collection.backend, self.NC)
                 )
             else:
-                self.output(
-                    '%s~ (%s) (%s)%s' %
-                    (self.BOLD, collection.basename, collection.backend, self.NC)
-                )
+                self.output("%s~ (%s) (%s)%s" % (self.BOLD, collection.basename, collection.backend, self.NC))
 
 
 class PrettyFormatter(IFormatter):
@@ -262,17 +259,21 @@ class PrettyFormatter(IFormatter):
         desc = self.get_description(obj)
 
         if alias is not None:
-            result = '%s %s %s (%s)' % (self.colored('%2s' % alias, 'red', 'bold'),
-                                        self.colored('—', 'cyan', 'bold'),
-                                        self.colored(title, 'yellow', 'bold'),
-                                        self.colored(obj.backend, 'blue', 'bold'))
+            result = "%s %s %s (%s)" % (
+                self.colored("%2s" % alias, "red", "bold"),
+                self.colored("—", "cyan", "bold"),
+                self.colored(title, "yellow", "bold"),
+                self.colored(obj.backend, "blue", "bold"),
+            )
         else:
-            result = '%s %s %s' % (self.colored(obj.fullid, 'red', 'bold'),
-                                   self.colored('—', 'cyan', 'bold'),
-                                   self.colored(title, 'yellow', 'bold'))
+            result = "%s %s %s" % (
+                self.colored(obj.fullid, "red", "bold"),
+                self.colored("—", "cyan", "bold"),
+                self.colored(title, "yellow", "bold"),
+            )
 
         if desc is not None:
-            result += '%s\t%s' % (os.linesep, self.colored(desc, 'white'))
+            result += "%s\t%s" % (os.linesep, self.colored(desc, "white"))
 
         return result
 

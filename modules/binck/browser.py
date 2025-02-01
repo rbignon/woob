@@ -29,51 +29,62 @@ from woob.exceptions import ActionNeeded, BrowserIncorrectPassword, BrowserPassw
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 
 from .pages import (
-    AccountsPage, ChangePassPage, HandlePasswordsPage, HistoryPage, HomePage, InvestDetailPage, InvestmentListPage,
-    InvestmentPage, LoginPage, LogonFlowPage, MarketOrdersPage, OldAccountsPage, PersonalInfoPage, PostponePasswords,
-    QuestionPage, SwitchPage, ViewPage,
+    AccountsPage,
+    ChangePassPage,
+    HandlePasswordsPage,
+    HistoryPage,
+    HomePage,
+    InvestDetailPage,
+    InvestmentListPage,
+    InvestmentPage,
+    LoginPage,
+    LogonFlowPage,
+    MarketOrdersPage,
+    OldAccountsPage,
+    PersonalInfoPage,
+    PostponePasswords,
+    QuestionPage,
+    SwitchPage,
+    ViewPage,
 )
 
 
 class BinckBrowser(LoginBrowser):
-    BASEURL = 'https://web.binck.fr'
+    BASEURL = "https://web.binck.fr"
 
     old_website_connection = False
     unique_account = False
 
-    login = URL(r'/Logon', LoginPage)
-    view = URL('/PersonIntroduction/Index', ViewPage)
-    logon_flow = URL(r'/AmlQuestionnairesOverview/LogonFlow$', LogonFlowPage)
+    login = URL(r"/Logon", LoginPage)
+    view = URL("/PersonIntroduction/Index", ViewPage)
+    logon_flow = URL(r"/AmlQuestionnairesOverview/LogonFlow$", LogonFlowPage)
 
-    personal_info = URL(r'/PersonalInformationLogin', PersonalInfoPage)
+    personal_info = URL(r"/PersonalInformationLogin", PersonalInfoPage)
 
-    account = URL(r'/PortfolioOverview/Index', AccountsPage)
-    accounts = URL(r'/PersonAccountOverview/Index', AccountsPage)
-    old_accounts = URL(r'/AccountsOverview/Index', OldAccountsPage)
+    account = URL(r"/PortfolioOverview/Index", AccountsPage)
+    accounts = URL(r"/PersonAccountOverview/Index", AccountsPage)
+    old_accounts = URL(r"/AccountsOverview/Index", OldAccountsPage)
 
-    account_switch = URL('/Header/SwitchAccount', SwitchPage)
-    home_page = URL(r'/$',
-                    r'/Home/Index', HomePage)
+    account_switch = URL("/Header/SwitchAccount", SwitchPage)
+    home_page = URL(r"/$", r"/Home/Index", HomePage)
 
-    investment = URL(r'/PortfolioOverview/GetPortfolioOverview', InvestmentPage)
-    investment_list = URL(r'PortfolioOverview$', InvestmentListPage)
-    invest_detail = URL(r'/SecurityInformation/Get', InvestDetailPage)
+    investment = URL(r"/PortfolioOverview/GetPortfolioOverview", InvestmentPage)
+    investment_list = URL(r"PortfolioOverview$", InvestmentListPage)
+    invest_detail = URL(r"/SecurityInformation/Get", InvestDetailPage)
 
-    market_orders = URL(r'/HistoricOrdersOverview/HistoricOrders', MarketOrdersPage)
+    market_orders = URL(r"/HistoricOrdersOverview/HistoricOrders", MarketOrdersPage)
 
-    history = URL(r'/TransactionsOverview/GetTransactions',
-                  r'/TransactionsOverview/FilteredOverview', HistoryPage)
-    questions = URL(r'/FDL_Complex_FR_Compte',
-                    r'/FDL_NonComplex_FR_Compte',
-                    r'FsmaMandatoryQuestionnairesOverview', QuestionPage)
-    change_pass = URL(r'/ChangePassword/Index',
-                      r'/EditSetting/GetSetting\?code=MutationPassword', ChangePassPage)
-    handle_passwords = URL(r'/PersonalCredentials/Index', HandlePasswordsPage)
-    postpone_passwords = URL(r'/PersonalCredentials/PostPone', PostponePasswords)
+    history = URL(r"/TransactionsOverview/GetTransactions", r"/TransactionsOverview/FilteredOverview", HistoryPage)
+    questions = URL(
+        r"/FDL_Complex_FR_Compte", r"/FDL_NonComplex_FR_Compte", r"FsmaMandatoryQuestionnairesOverview", QuestionPage
+    )
+    change_pass = URL(r"/ChangePassword/Index", r"/EditSetting/GetSetting\?code=MutationPassword", ChangePassPage)
+    handle_passwords = URL(r"/PersonalCredentials/Index", HandlePasswordsPage)
+    postpone_passwords = URL(r"/PersonalCredentials/PostPone", PostponePasswords)
 
     def deinit(self):
         if self.page and self.page.logged:
-            self.location('https://www.binck.fr/deconnexion-site-client')
+            self.location("https://www.binck.fr/deconnexion-site-client")
         super(BinckBrowser, self).deinit()
 
     def do_login(self):
@@ -87,7 +98,7 @@ class BinckBrowser(LoginBrowser):
                 raise BrowserPasswordExpired()
 
             token = self.page.get_token()
-            self.postpone_passwords.go(headers=token, method='POST')
+            self.postpone_passwords.go(headers=token, method="POST")
             self.home_page.go()
 
         if self.login.is_here():
@@ -95,21 +106,25 @@ class BinckBrowser(LoginBrowser):
             # The message for the second error is :
             # Vous ne pouvez plus vous servir de cet identifiant pour vous connecter,
             # Nous vous prions d'utiliser celui que vous avez récemment créé.
-            if error and any((
-                'mot de passe' in error,
-                'Vous ne pouvez plus vous servir de cet identifiant' in error,
-            )):
+            if error and any(
+                (
+                    "mot de passe" in error,
+                    "Vous ne pouvez plus vous servir de cet identifiant" in error,
+                )
+            ):
                 raise BrowserIncorrectPassword(error)
-            elif error and any((
-                'Votre compte a été bloqué / clôturé' in error,
-                'Votre compte est bloqué, veuillez contacter le Service Clients' in error,
-            )):
+            elif error and any(
+                (
+                    "Votre compte a été bloqué / clôturé" in error,
+                    "Votre compte est bloqué, veuillez contacter le Service Clients" in error,
+                )
+            ):
                 raise ActionNeeded(error)
             raise AssertionError('Unhandled behavior at login: error is "{}"'.format(error))
 
         if self.personal_info.is_here():
             message = self.page.get_message()
-            if 'informations personnelles' in message:
+            if "informations personnelles" in message:
                 raise ActionNeeded(message)
             raise AssertionError('Unhandled behavior at login: message is "%s"' % message)
 
@@ -118,18 +133,18 @@ class BinckBrowser(LoginBrowser):
         self.accounts.stay_or_go()
         if self.accounts.is_here():
             token = self.page.get_token()
-        data = {'accountNumber': account_id}
+        data = {"accountNumber": account_id}
         # Important: the "switch" request without the token will return a 500 error
         self.account_switch.go(data=data, headers=token)
         # We should be automatically redirected to the accounts page:
-        assert self.accounts.is_here(), 'switch_account did not redirect to AccountsPage properly'
+        assert self.accounts.is_here(), "switch_account did not redirect to AccountsPage properly"
 
     @need_login
     def iter_accounts(self):
         # If we already know that it is an old website connection,
         # we can call iter_old_accounts() right away.
         if self.old_website_connection:
-            self.logger.warning('This connection has accounts on the old version of the website.')
+            self.logger.warning("This connection has accounts on the old version of the website.")
             for account in self.iter_old_accounts():
                 yield account
             return
@@ -150,7 +165,7 @@ class BinckBrowser(LoginBrowser):
                     token = self.page.get_token()
                 # Get valuation_diff from the investment page
                 try:
-                    data = {'grouping': 'SecurityCategory'}
+                    data = {"grouping": "SecurityCategory"}
                     a.valuation_diff = self.investment.go(data=data, headers=token).get_valuation_diff()
                 except HTTPNotFound:
                     # if it is not an invest account, the portfolio link may be present but hidden and return a 404
@@ -168,7 +183,7 @@ class BinckBrowser(LoginBrowser):
     def iter_old_accounts(self):
         self.old_accounts.go()
         for a in self.page.iter_accounts():
-            self.logger.warning('There is an old account: %s', a.label)
+            self.logger.warning("There is an old account: %s", a.label)
             try:
                 self.old_accounts.stay_or_go().go_to_account(a.id)
             except ServerError as exception:
@@ -185,10 +200,9 @@ class BinckBrowser(LoginBrowser):
             # Get token
             token = self.page.get_token()
             # Get investment page
-            data = {'grouping': "SecurityCategory"}
+            data = {"grouping": "SecurityCategory"}
             try:
-                a._invpage = self.investment.go(data=data, headers=token) \
-                    if self.page.is_investment() else None
+                a._invpage = self.investment.go(data=data, headers=token) if self.page.is_investment() else None
             except HTTPNotFound:
                 # if it's not an invest account, the portfolio link may be present but hidden and return a 404
                 a._invpage = None
@@ -196,9 +210,9 @@ class BinckBrowser(LoginBrowser):
             if a._invpage:
                 a.valuation_diff = a._invpage.get_valuation_diff()
             # Get history page
-            data = [('currencyCode', a.currency), ('startDate', ""), ('endDate', "")]
+            data = [("currencyCode", a.currency), ("startDate", ""), ("endDate", "")]
             a._histpages = [self.history.go(data=data, headers=token)]
-            while self.page.doc['EndOfData'] is False:
+            while self.page.doc["EndOfData"] is False:
                 a._histpages.append(self.history.go(data=self.page.get_nextpage_data(data[:]), headers=token))
 
             yield a
@@ -216,7 +230,7 @@ class BinckBrowser(LoginBrowser):
             if account._invpage:
                 for inv in account._invpage.iter_investment(currency=account.currency):
                     if not inv.code:
-                        params = {'securityId': inv._security_id}
+                        params = {"securityId": inv._security_id}
                         self.invest_detail.go(params=params)
                         if self.invest_detail.is_here():
                             inv.code, inv.code_type = self.page.get_isin_code_and_type()
@@ -227,7 +241,7 @@ class BinckBrowser(LoginBrowser):
         token = self.page.get_token()
 
         try:
-            data = {'grouping': 'SecurityCategory'}
+            data = {"grouping": "SecurityCategory"}
             self.investment.go(data=data, headers=token)
         except HTTPNotFound:
             return
@@ -237,11 +251,11 @@ class BinckBrowser(LoginBrowser):
 
     def go_to_market_orders(self, headers, page):
         data = {
-            'year': str(datetime.datetime.now().year),
-            'month': str(datetime.datetime.now().month),
-            'page': str(page),
-            'sortProperty': 'AccountOrderId',
-            'sortOrder': '1',
+            "year": str(datetime.datetime.now().year),
+            "month": str(datetime.datetime.now().month),
+            "page": str(page),
+            "sortProperty": "AccountOrderId",
+            "sortOrder": "1",
         }
         self.market_orders.go(data=data, headers=headers)
 
@@ -256,7 +270,7 @@ class BinckBrowser(LoginBrowser):
         try:
             self.go_to_market_orders(headers, page=1)
         except HTTPNotFound:
-            self.logger.warning('Account %s has no available market orders.', account.label)
+            self.logger.warning("Account %s has no available market orders.", account.label)
             return
 
         # First market order page
@@ -282,9 +296,9 @@ class BinckBrowser(LoginBrowser):
 
         self.switch_account(account.id)
         token = self.page.get_token()
-        data = [('currencyCode', account.currency), ('startDate', ''), ('endDate', '')]
+        data = [("currencyCode", account.currency), ("startDate", ""), ("endDate", "")]
         history_pages = [self.history.go(data=data, headers=token)]
-        while self.page.doc['EndOfData'] is False:
+        while self.page.doc["EndOfData"] is False:
             history_pages.append(self.history.go(data=self.page.get_nextpage_data(data[:]), headers=token))
 
         for page in history_pages:

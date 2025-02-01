@@ -28,26 +28,26 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import PrimonialreimBrowser
 
 
-__all__ = ['PrimonialreimModule']
+__all__ = ["PrimonialreimModule"]
 
 
 class PrimonialreimModule(Module, CapBank, CapDocument):
-    NAME = 'primonialreim'
-    DESCRIPTION = 'Primonial REIM'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "primonialreim"
+    DESCRIPTION = "Primonial REIM"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = PrimonialreimBrowser
 
     CONFIG = BackendConfig(
-        Value('username', label='Identifiant'),
-        ValueBackendPassword('password', label='Mot de passe'),
+        Value("username", label="Identifiant"),
+        ValueBackendPassword("password", label="Mot de passe"),
     )
 
     def create_default_browser(self):
-        return self.create_browser(self.config['username'].get(), self.config['password'].get())
+        return self.create_browser(self.config["username"].get(), self.config["password"].get())
 
     # CapBank
     def iter_accounts(self):

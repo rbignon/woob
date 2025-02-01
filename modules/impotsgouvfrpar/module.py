@@ -19,7 +19,12 @@
 
 from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
+    CapDocument,
+    Document,
+    DocumentCategory,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
 )
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig
@@ -29,28 +34,30 @@ from woob_modules.franceconnect.module import FranceConnectModule
 from .browser import ImpotsParBrowser
 
 
-__all__ = ['ImpotsGouvFrParModule']
+__all__ = ["ImpotsGouvFrParModule"]
 
 
 class ImpotsGouvFrParModule(FranceConnectModule, CapDocument, CapProfile):
-    NAME = 'impotsgouvfrpar'
-    DESCRIPTION = 'Impots - Avis et declarations - particulier'
-    MAINTAINER = 'Florian Duguet'
-    EMAIL = 'florian.duguet@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('franceconnect',)
+    NAME = "impotsgouvfrpar"
+    DESCRIPTION = "Impots - Avis et declarations - particulier"
+    MAINTAINER = "Florian Duguet"
+    EMAIL = "florian.duguet@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("franceconnect",)
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label="Identifiant (dépend de votre méthode d'authentification)"),
+        ValueBackendPassword("login", label="Identifiant (dépend de votre méthode d'authentification)"),
         Value(
-            'login_source', label="méthode d'authentification", default='direct',
+            "login_source",
+            label="méthode d'authentification",
+            default="direct",
             choices={
-                'direct': 'directe',
-                'fc': 'France Connect impots',
-                'fc_ameli': 'France connect Ameli',
-            }
+                "direct": "directe",
+                "fc": "France Connect impots",
+                "fc_ameli": "France connect Ameli",
+            },
         ),
-        ValueBackendPassword('password', label='Mot de passe'),
+        ValueBackendPassword("password", label="Mot de passe"),
     )
 
     BROWSER = ImpotsParBrowser
@@ -60,16 +67,16 @@ class ImpotsGouvFrParModule(FranceConnectModule, CapDocument, CapProfile):
 
     def create_default_browser(self):
         return self.create_browser(
-            self.config['login_source'].get(),
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login_source"].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_subscription(self):
         return self.browser.iter_subscription()
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
+        subid = _id.rsplit("_", 1)[0]
         subscription = self.get_subscription(subid)
 
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)

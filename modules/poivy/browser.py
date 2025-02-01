@@ -23,17 +23,17 @@ from woob.exceptions import BrowserIncorrectPassword
 from .pages import BillsPage, ErrorPage, HistoryPage, HomePage, LoginPage
 
 
-__all__ = ['PoivyBrowser']
+__all__ = ["PoivyBrowser"]
 
 
 class PoivyBrowser(LoginBrowser):
-    BASEURL = 'https://www.poivy.com'
+    BASEURL = "https://www.poivy.com"
 
-    login = URL('/login', LoginPage)
-    homepage = URL('/buy_credit.*', HomePage)
-    history = URL('/recent_calls', HistoryPage)
-    bills = URL('/purchases', BillsPage)
-    warning = URL('/warning.*', ErrorPage)
+    login = URL("/login", LoginPage)
+    homepage = URL("/buy_credit.*", HomePage)
+    history = URL("/recent_calls", HistoryPage)
+    bills = URL("/purchases", BillsPage)
+    warning = URL("/warning.*", ErrorPage)
 
     def do_login(self):
         assert isinstance(self.username, str)

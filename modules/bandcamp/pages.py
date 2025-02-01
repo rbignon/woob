@@ -46,8 +46,8 @@ class SearchPage(HTMLPage):
                 klass = Album
 
                 obj_title = CleanText('.//div[@class="heading"]/a')
-                obj_url = Regexp(AbsoluteLink('.//div[@class="heading"]/a'), r'^([^?]+)\?')
-                obj_id = Regexp(Field('url'), r'://([-\w]+)\.bandcamp.com/album/([-\w]+)', r'album.\1.\2', default=None)
+                obj_url = Regexp(AbsoluteLink('.//div[@class="heading"]/a'), r"^([^?]+)\?")
+                obj_id = Regexp(Field("url"), r"://([-\w]+)\.bandcamp.com/album/([-\w]+)", r"album.\1.\2", default=None)
 
         class iter_tracks(ListElement):
             item_xpath = '//ul[@class="result-items"]/li[.//div[@class="itemtype"][normalize-space(text())="TRACK"]]'
@@ -56,8 +56,10 @@ class SearchPage(HTMLPage):
                 klass = BaseAudio
 
                 obj_title = CleanText('.//div[@class="heading"]/a')
-                obj__page_url = Regexp(AbsoluteLink('.//div[@class="heading"]/a'), r'^([^?]+)\?')
-                obj_id = Regexp(Field('_page_url'), r'://([-\w]+)\.bandcamp.com/track/([-\w]+)', r'audio.\1.\2', default=None)
+                obj__page_url = Regexp(AbsoluteLink('.//div[@class="heading"]/a'), r"^([^?]+)\?")
+                obj_id = Regexp(
+                    Field("_page_url"), r"://([-\w]+)\.bandcamp.com/track/([-\w]+)", r"audio.\1.\2", default=None
+                )
 
         class iter_artists(ListElement):
             item_xpath = '//ul[@class="result-items"]/li[.//div[@class="itemtype"][normalize-space(text())="ARTIST"]]'
@@ -66,12 +68,12 @@ class SearchPage(HTMLPage):
                 klass = Collection
 
                 obj_title = CleanText('.//div[@class="heading"]/a')
-                obj_url = Regexp(AbsoluteLink('.//div[@class="heading"]/a'), r'^([^?]+)\?')
-                obj_id = Regexp(Field('url'), r'://([-\w]+)\.bandcamp.com', r'artist.\1', default=None)
+                obj_url = Regexp(AbsoluteLink('.//div[@class="heading"]/a'), r"^([^?]+)\?")
+                obj_id = Regexp(Field("url"), r"://([-\w]+)\.bandcamp.com", r"artist.\1", default=None)
 
                 def obj_split_path(self):
                     url = self.obj_url(self)
-                    return [re.search(r'https://([^.]+)\.', url).group(1)]
+                    return [re.search(r"https://([^.]+)\.", url).group(1)]
 
 
 class AlbumsPage(HTMLPage):
@@ -85,10 +87,10 @@ class AlbumsPage(HTMLPage):
         class item(ItemElement):
             klass = Album
 
-            obj_url = AbsoluteLink('./a')
-            obj__thumbnail_url = Attr('./a/div[@class="art"]/img', 'src')
+            obj_url = AbsoluteLink("./a")
+            obj__thumbnail_url = Attr('./a/div[@class="art"]/img', "src")
             obj_title = CleanText('./a/p[@class="title"]', children=False)
-            obj_id = Format('album.%s.%s', Env('band'), Regexp(Field('url'), r'/album/([-\w]+)'))
+            obj_id = Format("album.%s.%s", Env("band"), Regexp(Field("url"), r"/album/([-\w]+)"))
 
             def obj_author(self):
                 return CleanText('./a/p[@class="title"]/span[@class="artist-override"]')(self) or self.page.get_artist()
@@ -99,10 +101,10 @@ class AlbumPage(HTMLPage):
     class get_album(ItemElement):
         klass = Album
 
-        obj_id = Format('album.%s.%s', Env('band'), Env('album'))
+        obj_id = Format("album.%s.%s", Env("band"), Env("album"))
         obj_title = CleanText('//h2[@class="trackTitle"]')
         obj_author = CleanText('//span[@itemprop="byArtist"]')
-        _date = Date(Attr('//meta[@itemprop="datePublished"]', 'content'))
+        _date = Date(Attr('//meta[@itemprop="datePublished"]', "content"))
 
         def obj_year(self):
             return self._date(self).year
@@ -112,24 +114,27 @@ class AlbumPage(HTMLPage):
 
     @method
     class iter_tracks(ListElement):
-        item_xpath= '//table[@id="track_table"]/tr[has-class("track_row_view")]'
+        item_xpath = '//table[@id="track_table"]/tr[has-class("track_row_view")]'
 
         class item(ItemElement):
             klass = BaseAudio
 
             obj_title = CleanText('./td[@class="title-col"]//a')
-            obj_ext = 'mp3'
-            obj_format = 'mp3'
+            obj_ext = "mp3"
+            obj_format = "mp3"
             obj_bitrate = 128
             obj__page_url = AbsoluteLink('./td[@class="title-col"]//a')
-            obj_id = Format('audio.%s.%s', Env('band'), Regexp(Field('_page_url'), r'/track/([-\w]+)'))
+            obj_id = Format("audio.%s.%s", Env("band"), Regexp(Field("_page_url"), r"/track/([-\w]+)"))
 
     def get_tracks_extra(self):
-        info = json.loads(re.search(r'trackinfo: (\[.+?\]),\n', self.text).group(1))
-        return [{
-            'url': d['file']['mp3-128'] ,
-            'duration': int(d['duration']),
-        } for d in info]
+        info = json.loads(re.search(r"trackinfo: (\[.+?\]),\n", self.text).group(1))
+        return [
+            {
+                "url": d["file"]["mp3-128"],
+                "duration": int(d["duration"]),
+            }
+            for d in info
+        ]
 
 
 class TrackPage(HTMLPage):
@@ -137,19 +142,19 @@ class TrackPage(HTMLPage):
     class get_track(ItemElement):
         klass = BaseAudio
 
-        obj_id = Format('audio.%s.%s', Env('band'), Env('track'))
+        obj_id = Format("audio.%s.%s", Env("band"), Env("track"))
         obj_title = CleanText('//h2[@class="trackTitle"]')
         obj_author = CleanText('//span[@itemprop="byArtist"]')
-        obj_ext = 'mp3'
-        obj_format = 'mp3'
+        obj_ext = "mp3"
+        obj_format = "mp3"
         obj_bitrate = 128
 
         def obj_duration(self):
-            return int(float(Attr('//meta[@itemprop="duration"]', 'content')(self)))
+            return int(float(Attr('//meta[@itemprop="duration"]', "content")(self)))
 
         def obj_url(self):
-            info = json.loads(re.search(r'trackinfo: (\[.+?\]),\n', self.page.text).group(1))
-            return info[0]['file']['mp3-128']
+            info = json.loads(re.search(r"trackinfo: (\[.+?\]),\n", self.page.text).group(1))
+            return info[0]["file"]["mp3-128"]
 
         def obj__page_url(self):
             return self.page.url

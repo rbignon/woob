@@ -22,60 +22,68 @@ from .base import BaseObject, BoolField, Enum, EnumField, Field, StringField, Us
 from .collection import CapCollection
 
 
-__all__ = ['CapRPG', 'Character', 'Skill', 'CharacterClass', 'CollectableItem']
+__all__ = ["CapRPG", "Character", "Skill", "CharacterClass", "CollectableItem"]
 
 
 class CharacterNotFound(UserError):
-    """ Raised when a character is not found """
-    def __init__(self, msg='Character not found'):
+    """Raised when a character is not found"""
+
+    def __init__(self, msg="Character not found"):
         super(CharacterNotFound, self).__init__(msg)
 
 
 class SkillNotFound(UserError):
-    """ Raised when a skill is not found """
-    def __init__(self, msg='Skill not found'):
+    """Raised when a skill is not found"""
+
+    def __init__(self, msg="Skill not found"):
         super(SkillNotFound, self).__init__(msg)
 
 
 class CharacterClassNotFound(UserError):
-    """ Raised when a class is not found """
-    def __init__(self, msg='Class not found'):
+    """Raised when a class is not found"""
+
+    def __init__(self, msg="Class not found"):
         super(CharacterClassNotFound, self).__init__(msg)
 
 
 class CollectableItemNotFound(UserError):
-    """ Raised when an item is not found """
-    def __init__(self, msg='Item not found'):
+    """Raised when an item is not found"""
+
+    def __init__(self, msg="Item not found"):
         super(CollectableItemNotFound, self).__init__(msg)
 
 
 class ListField(Field):
-    """ Field made of a list """
+    """Field made of a list"""
+
     def __init__(self, doc, **kwargs):
-        if 'default' not in kwargs:
-            kwargs['default'] = []
+        if "default" not in kwargs:
+            kwargs["default"] = []
         super(ListField, self).__init__(doc, list, **kwargs)
 
 
 class DictField(Field):
-    """ Field made of a dict """
+    """Field made of a dict"""
+
     def __init__(self, doc, **kwargs):
-        if 'default' not in kwargs:
-            kwargs['default'] = {}
+        if "default" not in kwargs:
+            kwargs["default"] = {}
         super(DictField, self).__init__(doc, dict, **kwargs)
 
 
 class BaseRPGObject(BaseObject):
-    """ Object used to build up all the objects of the CapRPG """
+    """Object used to build up all the objects of the CapRPG"""
+
     # TODO: check id and origin for duplicates
-    name = StringField('Name', mandatory=True)
-    description = StringField('Description', mandatory=False)
-    origin = StringField('From which game/platform the object comes from', mandatory=False)
-    picture = StringField('URL of a picture', mandatory=False)
+    name = StringField("Name", mandatory=True)
+    description = StringField("Description", mandatory=False)
+    origin = StringField("From which game/platform the object comes from", mandatory=False)
+    picture = StringField("URL of a picture", mandatory=False)
 
 
 class CharacterClass(BaseRPGObject):
-    """ CharacterClass of a character """
+    """CharacterClass of a character"""
+
     pass
 
 
@@ -83,6 +91,7 @@ class SkillType(Enum):
     """
     Types of skill
     """
+
     UNKNOWN = 0
     """UNKNOWN: Unknown type"""
 
@@ -97,6 +106,7 @@ class SkillTarget(Enum):
     """
     Target of a skill
     """
+
     UNKNOWN = 0
     """UNKNOWN: Unknown target"""
 
@@ -117,6 +127,7 @@ class SkillCategory(Enum):
     """
     Category of a skill
     """
+
     UNKNOWN = 0
     """UNKNOWN: Unknown category"""
 
@@ -134,37 +145,41 @@ class SkillCategory(Enum):
 
 
 class Skill(BaseRPGObject):
-    """ Skill of a character """
-    type = EnumField('Type of skill', SkillType, mandatory=True, default=SkillType.UNKNOWN)
-    target = EnumField('Target of the skill', SkillTarget, mandatory=True, default=SkillTarget.UNKNOWN)
+    """Skill of a character"""
 
-    statistics = DictField('Dict of statistics', mandatory=False)
-    character_classes = ListField('List of CharacterClass ids that can use this move', mandatory=False)
-    category = EnumField('Category of skill', SkillCategory, mandatory=False)
+    type = EnumField("Type of skill", SkillType, mandatory=True, default=SkillType.UNKNOWN)
+    target = EnumField("Target of the skill", SkillTarget, mandatory=True, default=SkillTarget.UNKNOWN)
+
+    statistics = DictField("Dict of statistics", mandatory=False)
+    character_classes = ListField("List of CharacterClass ids that can use this move", mandatory=False)
+    category = EnumField("Category of skill", SkillCategory, mandatory=False)
 
 
 class Character(BaseRPGObject):
-    """ Creature or person """
-    base_stats = DictField('Base statistics')
+    """Creature or person"""
 
-    character_classes = ListField('List of CharacterClasses id', mandatory=False)
-    skills = ListField('List of Skills id', mandatory=False)
-    next_forms = ListField('List of the next forms of the character', mandatory=False)
-    locations = ListField('List of locations of the character', mandatory=False)
+    base_stats = DictField("Base statistics")
+
+    character_classes = ListField("List of CharacterClasses id", mandatory=False)
+    skills = ListField("List of Skills id", mandatory=False)
+    next_forms = ListField("List of the next forms of the character", mandatory=False)
+    locations = ListField("List of locations of the character", mandatory=False)
 
 
 class CollectableItem(BaseRPGObject):
-    """ Object that you can find in the game """
-    to_use = BoolField('The object can be used at anytime', mandatory=False)
-    to_carry = BoolField('The object must be carried to be used (like in battle)', mandatory=False)
-    category = StringField('Category of the item', mandatory=False)
-    locations = ListField('List of locations of the item', mandatory=False)
+    """Object that you can find in the game"""
+
+    to_use = BoolField("The object can be used at anytime", mandatory=False)
+    to_carry = BoolField("The object must be carried to be used (like in battle)", mandatory=False)
+    category = StringField("Category of the item", mandatory=False)
+    locations = ListField("List of locations of the item", mandatory=False)
 
 
 class CapRPG(CapCollection):
     """
     Capability for rpg games to list characters, objects, etc.
     """
+
     def iter_resources(self, objs, split_path):
         """
         Iter reources.

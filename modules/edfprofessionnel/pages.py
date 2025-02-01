@@ -35,12 +35,12 @@ from woob.tools.json import json
 class LoginPage(JsonPage):
     def get_data(self, login, password):
         login_data = self.doc
-        login_data['callbacks'][0]['input'][0]['value'] = login
-        login_data['callbacks'][1]['input'][0]['value'] = password
+        login_data["callbacks"][0]["input"][0]["value"] = login
+        login_data["callbacks"][1]["input"][0]["value"] = password
         return login_data
 
     def get_error_message(self):
-        return Lower(Dict('callbacks/2/output/0/value', default=''))(self.doc)
+        return Lower(Dict("callbacks/2/output/0/value", default=""))(self.doc)
 
 
 class AuthPage(RawPage):
@@ -58,10 +58,10 @@ class BaseRedirectPage(HTMLPage):
             Coalesce(
                 CleanText('//script[contains(text(), "handleRedirect")]'),
                 CleanText('//script[contains(text(), "window.location.replace")]'),
-                default=''
+                default="",
             ),
             r"(?:handleRedirect|window\.location\.replace)\('(.*?)'\)",
-            default=NotAvailable
+            default=NotAvailable,
         )(self.doc)
 
 
@@ -87,8 +87,7 @@ class MaintenancePage(HTMLPage):
 class ClientSpace(BaseRedirectPage):
     def get_aura_config(self):
         aura_config = Regexp(
-            CleanText('//script[contains(text(), "token")]'),
-            r'auraConfig = (\{.*?\})(;|,\s*cn =.*;)'
+            CleanText('//script[contains(text(), "token")]'), r"auraConfig = (\{.*?\})(;|,\s*cn =.*;)"
         )(self.doc)
         return json.loads(aura_config)
 
@@ -99,15 +98,15 @@ class ClientPremiumSpace(ClientSpace):
 
 class CnicePage(HTMLPage):
     def get_frontdoor_url(self):
-        return Regexp(Attr('//head/meta[@http-equiv="Refresh"]', 'content'), r'URL=(.*)')(self.doc)
+        return Regexp(Attr('//head/meta[@http-equiv="Refresh"]', "content"), r"URL=(.*)")(self.doc)
 
     def handle_redirect(self):
-        return Regexp(Attr('//head/meta[@http-equiv="Refresh"]', 'content'), r'URL=(.*)')(self.doc)
+        return Regexp(Attr('//head/meta[@http-equiv="Refresh"]', "content"), r"URL=(.*)")(self.doc)
 
 
 class AuthenticationErrorPage(HTMLPage):
     def is_here(self):
-        return 'problem logging in' in Lower('//h2[@id="header"]')(self.doc)
+        return "problem logging in" in Lower('//h2[@id="header"]')(self.doc)
 
     def get_error_message(self):
         return CleanText('//div[@id="content"]/form/p')(self.doc)
@@ -119,55 +118,53 @@ class AuraPage(LoggedPage, JsonPage):
     def build_doc(self, text):
         doc = super(AuraPage, self).build_doc(text)
 
-        if doc['actions'][0]['id'] == '685;a':  # this is the code when we get documents
+        if doc["actions"][0]["id"] == "685;a":  # this is the code when we get documents
             # they are also encoded in json
-            value = doc['actions'][1]['returnValue']
+            value = doc["actions"][1]["returnValue"]
             if value is None:
-                return {'factures': []}
+                return {"factures": []}
             return json.loads(value)
 
         return doc
 
     def get_subscriber(self):
-        return Format(
-            "%s %s",
-            Dict('actions/0/returnValue/FirstName'),
-            Dict('actions/0/returnValue/LastName')
-        )(self.doc)
+        return Format("%s %s", Dict("actions/0/returnValue/FirstName"), Dict("actions/0/returnValue/LastName"))(
+            self.doc
+        )
 
     @method
     class get_profile(ItemElement):
         klass = Person
 
-        obj_firstname = CleanText(Dict('actions/0/returnValue/FirstName'))
-        obj_lastname = CleanText(Dict('actions/0/returnValue/LastName'))
-        obj_email = CleanText(Dict('actions/0/returnValue/Email'))
-        obj_mobile = CleanText(Dict('actions/0/returnValue/MobilePhone'))
-        obj_gender = CleanText(Dict('actions/0/returnValue/Salutation'))
+        obj_firstname = CleanText(Dict("actions/0/returnValue/FirstName"))
+        obj_lastname = CleanText(Dict("actions/0/returnValue/LastName"))
+        obj_email = CleanText(Dict("actions/0/returnValue/Email"))
+        obj_mobile = CleanText(Dict("actions/0/returnValue/MobilePhone"))
+        obj_gender = CleanText(Dict("actions/0/returnValue/Salutation"))
 
     @method
     class fill_profile(ItemElement):
         class obj_postal_address(ItemElement):
             klass = PostalAddress
 
-            obj_full_address = Env('full_address', default=NotAvailable)
-            obj_street = Env('street', default=NotAvailable)
-            obj_postal_code = Env('postal_code', default=NotAvailable)
-            obj_city = Env('city', default=NotAvailable)
+            obj_full_address = Env("full_address", default=NotAvailable)
+            obj_street = Env("street", default=NotAvailable)
+            obj_postal_code = Env("postal_code", default=NotAvailable)
+            obj_city = Env("city", default=NotAvailable)
 
             def parse(self, obj):
-                full_address = CleanText(Dict('actions/0/returnValue/energyMeters/0/postalAddress'))(self)
-                self.env['full_address'] = full_address
-                m = re.search(r'(\d{1,4}.*) (\d{5}) (.*)', full_address)
+                full_address = CleanText(Dict("actions/0/returnValue/energyMeters/0/postalAddress"))(self)
+                self.env["full_address"] = full_address
+                m = re.search(r"(\d{1,4}.*) (\d{5}) (.*)", full_address)
                 if m:
                     street, postal_code, city = m.groups()
-                    self.env['street'] = street
-                    self.env['postal_code'] = postal_code
-                    self.env['city'] = city
+                    self.env["street"] = street
+                    self.env["postal_code"] = postal_code
+                    self.env["city"] = city
 
     @method
     class iter_subscriptions(DictElement):
-        item_xpath = 'actions/0/returnValue/energyMeters'
+        item_xpath = "actions/0/returnValue/energyMeters"
 
         # here is not a list of subscription, but a list of energy point,
         # and several of them can be related to a same subscription,
@@ -176,51 +173,51 @@ class AuraPage(LoggedPage, JsonPage):
 
         def condition(self):
             # returnValue key contains null instead of a dict when there is no subscription
-            return bool(Dict('actions/0/returnValue')(self))
+            return bool(Dict("actions/0/returnValue")(self))
 
         class item(ItemElement):
             klass = Subscription
 
-            obj_id = CleanText(Dict('contractReference'))
-            obj_label = CleanText(Dict('siteName'))
-            obj_subscriber = Env('subscriber')
-            obj__moe_idpe = CleanText(Dict('ids/epMoeId'))
+            obj_id = CleanText(Dict("contractReference"))
+            obj_label = CleanText(Dict("siteName"))
+            obj_subscriber = Env("subscriber")
+            obj__moe_idpe = CleanText(Dict("ids/epMoeId"))
 
     @method
     class iter_documents(DictElement):
-        item_xpath = 'factures'
+        item_xpath = "factures"
 
         class item(ItemElement):
             klass = Bill
 
-            obj__id = CleanText(Dict('identiteFacture/identifiant'))
-            obj_id = Format('%s_%s', Env('subid'), Field('_id'))
+            obj__id = CleanText(Dict("identiteFacture/identifiant"))
+            obj_id = Format("%s_%s", Env("subid"), Field("_id"))
             obj_total_price = CleanDecimal.SI(
-                Dict('montantFacture/montantTTC', default=NotAvailable),
+                Dict("montantFacture/montantTTC", default=NotAvailable),
                 default=NotAvailable,
             )
             obj_pre_tax_price = CleanDecimal.SI(
-                Dict('montantFacture/montantHT', default=NotAvailable),
+                Dict("montantFacture/montantHT", default=NotAvailable),
                 default=NotAvailable,
             )
-            obj_vat = CleanDecimal.SI(Dict('taxesFacture/montantTVA', default=NotAvailable), default=NotAvailable)
-            obj_date = Date(Dict('caracteristiquesFacture/dateLegaleFacture'), dayfirst=True)
-            obj_duedate = Date(Dict('caracteristiquesFacture/dateEcheanceFacture'), dayfirst=True)
-            obj_format = 'pdf'
+            obj_vat = CleanDecimal.SI(Dict("taxesFacture/montantTVA", default=NotAvailable), default=NotAvailable)
+            obj_date = Date(Dict("caracteristiquesFacture/dateLegaleFacture"), dayfirst=True)
+            obj_duedate = Date(Dict("caracteristiquesFacture/dateEcheanceFacture"), dayfirst=True)
+            obj_format = "pdf"
 
             def obj_label(self):
-                return 'Facture du %s' % Field('date')(self).strftime('%d/%m/%Y')
+                return "Facture du %s" % Field("date")(self).strftime("%d/%m/%Y")
 
             def obj__message(self):
                 # message is needed to download file
                 message = {
-                    'actions': [
+                    "actions": [
                         {
-                            'id': '864;a',
-                            'descriptor': 'apex://CNICE_VFC160_ListeFactures/ACTION$getFacturePdfLink',
-                            'callingDescriptor': 'markup://c:CNICE_LC232_ListeFactures2',
-                            'params': {
-                                'factureId': Field('_id')(self),
+                            "id": "864;a",
+                            "descriptor": "apex://CNICE_VFC160_ListeFactures/ACTION$getFacturePdfLink",
+                            "callingDescriptor": "markup://c:CNICE_LC232_ListeFactures2",
+                            "params": {
+                                "factureId": Field("_id")(self),
                             },
                         },
                     ],
@@ -228,7 +225,7 @@ class AuraPage(LoggedPage, JsonPage):
                 return message
 
     def get_id_for_download(self):
-        return self.doc['actions'][0]['returnValue']
+        return self.doc["actions"][0]["returnValue"]
 
 
 class PdfPage(LoggedPage, RawPage):

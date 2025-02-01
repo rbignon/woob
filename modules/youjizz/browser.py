@@ -25,18 +25,16 @@ from .pages.index import IndexPage
 from .pages.video import VideoPage
 
 
-__all__ = ['YoujizzBrowser']
+__all__ = ["YoujizzBrowser"]
 
 
 class YoujizzBrowser(PagesBrowser):
-    BASEURL = 'https://www.youjizz.com'
+    BASEURL = "https://www.youjizz.com"
 
-    index = URL(r'/?(index.php)?$',
-                r'/page/\d+.html',
-                IndexPage)
-    search = URL(r'/search/(?P<pattern>.+)-(?P<pagenum>\d+).html', IndexPage)
-    video = URL(r'/videos/(?P<id>.*).html', VideoPage)
-    video_url = URL(r'/videos/embed/\d+', VideoPage)
+    index = URL(r"/?(index.php)?$", r"/page/\d+.html", IndexPage)
+    search = URL(r"/search/(?P<pattern>.+)-(?P<pagenum>\d+).html", IndexPage)
+    video = URL(r"/videos/(?P<id>.*).html", VideoPage)
+    video_url = URL(r"/videos/embed/\d+", VideoPage)
 
     @video.id2url
     def get_video(self, url, video=None):
@@ -47,7 +45,7 @@ class YoujizzBrowser(PagesBrowser):
 
     def search_videos(self, pattern):
         if len(pattern) < 3:
-            raise UserError('Pattern to short (min length : 3 characters)')
+            raise UserError("Pattern to short (min length : 3 characters)")
 
         self.search.go(pattern=pattern, pagenum=1)
         assert self.search.is_here(pattern=pattern, pagenum=1)

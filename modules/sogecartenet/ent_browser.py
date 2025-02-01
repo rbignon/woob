@@ -32,7 +32,7 @@ from .ent_pages import AccountsPage, AccountsXlsPage, AccueilPage, DeferredQuery
 
 
 class SogecarteEntrepriseBrowser(SeleniumBrowser):
-    BASEURL = 'https://www.sogecartenet.fr'
+    BASEURL = "https://www.sogecartenet.fr"
 
     # Required so the input for the transaction history date list do not overlap vertically
     WINDOW_SIZE = (1920, 1080)
@@ -42,19 +42,19 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
 
     DRIVER = webdriver.Chrome
 
-    login = URL(r'/gestionnaire-ihm/SOCGEN/FRA', LoginPage)
-    accueil = URL(r'/gestionnaire-ihm/SOCGEN/FRA#!ACCUEIL', AccueilPage)
-    account_list = URL(r'/gestionnaire-ihm/SOCGEN/FRA#!GESTION_PARC_CARTES', AccountsPage)
-    history = URL(r'/gestionnaire-ihm/SOCGEN/FRA#!DEPENSES_ENTREPRISE', HistoryPage)
+    login = URL(r"/gestionnaire-ihm/SOCGEN/FRA", LoginPage)
+    accueil = URL(r"/gestionnaire-ihm/SOCGEN/FRA#!ACCUEIL", AccueilPage)
+    account_list = URL(r"/gestionnaire-ihm/SOCGEN/FRA#!GESTION_PARC_CARTES", AccountsPage)
+    history = URL(r"/gestionnaire-ihm/SOCGEN/FRA#!DEPENSES_ENTREPRISE", HistoryPage)
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        self.username = self.config['login'].get()
-        self.password = self.config['password'].get()
+        self.username = self.config["login"].get()
+        self.password = self.config["password"].get()
         # Safe way to create a temporary folder.
         self.dl_folder = tempfile.mkdtemp()
-        kwargs['preferences'] = {
-            'download.default_directory': self.dl_folder,
+        kwargs["preferences"] = {
+            "download.default_directory": self.dl_folder,
         }
         super(SogecarteEntrepriseBrowser, self).__init__(*args, **kwargs)
         # This is to avoid errors if the day changes while parsing.
@@ -71,21 +71,25 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
 
         self.page.login(self.username, self.password)
 
-        self.wait_until(AnyCondition(
-            IsHereCondition(self.accueil),
-            VisibleXPath('//div[contains(@class, "Notification-error-message")]'),
-            VisibleXPath('//div[contains(@class, "new-password")]'),
-        ))
+        self.wait_until(
+            AnyCondition(
+                IsHereCondition(self.accueil),
+                VisibleXPath('//div[contains(@class, "Notification-error-message")]'),
+                VisibleXPath('//div[contains(@class, "new-password")]'),
+            )
+        )
 
         if not self.accueil.is_here():
-            assert self.login.is_here(), 'We landed on an unknown page'
+            assert self.login.is_here(), "We landed on an unknown page"
             error = self.page.get_error()
-            if any((
-                'Votre compte a été désactivé' in error,
-                'Votre compte est bloqué' in error,
-            )):
+            if any(
+                (
+                    "Votre compte a été désactivé" in error,
+                    "Votre compte est bloqué" in error,
+                )
+            ):
                 raise BrowserUserBanned()
-            if 'Votre mot de passe a expiré' in error:
+            if "Votre mot de passe a expiré" in error:
                 raise BrowserPasswordExpired(error)
             raise BrowserIncorrectPassword(error)
 
@@ -93,7 +97,7 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
         # We don't know the name of the file, but we know the folder.
         # The folder is empty (since we delete every file after using them),
         # so we just try to find all files in that folder and we are going to find only one.
-        file_path = ''
+        file_path = ""
         for file in os.listdir(self.dl_folder):
             if file.endswith(suffix) and file.startswith(prefix):
                 file_path = os.path.join(self.dl_folder, file)
@@ -118,16 +122,20 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
         # This download the file with the list of all accounts in a `.xls`
         self.page.download_accounts()
 
-        file_path = self.retry_find_file_path('details_carte', '.xls')
-        assert file_path, 'Could not find the downloaded file'
+        file_path = self.retry_find_file_path("details_carte", ".xls")
+        assert file_path, "Could not find the downloaded file"
 
         # We can't force change the SeleniumBrowser's page (self.page = ...)
-        page = AccountsXlsPage(self, file_path, FakeResponse(
-            url=self.url,
-            text='',
-            content=b'',
-            encoding='latin-1',
-        ))
+        page = AccountsXlsPage(
+            self,
+            file_path,
+            FakeResponse(
+                url=self.url,
+                text="",
+                content=b"",
+                encoding="latin-1",
+            ),
+        )
 
         for acc in page.iter_accounts():
             yield acc
@@ -142,7 +150,8 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
         self.page.go_transactions_list_tab()
 
         if (
-            coming and self.selected_account  # iter_history was done before iter_coming, need to re-select account
+            coming
+            and self.selected_account  # iter_history was done before iter_coming, need to re-select account
             or (not self.selected_account or self.selected_account != account.id)
         ):
             # The input with the information of the selected account can't
@@ -164,25 +173,31 @@ class SogecarteEntrepriseBrowser(SeleniumBrowser):
                 # deferred query, deferred queries can be avoided by asking for less history
                 # here we simply retry with the xpath index of the date decreased by 1 essentialy
                 # decreasing the length of history requested by one month
-                self.logger.warning('Defered Query detected, retrying')
+                self.logger.warning("Defered Query detected, retrying")
                 index_last_date -= 1
                 is_retry = True
             else:
                 break
         else:
-            self.logger.warning('Could not get transactions without deferred query for account %s' % self.selected_account)
+            self.logger.warning(
+                "Could not get transactions without deferred query for account %s" % self.selected_account
+            )
 
         if successful_download:
-            file_path = self.retry_find_file_path('requete_cumul', '.xls')
-            assert file_path, 'Could not find the downloaded file'
+            file_path = self.retry_find_file_path("requete_cumul", ".xls")
+            assert file_path, "Could not find the downloaded file"
 
             # We can't force change the SeleniumBrowser's page (self.page = ...)
-            page = HistoryXlsPage(self, file_path, FakeResponse(
-                url=self.url,
-                text='',
-                content=b'',
-                encoding='latin-1',
-            ))
+            page = HistoryXlsPage(
+                self,
+                file_path,
+                FakeResponse(
+                    url=self.url,
+                    text="",
+                    content=b"",
+                    encoding="latin-1",
+                ),
+            )
 
             os.remove(file_path)
 

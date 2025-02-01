@@ -21,13 +21,13 @@ from ..browser import AmazonBrowser
 
 
 class AmazonEnBrowser(AmazonBrowser):
-    BASEURL = 'https://www.amazon.com'
-    CURRENCY = '$'
-    LANGUAGE = 'en-US'
+    BASEURL = "https://www.amazon.com"
+    CURRENCY = "$"
+    LANGUAGE = "en-US"
 
-    L_SIGNIN = 'Sign in'
-    L_LOGIN = 'Login'
-    L_SUBSCRIBER = 'Name: (.*) Edit E'
+    L_SIGNIN = "Sign in"
+    L_LOGIN = "Login"
+    L_SUBSCRIBER = "Name: (.*) Edit E"
 
     UNSUPPORTED_TWOFA_MESSAGE = (
         "This strong authentication method is not supported. "
@@ -35,9 +35,9 @@ class AmazonEnBrowser(AmazonBrowser):
     )
 
     WRONGPASS_MESSAGES = [
-        'Your password is incorrect',
-        'We cannot find an account with that email address',
-        'Enter a valid email or mobile number',
-        'We cannot find an account with that mobile number',
+        "Your password is incorrect",
+        "We cannot find an account with that email address",
+        "Enter a valid email or mobile number",
+        "We cannot find an account with that mobile number",
     ]
     WRONG_CAPTCHA_RESPONSE = "Enter the characters as they are given in the challenge."

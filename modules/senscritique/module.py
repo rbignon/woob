@@ -24,23 +24,22 @@ from .browser import SenscritiqueBrowser
 from .calendar import SensCritiquenCalendarEvent
 
 
-__all__ = ['SenscritiqueModule']
+__all__ = ["SenscritiqueModule"]
 
 
 class SenscritiqueModule(Module, CapCalendarEvent):
-    NAME = 'senscritique'
-    DESCRIPTION = u'senscritique website'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "senscritique"
+    DESCRIPTION = "senscritique website"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
     ASSOCIATED_CATEGORIES = [CATEGORIES.TELE]
     BROWSER = SenscritiqueBrowser
 
     def search_events(self, query):
         if self.has_matching_categories(query):
-            return self.list_events(query.start_date,
-                                    query.end_date)
+            return self.list_events(query.start_date, query.end_date)
 
     def list_events(self, date_from, date_to=None):
         items = []

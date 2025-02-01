@@ -27,21 +27,21 @@ from .pages import PageFile, PageUpload
 
 
 class JirafeauBrowser(PagesBrowser):
-    BASEURL = 'https://jirafeau.net/'
+    BASEURL = "https://jirafeau.net/"
 
-    dl_page = URL(r'f.php\?h=(?P<id>[^&%]+)&d=1$')
-    file_page = URL(r'f.php\?h=(?P<id>[^&%]+)$', PageFile)
-    del_page = URL(r'f.php\?h=(?P<id>[^&%]+)&d=(?P<edit_key>[^&%]{2,})$')
-    upload_page = URL('$', PageUpload)
+    dl_page = URL(r"f.php\?h=(?P<id>[^&%]+)&d=1$")
+    file_page = URL(r"f.php\?h=(?P<id>[^&%]+)$", PageFile)
+    del_page = URL(r"f.php\?h=(?P<id>[^&%]+)&d=(?P<edit_key>[^&%]{2,})$")
+    upload_page = URL("$", PageUpload)
 
     max_size = 0
 
     age_keyword = {
-        60: 'minute',
-        3600: 'hour',
-        86400: 'day',
-        7 * 86400: 'week',
-        28 * 86400: 'month',
+        60: "minute",
+        3600: "hour",
+        86400: "day",
+        7 * 86400: "week",
+        28 * 86400: "month",
     }
 
     def __init__(self, base_url, *args, **kwargs):
@@ -51,15 +51,12 @@ class JirafeauBrowser(PagesBrowser):
     def recognize(self, url):
         match = self.dl_page.match(url) or self.file_page.match(url) or self.del_page.match(url)
         if match:
-            _id = match.group('id')
+            _id = match.group("id")
+            return {"id": _id, "url": self.file_page.build(id=_id)}
+        elif re.match("[a-zA-Z0-9_-]+$", url):
             return {
-                'id': _id,
-                'url': self.file_page.build(id=_id)
-            }
-        elif re.match('[a-zA-Z0-9_-]+$', url):
-            return {
-                'id': url,
-                'url': self.file_page.build(id=url),
+                "id": url,
+                "url": self.file_page.build(id=url),
             }
 
     def exists(self, _id):
@@ -68,13 +65,13 @@ class JirafeauBrowser(PagesBrowser):
         return self.page.has_error()
 
     def download(self, _id):
-        if not _id.startswith('http'):
+        if not _id.startswith("http"):
             _id = self.dl_page.build(id=_id)
         return self.open(_id).content
 
     def check_error(self, response):
-        if response.text.startswith('Error'):
-            raise Exception('Site returned an error: %s' % response.text)
+        if response.text.startswith("Error"):
+            raise Exception("Site returned an error: %s" % response.text)
 
     def post(self, contents, title=None, max_age=None, one_time=False):
         max_size, async_size = self.get_max_sizes()
@@ -88,37 +85,35 @@ class JirafeauBrowser(PagesBrowser):
     def _basic_post(self, contents, title=None, max_age=None, one_time=False):
         params = {}
         if one_time:
-            params['one_time_download'] = 1
-        params['time'] = self.age_keyword[max_age]
+            params["one_time_download"] = 1
+        params["time"] = self.age_keyword[max_age]
 
-        files = {
-            'file': (title or '', contents)
-        }
+        files = {"file": (title or "", contents)}
 
-        response = self.open('script.php', data=params, files=files)
+        response = self.open("script.php", data=params, files=files)
         self.check_error(response)
 
         _id, edit_key = response.text.split()
         return {
-            'id': _id,
-            'edit_key': edit_key,
-            'page_url': self.file_page.build(id=_id),
-            'download_url': self.dl_page.build(id=_id),
-            'delete_url': self.del_page.build(id=_id, edit_key=edit_key),
+            "id": _id,
+            "edit_key": edit_key,
+            "page_url": self.file_page.build(id=_id),
+            "download_url": self.dl_page.build(id=_id),
+            "delete_url": self.del_page.build(id=_id, edit_key=edit_key),
         }
 
     def _chunked_post(self, contents, title=None, max_age=None, one_time=False, chunk_size=None):
-        title = title or ''
+        title = title or ""
 
         params = {}
         if one_time:
-            params['one_time_download'] = 1
-        params['time'] = self.age_keyword[max_age]
-        params['filename'] = title
+            params["one_time_download"] = 1
+        params["time"] = self.age_keyword[max_age]
+        params["filename"] = title
 
-        response = self.open('script.php?init_async', data=params)
+        response = self.open("script.php?init_async", data=params)
         self.check_error(response)
-        _id, edit_key = response.text.split('\n')
+        _id, edit_key = response.text.split("\n")
 
         chunk_size = chunk_size or (16 << 20)
         chunks = int(math.ceil(len(contents) / chunk_size))
@@ -126,33 +121,33 @@ class JirafeauBrowser(PagesBrowser):
         while contents:
             data, contents = contents[:chunk_size], contents[chunk_size:]
             params = {
-                'ref': _id,
-                'code': edit_key,
+                "ref": _id,
+                "code": edit_key,
             }
             files = {
-                'data': (title, data),
+                "data": (title, data),
             }
 
-            self.logger.debug('uploading part %d/%d', i, chunks)
-            response = self.open('script.php?push_async', data=params, files=files)
+            self.logger.debug("uploading part %d/%d", i, chunks)
+            response = self.open("script.php?push_async", data=params, files=files)
             self.check_error(response)
-            edit_key = response.text.split('\n')[0]
+            edit_key = response.text.split("\n")[0]
             i += 1
 
         params = {
-            'ref': _id,
-            'code': edit_key,
+            "ref": _id,
+            "code": edit_key,
         }
-        response = self.open('script.php?end_async', data=params)
+        response = self.open("script.php?end_async", data=params)
         self.check_error(response)
-        _id, edit_key, password = response.text.split('\n')
+        _id, edit_key, password = response.text.split("\n")
 
         return {
-            'id': _id,
-            'edit_key': edit_key,
-            'page_url': self.file_page.build(id=_id),
-            'download_url': self.dl_page.build(id=_id),
-            'delete_url': self.del_page.build(id=_id, edit_key=edit_key),
+            "id": _id,
+            "edit_key": edit_key,
+            "page_url": self.file_page.build(id=_id),
+            "download_url": self.dl_page.build(id=_id),
+            "delete_url": self.del_page.build(id=_id, edit_key=edit_key),
         }
 
     def get_max_sizes(self):

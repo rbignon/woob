@@ -40,13 +40,45 @@ from .base import _NO_DEFAULT, Filter, FilterError, ItemNotFound, _Filter, debug
 
 
 __all__ = [
-    'Filter', 'FilterError', 'RegexpError', 'FormatError',
-    'AsyncLoad', 'Async', 'Base', 'Decode', 'Env', 'RawText',
-    'CleanText', 'Lower', 'Upper', 'Title', 'Currency', 'NumberFormatError',
-    'CleanDecimal', 'Slugify', 'Type', 'Field', 'Regexp', 'Map', 'MapIn',
-    'DateTime', 'FromTimestamp', 'Date', 'DateGuesser', 'Time', 'Duration',
-    'MultiFilter', 'CombineDate', 'Format', 'BrowserURL', 'Join', 'MultiJoin',
-    'Eval', 'QueryValue', 'Coalesce', 'CountryCode',
+    "Filter",
+    "FilterError",
+    "RegexpError",
+    "FormatError",
+    "AsyncLoad",
+    "Async",
+    "Base",
+    "Decode",
+    "Env",
+    "RawText",
+    "CleanText",
+    "Lower",
+    "Upper",
+    "Title",
+    "Currency",
+    "NumberFormatError",
+    "CleanDecimal",
+    "Slugify",
+    "Type",
+    "Field",
+    "Regexp",
+    "Map",
+    "MapIn",
+    "DateTime",
+    "FromTimestamp",
+    "Date",
+    "DateGuesser",
+    "Time",
+    "Duration",
+    "MultiFilter",
+    "CombineDate",
+    "Format",
+    "BrowserURL",
+    "Join",
+    "MultiJoin",
+    "Eval",
+    "QueryValue",
+    "Coalesce",
+    "CountryCode",
 ]
 
 
@@ -105,7 +137,7 @@ class Async(Filter):
 
     def loaded_page(self, item):
         result = item.loaders[self.name].result()
-        assert result.page is not None, 'The loaded url %s hasn\'t been matched by an URL object' % result.url
+        assert result.page is not None, "The loaded url %s hasn't been matched by an URL object" % result.url
         return result.page
 
 
@@ -119,7 +151,7 @@ class Base(Filter):
     def __call__(self, item):
         base = self.select(self.base, item)
         if isinstance(base, list):
-            assert len(base) == 1, 'If using a list, there must be one element only'
+            assert len(base) == 1, "If using a list, there must be one element only"
             base = base[0]
         return self.select(self.selector, base)
 
@@ -140,7 +172,7 @@ class Decode(Filter):
     """
 
     def __call__(self, item):
-        self.encoding = item.page.ENCODING if item.page.ENCODING else 'utf-8'
+        self.encoding = item.page.ENCODING if item.page.ENCODING else "utf-8"
         return self.filter(self.select(self.selector, item))
 
     @debug()
@@ -148,10 +180,12 @@ class Decode(Filter):
         try:
             try:
                 from urllib.parse import unquote
+
                 txt = unquote(txt, self.encoding)
             except ImportError:
                 from urllib import unquote
-                txt = unquote(txt.encode('ascii')).decode(self.encoding)
+
+                txt = unquote(txt.encode("ascii")).decode(self.encoding)
         except (UnicodeDecodeError, UnicodeEncodeError):
             pass
 
@@ -174,7 +208,7 @@ class Env(_Filter):
         try:
             return item.env[self.name]
         except KeyError:
-            return self.default_or_raise(ItemNotFound('Environment variable %s not found' % self.name))
+            return self.default_or_raise(ItemNotFound("Environment variable %s not found" % self.name))
 
 
 class RawText(Filter):
@@ -195,7 +229,7 @@ class RawText(Filter):
     @debug()
     def filter(self, el):
         if isinstance(el, (tuple, list)):
-            return ' '.join([self.filter(e) for e in el])
+            return " ".join([self.filter(e) for e in el])
 
         if self.children:
             text = el.text_content()
@@ -233,7 +267,17 @@ class CleanText(Filter):
     True
     """
 
-    def __init__(self, selector=None, symbols='', replace=[], children=True, newlines=True, transliterate=False, normalize='NFC', **kwargs):
+    def __init__(
+        self,
+        selector=None,
+        symbols="",
+        replace=[],
+        children=True,
+        newlines=True,
+        transliterate=False,
+        normalize="NFC",
+        **kwargs,
+    ):
         """
         :param symbols: list of strings to remove from text
         :type symbols: list
@@ -260,14 +304,11 @@ class CleanText(Filter):
     @debug()
     def filter(self, txt):
         if txt is None:
-            return self.default_or_raise(FilterError('The text cannot be None'))
+            return self.default_or_raise(FilterError("The text cannot be None"))
         elif isinstance(txt, int):
             txt = str(txt)
         elif isinstance(txt, (tuple, list)):
-            txt = ' '.join(
-                self.clean(item, newlines=self.newlines, children=self.children)
-                for item in txt
-            )
+            txt = " ".join(self.clean(item, newlines=self.newlines, children=self.children) for item in txt)
 
         txt = self.clean(txt, self.children, self.newlines, self.normalize, self.transliterate)
         txt = self.remove(txt, self.symbols)
@@ -275,7 +316,7 @@ class CleanText(Filter):
         return txt
 
     @classmethod
-    def clean(cls, txt, children=True, newlines=True, normalize='NFC', transliterate=False):
+    def clean(cls, txt, children=True, newlines=True, normalize="NFC", transliterate=False):
         """
         Cleans the text. The children argument is ignored with Selenium.
         """
@@ -283,10 +324,10 @@ class CleanText(Filter):
             if children:
                 txt = list(txt.itertext())
             else:
-                txt = list(txt.xpath('./text()'))
-            txt = ' '.join(txt)  # 'foo   bar '
+                txt = list(txt.xpath("./text()"))
+            txt = " ".join(txt)  # 'foo   bar '
         elif not isinstance(txt, str):
-            txt = ' '.join(txt.itertext())
+            txt = " ".join(txt.itertext())
 
         return clean_text(
             txt,
@@ -298,7 +339,7 @@ class CleanText(Filter):
     @classmethod
     def remove(cls, txt, symbols):
         for symbol in symbols:
-            txt = txt.replace(symbol, '')
+            txt = txt.replace(symbol, "")
         return txt.strip()
 
     @classmethod
@@ -348,6 +389,7 @@ class CountryCode(CleanText):
     """
     Filter to get the country ISO 3166-1 alpha-2 code from the country name
     """
+
     @debug()
     def filter(self, txt: str) -> Any:
         """Get the country code from the name of the country
@@ -368,7 +410,7 @@ class CountryCode(CleanText):
             alpha_2_code = pycountry.countries.lookup(txt).alpha_2.lower()
         except LookupError:
             # Country not found
-            return self.default_or_raise(FormatError('Country not recognized: %r' % txt))
+            return self.default_or_raise(FormatError("Country not recognized: %r" % txt))
 
         return alpha_2_code
 
@@ -407,9 +449,13 @@ class CleanDecimal(CleanText):
         self.legacy = legacy
         if not legacy:
             thousands_sep, decimal_sep = self.replace_dots
-            self.matching = re.compile(r'([+-]?)\s*(\d[\d%s%s]*|%s\d+)' % tuple(map(re.escape, (thousands_sep, decimal_sep, decimal_sep))))
-            self.thousand_check = re.compile(r'^[+-]?\d{1,3}(%s\d{3})*(%s\d*)?$' % tuple(map(re.escape, (thousands_sep, decimal_sep))))
-            self.is_scientific_notation = re.compile(r'([+-]?)(\d+(?:[.,]\d*)?[eE][+-]?\d+)')
+            self.matching = re.compile(
+                r"([+-]?)\s*(\d[\d%s%s]*|%s\d+)" % tuple(map(re.escape, (thousands_sep, decimal_sep, decimal_sep)))
+            )
+            self.thousand_check = re.compile(
+                r"^[+-]?\d{1,3}(%s\d{3})*(%s\d*)?$" % tuple(map(re.escape, (thousands_sep, decimal_sep)))
+            )
+            self.is_scientific_notation = re.compile(r"([+-]?)(\d+(?:[.,]\d*)?[eE][+-]?\d+)")
 
     @debug()
     def filter(self, text):
@@ -417,38 +463,38 @@ class CleanDecimal(CleanText):
             text = str(text)
 
         if empty(text):
-            return self.default_or_raise(FormatError('Unable to parse %r' % text))
+            return self.default_or_raise(FormatError("Unable to parse %r" % text))
 
         original_text = text = super(CleanDecimal, self).filter(text)
 
-        text = text.replace('\u2212', '-')
+        text = text.replace("\u2212", "-")
 
         if self.legacy:
             if self.replace_dots:
                 if type(self.replace_dots) is tuple:
                     thousands_sep, decimal_sep = self.replace_dots
                 else:
-                    thousands_sep, decimal_sep = '.', ','
-                text = text.replace(thousands_sep, '').replace(decimal_sep, '.')
+                    thousands_sep, decimal_sep = ".", ","
+                text = text.replace(thousands_sep, "").replace(decimal_sep, ".")
 
-            text = re.sub(r'[^\d\-\.]', '', text)
+            text = re.sub(r"[^\d\-\.]", "", text)
         else:
             thousands_sep, decimal_sep = self.replace_dots
 
             matches = self.matching.findall(text)
             if not matches:
-                return self.default_or_raise(NumberFormatError('There is no number to parse'))
+                return self.default_or_raise(NumberFormatError("There is no number to parse"))
             elif len(matches) > 1:
                 matches = self.is_scientific_notation.findall(text)
                 if not matches:
-                    return self.default_or_raise(NumberFormatError('There should be exactly one number to parse'))
+                    return self.default_or_raise(NumberFormatError("There should be exactly one number to parse"))
 
-            text = '%s%s' % (matches[0][0], matches[0][1].strip())
+            text = "%s%s" % (matches[0][0], matches[0][1].strip())
 
             if thousands_sep and thousands_sep in text and not self.thousand_check.match(text):
-                return self.default_or_raise(NumberFormatError('Thousands separator is misplaced in %r' % text))
+                return self.default_or_raise(NumberFormatError("Thousands separator is misplaced in %r" % text))
 
-            text = text.replace(thousands_sep, '').replace(decimal_sep, '.')
+            text = text.replace(thousands_sep, "").replace(decimal_sep, ".")
 
         try:
             v = Decimal(text)
@@ -458,9 +504,9 @@ class CleanDecimal(CleanText):
             if self.sign is not None:
                 if callable(self.sign):
                     v *= self.sign(original_text)
-                elif self.sign == '+':
+                elif self.sign == "+":
                     return abs(v)
-                elif self.sign == '-':
+                elif self.sign == "-":
                     return -abs(v)
                 else:
                     raise TypeError("'sign' should be a callable or a sign string")
@@ -468,34 +514,34 @@ class CleanDecimal(CleanText):
 
     @classmethod
     def US(cls, *args, **kwargs):
-        kwargs['legacy'] = False
-        kwargs['replace_dots'] = (',', '.')
+        kwargs["legacy"] = False
+        kwargs["replace_dots"] = (",", ".")
         return cls(*args, **kwargs)
 
     @classmethod
     def French(cls, *args, **kwargs):
-        kwargs['legacy'] = False
-        kwargs['replace_dots'] = (' ', ',')
+        kwargs["legacy"] = False
+        kwargs["replace_dots"] = (" ", ",")
         return cls(*args, **kwargs)
 
     @classmethod
     def SI(cls, *args, **kwargs):
-        kwargs['legacy'] = False
-        kwargs['replace_dots'] = (' ', '.')
+        kwargs["legacy"] = False
+        kwargs["replace_dots"] = (" ", ".")
         return cls(*args, **kwargs)
 
     @classmethod
     def Italian(cls, *args, **kwargs):
-        kwargs['legacy'] = False
-        kwargs['replace_dots'] = ('.', ',')
+        kwargs["legacy"] = False
+        kwargs["replace_dots"] = (".", ",")
         return cls(*args, **kwargs)
 
 
 class Slugify(Filter):
     @debug()
     def filter(self, label):
-        label = re.sub(r'[^A-Za-z0-9]', ' ', label.lower()).strip()
-        label = re.sub(r'\s+', '-', label)
+        label = re.sub(r"[^A-Za-z0-9]", " ", label.lower()).strip()
+        label = re.sub(r"\s+", "-", label)
         return label
 
 
@@ -530,13 +576,13 @@ class Type(Filter):
         if isinstance(txt, self.type_func):
             return txt
         if empty(txt):
-            return self.default_or_raise(FormatError('Unable to parse %r' % txt))
+            return self.default_or_raise(FormatError("Unable to parse %r" % txt))
         if self.minlen is not False and len(txt) <= self.minlen:
-            return self.default_or_raise(FormatError('Unable to parse %r' % txt))
+            return self.default_or_raise(FormatError("Unable to parse %r" % txt))
         try:
             return self.type_func(txt)
         except ValueError as e:
-            return self.default_or_raise(FormatError('Unable to parse %r: %s' % (txt, e)))
+            return self.default_or_raise(FormatError("Unable to parse %r: %s" % (txt, e)))
 
 
 class Field(_Filter):
@@ -556,13 +602,13 @@ class Field(_Filter):
         self.name = name
 
     def __call__(self, item):
-        return item.use_selector(getattr(item, 'obj_%s' % self.name), key=self._key)
+        return item.use_selector(getattr(item, "obj_%s" % self.name), key=self._key)
 
 
 # Based on nth from https://docs.python.org/2/library/itertools.html
 def nth(iterable, n, default=None):
     "Returns the nth item or a default value, n can be negative, or '*' for all"
-    if n == '*':
+    if n == "*":
         return iterable
     if n < 0:
         iterable = reversed(list(iterable))
@@ -572,11 +618,11 @@ def nth(iterable, n, default=None):
 
 def ordinal(n):
     "To have some readable debug information: '*' => all, 0 => 1st, 1 => 2nd..."
-    if n == '*':
-        return 'all'
+    if n == "*":
+        return "all"
     i = abs(n)
     n = n - 1 if n < 0 else n + 1
-    return str(n) + ('th' if i > 2 else ['st', 'nd', 'rd'][i])
+    return str(n) + ("th" if i > 2 else ["st", "nd", "rd"][i])
 
 
 class Regexp(Filter):
@@ -603,7 +649,7 @@ class Regexp(Filter):
     def __init__(self, selector=None, pattern=None, template=None, nth=0, flags=0, default=_NO_DEFAULT):
         super(Regexp, self).__init__(selector, default=default)
         if pattern is None:
-            raise FilterError('Missing pattern parameter')
+            raise FilterError("Missing pattern parameter")
         self.pattern = pattern
 
         self._regex = re.compile(pattern, flags)
@@ -625,20 +671,19 @@ class Regexp(Filter):
         """
 
         if isinstance(txt, (tuple, list)):
-            txt = ' '.join([t.strip() for t in txt.itertext()])
+            txt = " ".join([t.strip() for t in txt.itertext()])
 
         m = None
         try:
-            m = self._regex.search(txt) if self.nth == 0 else \
-                nth(self._regex.finditer(txt), self.nth)
+            m = self._regex.search(txt) if self.nth == 0 else nth(self._regex.finditer(txt), self.nth)
         except TypeError:
-            msg = '%r is not a string or bytes-like object' % txt
+            msg = "%r is not a string or bytes-like object" % txt
             return self.default_or_raise(RegexpError(msg))
 
         if not m:
             if len(txt) > 1024:
                 txt = txt[:1021] + "..."
-            msg = 'Unable to find %s %s in %r' % (ordinal(self.nth), self.pattern, txt)
+            msg = "Unable to find %s %s in %r" % (ordinal(self.nth), self.pattern, txt)
             return self.default_or_raise(RegexpError(msg))
 
         if isinstance(m, Iterator):
@@ -677,7 +722,7 @@ class Map(Filter):
         try:
             return self.map_dict[txt]
         except KeyError:
-            return self.default_or_raise(ItemNotFound('Unable to handle %r on %r' % (txt, self.map_dict)))
+            return self.default_or_raise(ItemNotFound("Unable to handle %r on %r" % (txt, self.map_dict)))
 
 
 class MapIn(Filter):
@@ -702,14 +747,22 @@ class MapIn(Filter):
                 if key in txt:
                     return self.map_dict[key]
 
-        return self.default_or_raise(ItemNotFound('Unable to handle %r on %r' % (txt, self.map_dict)))
+        return self.default_or_raise(ItemNotFound("Unable to handle %r on %r" % (txt, self.map_dict)))
 
 
 class DateTime(Filter):
     """Parse date and time."""
 
-    def __init__(self, selector=None, default=_NO_DEFAULT, translations=None,
-                 parse_func=parse_date, strict=True, tzinfo=None, **kwargs):
+    def __init__(
+        self,
+        selector=None,
+        default=_NO_DEFAULT,
+        translations=None,
+        parse_func=parse_date,
+        strict=True,
+        tzinfo=None,
+        **kwargs,
+    ):
         """
         :param dayfirst: if True, the day is the first element in the string to parse
         :type dayfirst: bool
@@ -734,8 +787,8 @@ class DateTime(Filter):
 
     @debug()
     def filter(self, txt):
-        if empty(txt) or txt == '':
-            return self.default_or_raise(FormatError('Unable to parse %r' % txt))
+        if empty(txt) or txt == "":
+            return self.default_or_raise(FormatError("Unable to parse %r" % txt))
         try:
             if self.translations:
                 for search, repl in self.translations:
@@ -744,7 +797,7 @@ class DateTime(Filter):
                 parse1 = self.parse_func(txt, default=self._default_date_1, **self.kwargs)
                 parse2 = self.parse_func(txt, default=self._default_date_2, **self.kwargs)
                 if parse1 != parse2:
-                    raise FilterError('Date is not complete')
+                    raise FilterError("Date is not complete")
             else:
                 parse1 = self.parse_func(txt, **self.kwargs)
 
@@ -753,7 +806,7 @@ class DateTime(Filter):
 
             return parse1
         except (ValueError, TypeError) as e:
-            return self.default_or_raise(FormatError('Unable to parse %r: %s' % (txt, e)))
+            return self.default_or_raise(FormatError("Unable to parse %r: %s" % (txt, e)))
 
 
 class FromTimestamp(Filter):
@@ -769,7 +822,7 @@ class FromTimestamp(Filter):
         try:
             ts = float(txt)
         except (TypeError, ValueError) as exc:
-            return self.default_or_raise(FormatError('Unable to parse %r: %s' % (txt, exc)))
+            return self.default_or_raise(FormatError("Unable to parse %r: %s" % (txt, exc)))
 
         if self.millis:
             ts /= 1000
@@ -777,14 +830,18 @@ class FromTimestamp(Filter):
         try:
             return datetime.datetime.fromtimestamp(ts, tz=self.tz)
         except TypeError as exc:
-            return self.default_or_raise(FormatError('Unable to parse %r: %s' % (txt, exc)))
+            return self.default_or_raise(FormatError("Unable to parse %r: %s" % (txt, exc)))
 
 
 class Date(DateTime):
     """Parse date."""
 
-    def __init__(self, selector=None, default=_NO_DEFAULT, translations=None, parse_func=parse_date, strict=True, **kwargs):
-        super(Date, self).__init__(selector, default=default, translations=translations, parse_func=parse_func, strict=strict, **kwargs)
+    def __init__(
+        self, selector=None, default=_NO_DEFAULT, translations=None, parse_func=parse_date, strict=True, **kwargs
+    ):
+        super(Date, self).__init__(
+            selector, default=default, translations=translations, parse_func=parse_func, strict=strict, **kwargs
+        )
 
     _default_date_1 = datetime.datetime(2100, 10, 10, 1, 1, 1)
     _default_date_2 = datetime.datetime(2120, 12, 12, 1, 1, 1)
@@ -792,7 +849,7 @@ class Date(DateTime):
     @debug()
     def filter(self, txt):
         datetime = super(Date, self).filter(txt)
-        if hasattr(datetime, 'date'):
+        if hasattr(datetime, "date"):
             return datetime.date()
         else:
             return datetime
@@ -812,11 +869,11 @@ class DateGuesser(Filter):
             date_guesser = self.select(date_guesser, item)
 
         if isinstance(values, str):
-            values = re.split('[/-]', values)
+            values = re.split("[/-]", values)
         if len(values) == 2:
             day, month = map(int, values)
         else:
-            raise FormatError('Unable to take (day, month) tuple from %r' % values)
+            raise FormatError("Unable to take (day, month) tuple from %r" % values)
         return date_guesser.guess_date(day, month, **self.kwargs)
 
 
@@ -824,8 +881,8 @@ class Time(Filter):
     """Parse time."""
 
     klass: type = datetime.time
-    _regexp = re.compile(r'(?P<hh>\d+)[:h]?(?P<mm>\d+)([:m](?P<ss>\d+))?')
-    kwargs = {'hour': 'hh', 'minute': 'mm', 'second': 'ss'}
+    _regexp = re.compile(r"(?P<hh>\d+)[:h]?(?P<mm>\d+)([:m](?P<ss>\d+))?")
+    kwargs = {"hour": "hh", "minute": "mm", "second": "ss"}
 
     def __init__(self, selector=None, default=_NO_DEFAULT):
         super(Time, self).__init__(selector, default=default)
@@ -839,20 +896,20 @@ class Time(Filter):
                 kwargs[key] = int(m.groupdict()[index] or 0)
             return self.klass(**kwargs)
 
-        return self.default_or_raise(FormatError('Unable to find time in %r' % txt))
+        return self.default_or_raise(FormatError("Unable to find time in %r" % txt))
 
 
 class Duration(Time):
     """Parse a duration as timedelta."""
 
     klass: type = datetime.timedelta
-    _regexp = re.compile(r'((?P<hh>\d+)[:;])?(?P<mm>\d+)[;:](?P<ss>\d+)')
-    kwargs = {'hours': 'hh', 'minutes': 'mm', 'seconds': 'ss'}
+    _regexp = re.compile(r"((?P<hh>\d+)[:;])?(?P<mm>\d+)[;:](?P<ss>\d+)")
+    kwargs = {"hours": "hh", "minutes": "mm", "seconds": "ss"}
 
 
 class MultiFilter(Filter):
     def __init__(self, *args, **kwargs):
-        default = kwargs.pop('default', _NO_DEFAULT)
+        default = kwargs.pop("default", _NO_DEFAULT)
         super(MultiFilter, self).__init__(args, default)
 
     def __call__(self, item):
@@ -905,7 +962,7 @@ class Format(MultiFilter):
 
 
 class BrowserURL(MultiFilter):
-    r""" Format URL using names in parent Browser
+    r"""Format URL using names in parent Browser
 
     This filter allows to format URL using an URL defined
     in browser instance of this page.
@@ -922,6 +979,7 @@ class BrowserURL(MultiFilter):
             obj_myfield = BrowserURL('mypage', id=Dict('id'), category=Dict('category'))
 
     """
+
     def __init__(self, url_name, **kwargs):
         super(BrowserURL, self).__init__(*kwargs.values())
         self.url_name = url_name
@@ -952,7 +1010,17 @@ class Join(Filter):
     >>> Join(pattern='-', default=u'empty').filter([]) == u'empty'
     True
     """
-    def __init__(self, pattern, selector=None, textCleaner=CleanText, newline=False, addBefore='', addAfter='', default=_NO_DEFAULT):
+
+    def __init__(
+        self,
+        pattern,
+        selector=None,
+        textCleaner=CleanText,
+        newline=False,
+        addBefore="",
+        addAfter="",
+        default=_NO_DEFAULT,
+    ):
         super(Join, self).__init__(selector, default=default)
         self.pattern = pattern
         self.textCleaner = textCleaner
@@ -966,15 +1034,15 @@ class Join(Filter):
         items = [item for item in items if item]
 
         if self.newline:
-            items = ['%s\r\n' % item for item in items]
+            items = ["%s\r\n" % item for item in items]
 
         result = self.pattern.join(items)
 
         if self.addBefore:
-            result = '%s%s' % (self.addBefore, result)
+            result = "%s%s" % (self.addBefore, result)
 
         if self.addAfter:
-            result = '%s%s' % (result, self.addAfter)
+            result = "%s%s" % (result, self.addAfter)
 
         if not result and self.default is not _NO_DEFAULT:
             return self.default
@@ -997,8 +1065,9 @@ class MultiJoin(MultiFilter):
     >>> MultiJoin(pattern=u'-').filter([1, 2, 3]) == u'1-2-3'
     True
     """
+
     def __init__(self, *args, **kwargs):
-        self.pattern = kwargs.pop('pattern', ', ')
+        self.pattern = kwargs.pop("pattern", ", ")
         super(MultiJoin, self).__init__(*args, **kwargs)
 
     @debug()
@@ -1046,6 +1115,7 @@ class QueryValue(Filter):
     >>> f(etree.fromstring('<html><body><a href="https://example.org/view?id=1234"></a></body></html>')) == u'1234'
     True
     """
+
     def __init__(self, selector, key, default=_NO_DEFAULT):
         super(QueryValue, self).__init__(selector, default=default)
         self.querykey = key
@@ -1054,9 +1124,9 @@ class QueryValue(Filter):
     def filter(self, url):
         qs = parse_qs(urlparse(url).query)
         if not qs.get(self.querykey):
-            return self.default_or_raise(ItemNotFound('Key %s not found' % self.querykey))
+            return self.default_or_raise(ItemNotFound("Key %s not found" % self.querykey))
         if len(qs[self.querykey]) > 1:
-            raise FilterError('More than one value for key %s' % self.querykey)
+            raise FilterError("More than one value for key %s" % self.querykey)
         return qs[self.querykey][0]
 
 
@@ -1065,10 +1135,11 @@ class Coalesce(MultiFilter):
     Returns the first value that is not falsy,
     or default if all values are falsy.
     """
+
     @debug()
     def filter(self, values):
         for value in values:
             # Accept '0.00' as valid value for numeric elements
             if value or (isinstance(value, Number) and not empty(value)):
                 return value
-        return self.default_or_raise(FilterError('All falsy and no default.'))
+        return self.default_or_raise(FilterError("All falsy and no default."))

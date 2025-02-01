@@ -26,18 +26,16 @@ from woob.browser.url import URL
 from .pages import SearchPage, TorrentPage  # , HomePage
 
 
-__all__ = ['CpasbienBrowser']
+__all__ = ["CpasbienBrowser"]
 
 
 class CpasbienBrowser(PagesBrowser):
     PROFILE = Firefox()
     TIMEOUT = 30
 
-    BASEURL = 'http://www.cpasbien.cm/'
-    search = URL(r'recherche/(?P<pattern>.*).html,trie-seeds-d',
-                 SearchPage)
-    torrent = URL(r'dl-torrent/(?P<id>.*)\.html',
-                  TorrentPage)
+    BASEURL = "http://www.cpasbien.cm/"
+    search = URL(r"recherche/(?P<pattern>.*).html,trie-seeds-d", SearchPage)
+    torrent = URL(r"dl-torrent/(?P<id>.*)\.html", TorrentPage)
 
     def iter_torrents(self, pattern):
         self.search.go(pattern=pattern)

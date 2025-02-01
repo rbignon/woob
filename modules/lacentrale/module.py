@@ -24,47 +24,47 @@ from .browser import LaCentraleBrowser
 from .product import LaCentraleProduct
 
 
-__all__ = ['LaCentraleModule']
+__all__ = ["LaCentraleModule"]
 
 
 class LaCentraleModule(Module, CapPriceComparison):
-    NAME = 'lacentrale'
-    MAINTAINER = u'Vicnet'
-    EMAIL = 'vo.publique@gmail.com'
-    VERSION = '3.7'
-    DESCRIPTION = 'Vehicule prices at LaCentrale.fr'
-    LICENSE = 'AGPLv3+'
+    NAME = "lacentrale"
+    MAINTAINER = "Vicnet"
+    EMAIL = "vo.publique@gmail.com"
+    VERSION = "3.7"
+    DESCRIPTION = "Vehicule prices at LaCentrale.fr"
+    LICENSE = "AGPLv3+"
     BROWSER = LaCentraleBrowser
 
     def search_products(self, patternString=None):
         criteria = {}
         patterns = []
         if patternString:
-            patterns = patternString.split(',')
+            patterns = patternString.split(",")
         for pattern in patterns:
             pattern = pattern.lower()
-            if u'€' in pattern:
-                criteria['prix_maxi'] = pattern[:pattern.find(u'€')].strip()
-            if u'km' in pattern:
-                criteria['km_maxi'] = pattern[:pattern.find(u'km')].strip()
-            if u'p' in pattern[-1]:  # last char = p
-                criteria['nbdoors'] = pattern[:pattern.find(u'p')].strip()
-            if u'cit' in pattern:
-                criteria['Citadine'] = 'citadine&SS_CATEGORIE=40'
-            if u'dep' in pattern:
-                criteria['dptCp'] = pattern.replace('dep', '')
-            if u'pro' in pattern:
-                criteria['witchSearch'] = 1
-            if u'part' in pattern:
-                criteria['witchSearch'] = 0
-            if u'diesel' in pattern:
-                criteria['energie'] = 2
-            if u'essence' in pattern:
-                criteria['energie'] = 1
-            if u'electrique' in pattern:
-                criteria['energie'] = 4
-            if u'hybride' in pattern:
-                criteria['energie'] = '8,9'
+            if "€" in pattern:
+                criteria["prix_maxi"] = pattern[: pattern.find("€")].strip()
+            if "km" in pattern:
+                criteria["km_maxi"] = pattern[: pattern.find("km")].strip()
+            if "p" in pattern[-1]:  # last char = p
+                criteria["nbdoors"] = pattern[: pattern.find("p")].strip()
+            if "cit" in pattern:
+                criteria["Citadine"] = "citadine&SS_CATEGORIE=40"
+            if "dep" in pattern:
+                criteria["dptCp"] = pattern.replace("dep", "")
+            if "pro" in pattern:
+                criteria["witchSearch"] = 1
+            if "part" in pattern:
+                criteria["witchSearch"] = 0
+            if "diesel" in pattern:
+                criteria["energie"] = 2
+            if "essence" in pattern:
+                criteria["energie"] = 1
+            if "electrique" in pattern:
+                criteria["energie"] = 4
+            if "hybride" in pattern:
+                criteria["energie"] = "8,9"
 
         if criteria:
             product = LaCentraleProduct()
@@ -84,4 +84,6 @@ class LaCentraleModule(Module, CapPriceComparison):
             price = self.get_price(price.id, price)
         return price
 
-    OBJECTS = {Price: fill_price, }
+    OBJECTS = {
+        Price: fill_price,
+    }

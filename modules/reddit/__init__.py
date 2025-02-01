@@ -21,4 +21,4 @@
 from .module import RedditModule
 
 
-__all__ = ['RedditModule']
+__all__ = ["RedditModule"]

@@ -21,4 +21,4 @@
 from .module import AmericanExpressModule
 
 
-__all__ = ['AmericanExpressModule']
+__all__ = ["AmericanExpressModule"]

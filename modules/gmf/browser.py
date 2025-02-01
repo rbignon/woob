@@ -23,35 +23,42 @@ from woob.capabilities.bank import Account
 from woob.exceptions import ActionNeeded, BrowserIncorrectPassword
 
 from .pages import (
-    AccountsPage, AllTransactionsPage, AuthCodePage, DocumentsSignaturePage, LoginPage, RedirectionPage,
-    RedirectToUserAgreementPage, TransactionsInvestmentsPage, UserAgreementPage,
+    AccountsPage,
+    AllTransactionsPage,
+    AuthCodePage,
+    DocumentsSignaturePage,
+    LoginPage,
+    RedirectionPage,
+    RedirectToUserAgreementPage,
+    TransactionsInvestmentsPage,
+    UserAgreementPage,
 )
 
 
 class GmfBrowser(LoginBrowser):
-    BASEURL = 'https://mon-espace-societaire.gmf.fr'
+    BASEURL = "https://mon-espace-societaire.gmf.fr"
 
-    login_post = URL(r'/connexion/CAP-US_AccesEC/api/accounts/authentication', LoginPage)
-    auth_page = URL(r'https://coveauth.gmf.fr/coveauth-server/oauth2/authorization',)
-    redirection_page = URL(r'/homepage\?code=(?P<code>.+)&state=.*', RedirectionPage)
-    auth_code_page = URL(r'/cap-mx-espacesocietaire-internet/api/users/authorizationCode', AuthCodePage)
+    login_post = URL(r"/connexion/CAP-US_AccesEC/api/accounts/authentication", LoginPage)
+    auth_page = URL(
+        r"https://coveauth.gmf.fr/coveauth-server/oauth2/authorization",
+    )
+    redirection_page = URL(r"/homepage\?code=(?P<code>.+)&state=.*", RedirectionPage)
+    auth_code_page = URL(r"/cap-mx-espacesocietaire-internet/api/users/authorizationCode", AuthCodePage)
 
-    redirect_to_user_agreement = URL('^$', RedirectToUserAgreementPage)
-    user_agreement = URL(r'/restreint/pages/securite/IC9.faces', UserAgreementPage)
-    accounts = URL(r'/cap-mx-espacesocietaire-internet/api/prestation', AccountsPage)
+    redirect_to_user_agreement = URL("^$", RedirectToUserAgreementPage)
+    user_agreement = URL(r"/restreint/pages/securite/IC9.faces", UserAgreementPage)
+    accounts = URL(r"/cap-mx-espacesocietaire-internet/api/prestation", AccountsPage)
     transactions_investments = URL(
-        r'https://espace-assure.gmf.fr/pointentree/contratvie/detailsContrats',
-        TransactionsInvestmentsPage
+        r"https://espace-assure.gmf.fr/pointentree/contratvie/detailsContrats", TransactionsInvestmentsPage
     )
     all_transactions = URL(
-        r'https://espace-assure.gmf.fr/pages/contratvie/detailscontrats/.*\.faces',
-        AllTransactionsPage
+        r"https://espace-assure.gmf.fr/pages/contratvie/detailscontrats/.*\.faces", AllTransactionsPage
     )
-    documents_signature = URL(r'/public/pages/authentification/.*\.faces', DocumentsSignaturePage)
+    documents_signature = URL(r"/public/pages/authentification/.*\.faces", DocumentsSignaturePage)
 
     def __init__(self, config, *args, **kwargs):
-        kwargs['username'] = config['login'].get()
-        kwargs['password'] = config['password'].get()
+        kwargs["username"] = config["login"].get()
+        kwargs["password"] = config["password"].get()
         super().__init__(*args, **kwargs)
         self.config = config
 
@@ -59,10 +66,10 @@ class GmfBrowser(LoginBrowser):
         try:
             self.login_post.go(
                 json={
-                    'id': self.username,
-                    'motDePasse': self.password,
+                    "id": self.username,
+                    "motDePasse": self.password,
                 },
-                params={'marque': 'GMF'}
+                params={"marque": "GMF"},
             )
         except ServerError as e:
             if e.response.status_code == 502:
@@ -70,33 +77,33 @@ class GmfBrowser(LoginBrowser):
                 raise BrowserIncorrectPassword()
 
         status = self.page.get_status()
-        if status == 'M':
+        if status == "M":
             raise ActionNeeded(
-                '''Pour garantir la sécurité de votre espace client, votre compte nécessite une mise à jour.
-                Veuillez vous connecter sur votre portail internet.'''
+                """Pour garantir la sécurité de votre espace client, votre compte nécessite une mise à jour.
+                Veuillez vous connecter sur votre portail internet."""
             )
 
         id = self.page.get_id()
         self.auth_page.go(
             data={
-                'username': id,
-                'password': self.password,
-                'client_id': 'acces-ec-gmf-PROD',
-                'state': 'eyJwIjoiU1RBVEUifQ==',
-                'profile': 'accesec',
-                'population': '51',
-                'ttl': '240',
-                'response_type': 'code',
-                'redirect_uri': f'{self.BASEURL}/homepage',
+                "username": id,
+                "password": self.password,
+                "client_id": "acces-ec-gmf-PROD",
+                "state": "eyJwIjoiU1RBVEUifQ==",
+                "profile": "accesec",
+                "population": "51",
+                "ttl": "240",
+                "response_type": "code",
+                "redirect_uri": f"{self.BASEURL}/homepage",
             }
         )
         if not self.redirection_page.is_here():
-            raise AssertionError('Should be on redirection page')
+            raise AssertionError("Should be on redirection page")
 
         # csrf token is needed for accounts page
-        code = self.page.params['code']
-        self.auth_code_page.go(json={'code': code})
-        self.session.headers['covea-csrf-token'] = self.page.get_csrf_token()
+        code = self.page.params["code"]
+        self.auth_code_page.go(json={"code": code})
+        self.session.headers["covea-csrf-token"] = self.page.get_csrf_token()
 
     @need_login
     def iter_accounts(self):
@@ -118,7 +125,7 @@ class GmfBrowser(LoginBrowser):
         self.transactions_investments.go(data=data)
         if self.page.has_investments():
             return self.page.iter_investments()
-        elif account.label == 'Epargne Compte Libre Croissance' and account.type == Account.TYPE_LIFE_INSURANCE:
+        elif account.label == "Epargne Compte Libre Croissance" and account.type == Account.TYPE_LIFE_INSURANCE:
             # This type of life insurance is very specific and contains only one invest of type 'Fond en euros' with no more information available on detail page.
             return self.page.create_investment(account)
         return []

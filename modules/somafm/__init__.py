@@ -21,4 +21,4 @@
 from .module import SomaFMModule
 
 
-__all__ = ['SomaFMModule']
+__all__ = ["SomaFMModule"]

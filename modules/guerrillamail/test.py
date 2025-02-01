@@ -24,7 +24,7 @@ from woob.tools.test import BackendTest
 
 
 class GuerrillamailTest(BackendTest):
-    MODULE = 'guerrillamail'
+    MODULE = "guerrillamail"
 
     def test_guerrillamail(self):
         box = uuid4()

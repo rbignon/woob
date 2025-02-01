@@ -24,7 +24,12 @@ from woob.capabilities.bank.pfm import CapBankMatching
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import empty, find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentNotFound, DocumentTypes, Subscription, SubscriptionNotFound,
+    CapDocument,
+    Document,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
+    SubscriptionNotFound,
 )
 from woob.exceptions import implemented_websites
 from woob.tools.backend import BackendConfig, Module
@@ -35,34 +40,34 @@ from .enterprise.browser import LCLEnterpriseBrowser, LCLEspaceProBrowser
 from .proxy_browser import ProxyBrowser
 
 
-__all__ = ['LCLModule']
+__all__ = ["LCLModule"]
 
 
 class LCLModule(Module, CapBankWealth, CapBankMatching, CapDocument):
-    NAME = 'lcl'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = u'LCL'
-    LICENSE = 'LGPLv3+'
+    NAME = "lcl"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "LCL"
+    LICENSE = "LGPLv3+"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code personnel'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Code personnel"),
         Value(
-            'website',
-            label='Type de compte',
-            default='par',
+            "website",
+            label="Type de compte",
+            default="par",
             choices={
-                'par': 'Particuliers',
-                'pro': 'Professionnels',
-                'ent': 'Entreprises',
-                'esp': 'Espace Pro',
+                "par": "Particuliers",
+                "pro": "Professionnels",
+                "ent": "Entreprises",
+                "esp": "Espace Pro",
             },
-            aliases={'elcl': 'par'}
+            aliases={"elcl": "par"},
         ),
-        ValueTransient('resume'),
-        ValueTransient('request_information'),
-        ValueTransient('code', regexp=r'^\d{6}$'),
+        ValueTransient("resume"),
+        ValueTransient("request_information"),
+        ValueTransient("code", regexp=r"^\d{6}$"),
     )
     BROWSER = LCLBrowser
 
@@ -70,24 +75,17 @@ class LCLModule(Module, CapBankWealth, CapBankMatching, CapDocument):
 
     def create_default_browser(self):
         browsers = {
-            'par': LCLBrowser,
-            'pro': LCLBrowser,
-            'ent': LCLEnterpriseBrowser,
-            'esp': LCLEspaceProBrowser,
-            'cards': ProxyBrowser,
+            "par": LCLBrowser,
+            "pro": LCLBrowser,
+            "ent": LCLEnterpriseBrowser,
+            "esp": LCLEspaceProBrowser,
+            "cards": ProxyBrowser,
         }
 
-        website_value = self.config['website']
-        self.BROWSER = browsers.get(
-            website_value.get(),
-            browsers[website_value.default]
-        )
+        website_value = self.config["website"]
+        self.BROWSER = browsers.get(website_value.get(), browsers[website_value.default])
 
-        return self.create_browser(
-            self.config,
-            self.config['login'].get(),
-            self.config['password'].get()
-        )
+        return self.create_browser(self.config, self.config["login"].get(), self.config["password"].get())
 
     def iter_accounts(self):
         return self.browser.iter_accounts()
@@ -121,49 +119,47 @@ class LCLModule(Module, CapBankWealth, CapBankMatching, CapDocument):
             # to match accounts between old and new websites
             elif (
                 previous_account.type == Account.TYPE_CARD
-                and account.number[0] == '_'
+                and account.number[0] == "_"
                 and previous_account.number[:3] == account.number[:3]
             ):
                 matched_accounts.append(previous_account)
 
         if len(matched_accounts) > 1:
-            raise AssertionError(f'Found multiple candidates to match the card {account.label}.')
+            raise AssertionError(f"Found multiple candidates to match the card {account.label}.")
 
         if matched_accounts:
             self.logger.info(
                 "Matched new account '%s' with previous account '%s' from matching_account",
                 account,
-                matched_accounts[0]
+                matched_accounts[0],
             )
             return matched_accounts[0]
 
         # explicit return if no match found
         return None
 
-    @implemented_websites('par', 'elcl', 'pro')
+    @implemented_websites("par", "elcl", "pro")
     def iter_subscription(self):
         return self.browser.iter_subscriptions()
 
-    @implemented_websites('par', 'elcl', 'pro')
+    @implemented_websites("par", "elcl", "pro")
     def get_subscription(self, _id):
         return find_object(self.iter_subscription(), id=_id, error=SubscriptionNotFound)
 
-    @implemented_websites('par', 'elcl', 'pro')
+    @implemented_websites("par", "elcl", "pro")
     def iter_documents(self, subscription):
         if not isinstance(subscription, Subscription):
             subscription = self.get_subscription(subscription)
 
         return self.browser.iter_documents(subscription)
 
-    @implemented_websites('par', 'elcl', 'pro')
+    @implemented_websites("par", "elcl", "pro")
     def get_document(self, _id):
         subscription_id = _id.split("_")[0]
         subscription = self.get_subscription(subscription_id)
-        return find_object(
-            self.iter_documents(subscription), id=_id, error=DocumentNotFound
-        )
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 
-    @implemented_websites('par', 'elcl', 'pro')
+    @implemented_websites("par", "elcl", "pro")
     def download_document(self, document):
         if not isinstance(document, Document):
             document = self.get_document(document)

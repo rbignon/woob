@@ -26,16 +26,16 @@ from woob.tools.capabilities.video.ytdl import video_info
 from .browser import PluzzBrowser
 
 
-__all__ = ['PluzzModule']
+__all__ = ["PluzzModule"]
 
 
 class PluzzModule(Module, CapVideo, CapCollection):
-    NAME = 'francetelevisions'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = u'France Télévisions video website'
-    LICENSE = 'AGPLv3+'
+    NAME = "francetelevisions"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "France Télévisions video website"
+    LICENSE = "AGPLv3+"
     BROWSER = PluzzBrowser
 
     def get_video(self, _id, video=None):
@@ -47,7 +47,7 @@ class PluzzModule(Module, CapVideo, CapCollection):
         if not new_video:
             return
 
-        video.ext = u'm3u8'
+        video.ext = "m3u8"
 
         for k, v in new_video.iter_fields():
             if not empty(v) and empty(getattr(video, k)):
@@ -59,9 +59,9 @@ class PluzzModule(Module, CapVideo, CapCollection):
         return self.browser.search_videos(pattern)
 
     def fill_video(self, video, fields):
-        if 'url' in fields:
+        if "url" in fields:
             video = self.get_video(video.id, video)
-        if video and 'thumbnail' in fields and video.thumbnail:
+        if video and "thumbnail" in fields and video.thumbnail:
             video.thumbnail.data = self.browser.open(video.thumbnail.url).content
         return video
 
@@ -70,24 +70,24 @@ class PluzzModule(Module, CapVideo, CapCollection):
             collection = self.get_collection(objs, split_path)
 
             if collection.path_level == 0:
-                yield Collection([u'videos'], u'Vidéos')
+                yield Collection(["videos"], "Vidéos")
 
                 for category in self.browser.get_categories():
                     if category.path_level == 1:
                         yield category
 
-            elif collection.path_level > 0 and split_path[-1] == u'videos':
+            elif collection.path_level > 0 and split_path[-1] == "videos":
                 for v in self.browser.iter_videos("/".join(collection.split_path[:-1])):
                     yield v
 
             elif collection.path_level == 1:
-                yield Collection(collection.split_path + [u'videos'], u'Vidéos')
+                yield Collection(collection.split_path + ["videos"], "Vidéos")
 
                 for category in self.browser.get_subcategories(collection.split_path[0]):
                     yield category
 
             elif collection.path_level == 2:
-                if split_path[-1] == u'replay-videos':
+                if split_path[-1] == "replay-videos":
                     for v in self.browser.iter_videos("/".join(collection.split_path)):
                         yield v
                 else:
@@ -95,8 +95,7 @@ class PluzzModule(Module, CapVideo, CapCollection):
                         yield category
 
             elif collection.path_level == 3:
-                for v in self.browser.iter_videos("/".join([collection.split_path[0],
-                                                            collection.split_path[-1]])):
+                for v in self.browser.iter_videos("/".join([collection.split_path[0], collection.split_path[-1]])):
                     yield v
 
     def validate_collection(self, objs, collection):

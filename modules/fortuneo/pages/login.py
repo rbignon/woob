@@ -33,17 +33,17 @@ class LoginPage(HTMLPage):
             raise BrowserUnavailable(msg)
 
         form = self.get_form(name="acces_identification")
-        form['login'] = login
-        form['passwd'] = passwd
+        form["login"] = login
+        form["passwd"] = passwd
         # With form submit and allow_redirects=False
         # self.response is associated with precedent request
         # so we need to store the submit response
         submit_page = form.submit(allow_redirects=False)
 
-        if submit_page.headers.get('X-Arkea-sca') == '1':
+        if submit_page.headers.get("X-Arkea-sca") == "1":
             # User needs to validate its 2FA
             self.browser.check_interactive()
-        self.browser.location(submit_page.headers['Location'])
+        self.browser.location(submit_page.headers["Location"])
 
     def get_login_error(self):
         return CleanText('//div[@id="acces_client"]//p[@class="container error"]/label')(self.doc)
@@ -52,16 +52,15 @@ class LoginPage(HTMLPage):
 class TwoFaPage(HTMLPage):
     def is_here(self):
         # Handle 90 days 2FA and Secure access
-        return 'Sécurité renforcée tous les 90 jours' in CleanText('//div[@id="titre_page"]/h1')(self.doc)
+        return "Sécurité renforcée tous les 90 jours" in CleanText('//div[@id="titre_page"]/h1')(self.doc)
 
     def get_warning_message(self):
         return CleanText('//p[@class="warning"]')(self.doc)
 
     def get_sms_form(self):
         sms_form = self.get_form()
-        sms_form['numeroSelectionne.value'] = Attr(
-            '//div[@id="div_secu_forte_otp"]/input[@name="numeroSelectionne.value"]',
-            'value'
+        sms_form["numeroSelectionne.value"] = Attr(
+            '//div[@id="div_secu_forte_otp"]/input[@name="numeroSelectionne.value"]', "value"
         )(self.doc)
         return sms_form
 
@@ -69,11 +68,11 @@ class TwoFaPage(HTMLPage):
         error_message = Coalesce(
             CleanText('//span/label[@class="error"]'),
             CleanText('//p[@id="erreurSecuriteForteOTP"]'),
-            default='',
+            default="",
         )(self.doc)
-        if any(message in error_message for message in ('Le code saisi est incorrect', 'Le code sécurité est expiré')):
+        if any(message in error_message for message in ("Le code saisi est incorrect", "Le code sécurité est expiré")):
             raise BrowserIncorrectPassword()
-        elif 'trois essais erronés' in error_message:
+        elif "trois essais erronés" in error_message:
             raise BrowserUserBanned(error_message)
 
 

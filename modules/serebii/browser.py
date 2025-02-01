@@ -26,21 +26,21 @@ from .pages import AbilitiesPage, Gen8AttackDexPage, ItemsPage, PkmnDetailsPage,
 
 
 class SerebiiBrowser(PagesBrowser):
-    BASEURL = 'https://www.serebii.net'
+    BASEURL = "https://www.serebii.net"
 
     # pokemon
-    pkmn_list = URL(r'/pokedex-swsh/$', PkmnListPage)
-    pkmn_details = URL(r'/pokedex-swsh/(?P<pkmn_id>.*)/', PkmnDetailsPage)
+    pkmn_list = URL(r"/pokedex-swsh/$", PkmnListPage)
+    pkmn_details = URL(r"/pokedex-swsh/(?P<pkmn_id>.*)/", PkmnDetailsPage)
 
     # skills
-    gen8_attack_dex = URL(r'/attackdex-swsh/', Gen8AttackDexPage)
-    abilities = URL(r'/abilitydex/', AbilitiesPage)
+    gen8_attack_dex = URL(r"/attackdex-swsh/", Gen8AttackDexPage)
+    abilities = URL(r"/abilitydex/", AbilitiesPage)
 
     # clases
-    types = URL(r'/games/typexy.shtml$', XYTypePage)
+    types = URL(r"/games/typexy.shtml$", XYTypePage)
 
     # items
-    items = URL(r'/swordshield/items.shtml$', ItemsPage)
+    items = URL(r"/swordshield/items.shtml$", ItemsPage)
 
     def iter_characters(self):
         self.pkmn_list.go()

@@ -89,7 +89,7 @@ class EmployeesPage(CesuApiPage):
                 CleanText(Dict("prenom")),
                 CleanText(Dict("nom")),
             )
-            obj_subscriber = Field('label')
+            obj_subscriber = Field("label")
             obj__type = "employee"
 
 
@@ -101,7 +101,7 @@ class RegistrationPage(CesuApiPage):
         class item(ItemElement):
 
             def condition(self):
-                return Lower(CleanText(Dict('isTelechargeable')))(self.el) == 'true'
+                return Lower(CleanText(Dict("isTelechargeable")))(self.el) == "true"
 
             klass = Document
 
@@ -153,9 +153,7 @@ class DirectDebitsHeaderPage(CesuApiPage):
             obj_id = Format("%s_%s_%s", Env("subscription"), Dict("reference"), Dict("datePrelevement"))
             obj_format = "pdf"
             obj_date = Date(Dict("datePrelevement"))
-            obj__period = Regexp(
-                Dict("datePrelevement"), r"(\d{4})-(\d{2})-(\d{2})", "\\1\\2"
-            )
+            obj__period = Regexp(Dict("datePrelevement"), r"(\d{4})-(\d{2})-(\d{2})", "\\1\\2")
             obj_label = Format("Prélèvement du %s", Field("date"))
             obj_type = DocumentTypes.OTHER
             obj_url = BrowserURL(

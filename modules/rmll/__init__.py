@@ -20,4 +20,4 @@
 from .module import RmllModule
 
 
-__all__ = ['RmllModule']
+__all__ = ["RmllModule"]

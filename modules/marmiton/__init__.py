@@ -20,4 +20,4 @@
 from .module import MarmitonModule
 
 
-__all__ = ['MarmitonModule']
+__all__ = ["MarmitonModule"]

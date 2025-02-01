@@ -25,20 +25,20 @@ from woob_modules.creditmutuel.browser import CreditMutuelBrowser
 from .pages import AdvisorPage
 
 
-__all__ = ['BECMBrowser']
+__all__ = ["BECMBrowser"]
 
 
 class BECMBrowser(CreditMutuelBrowser):
     HAS_MULTI_BASEURL = True  # Some of the users will use CreditMutuel's BASEURL when others will use becm.fr
 
-    login = CreditMutuelBrowser.login.with_urls(r'/fr/authentification.html')
-    advisor = URL(r'/fr/banques/Details.aspx\?banque=.*', AdvisorPage)
+    login = CreditMutuelBrowser.login.with_urls(r"/fr/authentification.html")
+    advisor = URL(r"/fr/banques/Details.aspx\?banque=.*", AdvisorPage)
 
     alternative_decoupled_state = CreditMutuelBrowser.decoupled_state.with_urls(
-        r'/(?P<subbank>.*)fr/otp/SOSD_OTP_GetTransactionState.htm'
+        r"/(?P<subbank>.*)fr/otp/SOSD_OTP_GetTransactionState.htm"
     )
     alternative_cancel_decoupled = CreditMutuelBrowser.cancel_decoupled.with_urls(
-        r'/(?P<subbank>.*)fr/otp/SOSD_OTP_CancelTransaction.htm'
+        r"/(?P<subbank>.*)fr/otp/SOSD_OTP_CancelTransaction.htm"
     )
 
     def init_login(self):
@@ -48,7 +48,7 @@ class BECMBrowser(CreditMutuelBrowser):
         try:
             super().init_login()
         except self.WRONG_BROWSER_EXCEPTION:
-            self.BASEURL = 'https://www.becm.fr'
+            self.BASEURL = "https://www.becm.fr"
 
             if self.decoupled_state == self.alternative_decoupled_state:
                 # to avoid infinite loops
@@ -58,7 +58,7 @@ class BECMBrowser(CreditMutuelBrowser):
 
             # We keep the (?P<subbank>.*) and setcurrentSubBank to an empty string
             # to minimize changes to the parents module code and avoid UrlNotResolvable errors
-            self.currentSubBank = ''
+            self.currentSubBank = ""
 
             # switching the parents urls to this domains (https://www.becm.fr) specific urls
             self.decoupled_state = self.alternative_decoupled_state

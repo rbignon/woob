@@ -31,17 +31,12 @@ from woob.tools.application.base import Application
 
 
 BASE_PATH = os.path.join(os.path.dirname(__file__), os.pardir)
-DEST_DIR = 'man'
-COMP_PATH = 'tools/woob_bash_completion'
+DEST_DIR = "man"
+COMP_PATH = "tools/woob_bash_completion"
 
 
 class ManpageHelpFormatter(optparse.HelpFormatter):
-    def __init__(self,
-                 app,
-                 indent_increment=0,
-                 max_help_position=0,
-                 width=80,
-                 short_first=1):
+    def __init__(self, app, indent_increment=0, max_help_position=0, width=80, short_first=1):
         optparse.HelpFormatter.__init__(self, indent_increment, max_help_position, width, short_first)
         self.app = app
 
@@ -49,51 +44,51 @@ class ManpageHelpFormatter(optparse.HelpFormatter):
         return ".SH %s\n" % heading.upper()
 
     def format_usage(self, usage):
-        txt = ''
-        for line in usage.split('\n'):
-            line = line.lstrip().split(' ', 1)
+        txt = ""
+        for line in usage.split("\n"):
+            line = line.lstrip().split(" ", 1)
             if len(txt) > 0:
-                txt += '.br\n'
-            txt += '.B %s\n' % line[0]
+                txt += ".br\n"
+            txt += ".B %s\n" % line[0]
 
-            arg_re = re.compile(r'([\[\s])([\w_]+)')
+            arg_re = re.compile(r"([\[\s])([\w_]+)")
             args = re.sub(arg_re, r"\1\\fI\2\\fR", line[1])
             txt += args
-            txt += '\n'
-        return '.SH SYNOPSIS\n%s' % txt
+            txt += "\n"
+        return ".SH SYNOPSIS\n%s" % txt
 
     def format_description(self, description):
-        desc = '.SH DESCRIPTION\n.LP\n\n%s\n' % description
-        if hasattr(self.app, 'CAPS'):
+        desc = ".SH DESCRIPTION\n.LP\n\n%s\n" % description
+        if hasattr(self.app, "CAPS"):
             self.app.woob.modules_loader.load_all()
             caps = self.app.CAPS if isinstance(self.app.CAPS, tuple) else (self.app.CAPS,)
             modules = []
             for name, module in self.app.woob.modules_loader.loaded.items():
                 if module.has_caps(*caps):
-                    modules.append('* %s (%s)' % (name, module.description))
+                    modules.append("* %s (%s)" % (name, module.description))
             if len(modules) > 0:
-                desc += '\n.SS Supported websites:\n'
-                desc += '\n.br\n'.join(sorted(modules))
+                desc += "\n.SS Supported websites:\n"
+                desc += "\n.br\n".join(sorted(modules))
         return desc
 
     def format_commands(self, commands):
-        s = ''
+        s = ""
         for section, cmds in commands.items():
             if len(cmds) == 0:
                 continue
-            s += '.SH %s COMMANDS\n' % section.upper()
+            s += ".SH %s COMMANDS\n" % section.upper()
             for cmd in sorted(cmds):
-                s += '.TP\n'
-                h = cmd.split('\n')
-                if ' ' in h[0]:
-                    cmdname, args = h[0].split(' ', 1)
-                    arg_re = re.compile(r'([A-Z_]+)')
+                s += ".TP\n"
+                h = cmd.split("\n")
+                if " " in h[0]:
+                    cmdname, args = h[0].split(" ", 1)
+                    arg_re = re.compile(r"([A-Z_]+)")
                     args = re.sub(arg_re, r"\\fI\1\\fR", args)
 
-                    s += '\\fB%s\\fR %s' % (cmdname, args)
+                    s += "\\fB%s\\fR %s" % (cmdname, args)
                 else:
-                    s += '\\fB%s\\fR' % h[0]
-                s += '%s\n' % '\n.br\n'.join(h[1:])
+                    s += "\\fB%s\\fR" % h[0]
+                s += "%s\n" % "\n.br\n".join(h[1:])
         return s
 
     def format_option_strings(self, option):
@@ -104,30 +99,29 @@ class ManpageHelpFormatter(optparse.HelpFormatter):
 
 def main():
     # TODO rename when apps have changed folder
-    scripts_path = os.path.join(BASE_PATH, 'woob', 'applications')
+    scripts_path = os.path.join(BASE_PATH, "woob", "applications")
     files = sorted(os.listdir(scripts_path))
     completions = {}
 
     for fname in files:
         fpath = os.path.join(scripts_path, fname)
-        if os.path.isdir(fpath) and not fname.startswith('_'):
+        if os.path.isdir(fpath) and not fname.startswith("_"):
             try:
-                module = importlib.import_module(f'woob.applications.{fname}')
+                module = importlib.import_module(f"woob.applications.{fname}")
             except OSError as e:
-                print(f"Unable to load the {fname} application ({e})",
-                      file=sys.stderr)
+                print(f"Unable to load the {fname} application ({e})", file=sys.stderr)
             else:
                 print(f"Loaded {fname}")
                 # Find the applications we can handle
                 for klass in module.__dict__.values():
                     if inspect.isclass(klass) and issubclass(klass, Application) and klass.VERSION:
-                        completions[klass.APPNAME] = analyze_application(klass, 'woob-' + klass.APPNAME)
+                        completions[klass.APPNAME] = analyze_application(klass, "woob-" + klass.APPNAME)
 
     write_completions(completions)
 
 
 def format_title(title):
-    return re.sub(r'^(.+):$', r'.SH \1\n.TP', title.group().upper())
+    return re.sub(r"^(.+):$", r".SH \1\n.TP", title.group().upper())
 
 
 # XXX useful because the PyQt QApplication destructor crashes sometimes. By
@@ -144,17 +138,21 @@ def analyze_application(app, script_name):
     formatter = ManpageHelpFormatter(application)
 
     # patch the application
-    application._parser.prog = "%s" % script_name.replace('woob-', 'woob ')
+    application._parser.prog = "%s" % script_name.replace("woob-", "woob ")
     application._parser.formatter = formatter
     helptext = application._parser.format_help(formatter)
 
-    cmd_re = re.compile(r'^.+ Commands:$', re.MULTILINE)
+    cmd_re = re.compile(r"^.+ Commands:$", re.MULTILINE)
     helptext = re.sub(cmd_re, format_title, helptext)
     helptext = helptext.replace("-", r"\-")
-    coding = r'.\" -*- coding: utf-8 -*-'
-    comment = r'.\" This file was generated automatically by tools/make_man.sh.'
-    header = '.TH %s 1 "%s" "%s %s"' % (script_name.upper(), time.strftime("%d %B %Y"),
-                                        script_name, app.VERSION.replace('.', '\\&.'))
+    coding = r".\" -*- coding: utf-8 -*-"
+    comment = r".\" This file was generated automatically by tools/make_man.sh."
+    header = '.TH %s 1 "%s" "%s %s"' % (
+        script_name.upper(),
+        time.strftime("%d %B %Y"),
+        script_name,
+        app.VERSION.replace(".", "\\&."),
+    )
     name = ".SH NAME\n%s \- %s" % (script_name, application.SHORT_DESCRIPTION)
     condition = """.SH CONDITION
 The \-c and \-\-condition is a flexible way to filter and get only interesting results. It supports conditions on numerical values, dates, durations and strings. Dates are given in YYYY\-MM\-DD or YYYY\-MM\-DD HH:MM format. Durations look like XhYmZs where X, Y and Z are integers. Any of them may be omitted. For instance, YmZs, XhZs or Ym are accepted.
@@ -215,24 +213,28 @@ For full copyright information see the COPYING file in the woob package.
 .LP
 .RE
 .SH FILES
- "~/.config/woob/backends\"""" % application.COPYRIGHT.replace('YEAR', '%d' % datetime.today().year)
+ "~/.config/woob/backends\"""" % application.COPYRIGHT.replace(
+        "YEAR", "%d" % datetime.today().year
+    )
     if len(app.CONFIG) > 0:
         footer += '\n\n "~/.config/woob/%s"' % app.APPNAME
 
     # Skip internal applications.
     footer += "\n\n.SH SEE ALSO\nHome page: https://woob.tech/applications/%s" % application.APPNAME
 
-    mantext = u"%s\n%s\n%s\n%s\n%s\n%s\n%s" % (coding, comment, header, name, helptext, condition, footer)
-    with open(os.path.join(BASE_PATH, DEST_DIR, "%s.1" % script_name), 'w+') as manfile:
-        for line in mantext.split('\n'):
-            manfile.write('%s\n' % line.lstrip())
+    mantext = "%s\n%s\n%s\n%s\n%s\n%s\n%s" % (coding, comment, header, name, helptext, condition, footer)
+    with open(os.path.join(BASE_PATH, DEST_DIR, "%s.1" % script_name), "w+") as manfile:
+        for line in mantext.split("\n"):
+            manfile.write("%s\n" % line.lstrip())
     print("wrote %s/%s.1" % (DEST_DIR, script_name))
 
     return application._shell_completion_items()
 
 
 def write_completions(completions):
-    compscript = dedent('''
+    compscript = (
+        dedent(
+            """
     # Woob completion for Bash (automatically generated by tools/make_man.sh)
     #
     # vim: filetype=sh expandtab softtabstop=4 shiftwidth=4
@@ -254,15 +256,22 @@ def write_completions(completions):
                 ;;
             2)
                 case ${{prev}} in
-    ''').format(' '.join(completions.keys())).strip()
+    """
+        )
+        .format(" ".join(completions.keys()))
+        .strip()
+    )
     for name, items in completions.items():
-        compscript += '''
+        compscript += """
                 {0})
                     COMPREPLY=( $(compgen -o default -W "{1}" -- "$cur" ) )
                     ;;
-        '''.format(name, ' '.join(sorted(items))).rstrip()
+        """.format(
+            name, " ".join(sorted(items))
+        ).rstrip()
 
-    compscript += dedent('''
+    compscript += dedent(
+        """
                 esac
                 ;;
             *)
@@ -272,10 +281,11 @@ def write_completions(completions):
     }
 
     complete -F _woob woob
-    ''')
-    with open(os.path.join(BASE_PATH, COMP_PATH), 'w') as f:
+    """
+    )
+    with open(os.path.join(BASE_PATH, COMP_PATH), "w") as f:
         f.write(compscript)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

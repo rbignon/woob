@@ -41,16 +41,12 @@ def formatter_test_output(Formatter, obj):
 
 
 def test_json():
-    assert formatter_test_output(JsonFormatter, {'foo': 'bar'}) == '[{"foo": "bar"}]\n'
-    assert formatter_test_output(JsonLineFormatter, {'foo': 'bar'}) == '{"foo": "bar"}\n'
-    assert formatter_test_output(JsonLineFormatter, {'foo': 'bar'}) == '{"foo": "bar"}\n'
+    assert formatter_test_output(JsonFormatter, {"foo": "bar"}) == '[{"foo": "bar"}]\n'
+    assert formatter_test_output(JsonLineFormatter, {"foo": "bar"}) == '{"foo": "bar"}\n'
+    assert formatter_test_output(JsonLineFormatter, {"foo": "bar"}) == '{"foo": "bar"}\n'
 
 
 def test_table():
-    assert formatter_test_output(TableFormatter, {'foo': 'bar'}) == (
-        '┌─────┐\n'
-        '│ Foo │\n'
-        '├─────┤\n'
-        '│ bar │\n'
-        '└─────┘\n'
+    assert formatter_test_output(TableFormatter, {"foo": "bar"}) == (
+        "┌─────┐\n" "│ Foo │\n" "├─────┤\n" "│ bar │\n" "└─────┘\n"
     )

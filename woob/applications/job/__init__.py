@@ -18,4 +18,4 @@
 from .job import AppJob
 
 
-__all__ = ['AppJob']
+__all__ = ["AppJob"]

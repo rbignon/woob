@@ -33,15 +33,14 @@ def search_dependencies(command, pattern):
 os.chdir(Path(__file__).parent.parent)
 gitroot = Path.cwd()
 
-dependencies = search_dependencies(
-    ["git", "grep", "-l", "PARENT", "modules"],
-    r"""^\s+PARENT = ["'](\w+)["']()$"""
-)
+dependencies = search_dependencies(["git", "grep", "-l", "PARENT", "modules"], r"""^\s+PARENT = ["'](\w+)["']()$""")
 
-dependencies.update(search_dependencies(
-    ["git", "grep", "-l", "woob_modules", "modules"],
-    r"""^from woob_modules\.(\w+)\b(?:.*) import |import woob_modules\.(\w+)\b"""
-))
+dependencies.update(
+    search_dependencies(
+        ["git", "grep", "-l", "woob_modules", "modules"],
+        r"""^from woob_modules\.(\w+)\b(?:.*) import |import woob_modules\.(\w+)\b""",
+    )
+)
 
 deps_regex = re.compile(r"^(\s+)DEPENDENCIES = .*$", re.M)
 version_regex = re.compile(r"^(\s+)(VERSION = .*)$", re.M)

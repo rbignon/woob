@@ -24,28 +24,28 @@ from woob.tools.value import ValueBackendPassword
 from .browser import DelubacBrowser
 
 
-__all__ = ['DelubacModule']
+__all__ = ["DelubacModule"]
 
 
 class DelubacModule(Module, CapBank):
-    NAME = 'delubac'
-    DESCRIPTION = u'Banque Delubac & Cie'
-    MAINTAINER = u'Olivier Da Rocha'
-    EMAIL = 'olivier.darocha@budget-insight.com'
-    VERSION = '3.7'
-    LICENSE = 'LGPLv3+'
+    NAME = "delubac"
+    DESCRIPTION = "Banque Delubac & Cie"
+    MAINTAINER = "Olivier Da Rocha"
+    EMAIL = "olivier.darocha@budget-insight.com"
+    VERSION = "3.7"
+    LICENSE = "LGPLv3+"
 
     BROWSER = DelubacBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe', regexp=r'^\d+$')
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Mot de passe", regexp=r"^\d+$"),
     )
 
     def create_default_browser(self):
         return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_accounts(self):

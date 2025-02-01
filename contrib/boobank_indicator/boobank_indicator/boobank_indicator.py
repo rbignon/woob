@@ -24,7 +24,7 @@ PATH = os.path.realpath(__file__)
 def create_image_menu_item(label, image):
     item = Gtk.ImageMenuItem()
     img = Gtk.Image()
-    img.set_from_file(os.path.abspath(resource_filename('boobank_indicator.data', image)))
+    img.set_from_file(os.path.abspath(resource_filename("boobank_indicator.data", image)))
     item.set_image(img)
     item.set_label(label)
     item.set_always_show_image(True)
@@ -41,8 +41,8 @@ class BoobankTransactionsChecker(Thread):
     def run(self):
         account_history_menu = Gtk.Menu()
 
-        for tr in self.woob.do('iter_history', self.account, backends=self.account.backend):
-            label = u'%s - %s: %s%s' % (tr.date, tr.label, tr.amount, self.account.currency_text)
+        for tr in self.woob.do("iter_history", self.account, backends=self.account.backend):
+            label = "%s - %s: %s%s" % (tr.date, tr.label, tr.amount, self.account.currency_text)
             image = "green_light.png" if tr.amount > 0 else "red_light.png"
             transaction_item = create_image_menu_item(label, image)
             account_history_menu.append(transaction_item)
@@ -51,19 +51,20 @@ class BoobankTransactionsChecker(Thread):
         self.menu.set_submenu(account_history_menu)
 
 
-class BoobankChecker():
+class BoobankChecker:
     def __init__(self):
-        self.ind = appindicator.Indicator.new(APPINDICATOR_ID,
-                                              os.path.abspath(resource_filename('boobank_indicator.data',
-                                                                                'indicator-boobank.png')),
-                                              appindicator.IndicatorCategory.APPLICATION_STATUS)
+        self.ind = appindicator.Indicator.new(
+            APPINDICATOR_ID,
+            os.path.abspath(resource_filename("boobank_indicator.data", "indicator-boobank.png")),
+            appindicator.IndicatorCategory.APPLICATION_STATUS,
+        )
 
         self.menu = Gtk.Menu()
         self.ind.set_menu(self.menu)
 
         logging.basicConfig()
-        if 'woob_path' in os.environ:
-            self.woob = Woob(os.environ['woob_path'])
+        if "woob_path" in os.environ:
+            self.woob = Woob(os.environ["woob_path"])
         else:
             self.woob = Woob()
 
@@ -81,11 +82,11 @@ class BoobankChecker():
         self.clean_menu(self.menu)
 
         total = 0
-        currency = ''
+        currency = ""
         threads = []
 
         try:
-            for account in self.woob.do('iter_accounts'):
+            for account in self.woob.do("iter_accounts"):
 
                 balance = account.balance
                 if account.coming:
@@ -115,9 +116,11 @@ class BoobankChecker():
             thread.menu.show()
 
         if len(self.menu.get_children()) == 0:
-            Notify.Notification.new('<b>Boobank</b>',
-                                    'No Bank account found\n Please configure one by running boobank',
-                                    'notification-message-im').show()
+            Notify.Notification.new(
+                "<b>Boobank</b>",
+                "No Bank account found\n Please configure one by running boobank",
+                "notification-message-im",
+            ).show()
 
         sep = Gtk.SeparatorMenuItem()
         self.menu.append(sep)
@@ -135,7 +138,7 @@ class BoobankChecker():
         image = Gtk.Image()
         image.set_from_stock(Gtk.STOCK_QUIT, Gtk.IconSize.BUTTON)
         btnQuit.set_image(image)
-        btnQuit.set_label('Quit')
+        btnQuit.set_label("Quit")
         btnQuit.set_always_show_image(True)
         btnQuit.connect("activate", self.quit)
         self.menu.append(btnQuit)
@@ -152,15 +155,15 @@ class BoobankChecker():
         for backend, error, backtrace in errors.errors:
             notify = True
             if isinstance(error, BrowserIncorrectPassword):
-                msg = 'invalid login/password.'
+                msg = "invalid login/password."
             elif isinstance(error, BrowserSSLError):
-                msg = '/!\\ SERVER CERTIFICATE IS INVALID /!\\'
+                msg = "/!\\ SERVER CERTIFICATE IS INVALID /!\\"
             elif isinstance(error, BrowserForbidden):
-                msg = str(error) or 'Forbidden'
+                msg = str(error) or "Forbidden"
             elif isinstance(error, BrowserUnavailable):
                 msg = str(error)
                 if not msg:
-                    msg = 'website is unavailable.'
+                    msg = "website is unavailable."
             elif isinstance(error, NotImplementedError):
                 notify = False
             elif isinstance(error, UserError):
@@ -171,9 +174,9 @@ class BoobankChecker():
                 msg = str(error)
 
             if notify:
-                Notify.Notification.new('<b>Error Boobank: %s</b>' % backend.name,
-                                        msg,
-                                        'notification-message-im').show()
+                Notify.Notification.new(
+                    "<b>Error Boobank: %s</b>" % backend.name, msg, "notification-message-im"
+                ).show()
 
     def main(self):
         self.check_boobank()
@@ -184,7 +187,7 @@ class BoobankChecker():
 def main():
     signal(SIGINT, SIG_DFL)
     GObject.threads_init()
-    Notify.init('boobank_indicator')
+    Notify.init("boobank_indicator")
     BoobankChecker().main()
 
 

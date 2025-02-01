@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class BaseAction():
+class BaseAction:
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -12,5 +12,6 @@ class BaseAction():
         if you want to associate an action to the menu
         """
         pass
+
 
 actions = {}

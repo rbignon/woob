@@ -23,7 +23,7 @@ from .file import BaseFile, CapFile
 from .image import Thumbnail
 
 
-__all__ = ['BaseAudio', 'CapAudio']
+__all__ = ["BaseAudio", "CapAudio"]
 
 
 def decode_id(decode_func):
@@ -37,7 +37,9 @@ def decode_id(decode_func):
             new_args = [_id]
             new_args.extend(args[1:])
             return func(self, *new_args, **kwargs)
+
         return inner
+
     return wrapper
 
 
@@ -45,59 +47,62 @@ class Album(BaseObject):
     """
     Represent an album
     """
-    title = StringField('album name')
-    author = StringField('artist name')
-    year = IntField('release year')
-    thumbnail = Field('Image associated to the album', Thumbnail)
-    tracks_list = Field('list of tracks', list)
+
+    title = StringField("album name")
+    author = StringField("artist name")
+    year = IntField("release year")
+    thumbnail = Field("Image associated to the album", Thumbnail)
+    tracks_list = Field("list of tracks", list)
 
     @classmethod
     def decode_id(cls, _id):
         if _id:
-            m = re.match(r'^(album)\.(.*)', _id)
+            m = re.match(r"^(album)\.(.*)", _id)
             if m:
                 return m.group(2)
             return _id
 
-        return ''
+        return ""
 
 
 class Playlist(BaseObject):
     """
     Represent a playlist
     """
-    title = StringField('playlist name')
-    tracks_list = Field('list of tracks', list)
+
+    title = StringField("playlist name")
+    tracks_list = Field("list of tracks", list)
 
     @classmethod
     def decode_id(cls, _id):
         if _id:
-            m = re.match(r'^(playlist)\.(.*)', _id)
+            m = re.match(r"^(playlist)\.(.*)", _id)
             if m:
                 return m.group(2)
             return _id
 
-        return ''
+        return ""
 
 
 class BaseAudio(BaseFile):
     """
     Represent an audio file
     """
-    duration =  DeltaField('file duration')
-    bitrate =   IntField('file bit rate in Kbps')
-    format =    StringField('file format')
-    thumbnail = Field('Image associated to the file', Thumbnail)
+
+    duration = DeltaField("file duration")
+    bitrate = IntField("file bit rate in Kbps")
+    format = StringField("file format")
+    thumbnail = Field("Image associated to the file", Thumbnail)
 
     @classmethod
     def decode_id(cls, _id):
         if _id:
-            m = re.match(r'^(audio)\.(.*)', _id)
+            m = re.match(r"^(audio)\.(.*)", _id)
             if m:
                 return m.group(2)
             return _id
 
-        return ''
+        return ""
 
 
 class CapAudio(CapFile):
@@ -107,15 +112,15 @@ class CapAudio(CapFile):
 
     @classmethod
     def get_object_method(cls, _id):
-        m = re.match(r'^(\w+)\.(.*)', _id)
+        m = re.match(r"^(\w+)\.(.*)", _id)
         if m:
-            if m.group(1) == 'album':
-                return 'get_album'
+            if m.group(1) == "album":
+                return "get_album"
 
-            if m.group(1) == 'playlist':
-                return 'get_playlist'
+            if m.group(1) == "playlist":
+                return "get_playlist"
 
-            return 'get_audio'
+            return "get_audio"
 
         return None
 

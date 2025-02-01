@@ -24,26 +24,26 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import DeathbycaptchaBrowser
 
 
-__all__ = ['DeathbycaptchaModule']
+__all__ = ["DeathbycaptchaModule"]
 
 
 class DeathbycaptchaModule(Module, CapCaptchaSolver):
-    NAME = 'deathbycaptcha'
-    DESCRIPTION = 'Death By Captcha'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "deathbycaptcha"
+    DESCRIPTION = "Death By Captcha"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     CONFIG = BackendConfig(
-        Value('login'),
-        ValueBackendPassword('password'),
+        Value("login"),
+        ValueBackendPassword("password"),
     )
 
     BROWSER = DeathbycaptchaBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def create_job(self, job):
         if isinstance(job, ImageCaptchaJob):

@@ -19,4 +19,4 @@
 from .module import GroupamaModule
 
 
-__all__ = ['GroupamaModule']
+__all__ = ["GroupamaModule"]

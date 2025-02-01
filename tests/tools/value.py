@@ -23,45 +23,45 @@ from woob.tools.backend import BackendConfig
 from woob.tools.value import Value, ValuesDict
 
 
-@pytest.mark.parametrize('cls', (ValuesDict, BackendConfig))
+@pytest.mark.parametrize("cls", (ValuesDict, BackendConfig))
 def test_with_values(cls):
     """Test creating copies of dictionaries using with_values."""
     first_obj = cls(
-        Value('a', label='A value'),
-        Value('b', label='B value'),
+        Value("a", label="A value"),
+        Value("b", label="B value"),
     )
     second_obj = first_obj.with_values(
-        Value('a', label='Different A value'),
-        Value('c', label='C value'),
+        Value("a", label="Different A value"),
+        Value("c", label="C value"),
     )
 
     # Check that the first object hasn't changed, and that the second
     # object indeed is different.
     assert second_obj is not first_obj
-    assert set(first_obj) == {'a', 'b'}
-    assert first_obj['a'].label == 'A value'
+    assert set(first_obj) == {"a", "b"}
+    assert first_obj["a"].label == "A value"
 
     # Check that the second object is how we want it.
-    assert set(second_obj) == {'a', 'b', 'c'}
-    assert second_obj['a'] is not first_obj['a']
-    assert second_obj['b'] is first_obj['b']  # No unnecessary copies.
-    assert second_obj['a'].label == 'Different A value'
+    assert set(second_obj) == {"a", "b", "c"}
+    assert second_obj["a"] is not first_obj["a"]
+    assert second_obj["b"] is first_obj["b"]  # No unnecessary copies.
+    assert second_obj["a"].label == "Different A value"
 
 
-@pytest.mark.parametrize('cls', (ValuesDict, BackendConfig))
+@pytest.mark.parametrize("cls", (ValuesDict, BackendConfig))
 def test_without_values(cls):
     """Test creating copies of dictionaries using without_values."""
     first_obj = cls(
-        Value('a', label='A value'),
-        Value('b', label='B value'),
+        Value("a", label="A value"),
+        Value("b", label="B value"),
     )
-    second_obj = first_obj.without_values('b')
+    second_obj = first_obj.without_values("b")
 
     # Check that the first object hasn't changed, and that the second
     # object indeed is different.
     assert second_obj is not first_obj
-    assert set(first_obj) == {'a', 'b'}
+    assert set(first_obj) == {"a", "b"}
 
     # Check that the second object is how we want it.
-    assert set(second_obj) == {'a'}
-    assert second_obj['a'] is first_obj['a']
+    assert set(second_obj) == {"a"}
+    assert second_obj["a"] is first_obj["a"]

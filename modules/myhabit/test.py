@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest
 
 
 class MyHabitTest(BackendTest):
-    MODULE = 'myhabit'
+    MODULE = "myhabit"
 
     def test_history(self):
         """

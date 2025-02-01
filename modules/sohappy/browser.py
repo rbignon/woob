@@ -56,9 +56,7 @@ class SohappyBrowser(LoginBrowser):
 
     def do_login(self):
         try:
-            self.login.go(
-                method="POST", json={"mail": self.username, "password": self.password}
-            )
+            self.login.go(method="POST", json={"mail": self.username, "password": self.password})
         except ClientError as exc:
             if (
                 exc.response
@@ -68,9 +66,7 @@ class SohappyBrowser(LoginBrowser):
                 raise BrowserIncorrectPassword(exc.response.json()["error"]["message"])
             raise
         self.logged = True
-        self.session.headers.update(
-            {"Authorization": f"Bearer {self.page.get_token()}"}
-        )
+        self.session.headers.update({"Authorization": f"Bearer {self.page.get_token()}"})
 
     @need_login
     def get_profile(self):
@@ -86,9 +82,7 @@ class SohappyBrowser(LoginBrowser):
     def iter_documents(self, subscription):
         for client in subscription.clients:
             self.bills.go(child=subscription.id, client=client)
-            for document in self.page.get_document_list(
-                child=subscription.id, client=client
-            ):
+            for document in self.page.get_document_list(child=subscription.id, client=client):
                 yield document
 
     @need_login
@@ -101,9 +95,7 @@ class SohappyBrowser(LoginBrowser):
     def get_balance(self, subscription):
         ret = Detail()
         due_bills = [
-            bill.due_price
-            for bill in self.iter_documents(subscription)
-            if isinstance(bill, Bill) and bill.due_price
+            bill.due_price for bill in self.iter_documents(subscription) if isinstance(bill, Bill) and bill.due_price
         ]
         ret.price = sum(due_bills)
         ret.currency = "€"

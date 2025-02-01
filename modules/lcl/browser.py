@@ -34,11 +34,39 @@ from woob.exceptions import ActionNeeded, ActionType, BrowserIncorrectPassword, 
 from woob.tools.decorators import retry
 
 from .pages import (
-    CONTRACT_TYPES, AccountsPage, AggregationPage, AVHistoryPage, AVInvestmentsPage, BourseHomePage, BoursePage,
-    BoursePreLoadPage, CardDetailsPage, CardsPage, CardSynthesisPage, CardTransactionsPage, DiscPage, DocumentsPage,
-    ForbiddenLifeInsurancesPage, GetContractPage, HomePage, KeypadPage, LaunchRedirectionPage, LifeInsurancesPage,
-    LoanDetailsPage, LoansPage, LoginPage, MonEspaceHome, NoPermissionPage, PreAccessPage, PreHomePage, RedirectionPage,
-    RedirectMonEspaceHome, RoutagePage, SEPAMandatePage, TermAccountsPage, TransactionsPage,
+    CONTRACT_TYPES,
+    AccountsPage,
+    AggregationPage,
+    AVHistoryPage,
+    AVInvestmentsPage,
+    BourseHomePage,
+    BoursePage,
+    BoursePreLoadPage,
+    CardDetailsPage,
+    CardsPage,
+    CardSynthesisPage,
+    CardTransactionsPage,
+    DiscPage,
+    DocumentsPage,
+    ForbiddenLifeInsurancesPage,
+    GetContractPage,
+    HomePage,
+    KeypadPage,
+    LaunchRedirectionPage,
+    LifeInsurancesPage,
+    LoanDetailsPage,
+    LoansPage,
+    LoginPage,
+    MonEspaceHome,
+    NoPermissionPage,
+    PreAccessPage,
+    PreHomePage,
+    RedirectionPage,
+    RedirectMonEspaceHome,
+    RoutagePage,
+    SEPAMandatePage,
+    TermAccountsPage,
+    TransactionsPage,
 )
 
 
@@ -53,114 +81,104 @@ class LifeInsuranceNotAvailable(Exception):
 
 
 class LCLBrowser(LoginBrowser, StatesMixin):
-    BASEURL = 'https://monespace.lcl.fr'
+    BASEURL = "https://monespace.lcl.fr"
 
-    keypad = URL(r'/api/login/keypad', KeypadPage)
-    login = URL(r'/api/login', LoginPage)
-    login_contract = URL(r'/api/login/contract')
-    user_contract = URL(r'/api/user/contract')
-    authorized_operations = URL(r'/api/user/authorized_operations\?contract_id=(?P<contracts_id>.*)')
-    pre_access = URL(r'/api/user/messaging/pre-access', PreAccessPage)
+    keypad = URL(r"/api/login/keypad", KeypadPage)
+    login = URL(r"/api/login", LoginPage)
+    login_contract = URL(r"/api/login/contract")
+    user_contract = URL(r"/api/user/contract")
+    authorized_operations = URL(r"/api/user/authorized_operations\?contract_id=(?P<contracts_id>.*)")
+    pre_access = URL(r"/api/user/messaging/pre-access", PreAccessPage)
     launch_redirection = URL(
-        r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/warbel-context-provider',
-        LaunchRedirectionPage
+        r"https://(?P<website>.+).secure.lcl.fr/outil/UAUT/warbel-context-provider", LaunchRedirectionPage
     )
-    redirection = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/Contract/redirection', RedirectionPage)
+    redirection = URL(r"https://(?P<website>.+).secure.lcl.fr/outil/UAUT/Contract/redirection", RedirectionPage)
 
-    pre_home = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UWER/Accueil/majicER', PreHomePage)
-    home = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UWHO/Accueil/', HomePage)
+    pre_home = URL(r"https://(?P<website>.+).secure.lcl.fr/outil/UWER/Accueil/majicER", PreHomePage)
+    home = URL(r"https://(?P<website>.+).secure.lcl.fr/outil/UWHO/Accueil/", HomePage)
 
     redirect_monespace_home = URL(
-        r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/acces_refonte\?xtatc=INT-937',
-        RedirectMonEspaceHome
+        r"https://(?P<website>.+).secure.lcl.fr/outil/UAUT/acces_refonte\?xtatc=INT-937", RedirectMonEspaceHome
     )
-    monespace_home = URL(r'/connexion/legacy', MonEspaceHome)
-    aggregation = URL(r'/api/user/accounts/aggregation\?contract_id=(?P<contracts_id>.*)', AggregationPage)
+    monespace_home = URL(r"/connexion/legacy", MonEspaceHome)
+    aggregation = URL(r"/api/user/accounts/aggregation\?contract_id=(?P<contracts_id>.*)", AggregationPage)
 
     accounts = URL(
-        r'/api/user/accounts\?type=current&contract_id=(?P<contracts_id>.*)&is_eligible_for_identity=false&include_aggregate_account=false',
-        AccountsPage
+        r"/api/user/accounts\?type=current&contract_id=(?P<contracts_id>.*)&is_eligible_for_identity=false&include_aggregate_account=false",
+        AccountsPage,
     )
     savings = URL(
-        r'/api/user/accounts\?type=saving&contract_id=(?P<contracts_id>.*)&is_eligible_for_identity=false&include_aggregate_account=false',
-        AccountsPage
+        r"/api/user/accounts\?type=saving&contract_id=(?P<contracts_id>.*)&is_eligible_for_identity=false&include_aggregate_account=false",
+        AccountsPage,
     )
-    term_accounts = URL(r'/api/user/accounts/term_accounts\?contract_id=(?P<contracts_id>.*)', TermAccountsPage)
-    cards = URL(
-        r'/api/user/cards/deferred\?contract_id=(?P<contracts_id>.*)&include_aggregation=false',
-        CardsPage
-    )
-    cards_synthesis = URL(r'/api/user/cards/synthesis\?contract_id=(?P<contracts_id>.*)', CardSynthesisPage)
-    card_details = URL(r'/api/user/cards/(?P<card_id>.*)/detail', CardDetailsPage)
+    term_accounts = URL(r"/api/user/accounts/term_accounts\?contract_id=(?P<contracts_id>.*)", TermAccountsPage)
+    cards = URL(r"/api/user/cards/deferred\?contract_id=(?P<contracts_id>.*)&include_aggregation=false", CardsPage)
+    cards_synthesis = URL(r"/api/user/cards/synthesis\?contract_id=(?P<contracts_id>.*)", CardSynthesisPage)
+    card_details = URL(r"/api/user/cards/(?P<card_id>.*)/detail", CardDetailsPage)
     life_insurances = URL(
-        r'/api/user/accounts/life_insurances\?contract_id=(?P<contracts_id>.*)&include_aggregate_account=false',
-        LifeInsurancesPage
+        r"/api/user/accounts/life_insurances\?contract_id=(?P<contracts_id>.*)&include_aggregate_account=false",
+        LifeInsurancesPage,
     )
     forbidden_life_insurances = URL(
-        r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/SansDroit/affichePageSansDroit',
+        r"https://(?P<website>.+).secure.lcl.fr/outil/UAUT/SansDroit/affichePageSansDroit",
         ForbiddenLifeInsurancesPage,
     )
-    loans = URL(
-        r'/api/user/loans\?contract_id=(?P<contracts_id>.*)&include_aggregate_loan=false',
-        LoansPage
-    )
+    loans = URL(r"/api/user/loans\?contract_id=(?P<contracts_id>.*)&include_aggregate_loan=false", LoansPage)
     loan_details = URL(
-        r'/api/user/loans/(?P<loan_id>.*)\?source_code=(?P<source_code>.*)&product_code=(?P<product_code>.*)&branch=(?P<branch>.*)&account=(?P<account>.*)&is_aggregate_loan=false&contract_id=(?P<contracts_id>.*)',
-        LoanDetailsPage
+        r"/api/user/loans/(?P<loan_id>.*)\?source_code=(?P<source_code>.*)&product_code=(?P<product_code>.*)&branch=(?P<branch>.*)&account=(?P<account>.*)&is_aggregate_loan=false&contract_id=(?P<contracts_id>.*)",
+        LoanDetailsPage,
     )
-    revolvings = URL(r'api/user/loans/revolving\?contract_id=(?P<contracts_id>.*)&include_aggregate_loan=false')
+    revolvings = URL(r"api/user/loans/revolving\?contract_id=(?P<contracts_id>.*)&include_aggregate_loan=false")
 
     transactions = URL(
-        r'/api/user/accounts/(?P<account_id>.*)/transactions\?contract_id=(?P<contracts_id>.*)&range=(?P<begin>.+)-(?P<end>.+)',
-        TransactionsPage
+        r"/api/user/accounts/(?P<account_id>.*)/transactions\?contract_id=(?P<contracts_id>.*)&range=(?P<begin>.+)-(?P<end>.+)",
+        TransactionsPage,
     )
     cards_transactions = URL(
-        r'/api/user/cards/(?P<card_id>.*)/transactions\?contract_id=(?P<contracts_id>.*)',
-        CardTransactionsPage
+        r"/api/user/cards/(?P<card_id>.*)/transactions\?contract_id=(?P<contracts_id>.*)", CardTransactionsPage
     )
     sepa_mandate = URL(
-        r'/api/user/accounts/sepa/debits\?contract_id=(?P<contracts_id>.*)&account_id=(?P<account_id>.*)&number_of_days=14&range=(?P<begin>.+)-(?P<end>.+)',
-        SEPAMandatePage
+        r"/api/user/accounts/sepa/debits\?contract_id=(?P<contracts_id>.*)&account_id=(?P<account_id>.*)&number_of_days=14&range=(?P<begin>.+)-(?P<end>.+)",
+        SEPAMandatePage,
     )
 
-    routage = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UWVI/Routage', RoutagePage)
-    get_contract = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/Contract/getContract', GetContractPage)
-    av_transactions = URL(r'https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/assurance/historique', AVHistoryPage)
+    routage = URL(r"https://(?P<website>.+).secure.lcl.fr/outil/UWVI/Routage", RoutagePage)
+    get_contract = URL(r"https://(?P<website>.+).secure.lcl.fr/outil/UAUT/Contract/getContract", GetContractPage)
+    av_transactions = URL(r"https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/assurance/historique", AVHistoryPage)
     av_investments = URL(
-        r'https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/detailEpargne/contrat',
-        AVInvestmentsPage
+        r"https://assurance-vie-et-prevoyance.secure.lcl.fr/rest/detailEpargne/contrat", AVInvestmentsPage
     )
 
     # Documents
-    documents = URL(r'/api/user/documents/accounts_statements', DocumentsPage)
-    download_document = URL(r'/api/user/documents/download\?downloadToken=(?P<token>.*)')
-    bourse_pre_load = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UWMI/Bourse', BoursePreLoadPage)
-    bourse_home = URL(r'https://(?P<website>.+).secure.lcl.fr/outil/UWMI/Accueil/accueil', BourseHomePage)
+    documents = URL(r"/api/user/documents/accounts_statements", DocumentsPage)
+    download_document = URL(r"/api/user/documents/download\?downloadToken=(?P<token>.*)")
+    bourse_pre_load = URL(r"https://(?P<website>.+).secure.lcl.fr/outil/UWMI/Bourse", BoursePreLoadPage)
+    bourse_home = URL(r"https://(?P<website>.+).secure.lcl.fr/outil/UWMI/Accueil/accueil", BourseHomePage)
     bourse = URL(
-        r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis',
-        r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.account.*',
-        r'https://(?P<website>.+).secure.lcl.fr/outil/UWBO.*',
-        BoursePage
+        r"https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis",
+        r"https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.account.*",
+        r"https://(?P<website>.+).secure.lcl.fr/outil/UWBO.*",
+        BoursePage,
     )
-    no_perm = URL(r'/outil/UAUT/SansDroit/affichePageSansDroit.*', NoPermissionPage)
+    no_perm = URL(r"/outil/UAUT/SansDroit/affichePageSansDroit.*", NoPermissionPage)
     disc = URL(
-        r'https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.login.ContextTransferDisconnect',
-        r'https://assurance-vie-et-prevoyance.secure.lcl.fr/filiale/entreeBam\?.*\btypeaction=reroutage_retour\b',
-        r'https://assurance-vie-et-prevoyance.secure.lcl.fr/filiale/ServletReroutageCookie',
-        r'https://(?P<website>.+).secure.lcl.fr/outil/UAUT/RetourPartenaire/retourCar',
-        DiscPage
+        r"https://bourse.secure.lcl.fr/netfinca-titres/servlet/com.netfinca.frontcr.login.ContextTransferDisconnect",
+        r"https://assurance-vie-et-prevoyance.secure.lcl.fr/filiale/entreeBam\?.*\btypeaction=reroutage_retour\b",
+        r"https://assurance-vie-et-prevoyance.secure.lcl.fr/filiale/ServletReroutageCookie",
+        r"https://(?P<website>.+).secure.lcl.fr/outil/UAUT/RetourPartenaire/retourCar",
+        DiscPage,
     )
 
-    __states__ = ('session_id', 'contract_id', 'encoded_contract_id', 'user_name')
+    __states__ = ("session_id", "contract_id", "encoded_contract_id", "user_name")
 
     def __init__(self, config, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.session_id = ''.join(random.choices(string.digits, k=29))
-        self.website = self.update_website(config['website'].get())
-        if not re.match(r'^\d{10}$', self.username):
-            raise BrowserIncorrectPassword('Login should be composed of 10 numbers', bad_fields=['login'])
-        if not re.match(r'^\d{6}$', self.password):
-            raise BrowserIncorrectPassword('Password should be composed of 6 numbers', bad_fields=['password'])
+        self.session_id = "".join(random.choices(string.digits, k=29))
+        self.website = self.update_website(config["website"].get())
+        if not re.match(r"^\d{10}$", self.username):
+            raise BrowserIncorrectPassword("Login should be composed of 10 numbers", bad_fields=["login"])
+        if not re.match(r"^\d{6}$", self.password):
+            raise BrowserIncorrectPassword("Password should be composed of 6 numbers", bad_fields=["password"])
 
     def check_website_attribute(self):
         # Fetch correct website attribute directly from the website
@@ -170,17 +188,17 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             # "particuliers" or "professionnels" will work.
             return
         real_website = self.page.get_website()
-        if real_website in ('PM', 'EI'):
-            if self.website != 'professionnels':
+        if real_website in ("PM", "EI"):
+            if self.website != "professionnels":
                 raise BrowserIncorrectPassword(
                     message="Vous avez choisi l'espace particuliers mais votre compte dépend de l'espace professionnels.",
-                    bad_fields=['website'],
+                    bad_fields=["website"],
                 )
         else:
-            if self.website == 'professionnels':
+            if self.website == "professionnels":
                 raise BrowserIncorrectPassword(
                     message="Vous avez choisi l'espace professionnels mais votre compte dépend de l'espace particuliers.",
-                    bad_fields=['website'],
+                    bad_fields=["website"],
                 )
 
     def do_login(self):
@@ -189,30 +207,34 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         try:
             self.login.go(
                 json={
-                    'callingUrl': '/connexion',
-                    'clientTimestamp': round(time.time() * 1000),
-                    'encryptedIdentifier': False,
-                    'identifier': self.username,
-                    'keypad': self.page.encode_password(self.password),
-                    'sessionId': self.session_id,
+                    "callingUrl": "/connexion",
+                    "clientTimestamp": round(time.time() * 1000),
+                    "encryptedIdentifier": False,
+                    "identifier": self.username,
+                    "keypad": self.page.encode_password(self.password),
+                    "sessionId": self.session_id,
                 },
             )
         except ClientError as e:
             if e.response.status_code == 401:
                 code, message = LoginPage(self, e.response).get_error()
-                if code == 'INVALID_USER_ID':
-                    raise BrowserIncorrectPassword(bad_fields=['login'])
-                if code == 'BAD_CREDENTIALS':
-                    raise BrowserIncorrectPassword(bad_fields=['password'])
-                if code in ('BAD_CREDENTIALS_AND_TEMPORARY_BLOCKING', 'CREDENTIALS_BLOCKED', 'ACCESS_BLOCKED'):
+                if code == "INVALID_USER_ID":
+                    raise BrowserIncorrectPassword(bad_fields=["login"])
+                if code == "BAD_CREDENTIALS":
+                    raise BrowserIncorrectPassword(bad_fields=["password"])
+                if code in ("BAD_CREDENTIALS_AND_TEMPORARY_BLOCKING", "CREDENTIALS_BLOCKED", "ACCESS_BLOCKED"):
                     raise BrowserUserBanned()
-                raise AssertionError(f'Unhandled error code during login. code:{code}, message:{message}')
-            raise AssertionError('Unhandled error during login')
+                raise AssertionError(f"Unhandled error code during login. code:{code}, message:{message}")
+            raise AssertionError("Unhandled error during login")
 
         (
-            self.token, self.refresh_token, self.expire_date, self.encrypted_expire_date, self.redirect_user_id,
+            self.token,
+            self.refresh_token,
+            self.expire_date,
+            self.encrypted_expire_date,
+            self.redirect_user_id,
         ) = self.page.get_authentication_data()
-        self.session.headers['X-Authorization'] = f'Bearer {self.token}'
+        self.session.headers["X-Authorization"] = f"Bearer {self.token}"
 
         self.check_website_attribute()
 
@@ -220,7 +242,8 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         self.mfa_type, self.device_name = self.page.get_mfa_details()
         if self.mfa_type:
             raise ActionNeeded(
-                locale="fr-FR", message="Veuillez réaliser l'authentification forte depuis votre navigateur.",
+                locale="fr-FR",
+                message="Veuillez réaliser l'authentification forte depuis votre navigateur.",
                 action_type=ActionType.PERFORM_MFA,
             )
 
@@ -230,14 +253,14 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
         self.login_contract.go(
             json={
-                'clientTimestamp': round(time.time() * 1000),
-                'contractId': self.contract_id,
+                "clientTimestamp": round(time.time() * 1000),
+                "contractId": self.contract_id,
             },
         )
         self.user_contract.go(
             json={
-                'type': CONTRACT_TYPES[self.website],
-                'id': self.contract_id,
+                "type": CONTRACT_TYPES[self.website],
+                "id": self.contract_id,
             },
         )
 
@@ -247,12 +270,12 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         except ClientError:
             # encountred on a connection where we get redirected to the legacy website (in the browser)
             # unable to reproduce since then.
-            self.logger.info('Redirect to legacy website required.')
+            self.logger.info("Redirect to legacy website required.")
 
             self.go_legacy_website()
 
             self.redirect_monespace_home.go(website=self.website)
-            assert self.monespace_home.is_here(), 'expected to be in monespace_home'
+            assert self.monespace_home.is_here(), "expected to be in monespace_home"
 
             self.aggregation.go(contracts_id=self.encoded_contract_id)
 
@@ -320,7 +343,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                 # there's a real website problem
                 self.logger.warning(f"Could not access loan details. Skipping. Loan's amount: {loan.total_amount}")
             else:
-                self.logger.info('Successfully reached loan details.')
+                self.logger.info("Successfully reached loan details.")
                 self.page.fill_loan(obj=loan)
                 # sometimes the `_parent_id` is not enough to find the parent
                 if not loan.parent:
@@ -333,8 +356,13 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     @need_login
     def iter_history(self, account):
         ALLOWED_TYPES = (
-            Account.TYPE_CHECKING, Account.TYPE_SAVINGS, Account.TYPE_PEA, Account.TYPE_CARD,
-            Account.TYPE_DEPOSIT, Account.TYPE_LIFE_INSURANCE, Account.TYPE_MARKET,
+            Account.TYPE_CHECKING,
+            Account.TYPE_SAVINGS,
+            Account.TYPE_PEA,
+            Account.TYPE_CARD,
+            Account.TYPE_DEPOSIT,
+            Account.TYPE_LIFE_INSURANCE,
+            Account.TYPE_MARKET,
         )
         if account.type not in ALLOWED_TYPES:
             return
@@ -348,9 +376,10 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             self.go_bourse_website()
             self.connexion_bourse()
             self.location(
-                account._link_id, params={
-                    'nump': account._market_id,
-                }
+                account._link_id,
+                params={
+                    "nump": account._market_id,
+                },
             )
             self.page.get_fullhistory()
             yield from self.page.iter_history()
@@ -437,26 +466,28 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             yield from self.page.iter_investment()
             return
 
-        self.logger.warning('Unhandled case.')
+        self.logger.warning("Unhandled case.")
 
     def go_legacy_website(self):
-        del self.session.headers['X-Authorization']
-        self.session.headers.update({
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Referer': 'https://monespace.lcl.fr/',
-        })
+        del self.session.headers["X-Authorization"]
+        self.session.headers.update(
+            {
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                "Referer": "https://monespace.lcl.fr/",
+            }
+        )
         self.launch_redirection.go(
             website=self.website,
             data={
-                'token': self.token,
-                'rt': self.refresh_token,
-                'exp': self.encrypted_expire_date,
-                'ib': self.redirect_user_id,
+                "token": self.token,
+                "rt": self.refresh_token,
+                "exp": self.encrypted_expire_date,
+                "ib": self.redirect_user_id,
             },
             headers={
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                'Referer': 'https://monespace.lcl.fr/',
-            }
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                "Referer": "https://monespace.lcl.fr/",
+            },
         )
 
         if self.launch_redirection.is_here():
@@ -465,15 +496,15 @@ class LCLBrowser(LoginBrowser, StatesMixin):
                 # the user needs to use new credentials the bank sent them.
                 # the current credentials are temporary and give limited access.
                 raise ActionNeeded(message)
-            raise AssertionError(f'Wrong redirection. message: {message}.')
+            raise AssertionError(f"Wrong redirection. message: {message}.")
 
-        assert self.redirection.is_here(), 'expected to be in redirection'
+        assert self.redirection.is_here(), "expected to be in redirection"
         self.page.go_pre_home()
 
-        assert self.pre_home.is_here(), 'expected to be in pre_home'
+        assert self.pre_home.is_here(), "expected to be in pre_home"
         self.page.go_home()
 
-        assert self.home.is_here(), 'expected to be in home'
+        assert self.home.is_here(), "expected to be in home"
 
     @retry(LifeInsuranceUnreachable)
     def go_life_insurance_website(self, account):
@@ -485,17 +516,17 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             self.launch_redirection.go(
                 website=self.website,
                 data={
-                    'token': self.token,
-                    'rt': self.refresh_token,
-                    'exp': self.encrypted_expire_date,
-                    'ib': self.redirect_user_id,
-                    'from': '/outil/UWVI/Routage',
-                    'monEspaceRouteBack': self.encode_64('/synthese/epargne'),
-                    'redirectTo': account._partner_label,  # ex: 'PREDICA'
-                    'isFromNewApp': 'true',
-                    'ORIGINE_URL': 'SAV',
-                    'NUM_CONTRAT': account.id,
-                    'PRODUCTEUR': account._partner_code,  # ex: '02'
+                    "token": self.token,
+                    "rt": self.refresh_token,
+                    "exp": self.encrypted_expire_date,
+                    "ib": self.redirect_user_id,
+                    "from": "/outil/UWVI/Routage",
+                    "monEspaceRouteBack": self.encode_64("/synthese/epargne"),
+                    "redirectTo": account._partner_label,  # ex: 'PREDICA'
+                    "isFromNewApp": "true",
+                    "ORIGINE_URL": "SAV",
+                    "NUM_CONTRAT": account.id,
+                    "PRODUCTEUR": account._partner_code,  # ex: '02'
                 },
             )
         except ServerError as error:
@@ -512,7 +543,7 @@ class LCLBrowser(LoginBrowser, StatesMixin):
             raise LifeInsuranceNotAvailable()
 
         if not self.routage.is_here():
-            raise AssertionError('Unexpected redirection')
+            raise AssertionError("Unexpected redirection")
 
         self.page.send_form()
 
@@ -521,15 +552,15 @@ class LCLBrowser(LoginBrowser, StatesMixin):
         self.launch_redirection.go(
             website=self.website,
             data={
-                'token': self.token,
-                'rt': self.refresh_token,
-                'exp': self.encrypted_expire_date,
-                'ib': self.redirect_user_id,
-                'from': '/outil/UWMI/Bourse',
-                'monEspaceRouteBack': self.encode_64('/synthese/epargne'),
-                'redirectTo': 'BOURSE',
-                'canal': 'WEB',
-                'isFromNewApp': 'true',
+                "token": self.token,
+                "rt": self.refresh_token,
+                "exp": self.encrypted_expire_date,
+                "ib": self.redirect_user_id,
+                "from": "/outil/UWMI/Bourse",
+                "monEspaceRouteBack": self.encode_64("/synthese/epargne"),
+                "redirectTo": "BOURSE",
+                "canal": "WEB",
+                "isFromNewApp": "true",
             },
         )
         if self.bourse_home.is_here() or self.bourse_pre_load.is_here():
@@ -540,8 +571,8 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     def connexion_bourse(self):
         contract_type = CONTRACT_TYPES[self.website]
         self.location(
-            f'https://{self.website}.secure.lcl.fr/outil/UWBO/AccesBourse/temporisationCar?codeTicker=TICKERBOURSE{contract_type}',
-            data=''
+            f"https://{self.website}.secure.lcl.fr/outil/UWBO/AccesBourse/temporisationCar?codeTicker=TICKERBOURSE{contract_type}",
+            data="",
         )
         if self.no_perm.is_here():
             return False
@@ -558,15 +589,15 @@ class LCLBrowser(LoginBrowser, StatesMixin):
 
     @staticmethod
     def encode_64(contract_id):
-        return b64encode(contract_id.encode('ascii')).decode('ascii')
+        return b64encode(contract_id.encode("ascii")).decode("ascii")
 
     @staticmethod
     def update_website(website):
-        if website == 'pro':
-            return 'professionnels'
+        if website == "pro":
+            return "professionnels"
 
         # default to 'particuliers'
-        return 'particuliers'
+        return "particuliers"
 
     @need_login
     def iter_subscriptions(self):
@@ -577,12 +608,12 @@ class LCLBrowser(LoginBrowser, StatesMixin):
     def iter_documents(self, subscription):
         today = date.today()
         start = today - relativedelta(years=10)
-        str_start = start.strftime('%Y-%m-%d')
-        str_end = today.strftime('%Y-%m-%d')
+        str_start = start.strftime("%Y-%m-%d")
+        str_end = today.strftime("%Y-%m-%d")
         params = {
-            'initial_date': str_start,
-            'final_date': str_end,
-            'market_code': '01,02,21',
+            "initial_date": str_start,
+            "final_date": str_end,
+            "market_code": "01,02,21",
         }
         self.documents.go(params=params)
         return self.page.iter_documents(subid=subscription.id)

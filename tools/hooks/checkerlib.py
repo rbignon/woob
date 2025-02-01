@@ -9,11 +9,11 @@ from pathlib import Path
 
 
 def get_lines(cmd):
-    return subprocess.check_output(cmd, encoding='utf-8').strip('\n').split('\n')
+    return subprocess.check_output(cmd, encoding="utf-8").strip("\n").split("\n")
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('files', nargs='*')
+parser.add_argument("files", nargs="*")
 
 current_file = Path(__file__).resolve()
 git_root = current_file.parent.parent.parent
@@ -21,17 +21,22 @@ git_root = current_file.parent.parent.parent
 
 def files_to_check(args, pattern=None):
     if pattern is None:
-        pattern = '^# flake8: compatible'
+        pattern = "^# flake8: compatible"
 
     if args.files:
         to_check = args.files
     else:
         try:
-            to_check = get_lines([
-                'git', 'grep', '-l', pattern,
-                git_root / 'modules/**/*.py',  # git will interpret wildcards by itself
-                git_root / 'woob/**/*.py',
-            ])
+            to_check = get_lines(
+                [
+                    "git",
+                    "grep",
+                    "-l",
+                    pattern,
+                    git_root / "modules/**/*.py",  # git will interpret wildcards by itself
+                    git_root / "woob/**/*.py",
+                ]
+            )
         except subprocess.CalledProcessError as exc:
             if exc.returncode != 1:
                 raise
@@ -82,16 +87,13 @@ class Checker:
         if line in self.noqa_lines:
             return
 
-        col_text = ''
+        col_text = ""
         if col is not None:
             col_text = f"{col}:"
 
-        code_text = ''
+        code_text = ""
         if code is not None:
             code_text = f" {code}"
 
-        print(
-            f"{self.filename}:{line}:{col_text}{code_text} {message}",
-            file=sys.stderr
-        )
+        print(f"{self.filename}:{line}:{col_text}{code_text} {message}", file=sys.stderr)
         self.ok = False

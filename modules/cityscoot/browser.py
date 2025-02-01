@@ -24,17 +24,17 @@ from .pages import DocumentsPage, LoginPage, OtpPage, SubscriptionsPage
 
 
 class CityscootBrowser(LoginBrowser):
-    BASEURL = 'https://moncompte.cityscoot.eu'
+    BASEURL = "https://moncompte.cityscoot.eu"
 
-    otp = URL(r'/$', OtpPage)
-    login = URL(r'/$', LoginPage)
-    subscriptions = URL(r'/users$', SubscriptionsPage)
-    documents = URL(r'/factures/view$', DocumentsPage)
+    otp = URL(r"/$", OtpPage)
+    login = URL(r"/$", LoginPage)
+    subscriptions = URL(r"/users$", SubscriptionsPage)
+    documents = URL(r"/factures/view$", DocumentsPage)
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        kwargs['username'] = self.config['login'].get()
-        kwargs['password'] = self.config['password'].get()
+        kwargs["username"] = self.config["login"].get()
+        kwargs["password"] = self.config["password"].get()
         super().__init__(*args, **kwargs)
 
         self.subs = None
@@ -42,11 +42,11 @@ class CityscootBrowser(LoginBrowser):
 
     def do_login(self):
         self.login.go()
-        if self.page.has_captcha() and self.config['captcha_response'].get() is None:
+        if self.page.has_captcha() and self.config["captcha_response"].get() is None:
             website_key = self.page.get_captcha_key()
             raise RecaptchaV2Question(website_key=website_key, website_url=self.url)
 
-        self.page.login(self.username, self.password, self.config['captcha_response'].get())
+        self.page.login(self.username, self.password, self.config["captcha_response"].get())
 
         if self.otp.is_here():
             # yes we can avoid the otp ... wtf
@@ -56,7 +56,7 @@ class CityscootBrowser(LoginBrowser):
         if self.login.is_here():
             msg = self.page.get_error_login()
             if msg:
-                if 'Email ou mot de passe incorrect' in msg:
+                if "Email ou mot de passe incorrect" in msg:
                     raise BrowserIncorrectPassword(msg)
             raise Exception("Unhandled error at login: {}".format(msg or ""))
 

@@ -24,26 +24,26 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import BibliothequesparisBrowser
 
 
-__all__ = ['BibliothequesparisModule']
+__all__ = ["BibliothequesparisModule"]
 
 
 class BibliothequesparisModule(Module, CapBook):
-    NAME = 'bibliothequesparis'
-    DESCRIPTION = u'Bibliotheques de Paris'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "bibliothequesparis"
+    DESCRIPTION = "Bibliotheques de Paris"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = BibliothequesparisBrowser
 
     CONFIG = BackendConfig(
-        Value('login', label='Library card number'),
-        ValueBackendPassword('password', label='Password (usually birthdate)'),
+        Value("login", label="Library card number"),
+        ValueBackendPassword("password", label="Password (usually birthdate)"),
     )
 
     def create_default_browser(self, *args, **kwargs):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get(), *args, **kwargs)
+        return self.create_browser(self.config["login"].get(), self.config["password"].get(), *args, **kwargs)
 
     def iter_rented(self):
         return self.browser.get_loans()

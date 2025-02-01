@@ -53,9 +53,9 @@ class MyPropertyPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Subscription
 
-            obj_id = CleanText('./@data-property')
-            obj_label = CleanText('.//strong')
-            obj_subscriber = Regexp(CleanText('//a[@class="MainNav-item-logged"]'), r'Bonjour (.+)')
+            obj_id = CleanText("./@data-property")
+            obj_label = CleanText(".//strong")
+            obj_subscriber = Regexp(CleanText('//a[@class="MainNav-item-logged"]'), r"Bonjour (.+)")
 
 
 class DocumentsPage(LoggedPage, HTMLPage):
@@ -66,23 +66,17 @@ class DocumentsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Document
 
-            obj_id = Format(
-                '%s_%s',
-                Env('subscription_id'),
-                Attr('.', 'id')
-            )
+            obj_id = Format("%s_%s", Env("subscription_id"), Attr(".", "id"))
             obj_label = CleanText('.//p[@class="TeaserRow-desc"]')
             obj_date = Date(
-                CleanText('.//p[@class="TeaserRow-date"]', default=NotAvailable),
-                dayfirst=True,
-                default=NotAvailable
+                CleanText('.//p[@class="TeaserRow-date"]', default=NotAvailable), dayfirst=True, default=NotAvailable
             )
             obj_format = "pdf"
-            obj_url = Link('.//a[@class="Download"]', default='')
+            obj_url = Link('.//a[@class="Download"]', default="")
             obj_type = DocumentTypes.REPORT
 
             def obj_has_file(self):
-                return CleanText('.//a[@class="Download"]', default='')(self)
+                return CleanText('.//a[@class="Download"]', default="")(self)
 
 
 class FeesPage(LoggedPage, HTMLPage):
@@ -94,17 +88,17 @@ class FeesPage(LoggedPage, HTMLPage):
             klass = Bill
 
             obj_id = Format(
-                '%s_%s',
-                Env('subscription_id'),
-                Attr('.', 'id'),
+                "%s_%s",
+                Env("subscription_id"),
+                Attr(".", "id"),
             )
-            obj_currency = 'EUR'
+            obj_currency = "EUR"
             obj_label = CleanText('.//p[@class="TeaserRow-desc"]')
-            obj_total_price = CleanDecimal(CleanText('.//span[@class="nbPrice"]'), replace_dots=(' ', '€'))
+            obj_total_price = CleanDecimal(CleanText('.//span[@class="nbPrice"]'), replace_dots=(" ", "€"))
             obj_date = Date(CleanText('.//p[@class="TeaserRow-date"]'), dayfirst=True)
             obj_duedate = obj_date
             obj_format = "pdf"
-            obj_url = Link('.//a[@class="Download"]', default='')
+            obj_url = Link('.//a[@class="Download"]', default="")
 
             def obj_has_file(self):
-                return CleanText('.//a[@class="Download"]', default='')(self)
+                return CleanText('.//a[@class="Download"]', default="")(self)

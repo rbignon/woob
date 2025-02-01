@@ -25,25 +25,24 @@ from woob.tools.backend import Module
 from .browser import DresdenWetterBrowser
 
 
-__all__ = ['DresdenWetterModule']
+__all__ = ["DresdenWetterModule"]
 
 
 class DresdenWetterModule(Module, CapGauge):
-    NAME = 'dresdenwetter'
-    MAINTAINER = u'Florent Fourcot'
-    EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.7'
-    LICENSE = 'AGPLv3+'
-    DESCRIPTION = u"Private wetter station Dresden"
+    NAME = "dresdenwetter"
+    MAINTAINER = "Florent Fourcot"
+    EMAIL = "weboob@flo.fourcot.fr"
+    VERSION = "3.7"
+    LICENSE = "AGPLv3+"
+    DESCRIPTION = "Private wetter station Dresden"
     BROWSER = DresdenWetterBrowser
 
     def iter_gauges(self, pattern=None):
-        if pattern is None or pattern.lower() in u"dresden"\
-                or pattern.lower() in "weather":
+        if pattern is None or pattern.lower() in "dresden" or pattern.lower() in "weather":
             gauge = Gauge("wetter")
-            gauge.name = u"Private Wetterstation Dresden"
-            gauge.city = u"Dresden"
-            gauge.object = u"Weather"
+            gauge.name = "Private Wetterstation Dresden"
+            gauge.city = "Dresden"
+            gauge.object = "Weather"
             gauge.sensors = list(self.browser.get_sensors_list())
             yield gauge
 

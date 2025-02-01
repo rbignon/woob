@@ -33,16 +33,16 @@ class TrackPage(HTMLPage):
         p = Parcel(_id)
 
         statustr = self.doc.xpath('//tr[@class="bandeauText"]')[0]
-        status = statustr.xpath('td')[1].text
+        status = statustr.xpath("td")[1].text
 
         p.info = status
         p.status = p.STATUS_UNKNOWN
 
         p.history = []
         for i, tr in enumerate(self.doc.xpath('//table[@class="tableHistoriqueColis"]//tr[@class="bandeauText"]')):
-            tds = tr.findall('td')
+            tds = tr.findall("td")
             try:
-                if tds[0].attrib['class'] != "tdText":
+                if tds[0].attrib["class"] != "tdText":
                     continue
             except (IndexError, KeyError):
                 continue
@@ -50,17 +50,17 @@ class TrackPage(HTMLPage):
             ev = Event(i)
             ev.location = None
             ev.activity = tds[1].text
-            if u"Votre colis a été expédié par votre webmarchand" in ev.activity:
+            if "Votre colis a été expédié par votre webmarchand" in ev.activity:
                 update_status(p, p.STATUS_PLANNED)
-            elif u"Votre colis est pris en charge par Colis Privé" in ev.activity:
+            elif "Votre colis est pris en charge par Colis Privé" in ev.activity:
                 update_status(p, p.STATUS_IN_TRANSIT)
-            elif u"Votre colis est arrivé sur notre agence régionale" in ev.activity:
+            elif "Votre colis est arrivé sur notre agence régionale" in ev.activity:
                 update_status(p, p.STATUS_IN_TRANSIT)
-            elif u"Votre colis est en cours de livraison" in ev.activity:
+            elif "Votre colis est en cours de livraison" in ev.activity:
                 update_status(p, p.STATUS_IN_TRANSIT)
-            elif u"Votre colis a été livré" in ev.activity:
+            elif "Votre colis a été livré" in ev.activity:
                 update_status(p, p.STATUS_ARRIVED)
-            ev.date = date(*reversed([int(x) for x in tds[0].text.split('/')]))
+            ev.date = date(*reversed([int(x) for x in tds[0].text.split("/")]))
             p.history.append(ev)
 
         try:

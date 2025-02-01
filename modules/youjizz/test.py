@@ -24,22 +24,22 @@ from woob.tools.test import BackendTest
 
 
 class YoujizzTest(BackendTest):
-    MODULE = 'youjizz'
+    MODULE = "youjizz"
 
     def test_search(self):
-        self.assertTrue(len(self.backend.search_videos('anus', nsfw=False)) == 0)
+        self.assertTrue(len(self.backend.search_videos("anus", nsfw=False)) == 0)
 
-        l = list(limit(self.backend.search_videos('anus', nsfw=True), 100))
+        l = list(limit(self.backend.search_videos("anus", nsfw=True), 100))
         self.assertTrue(len(l) > 0)
         v = l[0]
-        self.backend.fillobj(v, ('url',))
-        self.assertTrue(v.url and v.url.startswith('http://'), 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.backend.fillobj(v, ("url",))
+        self.assertTrue(v.url and v.url.startswith("http://"), 'URL for video "%s" not found: %s' % (v.id, v.url))
         r = self.backend.browser.open(v.url, stream=True)
         self.assertTrue(r.status_code == 200)
 
     def test_latest(self):
-        l = list(limit(self.backend.iter_resources([BaseVideo], [u'latest_nsfw']), 100))
+        l = list(limit(self.backend.iter_resources([BaseVideo], ["latest_nsfw"]), 100))
         self.assertTrue(len(l) > 0)
         v = l[0]
-        self.backend.fillobj(v, ('url',))
-        self.assertTrue(v.url and v.url.startswith('http://'), 'URL for video "%s" not found: %s' % (v.id, v.url))
+        self.backend.fillobj(v, ("url",))
+        self.assertTrue(v.url and v.url.startswith("http://"), 'URL for video "%s" not found: %s' % (v.id, v.url))

@@ -33,55 +33,49 @@ from woob.capabilities.image import Thumbnail
 from woob.capabilities.video import BaseVideo
 
 
-__all__ = ['AllocineBrowser']
+__all__ = ["AllocineBrowser"]
 
 
 class AllocineBrowser(APIBrowser):
     PROFILE = Android()
 
-    PARTNER_KEY = '100043982026'
-    SECRET_KEY = b'29d185d98c984a359e6e6f26a0474269'
+    PARTNER_KEY = "100043982026"
+    SECRET_KEY = b"29d185d98c984a359e6e6f26a0474269"
 
     def __do_request(self, method, params):
-        params.append(("sed", time.strftime('%Y%m%d', time.localtime())))
-        params.append(("sig", base64.b64encode(
-            hashlib.sha1(
-                self.SECRET_KEY +
-                urlencode(params).encode('utf-8')
-            ).digest()
-        ).decode()))
-
-        return self.request(
-            'http://api.allocine.fr/rest/v3/{}'.format(method),
-            params=params
+        params.append(("sed", time.strftime("%Y%m%d", time.localtime())))
+        params.append(
+            (
+                "sig",
+                base64.b64encode(hashlib.sha1(self.SECRET_KEY + urlencode(params).encode("utf-8")).digest()).decode(),
+            )
         )
 
-    def iter_movies(self, pattern):
-        params = [('partner', self.PARTNER_KEY),
-                  ('q', pattern),
-                  ('format', 'json'),
-                  ('filter', 'movie')]
+        return self.request("http://api.allocine.fr/rest/v3/{}".format(method), params=params)
 
-        jres = self.__do_request('search', params)
+    def iter_movies(self, pattern):
+        params = [("partner", self.PARTNER_KEY), ("q", pattern), ("format", "json"), ("filter", "movie")]
+
+        jres = self.__do_request("search", params)
         if jres is None:
             return
-        if 'movie' not in jres['feed']:
+        if "movie" not in jres["feed"]:
             return
-        for m in jres['feed']['movie']:
-            tdesc = u''
-            if 'title' in m:
-                tdesc += '%s' % m['title']
-            if 'productionYear' in m:
-                tdesc += ' ; %s' % m['productionYear']
-            elif 'release' in m:
-                tdesc += ' ; %s' % m['release']['releaseDate']
-            if 'castingShort' in m and 'actors' in m['castingShort']:
-                tdesc += ' ; %s' % m['castingShort']['actors']
-            short_description = tdesc.strip('; ')
+        for m in jres["feed"]["movie"]:
+            tdesc = ""
+            if "title" in m:
+                tdesc += "%s" % m["title"]
+            if "productionYear" in m:
+                tdesc += " ; %s" % m["productionYear"]
+            elif "release" in m:
+                tdesc += " ; %s" % m["release"]["releaseDate"]
+            if "castingShort" in m and "actors" in m["castingShort"]:
+                tdesc += " ; %s" % m["castingShort"]["actors"]
+            short_description = tdesc.strip("; ")
             thumbnail_url = NotAvailable
-            if 'poster' in m:
-                thumbnail_url = str(m['poster']['href'])
-            movie = Movie(m['code'], str(m['originalTitle']))
+            if "poster" in m:
+                thumbnail_url = str(m["poster"]["href"])
+            movie = Movie(m["code"], str(m["originalTitle"]))
             movie.other_titles = NotLoaded
             movie.release_date = NotLoaded
             movie.duration = NotLoaded
@@ -95,27 +89,24 @@ class AllocineBrowser(APIBrowser):
             yield movie
 
     def iter_persons(self, pattern):
-        params = [('partner', self.PARTNER_KEY),
-                  ('q', pattern),
-                  ('format', 'json'),
-                  ('filter', 'person')]
+        params = [("partner", self.PARTNER_KEY), ("q", pattern), ("format", "json"), ("filter", "person")]
 
-        jres = self.__do_request('search', params)
+        jres = self.__do_request("search", params)
         if jres is None:
             return
-        if 'person' not in jres['feed']:
+        if "person" not in jres["feed"]:
             return
-        for p in jres['feed']['person']:
+        for p in jres["feed"]["person"]:
             thumbnail_url = NotAvailable
-            if 'picture' in p:
-                thumbnail_url = str(p['picture']['href'])
-            person = Person(p['code'], str(p['name']))
-            desc = u''
-            if 'birthDate' in p:
-                desc += '(%s), ' % p['birthDate']
-            if 'activity' in p:
-                for a in p['activity']:
-                    desc += '%s, ' % a['$']
+            if "picture" in p:
+                thumbnail_url = str(p["picture"]["href"])
+            person = Person(p["code"], str(p["name"]))
+            desc = ""
+            if "birthDate" in p:
+                desc += "(%s), " % p["birthDate"]
+            if "activity" in p:
+                for a in p["activity"]:
+                    desc += "%s, " % a["$"]
             person.real_name = NotLoaded
             person.birth_place = NotLoaded
             person.birth_date = NotLoaded
@@ -123,24 +114,26 @@ class AllocineBrowser(APIBrowser):
             person.gender = NotLoaded
             person.nationality = NotLoaded
             person.short_biography = NotLoaded
-            person.short_description = desc.strip(', ')
+            person.short_description = desc.strip(", ")
             person.roles = NotLoaded
             person.thumbnail_url = thumbnail_url
             yield person
 
     def get_movie(self, id):
-        params = [('partner', self.PARTNER_KEY),
-                  ('code', id),
-                  ('profile', 'large'),
-                  ('mediafmt', 'mp4-lc'),
-                  ('filter', 'movie'),
-                  ('striptags', 'synopsis,synopsisshort'),
-                  ('format', 'json')]
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("code", id),
+            ("profile", "large"),
+            ("mediafmt", "mp4-lc"),
+            ("filter", "movie"),
+            ("striptags", "synopsis,synopsisshort"),
+            ("format", "json"),
+        ]
 
-        jres = self.__do_request('movie', params)
+        jres = self.__do_request("movie", params)
         if jres is not None:
-            if 'movie' in jres:
-                jres = jres['movie']
+            if "movie" in jres:
+                jres = jres["movie"]
             else:
                 return None
         else:
@@ -157,20 +150,20 @@ class AllocineBrowser(APIBrowser):
         genres = []
         roles = {}
 
-        if 'originalTitle' not in jres:
+        if "originalTitle" not in jres:
             return
-        title = str(jres['originalTitle'].strip())
-        if 'poster' in jres:
-            thumbnail_url = str(jres['poster']['href'])
-        if 'genre' in jres:
-            for g in jres['genre']:
-                genres.append(g['$'])
-        if 'runtime' in jres:
-            nbsecs = jres['runtime']
+        title = str(jres["originalTitle"].strip())
+        if "poster" in jres:
+            thumbnail_url = str(jres["poster"]["href"])
+        if "genre" in jres:
+            for g in jres["genre"]:
+                genres.append(g["$"])
+        if "runtime" in jres:
+            nbsecs = jres["runtime"]
             duration = nbsecs / 60
-        if 'release' in jres:
-            dstr = str(jres['release']['releaseDate'])
-            tdate = dstr.split('-')
+        if "release" in jres:
+            dstr = str(jres["release"]["releaseDate"])
+            tdate = dstr.split("-")
             day = 1
             month = 1
             year = 1901
@@ -179,21 +172,21 @@ class AllocineBrowser(APIBrowser):
                 month = int(tdate[1])
                 day = int(tdate[2])
             release_date = datetime(year, month, day)
-        if 'nationality' in jres:
-            country = u''
-            for c in jres['nationality']:
-                country += '%s, ' % c['$']
-            country = country.strip(', ')
-        if 'synopsis' in jres:
-            pitch = str(jres['synopsis'])
-        if 'statistics' in jres and 'userRating' in jres['statistics']:
-            note = u'%s/5 (%s votes)' % (jres['statistics']['userRating'], jres['statistics']['userReviewCount'])
-        if 'castMember' in jres:
-            for cast in jres['castMember']:
-                if cast['activity']['$'] not in roles:
-                    roles[cast['activity']['$']] = []
-                person_to_append = (u'%s' % cast['person']['code'], cast['person']['name'])
-                roles[cast['activity']['$']].append(person_to_append)
+        if "nationality" in jres:
+            country = ""
+            for c in jres["nationality"]:
+                country += "%s, " % c["$"]
+            country = country.strip(", ")
+        if "synopsis" in jres:
+            pitch = str(jres["synopsis"])
+        if "statistics" in jres and "userRating" in jres["statistics"]:
+            note = "%s/5 (%s votes)" % (jres["statistics"]["userRating"], jres["statistics"]["userReviewCount"])
+        if "castMember" in jres:
+            for cast in jres["castMember"]:
+                if cast["activity"]["$"] not in roles:
+                    roles[cast["activity"]["$"]] = []
+                person_to_append = ("%s" % cast["person"]["code"], cast["person"]["name"])
+                roles[cast["activity"]["$"]].append(person_to_append)
 
         movie = Movie(id, title)
         movie.other_titles = other_titles
@@ -210,18 +203,20 @@ class AllocineBrowser(APIBrowser):
         return movie
 
     def get_person(self, id):
-        params = [('partner', self.PARTNER_KEY),
-                  ('code', id),
-                  ('profile', 'large'),
-                  ('mediafmt', 'mp4-lc'),
-                  ('filter', 'movie'),
-                  ('striptags', 'biography,biographyshort'),
-                  ('format', 'json')]
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("code", id),
+            ("profile", "large"),
+            ("mediafmt", "mp4-lc"),
+            ("filter", "movie"),
+            ("striptags", "biography,biographyshort"),
+            ("format", "json"),
+        ]
 
-        jres = self.__do_request('person', params)
+        jres = self.__do_request("person", params)
         if jres is not None:
-            if 'person' in jres:
-                jres = jres['person']
+            if "person" in jres:
+                jres = jres["person"]
             else:
                 return None
         else:
@@ -239,48 +234,48 @@ class AllocineBrowser(APIBrowser):
         roles = {}
         nationality = NotAvailable
 
-        if 'name' in jres:
-            name = u''
-            if 'given' in jres['name']:
-                name += jres['name']['given']
-            if 'family' in jres['name']:
-                name += ' %s' % jres['name']['family']
-        if 'biographyShort' in jres:
-            short_biography = str(jres['biographyShort'])
-        if 'birthPlace' in jres:
-            birth_place = str(jres['birthPlace'])
-        if 'birthDate' in jres:
-            df = jres['birthDate'].split('-')
+        if "name" in jres:
+            name = ""
+            if "given" in jres["name"]:
+                name += jres["name"]["given"]
+            if "family" in jres["name"]:
+                name += " %s" % jres["name"]["family"]
+        if "biographyShort" in jres:
+            short_biography = str(jres["biographyShort"])
+        if "birthPlace" in jres:
+            birth_place = str(jres["birthPlace"])
+        if "birthDate" in jres:
+            df = jres["birthDate"].split("-")
             birth_date = datetime(int(df[0]), int(df[1]), int(df[2]))
-        if 'deathDate' in jres:
-            df = jres['deathDate'].split('-')
+        if "deathDate" in jres:
+            df = jres["deathDate"].split("-")
             death_date = datetime(int(df[0]), int(df[1]), int(df[2]))
-        if 'realName' in jres:
-            real_name = str(jres['realName'])
-        if 'gender' in jres:
-            gcode = jres['gender']
-            if gcode == '1':
-                gender = u'Male'
+        if "realName" in jres:
+            real_name = str(jres["realName"])
+        if "gender" in jres:
+            gcode = jres["gender"]
+            if gcode == "1":
+                gender = "Male"
             else:
-                gender = u'Female'
-        if 'picture' in jres:
-            thumbnail_url = str(jres['picture']['href'])
-        if 'nationality' in jres:
-            nationality = u''
-            for n in jres['nationality']:
-                nationality += '%s, ' % n['$']
-            nationality = nationality.strip(', ')
-        if 'biography' in jres:
-            biography = str(jres['biography'])
-        if 'participation' in jres:
-            for m in jres['participation']:
-                if m['activity']['$'] not in roles:
-                    roles[m['activity']['$']] = []
-                pyear = '????'
-                if 'productionYear' in m['movie']:
-                    pyear = m['movie']['productionYear']
-                movie_to_append = (u'%s' % (m['movie']['code']), u'(%s) %s' % (pyear, m['movie']['originalTitle']))
-                roles[m['activity']['$']].append(movie_to_append)
+                gender = "Female"
+        if "picture" in jres:
+            thumbnail_url = str(jres["picture"]["href"])
+        if "nationality" in jres:
+            nationality = ""
+            for n in jres["nationality"]:
+                nationality += "%s, " % n["$"]
+            nationality = nationality.strip(", ")
+        if "biography" in jres:
+            biography = str(jres["biography"])
+        if "participation" in jres:
+            for m in jres["participation"]:
+                if m["activity"]["$"] not in roles:
+                    roles[m["activity"]["$"]] = []
+                pyear = "????"
+                if "productionYear" in m["movie"]:
+                    pyear = m["movie"]["productionYear"]
+                movie_to_append = ("%s" % (m["movie"]["code"]), "(%s) %s" % (pyear, m["movie"]["originalTitle"]))
+                roles[m["activity"]["$"]].append(movie_to_append)
 
         person = Person(id, name)
         person.real_name = real_name
@@ -297,34 +292,37 @@ class AllocineBrowser(APIBrowser):
         return person
 
     def iter_movie_persons(self, movie_id, role_filter):
-        params = [('partner', self.PARTNER_KEY),
-                  ('code', movie_id),
-                  ('profile', 'large'),
-                  ('mediafmt', 'mp4-lc'),
-                  ('filter', 'movie'),
-                  ('striptags', 'synopsis,synopsisshort'),
-                  ('format', 'json')]
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("code", movie_id),
+            ("profile", "large"),
+            ("mediafmt", "mp4-lc"),
+            ("filter", "movie"),
+            ("striptags", "synopsis,synopsisshort"),
+            ("format", "json"),
+        ]
 
-        jres = self.__do_request('movie', params)
+        jres = self.__do_request("movie", params)
         if jres is not None:
-            if 'movie' in jres:
-                jres = jres['movie']
+            if "movie" in jres:
+                jres = jres["movie"]
             else:
                 return
         else:
             return
-        if 'castMember' in jres:
-            for cast in jres['castMember']:
-                if (role_filter is None or
-                   (role_filter is not None and cast['activity']['$'].lower().strip() == role_filter.lower().strip())):
-                    id = cast['person']['code']
-                    name = str(cast['person']['name'])
-                    short_description = str(cast['activity']['$'])
-                    if 'role' in cast:
-                        short_description += ', %s' % cast['role']
+        if "castMember" in jres:
+            for cast in jres["castMember"]:
+                if role_filter is None or (
+                    role_filter is not None and cast["activity"]["$"].lower().strip() == role_filter.lower().strip()
+                ):
+                    id = cast["person"]["code"]
+                    name = str(cast["person"]["name"])
+                    short_description = str(cast["activity"]["$"])
+                    if "role" in cast:
+                        short_description += ", %s" % cast["role"]
                     thumbnail_url = NotAvailable
-                    if 'picture' in cast:
-                        thumbnail_url = str(cast['picture']['href'])
+                    if "picture" in cast:
+                        thumbnail_url = str(cast["picture"]["href"])
                     person = Person(id, name)
                     person.short_description = short_description
                     person.real_name = NotLoaded
@@ -339,30 +337,33 @@ class AllocineBrowser(APIBrowser):
                     yield person
 
     def iter_person_movies(self, person_id, role_filter):
-        params = [('partner', self.PARTNER_KEY),
-                  ('code', person_id),
-                  ('profile', 'medium'),
-                  ('filter', 'movie'),
-                  ('format', 'json')]
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("code", person_id),
+            ("profile", "medium"),
+            ("filter", "movie"),
+            ("format", "json"),
+        ]
 
-        jres = self.__do_request('filmography', params)
+        jres = self.__do_request("filmography", params)
         if jres is not None:
-            if 'person' in jres:
-                jres = jres['person']
+            if "person" in jres:
+                jres = jres["person"]
             else:
                 return
         else:
             return
-        for m in jres['participation']:
-            if (role_filter is None or
-               (role_filter is not None and m['activity']['$'].lower().strip() == role_filter.lower().strip())):
-                prod_year = '????'
-                if 'productionYear' in m['movie']:
-                    prod_year = m['movie']['productionYear']
-                short_description = u'(%s) %s' % (prod_year, m['activity']['$'])
-                if 'role' in m:
-                    short_description += ', %s' % m['role']
-                movie = Movie(m['movie']['code'], str(m['movie']['originalTitle']))
+        for m in jres["participation"]:
+            if role_filter is None or (
+                role_filter is not None and m["activity"]["$"].lower().strip() == role_filter.lower().strip()
+            ):
+                prod_year = "????"
+                if "productionYear" in m["movie"]:
+                    prod_year = m["movie"]["productionYear"]
+                short_description = "(%s) %s" % (prod_year, m["activity"]["$"])
+                if "role" in m:
+                    short_description += ", %s" % m["role"]
+                movie = Movie(m["movie"]["code"], str(m["movie"]["originalTitle"]))
                 movie.other_titles = NotLoaded
                 movie.release_date = NotLoaded
                 movie.duration = NotLoaded
@@ -376,124 +377,122 @@ class AllocineBrowser(APIBrowser):
                 yield movie
 
     def iter_person_movies_ids(self, person_id):
-        params = [('partner', self.PARTNER_KEY),
-                  ('code', person_id),
-                  ('profile', 'medium'),
-                  ('filter', 'movie'),
-                  ('format', 'json')]
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("code", person_id),
+            ("profile", "medium"),
+            ("filter", "movie"),
+            ("format", "json"),
+        ]
 
-        jres = self.__do_request('filmography', params)
+        jres = self.__do_request("filmography", params)
         if jres is not None:
-            if 'person' in jres:
-                jres = jres['person']
+            if "person" in jres:
+                jres = jres["person"]
             else:
                 return
         else:
             return
-        for m in jres['participation']:
-            yield str(m['movie']['code'])
+        for m in jres["participation"]:
+            yield str(m["movie"]["code"])
 
     def iter_movie_persons_ids(self, movie_id):
-        params = [('partner', self.PARTNER_KEY),
-                  ('code', movie_id),
-                  ('profile', 'large'),
-                  ('mediafmt', 'mp4-lc'),
-                  ('filter', 'movie'),
-                  ('striptags', 'synopsis,synopsisshort'),
-                  ('format', 'json')]
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("code", movie_id),
+            ("profile", "large"),
+            ("mediafmt", "mp4-lc"),
+            ("filter", "movie"),
+            ("striptags", "synopsis,synopsisshort"),
+            ("format", "json"),
+        ]
 
-        jres = self.__do_request('movie', params)
+        jres = self.__do_request("movie", params)
         if jres is not None:
-            if 'movie' in jres:
-                jres = jres['movie']
+            if "movie" in jres:
+                jres = jres["movie"]
             else:
                 return
         else:
             return
-        if 'castMember' in jres:
-            for cast in jres['castMember']:
-                yield str(cast['person']['code'])
+        if "castMember" in jres:
+            for cast in jres["castMember"]:
+                yield str(cast["person"]["code"])
 
     def get_movie_releases(self, id, country):
-        if country == 'fr':
+        if country == "fr":
             return self.get_movie(id).release_date
 
     def get_person_biography(self, id):
-        params = [('partner', self.PARTNER_KEY),
-                  ('code', id),
-                  ('profile', 'large'),
-                  ('mediafmt', 'mp4-lc'),
-                  ('filter', 'movie'),
-                  ('striptags', 'biography,biographyshort'),
-                  ('format', 'json')]
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("code", id),
+            ("profile", "large"),
+            ("mediafmt", "mp4-lc"),
+            ("filter", "movie"),
+            ("striptags", "biography,biographyshort"),
+            ("format", "json"),
+        ]
 
-        jres = self.__do_request('person', params)
+        jres = self.__do_request("person", params)
         if jres is not None:
-            if 'person' in jres:
-                jres = jres['person']
+            if "person" in jres:
+                jres = jres["person"]
             else:
                 return None
         else:
             return None
 
         biography = NotAvailable
-        if 'biography' in jres:
-            biography = str(jres['biography'])
+        if "biography" in jres:
+            biography = str(jres["biography"])
 
         return biography
 
     def get_categories_movies(self, category):
-        params = [('partner', self.PARTNER_KEY),
-                  ('format', 'json'),
-                  ('mediafmt', 'mp4'),
-                  ('filter', category)
-                  ]
-        result = self.__do_request('movielist', params)
+        params = [("partner", self.PARTNER_KEY), ("format", "json"), ("mediafmt", "mp4"), ("filter", category)]
+        result = self.__do_request("movielist", params)
         if result is None:
             return
-        for movie in result['feed']['movie']:
-            if 'trailer' not in movie or 'productionYear' not in movie:
+        for movie in result["feed"]["movie"]:
+            if "trailer" not in movie or "productionYear" not in movie:
                 continue
             yield self.parse_movie(movie)
 
     def get_categories_videos(self, category):
-        params = [('partner', self.PARTNER_KEY),
-                  ('format', 'json'),
-                  ('mediafmt', 'mp4'),
-                  ('filter', category)
-                  ]
-        result = self.__do_request('videolist', params)
+        params = [("partner", self.PARTNER_KEY), ("format", "json"), ("mediafmt", "mp4"), ("filter", category)]
+        result = self.__do_request("videolist", params)
         if result is None:
             return
-        if 'feed' in result and 'media' in result['feed']:
-            for episode in result['feed']['media']:
-                if 'title' in episode:
+        if "feed" in result and "media" in result["feed"]:
+            for episode in result["feed"]["media"]:
+                if "title" in episode:
                     yield self.parse_video(episode, category)
 
     def parse_video(self, _video, category):
-        video = BaseVideo(u'%s#%s' % (_video['code'], category))
-        video.title = str(_video['title'])
-        video._video_code = str(_video['code'])
-        video.ext = u'mp4'
-        if 'runtime' in _video:
-            video.duration = timedelta(seconds=int(_video['runtime']))
-        if 'description' in _video:
-            video.description = str(_video['description'])
-        renditions = sorted(_video['rendition'],
-                            key=lambda x: 'bandwidth' in x and x['bandwidth']['code'],
-                            reverse=True)
-        video.url = str(max(renditions, key=lambda x: 'bandwidth' in x)['href'])
+        video = BaseVideo("%s#%s" % (_video["code"], category))
+        video.title = str(_video["title"])
+        video._video_code = str(_video["code"])
+        video.ext = "mp4"
+        if "runtime" in _video:
+            video.duration = timedelta(seconds=int(_video["runtime"]))
+        if "description" in _video:
+            video.description = str(_video["description"])
+        renditions = sorted(
+            _video["rendition"], key=lambda x: "bandwidth" in x and x["bandwidth"]["code"], reverse=True
+        )
+        video.url = str(max(renditions, key=lambda x: "bandwidth" in x)["href"])
         return video
 
     def parse_movie(self, movie):
-        video = BaseVideo(u'%s#%s' % (movie['code'], 'movie'))
-        video.title = str(movie['trailer']['name'])
-        video._video_code = str(movie['trailer']['code'])
-        video.ext = u'mp4'
-        if 'poster' in movie:
-            video.thumbnail = Thumbnail(movie['poster']['href'])
-            video.thumbnail.url = str(movie['poster']['href'])
-        tdate = movie['release']['releaseDate'].split('-')
+        video = BaseVideo("%s#%s" % (movie["code"], "movie"))
+        video.title = str(movie["trailer"]["name"])
+        video._video_code = str(movie["trailer"]["code"])
+        video.ext = "mp4"
+        if "poster" in movie:
+            video.thumbnail = Thumbnail(movie["poster"]["href"])
+            video.thumbnail.url = str(movie["poster"]["href"])
+        tdate = movie["release"]["releaseDate"].split("-")
         day = 1
         month = 1
         year = 1901
@@ -503,97 +502,97 @@ class AllocineBrowser(APIBrowser):
             day = int(tdate[2])
 
         video.date = date(year, month, day)
-        if 'userRating' in movie['statistics']:
-            video.rating = movie['statistics']['userRating']
-        elif 'pressRating' in movie['statistics']:
-            video.rating = movie['statistics']['pressRating'] * 2
+        if "userRating" in movie["statistics"]:
+            video.rating = movie["statistics"]["userRating"]
+        elif "pressRating" in movie["statistics"]:
+            video.rating = movie["statistics"]["pressRating"] * 2
         video.rating_max = 5
-        if 'synopsis' in movie:
-            video.description = str(movie['synopsis'].replace('<p>', '').replace('</p>', ''))
-        elif 'synopsisShort' in movie:
-            video.description = str(movie['synopsisShort'].replace('<p>', '').replace('</p>', ''))
-        if 'castingShort' in movie:
-            if 'directors' in movie['castingShort']:
-                video.author = str(movie['castingShort']['directors'])
-        if 'runtime' in movie:
-            video.duration = timedelta(seconds=int(movie['runtime']))
+        if "synopsis" in movie:
+            video.description = str(movie["synopsis"].replace("<p>", "").replace("</p>", ""))
+        elif "synopsisShort" in movie:
+            video.description = str(movie["synopsisShort"].replace("<p>", "").replace("</p>", ""))
+        if "castingShort" in movie:
+            if "directors" in movie["castingShort"]:
+                video.author = str(movie["castingShort"]["directors"])
+        if "runtime" in movie:
+            video.duration = timedelta(seconds=int(movie["runtime"]))
         return video
 
     def get_movie_from_id(self, _id):
-        params = [('partner', self.PARTNER_KEY),
-                  ('format', 'json'),
-                  ('mediafmt', 'mp4'),
-                  ('filter', 'movie'),
-                  ('code', _id),
-                  ]
-        result = self.__do_request('movie', params)
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("format", "json"),
+            ("mediafmt", "mp4"),
+            ("filter", "movie"),
+            ("code", _id),
+        ]
+        result = self.__do_request("movie", params)
         if result is None:
             return
-        return self.parse_movie(result['movie'])
+        return self.parse_movie(result["movie"])
 
     def get_video_from_id(self, _id, category):
-        return find_object(self.get_categories_videos(category), id=u'%s#%s' % (_id, category))
+        return find_object(self.get_categories_videos(category), id="%s#%s" % (_id, category))
 
     def get_video_url(self, code):
-        params = [('partner', self.PARTNER_KEY),
-                  ('format', 'json'),
-                  ('mediafmt', 'mp4'),
-                  ('code', code),
-                  ('profile', 'large'),
-                  ]
-        result = self.__do_request('media', params)
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("format", "json"),
+            ("mediafmt", "mp4"),
+            ("code", code),
+            ("profile", "large"),
+        ]
+        result = self.__do_request("media", params)
         if result is None:
             return
-        renditions = sorted(result['media']['rendition'],
-                            key=lambda x: 'bandwidth' in x and x['bandwidth']['code'],
-                            reverse=True)
-        return max(renditions, key=lambda x: 'bandwidth' in x)['href']
+        renditions = sorted(
+            result["media"]["rendition"], key=lambda x: "bandwidth" in x and x["bandwidth"]["code"], reverse=True
+        )
+        return max(renditions, key=lambda x: "bandwidth" in x)["href"]
 
     def get_emissions(self, basename):
-        params = [('partner', self.PARTNER_KEY),
-                  ('format', 'json'),
-                  ('filter', 'acshow'),
-                  ]
-        result = self.__do_request('termlist', params)
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("format", "json"),
+            ("filter", "acshow"),
+        ]
+        result = self.__do_request("termlist", params)
         if result is None:
             return
-        for emission in result['feed']['term']:
-            yield Collection([basename, str(emission['nameShort'])], str(emission['$']))
+        for emission in result["feed"]["term"]:
+            yield Collection([basename, str(emission["nameShort"])], str(emission["$"]))
 
     def search_events(self, query):
-        params = [('partner', self.PARTNER_KEY),
-                  ('format', 'json'),
-                  ('zip', query.city)
-                  ]
+        params = [("partner", self.PARTNER_KEY), ("format", "json"), ("zip", query.city)]
 
         if query.summary:
             movie = next(self.iter_movies(query.summary))
-            params.append(('movie', movie.id))
+            params.append(("movie", movie.id))
 
-        result = self.__do_request('showtimelist', params)
+        result = self.__do_request("showtimelist", params)
         if result is None:
             return
 
         for event in self.create_event(result):
-            if (not query.end_date or event.start_date <= query.end_date)\
-               and event.start_date >= query.start_date:
+            if (not query.end_date or event.start_date <= query.end_date) and event.start_date >= query.start_date:
                 yield event
 
     def get_event(self, _id):
-        split_id = _id.split('#')
-        params = [('partner', self.PARTNER_KEY),
-                  ('format', 'json'),
-                  ('theaters', split_id[0]),
-                  ('zip', split_id[1]),
-                  ('movie', split_id[2]),
-                  ]
+        split_id = _id.split("#")
+        params = [
+            ("partner", self.PARTNER_KEY),
+            ("format", "json"),
+            ("theaters", split_id[0]),
+            ("zip", split_id[1]),
+            ("movie", split_id[2]),
+        ]
 
-        result = self.__do_request('showtimelist', params)
+        result = self.__do_request("showtimelist", params)
         if result is None:
             return
 
         for event in self.create_event(result):
-            if event.id.split('#')[-1] == split_id[-1]:
+            if event.id.split("#")[-1] == split_id[-1]:
                 event.description = self.get_movie(split_id[2]).pitch
                 return event
 
@@ -603,32 +602,31 @@ class AllocineBrowser(APIBrowser):
         status = STATUS.CONFIRMED
         category = CATEGORIES.CINE
 
-        if 'theaterShowtimes' not in data['feed']:
+        if "theaterShowtimes" not in data["feed"]:
             return
 
-        for items in data['feed']['theaterShowtimes']:
-            cinema = items['place']['theater']
-            city = str(cinema['city'])
-            location = u'%s, %s' % (cinema['name'], cinema['address'])
-            postalCode = cinema['postalCode']
-            cinemaCode = cinema['code']
-            for show in items['movieShowtimes']:
-                summary = str(show['onShow']['movie']['title'])
-                movieCode = show['onShow']['movie']['code']
-                for jour in show['scr']:
-                    tdate = jour['d'].split('-')
+        for items in data["feed"]["theaterShowtimes"]:
+            cinema = items["place"]["theater"]
+            city = str(cinema["city"])
+            location = "%s, %s" % (cinema["name"], cinema["address"])
+            postalCode = cinema["postalCode"]
+            cinemaCode = cinema["code"]
+            for show in items["movieShowtimes"]:
+                summary = str(show["onShow"]["movie"]["title"])
+                movieCode = show["onShow"]["movie"]["code"]
+                for jour in show["scr"]:
+                    tdate = jour["d"].split("-")
                     year = int(tdate[0])
                     month = int(tdate[1])
                     day = int(tdate[2])
-                    for seance in jour['t']:
-                        ttime = seance['$'].split(':')
+                    for seance in jour["t"]:
+                        ttime = seance["$"].split(":")
                         heure = int(ttime[0])
                         minute = int(ttime[1])
-                        start_date = datetime(year=year, month=month, day=day,
-                                              hour=heure, minute=minute)
+                        start_date = datetime(year=year, month=month, day=day, hour=heure, minute=minute)
 
-                        seanceCode = seance['code']
-                        _id = u'%s#%s#%s#%s' % (cinemaCode, postalCode, movieCode, seanceCode)
+                        seanceCode = seance["code"]
+                        _id = "%s#%s#%s#%s" % (cinemaCode, postalCode, movieCode, seanceCode)
                         event = BaseCalendarEvent()
                         event.id = _id
                         event.sequence = sequence
@@ -639,5 +637,5 @@ class AllocineBrowser(APIBrowser):
                         event.location = location
                         event.start_date = start_date
                         event.summary = summary
-                        event.timezone = u'Europe/Paris'
+                        event.timezone = "Europe/Paris"
                         yield event

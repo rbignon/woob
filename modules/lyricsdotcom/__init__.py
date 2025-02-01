@@ -21,4 +21,4 @@
 from .module import LyricsdotcomModule
 
 
-__all__ = ['LyricsdotcomModule']
+__all__ = ["LyricsdotcomModule"]

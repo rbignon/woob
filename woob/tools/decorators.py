@@ -19,7 +19,7 @@ import logging
 import time
 
 
-__all__ = ['retry']
+__all__ = ["retry"]
 
 
 def retry(exceptions_to_check, exc_handler=None, tries=3, delay=2, backoff=2):
@@ -28,20 +28,23 @@ def retry(exceptions_to_check, exc_handler=None, tries=3, delay=2, backoff=2):
     from https://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
     original from https://wiki.python.org/moin/PythonDecoratorLibrary#Retry
     """
+
     def deco_retry(f):
         def f_retry(*args, **kwargs):
-            mtries = kwargs.pop('_tries', tries)
-            mdelay = kwargs.pop('_delay', delay)
+            mtries = kwargs.pop("_tries", tries)
+            mdelay = kwargs.pop("_delay", delay)
             while mtries > 1:
                 try:
                     return f(*args, **kwargs)
                 except exceptions_to_check as exc:
                     if exc_handler:
                         exc_handler(exc, **kwargs)
-                    logging.debug('%s, Retrying in %d seconds...', exc, mdelay)
+                    logging.debug("%s, Retrying in %d seconds...", exc, mdelay)
                     time.sleep(mdelay)
                     mtries -= 1
                     mdelay *= backoff
             return f(*args, **kwargs)
+
         return f_retry  # true decorator
+
     return deco_retry

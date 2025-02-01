@@ -32,7 +32,7 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import FacebookBrowser, TinderBrowser
 
 
-__all__ = ['TinderModule']
+__all__ = ["TinderModule"]
 
 
 class ProfilesWalker(Optimization):
@@ -40,7 +40,7 @@ class ProfilesWalker(Optimization):
         self._sched = sched
         self._storage = storage
         self._browser = browser
-        self._logger = getLogger('walker', browser.logger)
+        self._logger = getLogger("walker", browser.logger)
 
         self._view_cron = None
 
@@ -65,14 +65,15 @@ class ProfilesWalker(Optimization):
             next_try = self._browser.like_profile()
 
             for thread in self._browser.get_threads():
-                if 'person' not in thread:
+                if "person" not in thread:
                     continue
 
-                other_name = thread['person']['name']
-                if len(thread['messages']) == 0 and \
-                   parse_date(thread['created_date']) < (datetime.datetime.now(tzlocal()) - relativedelta(hours=1)):
-                    self._browser.post_message(thread['_id'], u'Coucou %s :)' % other_name)
-                    self._logger.info(u'Welcome message sent to %s' % other_name)
+                other_name = thread["person"]["name"]
+                if len(thread["messages"]) == 0 and parse_date(thread["created_date"]) < (
+                    datetime.datetime.now(tzlocal()) - relativedelta(hours=1)
+                ):
+                    self._browser.post_message(thread["_id"], "Coucou %s :)" % other_name)
+                    self._logger.info("Welcome message sent to %s" % other_name)
 
         finally:
             if self._view_cron is not None:
@@ -80,30 +81,32 @@ class ProfilesWalker(Optimization):
 
 
 class TinderModule(Module, CapMessages, CapMessagesPost, CapDating):
-    NAME = 'tinder'
-    DESCRIPTION = u'Tinder dating mobile application'
-    MAINTAINER = u'Roger Philibert'
-    EMAIL = 'roger.philibert@gmail.com'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
-    CONFIG = BackendConfig(Value('username',                label='Facebook email'),
-                           ValueBackendPassword('password', label='Facebook password'),
-                           Value('location',                label='Location (example: 49.6008457,6.129709)', default=''))
+    NAME = "tinder"
+    DESCRIPTION = "Tinder dating mobile application"
+    MAINTAINER = "Roger Philibert"
+    EMAIL = "roger.philibert@gmail.com"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
+    CONFIG = BackendConfig(
+        Value("username", label="Facebook email"),
+        ValueBackendPassword("password", label="Facebook password"),
+        Value("location", label="Location (example: 49.6008457,6.129709)", default=""),
+    )
 
     BROWSER = TinderBrowser
-    STORAGE = {'contacts': {},
-              }
+    STORAGE = {
+        "contacts": {},
+    }
 
     def create_default_browser(self):
         facebook = self.create_browser(klass=FacebookBrowser)
-        facebook.login(self.config['username'].get(),
-                       self.config['password'].get())
-        return self.create_browser(facebook, self.config['location'].get())
+        facebook.login(self.config["username"].get(), self.config["password"].get())
+        return self.create_browser(facebook, self.config["location"].get())
 
     # ---- CapDating methods -----------------------
 
     def init_optimizations(self):
-        self.add_optimization('PROFILE_WALKER', ProfilesWalker(self.woob.scheduler, self.storage, self.browser))
+        self.add_optimization("PROFILE_WALKER", ProfilesWalker(self.woob.scheduler, self.storage, self.browser))
 
     # ---- CapMessages methods ---------------------
 
@@ -112,48 +115,56 @@ class TinderModule(Module, CapMessages, CapMessagesPost, CapDating):
 
     def iter_threads(self):
         for thread in self.browser.get_threads():
-            if 'person' not in thread:
+            if "person" not in thread:
                 # The account has been removed, probably because it was a
                 # spammer.
                 continue
 
-            t = Thread(thread['_id'])
+            t = Thread(thread["_id"])
             t.flags = Thread.IS_DISCUSSION
-            t.title = u'Discussion with %s' % thread['person']['name']
-            contact = self.storage.get('contacts', t.id, default={'lastmsg': 0})
+            t.title = "Discussion with %s" % thread["person"]["name"]
+            contact = self.storage.get("contacts", t.id, default={"lastmsg": 0})
 
-            birthday = parse_date(thread['person']['birth_date']).date()
-            signature = u'Age: %d (%s)' % ((datetime.date.today() - birthday).days / 365.25, birthday)
-            signature += u'\nLast ping: %s' % parse_date(thread['person']['ping_time']).strftime('%Y-%m-%d %H:%M:%S')
-            signature += u'\nPhotos:\n\t%s' % '\n\t'.join([photo['url'] for photo in thread['person']['photos']])
-            signature += u'\n\n%s' % thread['person'].get('bio', '')
+            birthday = parse_date(thread["person"]["birth_date"]).date()
+            signature = "Age: %d (%s)" % ((datetime.date.today() - birthday).days / 365.25, birthday)
+            signature += "\nLast ping: %s" % parse_date(thread["person"]["ping_time"]).strftime("%Y-%m-%d %H:%M:%S")
+            signature += "\nPhotos:\n\t%s" % "\n\t".join([photo["url"] for photo in thread["person"]["photos"]])
+            signature += "\n\n%s" % thread["person"].get("bio", "")
 
-            t.root = Message(thread=t, id=1, title=t.title,
-                             sender=str(thread['person']['name']),
-                             receivers=[self.browser.my_name],
-                             date=parse_date(thread['created_date']),
-                             content=u'Match!',
-                             children=[],
-                             signature=signature,
-                             flags=Message.IS_UNREAD if int(contact['lastmsg']) < 1 else 0)
+            t.root = Message(
+                thread=t,
+                id=1,
+                title=t.title,
+                sender=str(thread["person"]["name"]),
+                receivers=[self.browser.my_name],
+                date=parse_date(thread["created_date"]),
+                content="Match!",
+                children=[],
+                signature=signature,
+                flags=Message.IS_UNREAD if int(contact["lastmsg"]) < 1 else 0,
+            )
             parent = t.root
 
-            for msg in thread['messages']:
+            for msg in thread["messages"]:
                 flags = 0
-                if int(contact['lastmsg']) < msg['timestamp']:
+                if int(contact["lastmsg"]) < msg["timestamp"]:
                     flags = Message.IS_UNREAD
 
-                msg = Message(thread=t,
-                              id=msg['timestamp'],
-                              title=t.title,
-                              sender=str(self.browser.my_name if msg['from'] == self.browser.my_id else thread['person']['name']),
-                              receivers=[str(self.browser.my_name if msg['to'] == self.browser.my_id else thread['person']['name'])],
-                              date=parse_date(msg['sent_date']),
-                              content=str(msg['message']),
-                              children=[],
-                              parent=parent,
-                              signature=signature if msg['to'] == self.browser.my_id else u'',
-                              flags=flags)
+                msg = Message(
+                    thread=t,
+                    id=msg["timestamp"],
+                    title=t.title,
+                    sender=str(self.browser.my_name if msg["from"] == self.browser.my_id else thread["person"]["name"]),
+                    receivers=[
+                        str(self.browser.my_name if msg["to"] == self.browser.my_id else thread["person"]["name"])
+                    ],
+                    date=parse_date(msg["sent_date"]),
+                    content=str(msg["message"]),
+                    children=[],
+                    parent=parent,
+                    signature=signature if msg["to"] == self.browser.my_id else "",
+                    flags=flags,
+                )
                 parent.children.append(msg)
                 parent = msg
 
@@ -171,10 +182,10 @@ class TinderModule(Module, CapMessages, CapMessagesPost, CapDating):
                     yield message
 
     def set_message_read(self, message):
-        contact = self.storage.get('contacts', message.thread.id, default={'lastmsg': 0})
-        if int(contact['lastmsg']) < int(message.id):
-            contact['lastmsg'] = int(message.id)
-            self.storage.set('contacts', message.thread.id, contact)
+        contact = self.storage.get("contacts", message.thread.id, default={"lastmsg": 0})
+        if int(contact["lastmsg"]) < int(message.id):
+            contact["lastmsg"] = int(message.id)
+            self.storage.set("contacts", message.thread.id, contact)
             self.storage.save()
 
     # ---- CapMessagesPost methods ---------------------
@@ -182,5 +193,6 @@ class TinderModule(Module, CapMessages, CapMessagesPost, CapDating):
     def post_message(self, message):
         self.browser.post_message(message.thread.id, message.content)
 
-    OBJECTS = {Thread: fill_thread,
-              }
+    OBJECTS = {
+        Thread: fill_thread,
+    }

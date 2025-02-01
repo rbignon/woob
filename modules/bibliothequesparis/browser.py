@@ -26,24 +26,27 @@ from .pages import LoansPage, LoginPage, RenewPage, SearchPage
 
 
 class BibliothequesparisBrowser(LoginBrowser):
-    BASEURL = 'https://bibliotheques.paris.fr/'
+    BASEURL = "https://bibliotheques.paris.fr/"
 
-    login = URL(r'/Default/Portal/Recherche/logon.svc/logon', LoginPage)
-    bookings = URL(r'/Default/Portal/Services/UserAccountService.svc/ListLoans\?serviceCode=SYRACUSE&token=(?P<ts>\d+)&userUniqueIdentifier=&timestamp=(?P<ts2>\d+)', LoansPage)
+    login = URL(r"/Default/Portal/Recherche/logon.svc/logon", LoginPage)
+    bookings = URL(
+        r"/Default/Portal/Services/UserAccountService.svc/ListLoans\?serviceCode=SYRACUSE&token=(?P<ts>\d+)&userUniqueIdentifier=&timestamp=(?P<ts2>\d+)",
+        LoansPage,
+    )
 
-    renew = URL(r'/Default/Portal/Services/UserAccountService.svc/RenewLoans', RenewPage)
-    search = URL(r'/Default/Portal/Recherche/Search.svc/Search', SearchPage)
+    renew = URL(r"/Default/Portal/Services/UserAccountService.svc/RenewLoans", RenewPage)
+    search = URL(r"/Default/Portal/Recherche/Search.svc/Search", SearchPage)
 
     json_headers = {
-        'Accept': 'application/json, text/javascript',
+        "Accept": "application/json, text/javascript",
     }
 
     def do_login(self):
         d = {
-            'username': self.username,
-            'password': self.password,
+            "username": self.username,
+            "password": self.password,
         }
-        self.login.go(data=d, headers={'Accept': 'application/json, text/javascript'})
+        self.login.go(data=d, headers={"Accept": "application/json, text/javascript"})
 
     @need_login
     def get_loans(self):
@@ -54,12 +57,12 @@ class BibliothequesparisBrowser(LoginBrowser):
     @need_login
     def do_renew(self, id):
         b = find_object(self.get_loans(), id=id)
-        assert b, 'loan not found'
-        assert b._renew_data, 'book has no data'
+        assert b, "loan not found"
+        assert b._renew_data, "book has no data"
         post = {
-            'loans': [b._renew_data],
-            'serviceCode': 'SYRACUSE',
-            'userUniqueIdentifier': '',
+            "loans": [b._renew_data],
+            "serviceCode": "SYRACUSE",
+            "userUniqueIdentifier": "",
         }
         self.renew.go(json=post, headers=self.json_headers)
 
@@ -76,10 +79,12 @@ class BibliothequesparisBrowser(LoginBrowser):
                     "ScenarioCode": "CATALOGUE",
                     "SearchContext": 0,
                     "SearchLabel": "",
-                    "Url": "https://bibliotheques.paris.fr/Default/search.aspx?SC=CATALOGUE&QUERY={q}&QUERY_LABEL=#/Search/(query:(Page:{page},PageRange:3,QueryString:{q},ResultSize:50,ScenarioCode:CATALOGUE,SearchContext:0,SearchLabel:''))".format(q=pattern, page=page),
+                    "Url": "https://bibliotheques.paris.fr/Default/search.aspx?SC=CATALOGUE&QUERY={q}&QUERY_LABEL=#/Search/(query:(Page:{page},PageRange:3,QueryString:{q},ResultSize:50,ScenarioCode:CATALOGUE,SearchContext:0,SearchLabel:''))".format(
+                        q=pattern, page=page
+                    ),
                 }
             }
-            self.location('/Default/Portal/Recherche/Search.svc/Search', json=d, headers=self.json_headers)
+            self.location("/Default/Portal/Recherche/Search.svc/Search", json=d, headers=self.json_headers)
             for book in self.page.iter_books():
                 yield book
 

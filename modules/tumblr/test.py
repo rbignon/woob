@@ -21,11 +21,11 @@ from woob.tools.test import BackendTest, skip_without_config
 
 
 class TumblrTest(BackendTest):
-    MODULE = 'tumblr'
+    MODULE = "tumblr"
 
-    @skip_without_config('url')
+    @skip_without_config("url")
     def test_tumblr(self):
-        gall = self.backend.get_gallery('noname')
+        gall = self.backend.get_gallery("noname")
         assert gall
         assert gall.url
 

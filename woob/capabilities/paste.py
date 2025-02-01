@@ -18,7 +18,7 @@
 from .base import BaseObject, BoolField, Capability, NotLoaded, StringField, UserError
 
 
-__all__ = ['PasteNotFound', 'BasePaste', 'CapPaste']
+__all__ = ["PasteNotFound", "BasePaste", "CapPaste"]
 
 
 class PasteNotFound(UserError):
@@ -34,13 +34,13 @@ class BasePaste(BaseObject):
     """
     Represents a pasted text.
     """
-    title =         StringField('Title of paste')
-    language =      StringField('Language of the paste')
-    contents =      StringField('Content of the paste')
-    public =        BoolField('Is this paste public?')
 
-    def __init__(self, _id, title=NotLoaded, language=NotLoaded, contents=NotLoaded,
-                 public=NotLoaded, url=None):
+    title = StringField("Title of paste")
+    language = StringField("Language of the paste")
+    contents = StringField("Content of the paste")
+    public = BoolField("Is this paste public?")
+
+    def __init__(self, _id, title=NotLoaded, language=NotLoaded, contents=NotLoaded, public=NotLoaded, url=None):
         super(BasePaste, self).__init__(str(_id), url)
 
         self.title = title

@@ -18,7 +18,7 @@
 from collections import OrderedDict
 
 
-__all__ = ['sorted_documents', 'merge_iterators']
+__all__ = ["sorted_documents", "merge_iterators"]
 
 
 def sorted_documents(iterable):

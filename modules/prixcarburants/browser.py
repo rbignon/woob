@@ -23,16 +23,16 @@ from woob.capabilities.base import UserError
 from .pages import ComparisonResultsPage, IndexPage, ShopInfoPage
 
 
-__all__ = ['PrixCarburantsBrowser']
+__all__ = ["PrixCarburantsBrowser"]
 
 
 class PrixCarburantsBrowser(PagesBrowser):
-    BASEURL = 'https://www.prix-carburants.gouv.fr'
+    BASEURL = "https://www.prix-carburants.gouv.fr"
     TOKEN = None
 
-    result_page = URL('/recherche/', ComparisonResultsPage)
-    shop_page = URL(r'/itineraire/infos/(?P<_id>\d+)', ShopInfoPage)
-    index_page = URL('/$', IndexPage)
+    result_page = URL("/recherche/", ComparisonResultsPage)
+    shop_page = URL(r"/itineraire/infos/(?P<_id>\d+)", ShopInfoPage)
+    index_page = URL("/$", IndexPage)
 
     def iter_products(self):
         return self.index_page.go().iter_products()
@@ -45,20 +45,20 @@ class PrixCarburantsBrowser(PagesBrowser):
             self.get_token()
 
         data = {
-            'rechercher[localisation]': '%s' % zipcode or town,
-            'rechercher[choix_carbu][]': '%s' % product.id,
-            'rechercher[_token]': '%s' % self.TOKEN,
-            'rechercher[geolocalisation_long]': '',
-            'rechercher[geolocalisation_lat]': '',
-            'rechercher[departement]': '',
-            'rechercher[type_enseigne]': ''
+            "rechercher[localisation]": "%s" % zipcode or town,
+            "rechercher[choix_carbu][]": "%s" % product.id,
+            "rechercher[_token]": "%s" % self.TOKEN,
+            "rechercher[geolocalisation_long]": "",
+            "rechercher[geolocalisation_lat]": "",
+            "rechercher[departement]": "",
+            "rechercher[type_enseigne]": "",
         }
 
         # self.session.headers['Content-Type'] = 'application/x-www-form-urlencoded'
         self.index_page.go(data=data)
 
         if not self.result_page.is_here():
-            raise UserError('Bad zip or product')
+            raise UserError("Bad zip or product")
 
         if not product.name:
             product.name = self.page.get_product_name(product.id)

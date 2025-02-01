@@ -19,105 +19,122 @@
 from datetime import date, datetime
 
 from .base import (
-    BaseObject, Capability, Enum, EnumField, Field, FloatField, IntField, NotLoaded, StringField, UserError,
+    BaseObject,
+    Capability,
+    Enum,
+    EnumField,
+    Field,
+    FloatField,
+    IntField,
+    NotLoaded,
+    StringField,
+    UserError,
 )
 from .date import DateField
 
 
 __all__ = [
-    'Forecast', 'Current', 'City', 'CityNotFound', 'Temperature', 'CapWeather',
-    'BaseWeather', 'Direction', 'Precipitation',
+    "Forecast",
+    "Current",
+    "City",
+    "CityNotFound",
+    "Temperature",
+    "CapWeather",
+    "BaseWeather",
+    "Direction",
+    "Precipitation",
 ]
 
 
 class Direction(Enum):
-    S = 'South'
-    N = 'North'
-    E = 'East'
-    W = 'West'
-    SE = 'Southeast'
-    SW = 'Southwest'
-    NW = 'Northwest'
-    NE = 'Northeast'
-    SSE = 'South-Southeast'
-    SSW = 'South-Southwest'
-    NNW = 'North-Northwest'
-    NNE = 'North-Northeast'
-    ESE = 'East-Southeast'
-    ENE = 'East-Northeast'
-    WSW = 'West-Southwest'
-    WNW = 'West-Northwest'
-    Variable = 'Variable'
+    S = "South"
+    N = "North"
+    E = "East"
+    W = "West"
+    SE = "Southeast"
+    SW = "Southwest"
+    NW = "Northwest"
+    NE = "Northeast"
+    SSE = "South-Southeast"
+    SSW = "South-Southwest"
+    NNW = "North-Northwest"
+    NNE = "North-Northeast"
+    ESE = "East-Southeast"
+    ENE = "East-Northeast"
+    WSW = "West-Southwest"
+    WNW = "West-Northwest"
+    Variable = "Variable"
 
 
 # METAR keys
 class Precipitation(Enum):
-    RA = 'Rain'
-    SN = 'Snow'
-    GR = 'Hail'
-    PL = 'Ice pellets'
-    GS = 'Small hail'
-    DZ = 'Drizzle'
-    IC = 'Ice cristals'
-    SG = 'Small grains'
-    UP = 'Unknown precipiation'
+    RA = "Rain"
+    SN = "Snow"
+    GR = "Hail"
+    PL = "Ice pellets"
+    GS = "Small hail"
+    DZ = "Drizzle"
+    IC = "Ice cristals"
+    SG = "Small grains"
+    UP = "Unknown precipiation"
 
 
 class Temperature(BaseObject):
-    value =      FloatField('Temperature value')
-    unit =       StringField('Input unit')
+    value = FloatField("Temperature value")
+    unit = StringField("Input unit")
 
-    def __init__(self, value=NotLoaded, unit='', url=None):
+    def __init__(self, value=NotLoaded, unit="", url=None):
         super(Temperature, self).__init__(str(value), url)
         self.value = value
-        if unit not in ['C', 'F']:
-            unit = ''
+        if unit not in ["C", "F"]:
+            unit = ""
         self.unit = unit
 
     def asfahrenheit(self):
         if not self.unit:
-            return '%s' % int(round(self.value))
-        elif self.unit == 'F':
-            return '%s °F' % int(round(self.value))
+            return "%s" % int(round(self.value))
+        elif self.unit == "F":
+            return "%s °F" % int(round(self.value))
         else:
-            return '%s °F' % int(round((self.value * 9.0 / 5.0) + 32))
+            return "%s °F" % int(round((self.value * 9.0 / 5.0) + 32))
 
     def ascelsius(self):
         if not self.unit:
-            return '%s' % int(round(self.value))
-        elif self.unit == 'C':
-            return '%s °C' % int(round(self.value))
+            return "%s" % int(round(self.value))
+        elif self.unit == "C":
+            return "%s °C" % int(round(self.value))
         else:
-            return '%s °C' % int(round((self.value - 32.0) * 5.0 / 9.0))
+            return "%s °C" % int(round((self.value - 32.0) * 5.0 / 9.0))
 
     def __repr__(self):
         if self.value is not None and self.unit:
-            return '%r %r' % (self.value, self.unit)
-        return ''
+            return "%r %r" % (self.value, self.unit)
+        return ""
 
 
 class BaseWeather(BaseObject):
-    precipitation = EnumField('Precipitation type', Precipitation)
-    precipitation_probability = FloatField('Probability of precipitation (ratio)')
+    precipitation = EnumField("Precipitation type", Precipitation)
+    precipitation_probability = FloatField("Probability of precipitation (ratio)")
 
-    wind_direction = EnumField('Wind direction', Direction)
-    wind_speed = FloatField('Wind speed (in km/h)')
+    wind_direction = EnumField("Wind direction", Direction)
+    wind_speed = FloatField("Wind speed (in km/h)")
 
-    humidity = FloatField('Relative humidity (ratio)')
-    pressure = FloatField('Atmospheric pressure (in hPa)')
+    humidity = FloatField("Relative humidity (ratio)")
+    pressure = FloatField("Atmospheric pressure (in hPa)")
 
-    visibility = FloatField('Horizontal visibility distance (in km)')
-    cloud = IntField('Cloud coverage (in okta (0-8))')
+    visibility = FloatField("Horizontal visibility distance (in km)")
+    cloud = IntField("Cloud coverage (in okta (0-8))")
 
 
 class Forecast(BaseWeather):
     """
     Weather forecast.
     """
-    date =      Field('Date for the forecast', datetime, date, str)
-    low =       Field('Low temperature', Temperature)
-    high =      Field('High temperature', Temperature)
-    text =      StringField('Comment on forecast')
+
+    date = Field("Date for the forecast", datetime, date, str)
+    low = Field("Low temperature", Temperature)
+    high = Field("High temperature", Temperature)
+    text = StringField("Comment on forecast")
 
     def __init__(self, date=NotLoaded, low=None, high=None, text=None, unit=None, url=None):
         super(Forecast, self).__init__(str(date or ""), url)
@@ -131,9 +148,10 @@ class Current(BaseWeather):
     """
     Current weather.
     """
-    date =      DateField('Date of measure')
-    text =      StringField('Comment about current weather')
-    temp =      Field('Current temperature', Temperature)
+
+    date = DateField("Date of measure")
+    text = StringField("Comment about current weather")
+    temp = Field("Current temperature", Temperature)
 
     def __init__(self, date=NotLoaded, temp=None, text=None, unit=None, url=None):
         super(Current, self).__init__(str(date or ""), url)
@@ -146,9 +164,10 @@ class City(BaseObject):
     """
     City where to find weather.
     """
-    name =      StringField('Name of city')
 
-    def __init__(self, id='', name=None, url=None):
+    name = StringField("Name of city")
+
+    def __init__(self, id="", name=None, url=None):
         super(City, self).__init__(id, url)
         self.name = name
 

@@ -24,24 +24,22 @@ from woob.tools.value import Value, ValueTransient
 from .browser import GreenGotBrowser
 
 
-__all__ = ['GreenGotModule']
+__all__ = ["GreenGotModule"]
 
 
 class GreenGotModule(Module, CapBank):
-    NAME = 'greengot'
-    DESCRIPTION = 'GreenGot'
-    MAINTAINER = 'Pierre BOULC\'H'
-    EMAIL = 'dev@boulch.fr'
+    NAME = "greengot"
+    DESCRIPTION = "GreenGot"
+    MAINTAINER = "Pierre BOULC'H"
+    EMAIL = "dev@boulch.fr"
     CONFIG = BackendConfig(
-        Value('login', label='Email', regexp='.+'),
-        ValueTransient('smscode'),
-        ValueTransient('emailcode')
+        Value("login", label="Email", regexp=".+"), ValueTransient("smscode"), ValueTransient("emailcode")
     )
     BROWSER = GreenGotBrowser
-    LICENSE = 'LGPLv3+'
+    LICENSE = "LGPLv3+"
 
     def create_default_browser(self):
-        return self.create_browser(self.config, self.config['login'].get())
+        return self.create_browser(self.config, self.config["login"].get())
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

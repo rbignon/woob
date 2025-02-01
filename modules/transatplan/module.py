@@ -25,26 +25,26 @@ from woob.tools.value import ValueBackendPassword
 from .browser import TransatplanBrowser
 
 
-__all__ = ['TransatplanModule']
+__all__ = ["TransatplanModule"]
 
 
 class TransatplanModule(Module, CapBankWealth):
-    NAME = 'transatplan'
-    DESCRIPTION = 'Banque Transatlantique épargne salariale'
-    MAINTAINER = 'Vincent Ardisson'
-    EMAIL = 'vardisson@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "transatplan"
+    DESCRIPTION = "Banque Transatlantique épargne salariale"
+    MAINTAINER = "Vincent Ardisson"
+    EMAIL = "vardisson@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = TransatplanBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', help='Identifiant', masked=False),
-        ValueBackendPassword('password', help='Mot de passe'),
+        ValueBackendPassword("login", help="Identifiant", masked=False),
+        ValueBackendPassword("password", help="Mot de passe"),
     )
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

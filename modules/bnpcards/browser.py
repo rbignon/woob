@@ -25,42 +25,70 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 from .corporate.browser import BnpcartesentrepriseCorporateBrowser
 from .pages import (
-    AccountsPage, ComingPage, ErrorPage, HistoPage, HomePage, LoginPage, TiCardPage, TiHistoPage, TransactionsPage,
+    AccountsPage,
+    ComingPage,
+    ErrorPage,
+    HistoPage,
+    HomePage,
+    LoginPage,
+    TiCardPage,
+    TiHistoPage,
+    TransactionsPage,
 )
 
 
 class BnpcartesentrepriseBrowser(LoginBrowser):
-    BASEURL = 'https://www.cartesentreprise.bnpparibas.com'
+    BASEURL = "https://www.cartesentreprise.bnpparibas.com"
 
-    login = URL(r'/ce_internet_public/seConnecter.builder.do', LoginPage)
-    error = URL(r'.*.seConnecter.event.do',
-                r'.*.compteGestChgPWD.builder.do',
-                r'/ce_internet_prive_ti/compteTituChgPWD.builder.do',
-                r'/ce_internet_corporate_ti/compteTituChgPWDCorporate.builder.do',
-                ErrorPage)
-    home = URL(r'/ce_internet_prive_ge/accueilInternetGe.builder.do',
-               r'/ce_internet_(prive|corporate)_ti/accueilInternetTi(Corporate)?.builder.do', HomePage)
-    accounts = URL(r'/ce_internet_prive_ge/carteAffaireParc.builder.do',
-                   r'/ce_internet_prive_ge/carteAffaireParcChange.event.do',
-                   r'/ce_internet_prive_ge/pageParcCarteAffaire.event.do', AccountsPage)
-    coming = URL(r'/ce_internet_prive_ge/operationEnCours.builder.do',
-                 r'/ce_internet_prive_ge/operationEnCours.event.do', ComingPage)
-    history = URL(r'/ce_internet_prive_ge/operationHisto.builder.do',
-                  r'/ce_internet_prive_ge/operationHisto.event.do', HistoPage)
-    transactions = URL(r'ce_internet_prive_ge/operationEnCoursDetail.builder.do.*',
-                       r'ce_internet_prive_ge/pageOperationEnCoursDetail.event.do.*',
-                       r'ce_internet_prive_ge/operationHistoDetail.builder.do.*',
-                       r'ce_internet_prive_ge/pageOperationHistoDetail.event.do.*',
-                       TransactionsPage)
+    login = URL(r"/ce_internet_public/seConnecter.builder.do", LoginPage)
+    error = URL(
+        r".*.seConnecter.event.do",
+        r".*.compteGestChgPWD.builder.do",
+        r"/ce_internet_prive_ti/compteTituChgPWD.builder.do",
+        r"/ce_internet_corporate_ti/compteTituChgPWDCorporate.builder.do",
+        ErrorPage,
+    )
+    home = URL(
+        r"/ce_internet_prive_ge/accueilInternetGe.builder.do",
+        r"/ce_internet_(prive|corporate)_ti/accueilInternetTi(Corporate)?.builder.do",
+        HomePage,
+    )
+    accounts = URL(
+        r"/ce_internet_prive_ge/carteAffaireParc.builder.do",
+        r"/ce_internet_prive_ge/carteAffaireParcChange.event.do",
+        r"/ce_internet_prive_ge/pageParcCarteAffaire.event.do",
+        AccountsPage,
+    )
+    coming = URL(
+        r"/ce_internet_prive_ge/operationEnCours.builder.do",
+        r"/ce_internet_prive_ge/operationEnCours.event.do",
+        ComingPage,
+    )
+    history = URL(
+        r"/ce_internet_prive_ge/operationHisto.builder.do", r"/ce_internet_prive_ge/operationHisto.event.do", HistoPage
+    )
+    transactions = URL(
+        r"ce_internet_prive_ge/operationEnCoursDetail.builder.do.*",
+        r"ce_internet_prive_ge/pageOperationEnCoursDetail.event.do.*",
+        r"ce_internet_prive_ge/operationHistoDetail.builder.do.*",
+        r"ce_internet_prive_ge/pageOperationHistoDetail.event.do.*",
+        TransactionsPage,
+    )
 
-    ti_card = URL(r'/ce_internet_prive_ti/operationEnCoursDetail.builder.do',
-                  r'/ce_internet_(prive|corporate)_ti/operation(Corporate)?EnCoursDetail(Afficher|Appliquer)?.event.do.*',
-                  r'/ce_internet_prive_ti/pageOperationEnCoursDetail.event.do.*', TiCardPage)
-    ti_corporate_card = URL(r'/ce_internet_corporate_ti/operationCorporateEnCoursDetail.builder.do', TiCardPage)
-    ti_histo = URL(r'/ce_internet_prive_ti/operationHistoDetail.builder.do',
-                   r'/ce_internet_(prive|corporate)_ti/operation(Corporate)?HistoDetail(Afficher|Appliquer)?.event.do.*',
-                   r'/ce_internet_prive_ti/pageOperationHistoDetail.event.do.*', TiHistoPage)
-    ti_corporate_histo = URL(r'/ce_internet_corporate_ti/operationCorporateHistoDetail.builder.do', TiHistoPage)
+    ti_card = URL(
+        r"/ce_internet_prive_ti/operationEnCoursDetail.builder.do",
+        r"/ce_internet_(prive|corporate)_ti/operation(Corporate)?EnCoursDetail(Afficher|Appliquer)?.event.do.*",
+        r"/ce_internet_prive_ti/pageOperationEnCoursDetail.event.do.*",
+        TiCardPage,
+    )
+    ti_corporate_card = URL(r"/ce_internet_corporate_ti/operationCorporateEnCoursDetail.builder.do", TiCardPage)
+    ti_histo = URL(
+        r"/ce_internet_prive_ti/operationHistoDetail.builder.do",
+        r"/ce_internet_(prive|corporate)_ti/operation(Corporate)?HistoDetail(Afficher|Appliquer)?.event.do.*",
+        r"/ce_internet_prive_ti/pageOperationHistoDetail.event.do.*",
+        TiHistoPage,
+    )
+    ti_corporate_histo = URL(r"/ce_internet_corporate_ti/operationCorporateHistoDetail.builder.do", TiHistoPage)
     TIMEOUT = 60.0
 
     def __init__(self, type, *args, **kwargs):
@@ -78,25 +106,25 @@ class BnpcartesentrepriseBrowser(LoginBrowser):
         assert self.login.is_here()
         self.page.login(self.type, self.username, self.password)
         if self.error.is_here():
-            if self.type == '1' and self.username.isdigit():
+            if self.type == "1" and self.username.isdigit():
                 # Main and phenix can have digit username
                 # We must try on the two websites and phenix
                 # will raise the BrowserIncorrectPassword
-                raise SiteSwitch('phenix')
+                raise SiteSwitch("phenix")
             raise BrowserIncorrectPassword()
         if self.page.is_password_expired():
             raise BrowserPasswordExpired(self.page.get_error_msg())
-        if self.type == '2' and self.page.is_corporate():
-            self.logger.info('Manager corporate connection')
+        if self.type == "2" and self.page.is_corporate():
+            self.logger.info("Manager corporate connection")
             # Even if we are are on a manager corporate connection, we may still have business cards.
             # For that case we need to fetch data from both the corporate browser and the default one.
             self.corporate_browser = BnpcartesentrepriseCorporateBrowser(self.type, self.username, self.password)
         # ti corporate and ge corporate are not detected the same way ..
-        if 'corporate' in self.page.url:
-            self.logger.info('Carholder corporate connection')
+        if "corporate" in self.page.url:
+            self.logger.info("Carholder corporate connection")
             self.is_corporate = True
         else:
-            self.logger.info('Cardholder connection')
+            self.logger.info("Cardholder connection")
 
     def ti_card_go(self):
         if self.is_corporate:
@@ -112,20 +140,20 @@ class BnpcartesentrepriseBrowser(LoginBrowser):
 
     @need_login
     def iter_accounts(self):
-        if self.type == '1':
+        if self.type == "1":
             self.ti_card_go()
-        elif self.type == '2':
+        elif self.type == "2":
             self.accounts.go()
 
         if self.error.is_here():
             raise BrowserPasswordExpired()
 
-        if self.type == '1':
+        if self.type == "1":
             for account in self.page.iter_accounts(rib=None):
                 self.page.expand(account=account)
                 account.coming = self.page.get_balance()
                 yield account
-        if self.type == '2':
+        if self.type == "2":
             for company in self.page.get_companies():
                 self.accounts.stay_or_go()
                 self.page.expand(company=company)
@@ -137,8 +165,8 @@ class BnpcartesentrepriseBrowser(LoginBrowser):
                     prev_rib = None
                     for account in accounts:
                         if account.id in ids:
-                            self.logger.warning('duplicate account %r', account.id)
-                            account.id += '_%s' % ''.join(account.label.split())
+                            self.logger.warning("duplicate account %r", account.id)
+                            account.id += "_%s" % "".join(account.label.split())
 
                         if prev_rib != account._rib:
                             self.coming.go()
@@ -192,7 +220,7 @@ class BnpcartesentrepriseBrowser(LoginBrowser):
 
     @need_login
     def get_transactions(self, account):
-        if self.type == '1':
+        if self.type == "1":
             if self.is_corporate:
                 return self.get_ti_corporate_transactions(account)
             return self.get_ti_transactions(account)

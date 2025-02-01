@@ -28,7 +28,7 @@ except ModuleNotFoundError:
 
     class FakeAkamaiHTMLPage(HTMLPage):
         def get_akamai_url(self):
-            return ''
+            return ""
 
     class FakeAkamaiSolver(object):
         html_doc = None
@@ -50,7 +50,7 @@ except ModuleNotFoundError:
             akamai_solver = self.get_akamai_solver(akamai_url, self.url)
             if html_doc:
                 akamai_solver.html_doc = html_doc
-            cookie_abck = self.session.cookies['_abck']
+            cookie_abck = self.session.cookies["_abck"]
             self.post_sensor_data(akamai_solver, cookie_abck)
 
     AkamaiMixin = FakeAkamaiMixin

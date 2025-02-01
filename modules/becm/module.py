@@ -25,17 +25,17 @@ from woob_modules.creditmutuel.module import CreditMutuelModule
 from .browser import BECMBrowser
 
 
-__all__ = ['BECMModule']
+__all__ = ["BECMModule"]
 
 
 class BECMModule(CreditMutuelModule, CapBankTransferAddRecipient, CapContact):
-    NAME = 'becm'
-    MAINTAINER = 'Victor Kannemacher'
-    EMAIL = 'vkannemacher.budgetinsight@gmail.com'
-    VERSION = '3.7'
-    DEPENDENCIES = ('creditmutuel',)
-    DESCRIPTION = 'Banque Européenne Crédit Mutuel'
-    LICENSE = 'LGPLv3+'
+    NAME = "becm"
+    MAINTAINER = "Victor Kannemacher"
+    EMAIL = "vkannemacher.budgetinsight@gmail.com"
+    VERSION = "3.7"
+    DEPENDENCIES = ("creditmutuel",)
+    DESCRIPTION = "Banque Européenne Crédit Mutuel"
+    LICENSE = "LGPLv3+"
 
     BROWSER = BECMBrowser
 

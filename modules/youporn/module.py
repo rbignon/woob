@@ -26,22 +26,22 @@ from .browser import YoupornBrowser
 from .video import YoupornVideo
 
 
-__all__ = ['YoupornModule']
+__all__ = ["YoupornModule"]
 
 
 class YoupornModule(Module, CapVideo, CapCollection):
-    NAME = 'youporn'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = 'YouPorn pornographic video streaming website'
-    LICENSE = 'AGPLv3+'
+    NAME = "youporn"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "YouPorn pornographic video streaming website"
+    LICENSE = "AGPLv3+"
     BROWSER = YoupornBrowser
 
     def get_video(self, _id):
         return self.browser.get_video(_id)
 
-    SORTBY = ['relevance', 'rating', 'views', 'time']
+    SORTBY = ["relevance", "rating", "views", "time"]
 
     def search_videos(self, pattern, sortby=CapVideo.SEARCH_RELEVANCE, nsfw=False):
         if not nsfw:
@@ -50,25 +50,25 @@ class YoupornModule(Module, CapVideo, CapCollection):
         return self.browser.search_videos(pattern, self.SORTBY[sortby])
 
     def fill_video(self, video, fields):
-        if 'url' in fields:
+        if "url" in fields:
             return self.browser.get_video(video.id)
-        if 'thumbnail' in fields:
+        if "thumbnail" in fields:
             video.thumbnail.data = self.browser.open(video.thumbnail.url).content
 
     def iter_resources(self, objs, split_path):
         if BaseVideo in objs:
             collection = self.get_collection(objs, split_path)
             if collection.path_level == 0:
-                yield self.get_collection(objs, [u'latest_nsfw'])
-            if collection.split_path == [u'latest_nsfw']:
+                yield self.get_collection(objs, ["latest_nsfw"])
+            if collection.split_path == ["latest_nsfw"]:
                 for video in self.browser.latest_videos():
                     yield video
 
     def validate_collection(self, objs, collection):
         if collection.path_level == 0:
             return
-        if BaseVideo in objs and collection.split_path == [u'latest_nsfw']:
-            collection.title = u'Latest YouPorn videos (NSFW)'
+        if BaseVideo in objs and collection.split_path == ["latest_nsfw"]:
+            collection.title = "Latest YouPorn videos (NSFW)"
             return
         raise CollectionNotFound(collection.split_path)
 

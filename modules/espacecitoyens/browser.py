@@ -24,14 +24,18 @@ from .pages import BillingDetailPage, HomePage, LoginErrorPage, LoginPage, MyAcc
 
 
 class EspacecitoyensBrowser(LoginBrowser):
-    BASEURL = 'https://www.espace-citoyens.net'
+    BASEURL = "https://www.espace-citoyens.net"
 
-    login = URL(r'/(?P<city>\w+)/espace-citoyens/Home/AccueilPublic$', LoginPage)
-    home  = URL(r'/(?P<city>\w+)/espace-citoyens/CompteCitoyen', HomePage)
-    loginerror = URL(r'/(?P<city>\w+)/espace-citoyens/Home/Logon', LoginErrorPage)
-    my_account = URL(r'/(?P<city>\w+)/espace-citoyens/MonCompte$', MyAccountPage)
-    subscription = URL(r'/(?P<city>\w+)/espace-citoyens/FichePersonne/DetailPersonne[?]idDynamic=(?P<sub_id>.*)', SubscriptionPage)
-    billing_detail = URL(r'/(?P<city>\w+)/espace-citoyens/MonCompte/DetailFacture[?]IdFactureUnique=(?P<doc_id>.*)', BillingDetailPage)
+    login = URL(r"/(?P<city>\w+)/espace-citoyens/Home/AccueilPublic$", LoginPage)
+    home = URL(r"/(?P<city>\w+)/espace-citoyens/CompteCitoyen", HomePage)
+    loginerror = URL(r"/(?P<city>\w+)/espace-citoyens/Home/Logon", LoginErrorPage)
+    my_account = URL(r"/(?P<city>\w+)/espace-citoyens/MonCompte$", MyAccountPage)
+    subscription = URL(
+        r"/(?P<city>\w+)/espace-citoyens/FichePersonne/DetailPersonne[?]idDynamic=(?P<sub_id>.*)", SubscriptionPage
+    )
+    billing_detail = URL(
+        r"/(?P<city>\w+)/espace-citoyens/MonCompte/DetailFacture[?]IdFactureUnique=(?P<doc_id>.*)", BillingDetailPage
+    )
 
     def __init__(self, username, password, city, *args, **kwargs):
         super().__init__(username, password, *args, **kwargs)
@@ -59,7 +63,7 @@ class EspacecitoyensBrowser(LoginBrowser):
             sub_id = subscription.id
         else:
             sub_id = subscription
-        if sub_id != '1':
+        if sub_id != "1":
             return []
         self.my_account.stay_or_go(city=self.city)
         return self.page.iter_documents()
@@ -71,9 +75,13 @@ class EspacecitoyensBrowser(LoginBrowser):
         else:
             doc_id = document
         self.my_account.stay_or_go(city=self.city)
-        self.billing_detail.go(city=self.city, doc_id=doc_id, headers={
-            'X-Requested-With': 'XMLHttpRequest',
-        })
+        self.billing_detail.go(
+            city=self.city,
+            doc_id=doc_id,
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+            },
+        )
         return self.page.get_document()
 
     @need_login

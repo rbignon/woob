@@ -44,23 +44,25 @@ class ProgramPage(HTMLPage):
                 return self.check_date(obj) and self.check_city(obj) and self.check_category(obj)
 
             def check_date(self, obj):
-                if self.env['date_from'] and obj.start_date >= self.env['date_from']:
-                    if not self.env['date_to']:
+                if self.env["date_from"] and obj.start_date >= self.env["date_from"]:
+                    if not self.env["date_to"]:
                         return True
-                    elif obj.end_date and obj.end_date <= self.env['date_to']:
+                    elif obj.end_date and obj.end_date <= self.env["date_to"]:
                         return True
-                    elif self.env['date_to'] >= obj.start_date:
+                    elif self.env["date_to"] >= obj.start_date:
                         return True
                 return False
 
             def check_city(self, obj):
-                return (not self.env['city'] or self.env['city'].upper() == obj.city.upper())
+                return not self.env["city"] or self.env["city"].upper() == obj.city.upper()
 
             def check_category(self, obj):
-                return (not self.env['categories'] or obj.category in self.env['categories'])
+                return not self.env["categories"] or obj.category in self.env["categories"]
 
-            obj_id = Regexp(Link('div/div[@class="catItemHeader"]/h3[@class="catItemTitle"]/a'),
-                            r'/programmation/item/(\d*?)-.*\.html')
+            obj_id = Regexp(
+                Link('div/div[@class="catItemHeader"]/h3[@class="catItemTitle"]/a'),
+                r"/programmation/item/(\d*?)-.*\.html",
+            )
             obj_start_date = Date(CleanText('div/div[@class="catItemHeader"]/span[@class="catItemDateCreated"]'))
             obj_summary = CleanText('div/div[@class="catItemHeader"]/h3[@class="catItemTitle"]/a')
 
@@ -71,10 +73,10 @@ class EventPage(HTMLPage):
     class get_event(ItemElement):
         klass = HybrideCalendarEvent
 
-        obj_id = Decode(Env('_id'))
+        obj_id = Decode(Env("_id"))
         obj_start_date = Date(CleanText('//span[@class="itemDateCreated"]'))
         obj_summary = CleanText('//h2[@class="itemTitle"]')
-        obj_description = Format('%s\n%s',
-                                 CleanHTML('//div[@class="itemIntroText"]'),
-                                 CleanHTML('//div[@class="itemFullText"]'))
-        obj_url = BrowserURL('event_page', _id=Env('_id'))
+        obj_description = Format(
+            "%s\n%s", CleanHTML('//div[@class="itemIntroText"]'), CleanHTML('//div[@class="itemFullText"]')
+        )
+        obj_url = BrowserURL("event_page", _id=Env("_id"))

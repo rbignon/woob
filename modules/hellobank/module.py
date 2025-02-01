@@ -22,7 +22,11 @@ import re
 from decimal import Decimal
 
 from woob.capabilities.bank import (
-    Account, AccountNotFound, CapBankTransferAddRecipient, RecipientNotFound, TransferInvalidLabel,
+    Account,
+    AccountNotFound,
+    CapBankTransferAddRecipient,
+    RecipientNotFound,
+    TransferInvalidLabel,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object, strict_find_object
@@ -33,23 +37,23 @@ from woob.tools.value import ValueBackendPassword, ValueBool, ValueTransient
 from woob_modules.bnp.pp.browser import HelloBank
 
 
-__all__ = ['HelloBankModule']
+__all__ = ["HelloBankModule"]
 
 
 class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile, CapDocument):
-    NAME = 'hellobank'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DEPENDENCIES = ('bnp',)
-    LICENSE = 'AGPLv3+'
-    DESCRIPTION = 'Hello bank (BNP Paribas)'
+    NAME = "hellobank"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DEPENDENCIES = ("bnp",)
+    LICENSE = "AGPLv3+"
+    DESCRIPTION = "Hello bank (BNP Paribas)"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Numéro client', masked=False),
-        ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
-        ValueBool('rotating_password', label='Automatically renew password every 100 connections', default=False),
-        ValueBool('digital_key', label='User with digital key have to add recipient with digital key', default=False),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Numéro client", masked=False),
+        ValueBackendPassword("password", label="Code secret", regexp=r"^(\d{6})$"),
+        ValueBool("rotating_password", label="Automatically renew password every 100 connections", default=False),
+        ValueBool("digital_key", label="User with digital key have to add recipient with digital key", default=False),
+        ValueTransient("request_information"),
     )
     BROWSER = HelloBank
 
@@ -89,21 +93,21 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
             if not emitter_account:
                 # account_id is different in PSD2 case
                 # search for the account with iban first to get the account_id
-                assert origin_account.iban, 'Cannot do iter_transfer_recipient, the origin account was not found'
+                assert origin_account.iban, "Cannot do iter_transfer_recipient, the origin account was not found"
                 emitter_account = find_object(self.iter_accounts(), iban=origin_account.iban, error=AccountNotFound)
             origin_account = emitter_account.id
         return self.browser.iter_recipients(origin_account)
 
     def new_recipient(self, recipient, **params):
         # Recipient label has max 70 chars.
-        recipient.label = ' '.join(w for w in re.sub(r'[^0-9a-zA-Z-,\.: ]+', '', recipient.label).split())[:70]
+        recipient.label = " ".join(w for w in re.sub(r"[^0-9a-zA-Z-,\.: ]+", "", recipient.label).split())[:70]
         return self.browser.new_recipient(recipient, **params)
 
     def init_transfer(self, transfer, **params):
         if transfer.label is None:
             raise TransferInvalidLabel()
 
-        self.logger.info('Going to do a new transfer')
+        self.logger.info("Going to do a new transfer")
         if transfer.account_iban:
             account = find_object(self.iter_accounts(), iban=transfer.account_iban, error=AccountNotFound)
         else:
@@ -112,9 +116,7 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
         recipient = strict_find_object(self.iter_transfer_recipients(account.id), iban=transfer.recipient_iban)
         if not recipient:
             recipient = strict_find_object(
-                self.iter_transfer_recipients(account.id),
-                id=transfer.recipient_id,
-                error=RecipientNotFound
+                self.iter_transfer_recipients(account.id), id=transfer.recipient_id, error=RecipientNotFound
             )
 
         assert account.id.isdigit()
@@ -128,7 +130,7 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
 
     def transfer_check_recipient_id(self, old, new):
         # external recipient id can change, check the iban in recipient id
-        iban = re.search(r'([A-Z]{2}[A-Z\d]+)', old)
+        iban = re.search(r"([A-Z]{2}[A-Z\d]+)", old)
         if iban:
             # external recipients id
             iban = iban.group(1)
@@ -157,7 +159,7 @@ class HelloBankModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapPro
         return self.browser.iter_subscription()
 
     def get_document(self, _id):
-        subscription_id = _id.split('_')[0]
+        subscription_id = _id.split("_")[0]
         subscription = self.get_subscription(subscription_id)
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 

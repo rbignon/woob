@@ -21,52 +21,54 @@ from woob.tools.application.formatters.iformatter import IFormatter, PrettyForma
 from woob.tools.application.repl import ReplApplication, defaultcount
 
 
-__all__ = ['AppLyrics', 'LyricsGetFormatter', 'LyricsListFormatter']
+__all__ = ["AppLyrics", "LyricsGetFormatter", "LyricsListFormatter"]
 
 
 class LyricsGetFormatter(IFormatter):
-    MANDATORY_FIELDS = ('id', 'title', 'artist', 'content')
+    MANDATORY_FIELDS = ("id", "title", "artist", "content")
 
     def format_obj(self, obj, alias):
-        result = '%s%s%s\n' % (self.BOLD, obj.title, self.NC)
-        result += 'ID: %s\n' % obj.fullid
-        result += 'Title: %s\n' % obj.title
-        result += 'Artist: %s\n' % obj.artist
-        result += '\n%sContent%s\n' % (self.BOLD, self.NC)
-        result += '%s' % obj.content
+        result = "%s%s%s\n" % (self.BOLD, obj.title, self.NC)
+        result += "ID: %s\n" % obj.fullid
+        result += "Title: %s\n" % obj.title
+        result += "Artist: %s\n" % obj.artist
+        result += "\n%sContent%s\n" % (self.BOLD, self.NC)
+        result += "%s" % obj.content
         return result
 
 
 class LyricsListFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'title', 'artist')
+    MANDATORY_FIELDS = ("id", "title", "artist")
 
     def get_title(self, obj):
         return obj.title
 
     def get_description(self, obj):
-        artist = ''
+        artist = ""
         if not empty(obj.artist):
             artist = obj.artist
-        return '%s' % artist
+        return "%s" % artist
 
 
 class AppLyrics(ReplApplication):
-    APPNAME = 'lyrics'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2013-YEAR Julien Veyssier'
+    APPNAME = "lyrics"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2013-YEAR Julien Veyssier"
     DESCRIPTION = "Console application allowing to search for song lyrics on various websites."
     SHORT_DESCRIPTION = "search and display song lyrics"
     CAPS = CapLyrics
-    EXTRA_FORMATTERS = {'lyrics_list': LyricsListFormatter,
-                        'lyrics_get': LyricsGetFormatter,
-                        }
-    COMMANDS_FORMATTERS = {'search':    'lyrics_list',
-                           'get':      'lyrics_get',
-                           }
-    SEARCH_CRITERIAS = ['artist', 'song']
+    EXTRA_FORMATTERS = {
+        "lyrics_list": LyricsListFormatter,
+        "lyrics_get": LyricsGetFormatter,
+    }
+    COMMANDS_FORMATTERS = {
+        "search": "lyrics_list",
+        "get": "lyrics_get",
+    }
+    SEARCH_CRITERIAS = ["artist", "song"]
 
     def complete_get(self, text, line, *ignored):
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) == 2:
             return self._complete_object()
 
@@ -77,16 +79,16 @@ class AppLyrics(ReplApplication):
         Display lyrics of the song.
         """
 
-        songlyrics = self.get_object(id, 'get_lyrics')
+        songlyrics = self.get_object(id, "get_lyrics")
         if not songlyrics:
-            print('Song lyrics not found: %s' % id, file=self.stderr)
+            print("Song lyrics not found: %s" % id, file=self.stderr)
             return 3
 
         self.start_format()
         self.format(songlyrics)
 
     def complete_search(self, text, line, *ignored):
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) == 2:
             return self.SEARCH_CRITERIAS
 
@@ -98,10 +100,10 @@ class AppLyrics(ReplApplication):
         Search lyrics by artist name or by song title.
         """
         criteria, pattern = self.parse_command_args(line, 2, 2)
-        self.change_path(['search'])
+        self.change_path(["search"])
         if not pattern:
             pattern = None
 
         self.start_format(pattern=pattern)
-        for songlyrics in self.do('iter_lyrics', criteria, pattern):
+        for songlyrics in self.do("iter_lyrics", criteria, pattern):
             self.cached_format(songlyrics)

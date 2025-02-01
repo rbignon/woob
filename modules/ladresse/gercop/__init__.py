@@ -20,4 +20,4 @@
 from .browser import GercopBrowser
 
 
-__all__ = ['GercopBrowser']
+__all__ = ["GercopBrowser"]

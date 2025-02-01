@@ -29,8 +29,19 @@ from woob.tools.json import json
 
 from .akamai import AkamaiMixin
 from .pages import (
-    AuthenticatePage, AuthorizePage, BillDownload, CheckAuthenticatePage, DocumentsPage, HomePage, OTPTemplatePage,
-    ProfilePage, ProfilPage, UnLoggedPage, WelcomePage, WrongPasswordPage, XUIPage,
+    AuthenticatePage,
+    AuthorizePage,
+    BillDownload,
+    CheckAuthenticatePage,
+    DocumentsPage,
+    HomePage,
+    OTPTemplatePage,
+    ProfilePage,
+    ProfilPage,
+    UnLoggedPage,
+    WelcomePage,
+    WrongPasswordPage,
+    XUIPage,
 )
 
 
@@ -39,41 +50,40 @@ class BrokenPageError(Exception):
 
 
 class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
-    BASEURL = 'https://particulier.edf.fr'
+    BASEURL = "https://particulier.edf.fr"
 
-    home = URL('/fr/accueil/contrat-et-conso/mon-compte-edf.html', HomePage)
-    xuipage = URL(r'https://espace-client.edf.fr/sso/XUI/#login/&realm=(?P<realm>.*)&goto=(?P<goto>.*)', XUIPage)
-    authenticate = URL(r'https://espace-client.edf.fr/sso/json/authenticate', AuthenticatePage)
+    home = URL("/fr/accueil/contrat-et-conso/mon-compte-edf.html", HomePage)
+    xuipage = URL(r"https://espace-client.edf.fr/sso/XUI/#login/&realm=(?P<realm>.*)&goto=(?P<goto>.*)", XUIPage)
+    authenticate = URL(r"https://espace-client.edf.fr/sso/json/authenticate", AuthenticatePage)
 
-    otp_template = URL(r'https://espace-client.edf.fr/sso/XUI/templates/openam/authn/HOTPcust4.html', OTPTemplatePage)
+    otp_template = URL(r"https://espace-client.edf.fr/sso/XUI/templates/openam/authn/HOTPcust4.html", OTPTemplatePage)
 
-    authorize = URL(r'https://espace-client.edf.fr/sso/oauth2/INTERNET/authorize', AuthorizePage)
+    authorize = URL(r"https://espace-client.edf.fr/sso/oauth2/INTERNET/authorize", AuthorizePage)
     wrong_password = URL(
-        r'https://espace-client.edf.fr/sso/XUI/templates/openam/authn/PasswordAuth2.html',
-        WrongPasswordPage
+        r"https://espace-client.edf.fr/sso/XUI/templates/openam/authn/PasswordAuth2.html", WrongPasswordPage
     )
-    check_authenticate = URL('/services/rest/openid/checkAuthenticate', CheckAuthenticatePage)
-    user_status = URL('/services/rest/checkuserstatus/getUserStatus')
-    not_connected = URL('/fr/accueil/connexion/mon-espace-client.html', UnLoggedPage)
-    connected = URL('/fr/accueil/espace-client/tableau-de-bord.html', WelcomePage)
-    profil = URL('/services/rest/authenticate/getListContracts', ProfilPage)
-    csrf_token = URL(r'/services/rest/init/initPage\?_=(?P<timestamp>.*)', ProfilPage)
-    documents = URL('/services/rest/edoc/getMyDocuments', DocumentsPage)
-    bills = URL('/services/rest/edoc/getBillsDocuments', DocumentsPage)
-    bill_informations = URL('/services/rest/document/dataUserDocumentGetX', DocumentsPage)
+    check_authenticate = URL("/services/rest/openid/checkAuthenticate", CheckAuthenticatePage)
+    user_status = URL("/services/rest/checkuserstatus/getUserStatus")
+    not_connected = URL("/fr/accueil/connexion/mon-espace-client.html", UnLoggedPage)
+    connected = URL("/fr/accueil/espace-client/tableau-de-bord.html", WelcomePage)
+    profil = URL("/services/rest/authenticate/getListContracts", ProfilPage)
+    csrf_token = URL(r"/services/rest/init/initPage\?_=(?P<timestamp>.*)", ProfilPage)
+    documents = URL("/services/rest/edoc/getMyDocuments", DocumentsPage)
+    bills = URL("/services/rest/edoc/getBillsDocuments", DocumentsPage)
+    bill_informations = URL("/services/rest/document/dataUserDocumentGetX", DocumentsPage)
     bill_download = URL(
-        r'/services/rest/document/getDocumentGetXByData\?csrfToken=(?P<csrf_token>.*)&dn=(?P<dn>.*)&pn=(?P<pn>.*)&di=(?P<di>.*)&bn=(?P<bn>.*)&an=(?P<an>.*)',
-        BillDownload
+        r"/services/rest/document/getDocumentGetXByData\?csrfToken=(?P<csrf_token>.*)&dn=(?P<dn>.*)&pn=(?P<pn>.*)&di=(?P<di>.*)&bn=(?P<bn>.*)&an=(?P<an>.*)",
+        BillDownload,
     )
-    profile = URL('/services/rest/context/getCustomerContext', ProfilePage)
+    profile = URL("/services/rest/context/getCustomerContext", ProfilePage)
 
-    __states__ = ('otp_data',)
+    __states__ = ("otp_data",)
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
         self.otp_data = None
-        kwargs['username'] = self.config['login'].get()
-        kwargs['password'] = self.config['password'].get()
+        kwargs["username"] = self.config["login"].get()
+        kwargs["password"] = self.config["password"].get()
         super(EdfParticulierBrowser, self).__init__(*args, **kwargs)
 
     def locate_browser(self, state):
@@ -81,7 +91,7 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
 
     def login_step_hotp_cust3(self, data, auth_params):
         self.check_interactive()
-        data['callbacks'][0]['input'][0]['value'] = '0'
+        data["callbacks"][0]["input"][0]["value"] = "0"
         self.authenticate.go(json=data, params=auth_params)
         data = self.page.get_data()
         return data
@@ -95,25 +105,25 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
         # (ascii only)
         # 3: Get the message from a template page to get "Un code a été envoyé" then append the method
         # used to send the otp to get something like "Un code a été envoyé (à|au) <email|number>"
-        otp_device = self.otp_data['callbacks'][3]['output'][0]['value']
+        otp_device = self.otp_data["callbacks"][3]["output"][0]["value"]
         self.otp_template.go()
         label = self.page.get_otp_message()
         # It's done like this in the JavaScript to tell if we put "au <number>"  or "à <email>"
-        if '@' in otp_device:
-            label += f' à {otp_device}'
+        if "@" in otp_device:
+            label += f" à {otp_device}"
             medium_type = OTPSentType.EMAIL
         else:
-            label += f' au {otp_device}'
+            label += f" au {otp_device}"
             medium_type = OTPSentType.SMS
-        raise SentOTPQuestion('otp', medium_type=medium_type, message=label)
+        raise SentOTPQuestion("otp", medium_type=medium_type, message=label)
 
     def login_step_password_auth2(self, data, auth_params):
-        data['callbacks'][0]['input'][0]['value'] = self.password
+        data["callbacks"][0]["input"][0]["value"] = self.password
         self.authenticate.go(json=self.page.get_data(), params=auth_params)
 
         # should be SetPasAuth2 if password is ok
-        if self.page.get_data()['stage'] == 'PasswordAuth2':
-            attempt_number = int(self.page.get_data()['callbacks'][1]['output'][0]['value'])
+        if self.page.get_data()["stage"] == "PasswordAuth2":
+            attempt_number = int(self.page.get_data()["callbacks"][1]["output"][0]["value"])
             # attempt_number is the number of wrong password that remains before blocking
             msg = self.wrong_password.go().get_wrongpass_message(attempt_number)
             raise BrowserIncorrectPassword(msg)
@@ -123,69 +133,69 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
         # login part on edf particulier website is very tricky
         # FIRST time we connect we have an otp, BUT not password, we can't know if it is wrong at this moment
         # SECOND time we use password, and not otp
-        auth_params = {'realm': '/INTERNET'}
+        auth_params = {"realm": "/INTERNET"}
 
-        if self.config['otp'].get():
-            self.otp_data['callbacks'][0]['input'][0]['value'] = self.config['otp'].get()
+        if self.config["otp"].get():
+            self.otp_data["callbacks"][0]["input"][0]["value"] = self.config["otp"].get()
             headers = {
-                'X-Requested-With': 'XMLHttpRequest',
+                "X-Requested-With": "XMLHttpRequest",
             }
             self.authenticate.go(json=self.otp_data, params=auth_params, headers=headers)
-            output = self.page.get_data()['callbacks'][1]['output'][0]
+            output = self.page.get_data()["callbacks"][1]["output"][0]
 
-            if output['name'] == 'message':
-                assert output['value'] == 'Code incorrect', output['value']
-                raise BrowserIncorrectPassword(output['value'])
-            elif output['name'] != 'prompt':
-                raise AssertionError(output['name'])
+            if output["name"] == "message":
+                assert output["value"] == "Code incorrect", output["value"]
+                raise BrowserIncorrectPassword(output["value"])
+            elif output["name"] != "prompt":
+                raise AssertionError(output["name"])
         else:
             self.connected.go()
             if self.connected.is_here():
                 # we are already logged
                 # sometimes even if password is wrong, you can be logged if you retry
-                self.logger.info('already logged')
+                self.logger.info("already logged")
                 return
 
             if not self.xuipage.is_here():
-                raise AssertionError('Wrong workflow - authentication has changed, please report error')
+                raise AssertionError("Wrong workflow - authentication has changed, please report error")
 
-            auth_params['goto'] = goto = self.page.params.get('goto', '')
+            auth_params["goto"] = goto = self.page.params.get("goto", "")
 
             akamai_url = self.page.get_akamai_url()
             akamai_solver = self.get_akamai_solver(akamai_url, self.url)
-            cookie_abck = self.session.cookies['_abck']
+            cookie_abck = self.session.cookies["_abck"]
             self.post_sensor_data(akamai_solver, cookie_abck)
 
-            cookie_abck = self.session.cookies['_abck']
+            cookie_abck = self.session.cookies["_abck"]
             self.post_sensor_data(akamai_solver, cookie_abck)
 
-            self.authenticate.go(method='POST', params=auth_params, data='')
+            self.authenticate.go(method="POST", params=auth_params, data="")
             data = self.page.get_data()
-            data['callbacks'][0]['input'][0]['value'] = self.username
+            data["callbacks"][0]["input"][0]["value"] = self.username
 
             # yes, realm param is present twice
-            auth_params = [('realm', '/INTERNET'), ('realm', '/INTERNET'), ('goto', unquote(goto))]
+            auth_params = [("realm", "/INTERNET"), ("realm", "/INTERNET"), ("goto", unquote(goto))]
             self.authenticate.go(json=data, params=auth_params)
             data = self.page.get_data()  # yes, we have to get response and send it again, beautiful isn't it ?
-            if data['stage'] == 'UsernameAuth2':
+            if data["stage"] == "UsernameAuth2":
                 # username is wrong
-                raise BrowserIncorrectPassword(data['callbacks'][1]['output'][0]['value'])
+                raise BrowserIncorrectPassword(data["callbacks"][1]["output"][0]["value"])
 
-            if data['stage'] == 'HOTPcust3':  # OTP part
+            if data["stage"] == "HOTPcust3":  # OTP part
                 data = self.login_step_hotp_cust3(data, auth_params)
 
-            assert data['stage'] in ('HOTPcust4', 'PasswordAuth2'), 'stage is %s' % data['stage']
+            assert data["stage"] in ("HOTPcust4", "PasswordAuth2"), "stage is %s" % data["stage"]
 
-            if data['stage'] == 'HOTPcust4':  # OTP part
+            if data["stage"] == "HOTPcust4":  # OTP part
                 self.login_step_hotp_cust4(data)
 
-            if data['stage'] == 'PasswordAuth2':  # password part
+            if data["stage"] == "PasswordAuth2":  # password part
                 self.login_step_password_auth2(data, auth_params)
 
         data = self.page.get_data()
         # yes, send previous data again, i know i know
         self.authenticate.go(json=data, params=auth_params)
-        self.session.cookies['ivoiream'] = self.page.get_token()
+        self.session.cookies["ivoiream"] = self.page.get_token()
         self.user_status.go()
 
         """
@@ -196,7 +206,7 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
         self.check_authenticate.go()
 
     def check_interactive(self):
-        if self.config['request_information'].get() is None:
+        if self.config["request_information"].get() is None:
             raise NeedInteractiveFor2FA()
 
     def get_csrf_token(self):
@@ -218,28 +228,28 @@ class EdfParticulierBrowser(LoginBrowser, StatesMixin, AkamaiMixin):
         token = self.get_csrf_token()
 
         data = {
-            'bpNumber': document._bp,
-            'csrfToken': token,
-            'docId': document._doc_number,
-            'docName': 'FACTURE',
-            'numAcc': document._num_acc,
-            'parNumber': document._par_number,
+            "bpNumber": document._bp,
+            "csrfToken": token,
+            "docId": document._doc_number,
+            "docName": "FACTURE",
+            "numAcc": document._num_acc,
+            "parNumber": document._par_number,
         }
 
         headers = {
-            'Content-Type': 'application/json;charset=UTF-8',
-            'Accept': 'application/json, text/plain, */*',
+            "Content-Type": "application/json;charset=UTF-8",
+            "Accept": "application/json, text/plain, */*",
         }
         self.bill_informations.go(headers=headers, data=json.dumps(data))
         bills_informations = self.page.get_bills_informations()
 
         self.bill_download.go(
             csrf_token=token,
-            dn='FACTURE',
+            dn="FACTURE",
             pn=document._par_number,
             di=document._doc_number,
-            bn=bills_informations.get('bpNumber'),
-            an=bills_informations.get('numAcc')
+            bn=bills_informations.get("bpNumber"),
+            an=bills_informations.get("numAcc"),
         )
 
         # sometimes we land to another page that tell us, this document doesn't exist, but just sometimes...

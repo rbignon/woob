@@ -22,19 +22,18 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import BinanceBrowser
 
 
-__all__ = ['BinanceModule']
+__all__ = ["BinanceModule"]
 
 
 class BinanceModule(Module, CapBank):
-    NAME = 'binance'
-    DESCRIPTION = 'Binance website'
-    MAINTAINER = 'Florian Bezannier'
-    EMAIL = 'florian.bezannier@hotmail.fr'
-    LICENSE = 'LGPLv3+'
+    NAME = "binance"
+    DESCRIPTION = "Binance website"
+    MAINTAINER = "Florian Bezannier"
+    EMAIL = "florian.bezannier@hotmail.fr"
+    LICENSE = "LGPLv3+"
 
     BROWSER = BinanceBrowser
-    CONFIG = BackendConfig(Value('api_key', label='Api key'),
-                           ValueBackendPassword('secret_key', label='Secret Key'))
+    CONFIG = BackendConfig(Value("api_key", label="Api key"), ValueBackendPassword("secret_key", label="Secret Key"))
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

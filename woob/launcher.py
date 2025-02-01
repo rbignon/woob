@@ -30,7 +30,7 @@ except ImportError:
     woob_applications = None
 
 
-__all__ = ['Launcher']
+__all__ = ["Launcher"]
 
 
 class Launcher:
@@ -65,49 +65,49 @@ class Launcher:
 
     @classmethod
     def print_list(cls, app_list):
-        print('usage: woob [--version] <command> [<args>]')
+        print("usage: woob [--version] <command> [<args>]")
         print()
-        print('Use one of this commands:')
+        print("Use one of this commands:")
         for app in app_list:
             try:
                 app_class = cls.load_app(app)
             except ImportError as e:
-                print('   %-15s (unable to load: %s)' % (app, e))
+                print("   %-15s (unable to load: %s)" % (app, e))
             else:
-                print('   %-15s %s' % (app_class.APPNAME, app_class.SHORT_DESCRIPTION))
+                print("   %-15s %s" % (app_class.APPNAME, app_class.SHORT_DESCRIPTION))
         print()
-        print('For more information about a command, use:')
-        print('   $ man woob-<command>')
-        print('or')
-        print('   $ woob <command> --help')
+        print("For more information about a command, use:")
+        print("   $ man woob-<command>")
+        print("or")
+        print("   $ woob <command> --help")
 
     @classmethod
     def print_version(cls):
-        print('%s v%s %s' % (woob.__name__, woob.__version__, woob.__copyright__))
+        print("%s v%s %s" % (woob.__name__, woob.__version__, woob.__copyright__))
 
     @classmethod
     def run(cls):
         if sys.version_info < (3, 9):
-            print('woob requires python >= 3.9 to work', file=sys.stderr)
+            print("woob requires python >= 3.9 to work", file=sys.stderr)
             return 1
 
         app_list = cls.list_apps()
 
-        if len(sys.argv) < 2 or sys.argv[1] == '--help':
+        if len(sys.argv) < 2 or sys.argv[1] == "--help":
             return cls.print_list(app_list)
 
-        if sys.argv[1] == '--version':
+        if sys.argv[1] == "--version":
             return cls.print_version()
 
-        if sys.argv[1] == 'update':
-            sys.argv.insert(1, 'config')
+        if sys.argv[1] == "update":
+            sys.argv.insert(1, "config")
 
         if sys.argv[1] not in app_list:
             print("woob: '{0}' is not a woob command. See 'woob --help'.".format(sys.argv[1]))
             words = difflib.get_close_matches(sys.argv[1], app_list)
             if words:
                 print()
-                print('The most similar command is\n\t{0}'.format('\n\t'.join(words)))
+                print("The most similar command is\n\t{0}".format("\n\t".join(words)))
             return 1
 
         return cls.run_app(sys.argv[1], sys.argv[2:])

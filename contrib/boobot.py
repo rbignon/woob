@@ -43,44 +43,44 @@ from woob.tools.misc import get_backtrace, to_unicode
 from woob.tools.storage import StandardStorage
 
 
-IRC_CHANNELS = os.getenv('BOOBOT_CHANNELS', '#woob').split(',')
-IRC_NICKNAME = os.getenv('BOOBOT_NICKNAME', 'boobot')
-IRC_SERVER = os.getenv('BOOBOT_SERVER', 'dickson.freenode.net')
-IRC_IGNORE = [re.compile(i) for i in os.getenv('BOOBOT_IGNORE', '!~?irker@').split(',')]
-STORAGE_FILE = os.getenv('BOOBOT_STORAGE', 'boobot.storage')
+IRC_CHANNELS = os.getenv("BOOBOT_CHANNELS", "#woob").split(",")
+IRC_NICKNAME = os.getenv("BOOBOT_NICKNAME", "boobot")
+IRC_SERVER = os.getenv("BOOBOT_SERVER", "dickson.freenode.net")
+IRC_IGNORE = [re.compile(i) for i in os.getenv("BOOBOT_IGNORE", "!~?irker@").split(",")]
+STORAGE_FILE = os.getenv("BOOBOT_STORAGE", "boobot.storage")
 
 
 def fixurl(url):
     url = to_unicode(url)
 
     # remove javascript crap
-    url = url.replace('/#!/', '/')
+    url = url.replace("/#!/", "/")
 
     # parse it
     parsed = urlparse.urlsplit(url)
 
     # divide the netloc further
-    userpass, at, hostport = parsed.netloc.rpartition('@')
-    user, colon1, pass_ = userpass.partition(':')
-    host, colon2, port = hostport.partition(':')
+    userpass, at, hostport = parsed.netloc.rpartition("@")
+    user, colon1, pass_ = userpass.partition(":")
+    host, colon2, port = hostport.partition(":")
 
     # encode each component
-    scheme = parsed.scheme.encode('utf8')
-    user = urllib.quote(user.encode('utf8'))
-    colon1 = colon1.encode('utf8')
-    pass_ = urllib.quote(pass_.encode('utf8'))
-    at = at.encode('utf8')
-    host = host.encode('idna')
-    colon2 = colon2.encode('utf8')
-    port = port.encode('utf8')
-    path = '/'.join(pce.encode('utf8') for pce in parsed.path.split('/'))
+    scheme = parsed.scheme.encode("utf8")
+    user = urllib.quote(user.encode("utf8"))
+    colon1 = colon1.encode("utf8")
+    pass_ = urllib.quote(pass_.encode("utf8"))
+    at = at.encode("utf8")
+    host = host.encode("idna")
+    colon2 = colon2.encode("utf8")
+    port = port.encode("utf8")
+    path = "/".join(pce.encode("utf8") for pce in parsed.path.split("/"))
     # while valid, it is most likely an error
-    path = path.replace('//', '/')
-    query = parsed.query.encode('utf8')
-    fragment = parsed.fragment.encode('utf8')
+    path = path.replace("//", "/")
+    query = parsed.query.encode("utf8")
+    fragment = parsed.fragment.encode("utf8")
 
     # put it back together
-    netloc = ''.join((user, colon1, pass_, at, host, colon2, port))
+    netloc = "".join((user, colon1, pass_, at, host, colon2, port))
     return urlparse.urlunsplit((scheme, netloc, path, query, fragment))
 
 
@@ -88,14 +88,14 @@ class BoobotBrowser(Browser):
     TIMEOUT = 3.0
 
     def urlinfo(self, url, maxback=2):
-        if urlparse.urlsplit(url).netloc == 'mobile.twitter.com':
-            url = url.replace('mobile.twitter.com', 'twitter.com', 1)
+        if urlparse.urlsplit(url).netloc == "mobile.twitter.com":
+            url = url.replace("mobile.twitter.com", "twitter.com", 1)
         try:
-            r = self.open(url, method='HEAD')
+            r = self.open(url, method="HEAD")
             body = False
         except HTTPNotFound as e:
             if maxback and not url[-1].isalnum():
-                return self.urlinfo(url[:-1], maxback-1)
+                return self.urlinfo(url[:-1], maxback - 1)
             raise e
         except BrowserHTTPError as e:
             if e.response.status_code in (501, 405):
@@ -103,14 +103,14 @@ class BoobotBrowser(Browser):
                 body = True
             else:
                 raise e
-        content_type = r.headers.get('Content-Type')
+        content_type = r.headers.get("Content-Type")
         try:
-            size = int(r.headers.get('Content-Length'))
+            size = int(r.headers.get("Content-Length"))
             hsize = self.human_size(size)
         except TypeError:
             size = None
             hsize = None
-        is_html = ('html' in content_type) if content_type else re.match(r'\.x?html?$', url)
+        is_html = ("html" in content_type) if content_type else re.match(r"\.x?html?$", url)
         title = None
         if is_html:
             if not body:
@@ -121,23 +121,22 @@ class BoobotBrowser(Browser):
 
             page = HTMLPage(self, r)
 
-            for title in page.doc.xpath('//head/title'):
+            for title in page.doc.xpath("//head/title"):
                 title = to_unicode(title.text_content()).strip()
-                title = ' '.join(title.split())
-            if urlparse.urlsplit(url).netloc.endswith('twitter.com'):
-                for title in page.doc.getroot().cssselect('.permalink-tweet .tweet-text'):
+                title = " ".join(title.split())
+            if urlparse.urlsplit(url).netloc.endswith("twitter.com"):
+                for title in page.doc.getroot().cssselect(".permalink-tweet .tweet-text"):
                     title = to_unicode(title.text_content()).strip()
-                    title = ' '.join(title.splitlines())
+                    title = " ".join(title.splitlines())
 
         return content_type, hsize, title
 
     def human_size(self, size):
         if size:
-            units = ('B', 'KiB', 'MiB', 'GiB',
-                     'TiB', 'PiB', 'EiB', 'ZiB', 'YiB')
+            units = ("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB")
             exponent = int(log(size, 1024))
             return "%.1f %s" % (float(size) / pow(1024, exponent), units[exponent])
-        return '0 B'
+        return "0 B"
 
 
 class Task(object):
@@ -169,9 +168,7 @@ class MyThread(Thread):
         self.woob.loop()
 
     def find_keywords(self, text):
-        for word in [
-                     'woob', 'weboob',
-                     'budget insight', 'budget-insight', 'budgetinsight', 'budgea']:
+        for word in ["woob", "weboob", "budget insight", "budget-insight", "budgetinsight", "budgea"]:
             if word in text.lower():
                 return word
         return None
@@ -179,43 +176,41 @@ class MyThread(Thread):
     def check_twitter(self):
         nb_tweets = 10
 
-        for backend in self.woob.iter_backends(module='twitter'):
-            for thread in list(itertools.islice(backend.iter_resources(None, ['search', 'woob']),
-                                                0,
-                                                nb_tweets)):
+        for backend in self.woob.iter_backends(module="twitter"):
+            for thread in list(itertools.islice(backend.iter_resources(None, ["search", "woob"]), 0, nb_tweets)):
 
-                if not backend.storage.get('lastpurge'):
-                    backend.storage.set('lastpurge', datetime.now() - timedelta(days=60))
+                if not backend.storage.get("lastpurge"):
+                    backend.storage.set("lastpurge", datetime.now() - timedelta(days=60))
                     backend.storage.save()
 
-                if thread.id not in backend.storage.get('seen', default={}) and\
-                   thread.date > backend.storage.get('lastpurge'):
-                    _item = thread.id.split('#')
-                    url = 'https://twitter.com/%s/status/%s' % (_item[0], _item[1])
+                if thread.id not in backend.storage.get("seen", default={}) and thread.date > backend.storage.get(
+                    "lastpurge"
+                ):
+                    _item = thread.id.split("#")
+                    url = "https://twitter.com/%s/status/%s" % (_item[0], _item[1])
                     for msg in self.bot.on_url(url):
-                        self.bot.send_message('%s: %s' % (_item[0], url))
+                        self.bot.send_message("%s: %s" % (_item[0], url))
                         self.bot.send_message(msg)
 
-                    backend.set_message_read(backend.fill_thread(thread, ['root']).root)
+                    backend.set_message_read(backend.fill_thread(thread, ["root"]).root)
 
     def check_dlfp(self):
-        for msg in self.woob.do('iter_unread_messages', backends=['dlfp']):
+        for msg in self.woob.do("iter_unread_messages", backends=["dlfp"]):
             word = self.find_keywords(msg.content)
             if word is not None:
-                url = msg.signature[msg.signature.find('https://linuxfr'):]
-                self.bot.send_message('[DLFP] %s talks about %s: %s' % (
-                    msg.sender, word, url))
+                url = msg.signature[msg.signature.find("https://linuxfr") :]
+                self.bot.send_message("[DLFP] %s talks about %s: %s" % (msg.sender, word, url))
             self.woob[msg.backend].set_message_read(msg)
 
     def check_board(self):
         def iter_messages(backend):
             return backend.browser.iter_new_board_messages()
 
-        for msg in self.woob.do(iter_messages, backends=['dlfp']):
+        for msg in self.woob.do(iter_messages, backends=["dlfp"]):
             word = self.find_keywords(msg.message)
-            if word is not None and msg.login != 'moules':
-                message = msg.message.replace(word, '\002%s\002' % word)
-                self.bot.send_message('[DLFP] <%s> %s' % (msg.login, message))
+            if word is not None and msg.login != "moules":
+                message = msg.message.replace(word, "\002%s\002" % word)
+                self.bot.send_message("[DLFP] <%s> %s" % (msg.login, message))
 
     def check_tasks(self):
         for task in list(self.bot.tasks_queue):
@@ -232,9 +227,9 @@ class Boobot(SingleServerIRCBot):
     def __init__(self, channels, nickname, server, port=6667):
         SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         # self.connection.add_global_handler('pubmsg', self.on_pubmsg)
-        self.connection.add_global_handler('join', self.on_join)
-        self.connection.add_global_handler('welcome', self.on_welcome)
-        self.connection.buffer_class.errors = 'replace'
+        self.connection.add_global_handler("join", self.on_join)
+        self.connection.add_global_handler("welcome", self.on_welcome)
+        self.connection.buffer_class.errors = "replace"
 
         self.mainchannel = channels[0]
         self.joined = dict()
@@ -247,7 +242,7 @@ class Boobot(SingleServerIRCBot):
 
     def set_woob(self, woob):
         self.woob = woob
-        self.storage = ApplicationStorage('boobot', woob.storage)
+        self.storage = ApplicationStorage("boobot", woob.storage)
         self.storage.load({})
 
     def on_welcome(self, c, event):
@@ -264,57 +259,57 @@ class Boobot(SingleServerIRCBot):
 
     def send_message(self, msg, channel=None):
         for m in msg.splitlines():
-            msg = to_unicode(m).encode('utf-8')[:450].decode('utf-8')
+            msg = to_unicode(m).encode("utf-8")[:450].decode("utf-8")
             self.connection.privmsg(to_unicode(channel or self.mainchannel), msg)
 
     def on_pubmsg(self, c, event):
         # irclib 5.0 compatibility
         if callable(event.arguments):
-            text = ' '.join(event.arguments())
+            text = " ".join(event.arguments())
             channel = event.target()
             nick = event.source()
         else:
-            text = ' '.join(event.arguments)
+            text = " ".join(event.arguments)
             channel = event.target
             nick = event.source
         for ignore in IRC_IGNORE:
             if ignore.search(nick):
                 return
-        for m in re.findall(r'([\w\d_\-]+@\w+)', text):
+        for m in re.findall(r"([\w\d_\-]+@\w+)", text):
             for msg in self.on_boobid(m):
                 self.send_message(msg, channel)
-        for m in re.findall(r'(https?://[^\s\xa0+]+)', text):
+        for m in re.findall(r"(https?://[^\s\xa0+]+)", text):
             for msg in self.on_url(m):
                 self.send_message(msg, channel)
 
-        m = re.match(r'^%(?P<cmd>\w+)(?P<args>.*)$', text)
-        if m and hasattr(self, 'cmd_%s' % m.groupdict()['cmd']):
-            getattr(self, 'cmd_%s' % m.groupdict()['cmd'])(nick, channel, m.groupdict()['args'].strip())
+        m = re.match(r"^%(?P<cmd>\w+)(?P<args>.*)$", text)
+        if m and hasattr(self, "cmd_%s" % m.groupdict()["cmd"]):
+            getattr(self, "cmd_%s" % m.groupdict()["cmd"])(nick, channel, m.groupdict()["args"].strip())
 
     def cmd_at(self, nick, channel, text):
         try:
-            datetime, message = text.split(' ', 1)
+            datetime, message = text.split(" ", 1)
         except ValueError:
-            self.send_message('Syntax: %at [YYYY-MM-DDT]HH:MM[:SS] message', channel)
+            self.send_message("Syntax: %at [YYYY-MM-DDT]HH:MM[:SS] message", channel)
             return
 
         try:
             datetime = parse_date(datetime)
         except ValueError:
-            self.send_message('Unable to read date %r' % datetime)
+            self.send_message("Unable to read date %r" % datetime)
             return
 
         self.tasks_queue.append(Task(datetime, message, channel))
 
     def cmd_addquote(self, nick, channel, text):
-        quotes = self.storage.get(channel, 'quotes', default=[])
-        quotes.append({'author': nick, 'timestamp': datetime.now(), 'text': text})
-        self.storage.set(channel, 'quotes', quotes)
+        quotes = self.storage.get(channel, "quotes", default=[])
+        quotes.append({"author": nick, "timestamp": datetime.now(), "text": text})
+        self.storage.set(channel, "quotes", quotes)
         self.storage.save()
-        self.send_message('Quote #%s added' % (len(quotes) - 1), channel)
+        self.send_message("Quote #%s added" % (len(quotes) - 1), channel)
 
     def cmd_delquote(self, nick, channel, text):
-        quotes = self.storage.get(channel, 'quotes', default=[])
+        quotes = self.storage.get(channel, "quotes", default=[])
 
         try:
             n = int(text)
@@ -323,9 +318,9 @@ class Boobot(SingleServerIRCBot):
             return
 
         quotes.pop(n)
-        self.storage.set(channel, 'quotes', quotes)
+        self.storage.set(channel, "quotes", quotes)
         self.storage.save()
-        self.send_message('Quote #%s removed' % n, channel)
+        self.send_message("Quote #%s removed" % n, channel)
 
     def cmd_searchquote(self, nick, channel, text):
         try:
@@ -335,47 +330,47 @@ class Boobot(SingleServerIRCBot):
             return
 
         quotes = []
-        for quote in self.storage.get(channel, 'quotes', default=[]):
-            if pattern.search(to_unicode(quote['text'])):
+        for quote in self.storage.get(channel, "quotes", default=[]):
+            if pattern.search(to_unicode(quote["text"])):
                 quotes.append(quote)
 
         try:
             quote = choice(quotes)  # nosec
         except IndexError:
-            self.send_message('No match', channel)
+            self.send_message("No match", channel)
         else:
-            self.send_message('%s' % quote['text'], channel)
+            self.send_message("%s" % quote["text"], channel)
 
     def cmd_getquote(self, nick, channel, text):
-        quotes = self.storage.get(channel, 'quotes', default=[])
+        quotes = self.storage.get(channel, "quotes", default=[])
         if len(quotes) == 0:
             return
 
         try:
             n = int(text)
         except ValueError:
-            n = randint(0, len(quotes)-1)  # nosec
+            n = randint(0, len(quotes) - 1)  # nosec
 
         try:
             quote = quotes[n]
         except IndexError:
-            self.send_message('Unable to find quote #%s' % n, channel)
+            self.send_message("Unable to find quote #%s" % n, channel)
         else:
-            self.send_message('[%s] %s' % (n, quote['text']), channel)
+            self.send_message("[%s] %s" % (n, quote["text"]), channel)
 
     def on_boobid(self, boobid):
-        _id, backend_name = boobid.split('@', 1)
+        _id, backend_name = boobid.split("@", 1)
         if backend_name in self.woob.backend_instances:
             backend = self.woob.backend_instances[backend_name]
             for cap in backend.iter_caps():
-                func = 'obj_info_%s' % cap.__name__[3:].lower()
+                func = "obj_info_%s" % cap.__name__[3:].lower()
                 if hasattr(self, func):
                     try:
                         for msg in getattr(self, func)(backend, _id):
                             yield msg
                     except Exception as e:
                         print(get_backtrace())
-                        yield u'Oops: [%s] %s' % (type(e).__name__, e)
+                        yield "Oops: [%s] %s" % (type(e).__name__, e)
                     break
 
     def on_url(self, url):
@@ -383,26 +378,26 @@ class Boobot(SingleServerIRCBot):
         try:
             content_type, hsize, title = BoobotBrowser().urlinfo(url)
             if title:
-                yield u'URL: %s' % title
+                yield "URL: %s" % title
             elif hsize:
-                yield u'URL (file): %s, %s' % (content_type, hsize)
+                yield "URL (file): %s, %s" % (content_type, hsize)
             else:
-                yield u'URL (file): %s' % content_type
+                yield "URL (file): %s" % content_type
         except BrowserUnavailable as e:
-            yield u'URL (error): %s' % e
+            yield "URL (error): %s" % e
         except Exception as e:
             print(get_backtrace())
-            yield u'Oops: [%s] %s' % (type(e).__name__, e)
+            yield "Oops: [%s] %s" % (type(e).__name__, e)
 
     def obj_info_video(self, backend, id):
         v = backend.get_video(id)
         if v:
-            yield u'Video: %s (%s)' % (v.title, v.duration)
+            yield "Video: %s (%s)" % (v.title, v.duration)
 
     def obj_info_housing(self, backend, id):
         h = backend.get_housing(id)
         if h:
-            yield u'Housing: %s (%sm² / %s%s)' % (h.title, h.area, h.cost, h.currency)
+            yield "Housing: %s (%sm² / %s%s)" % (h.title, h.area, h.cost, h.currency)
 
 
 def main():

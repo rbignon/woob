@@ -23,16 +23,16 @@ from woob.tools.value import Value
 
 
 class IndeedTest(BackendTest):
-    MODULE = 'indeed'
+    MODULE = "indeed"
 
     def setUp(self):
         if not self.is_backend_configured():
-            self.backend.config['limit_date'] = Value(value='any')
-            self.backend.config['metier'] = Value(value='informaticien')
-            self.backend.config['contrat'] = Value(value='contract')
+            self.backend.config["limit_date"] = Value(value="any")
+            self.backend.config["metier"] = Value(value="informaticien")
+            self.backend.config["contrat"] = Value(value="contract")
 
     def test_indeed_search(self):
-        l = list(self.backend.search_job('informaticien'))
+        l = list(self.backend.search_job("informaticien"))
         assert len(l)
         advert = self.backend.get_job_advert(l[0].id, l[0])
         self.assertTrue(advert.url, 'URL for announce "%s" not found: %s' % (advert.id, advert.url))

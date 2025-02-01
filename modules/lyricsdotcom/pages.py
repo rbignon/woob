@@ -39,8 +39,9 @@ class SearchPage(HTMLPage):
                 content = CleanText('./pre[@class="lyric-body"]')(self)
                 return content.replace(title, "").strip() != ""
 
-            obj_id = Regexp(CleanText('./div/p[@class="lyric-meta-title"]/a/@href', default=NotAvailable),
-                            '/lyric/(.*)')
+            obj_id = Regexp(
+                CleanText('./div/p[@class="lyric-meta-title"]/a/@href', default=NotAvailable), "/lyric/(.*)"
+            )
 
             obj_title = CleanText('./div/p[@class="lyric-meta-title"]/a', default=NotAvailable)
 
@@ -56,9 +57,9 @@ class SearchPage(HTMLPage):
             klass = BaseObject
 
             def condition(self):
-                return CleanText('.//a/@href')(self)
+                return CleanText(".//a/@href")(self)
 
-            obj_id = Regexp(CleanText('.//a/@href'), 'artist/(.*)')
+            obj_id = Regexp(CleanText(".//a/@href"), "artist/(.*)")
 
 
 class LyricsPage(HTMLPage):
@@ -69,8 +70,8 @@ class LyricsPage(HTMLPage):
         def condition(self):
             return not XPath('//div[has-class("lyric-no-data")]')(self)
 
-        obj_id = Env('id')
-        obj_url = BrowserURL('songLyrics', id=Env('id'))
+        obj_id = Env("id")
+        obj_url = BrowserURL("songLyrics", id=Env("id"))
         obj_content = CleanHTML('//pre[@id="lyric-body-text"]', default=NotAvailable)
         obj_title = CleanText('//h2[@id="lyric-title-text"]')
         obj_artist = CleanText('//h3[@class="lyric-artist"]/a[1]', default=NotAvailable)
@@ -85,9 +86,9 @@ class ArtistPages(HTMLPage):
             klass = SongLyrics
 
             def condition(self):
-                return CleanText('./strong/a/@href')(self)
+                return CleanText("./strong/a/@href")(self)
 
-            obj_id = Regexp(CleanText('./strong/a/@href'), '/lyric/(.*)')
-            obj_title = CleanText('./strong/a', default=NotAvailable)
-            obj_artist = CleanText('//h3/strong', default=NotAvailable)
+            obj_id = Regexp(CleanText("./strong/a/@href"), "/lyric/(.*)")
+            obj_title = CleanText("./strong/a", default=NotAvailable)
+            obj_artist = CleanText("//h3/strong", default=NotAvailable)
             obj_content = NotLoaded

@@ -21,4 +21,4 @@
 from .module import SenscritiqueModule
 
 
-__all__ = ['SenscritiqueModule']
+__all__ = ["SenscritiqueModule"]

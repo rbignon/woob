@@ -24,13 +24,13 @@ from woob.tools.test import BackendTest
 
 
 class AnticaptchaTest(BackendTest):
-    MODULE = 'anticaptcha'
+    MODULE = "anticaptcha"
 
     def test_image(self):
-        url = 'https://upload.wikimedia.org/wikipedia/commons/b/b6/Modern-captcha.jpg'
+        url = "https://upload.wikimedia.org/wikipedia/commons/b/b6/Modern-captcha.jpg"
         data = self.backend.browser.open(url).content
 
         job = ImageCaptchaJob()
         job.image = data
         self.assertTrue(self.backend.solve_catpcha_blocking(job))
-        self.assertEqual(job.solution, 'following finding')
+        self.assertEqual(job.solution, "following finding")

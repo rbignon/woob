@@ -21,4 +21,4 @@
 from .module import DPDModule
 
 
-__all__ = ['DPDModule']
+__all__ = ["DPDModule"]

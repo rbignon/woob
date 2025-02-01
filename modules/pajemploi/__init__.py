@@ -21,4 +21,4 @@
 from .module import PajemploiModule
 
 
-__all__ = ['PajemploiModule']
+__all__ = ["PajemploiModule"]

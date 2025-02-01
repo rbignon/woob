@@ -20,4 +20,4 @@
 from .module import PayFitModule
 
 
-__all__ = ['PayFitModule']
+__all__ = ["PayFitModule"]

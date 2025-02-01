@@ -23,7 +23,7 @@ from woob.tools.test import BackendTest
 
 
 class AsanaTest(BackendTest):
-    MODULE = 'asana'
+    MODULE = "asana"
 
     def test_iter_projects(self):
         projects = list(self.backend.iter_projects())
@@ -52,10 +52,12 @@ class AsanaTest(BackendTest):
 
     def _test_find_by_criterion(self, attr, first_cb=None, matcher_cb=None):
         if matcher_cb is None:
+
             def matcher_cb(expected, actual):
-                self.assertEquals(expected.id, actual.id, 'different id on: %s != %s' % (expected, actual))
+                self.assertEquals(expected.id, actual.id, "different id on: %s != %s" % (expected, actual))
 
         if first_cb is None:
+
             def first_cb(obj):
                 return bool(obj)
 
@@ -70,7 +72,7 @@ class AsanaTest(BackendTest):
             if first_cb(criterion_obj):
                 break
         else:
-            assert False, 'not a single issue has this criterion'
+            assert False, "not a single issue has this criterion"
 
         setattr(q, attr, criterion_obj)
 
@@ -79,32 +81,31 @@ class AsanaTest(BackendTest):
             some = True
             fetched_obj = getattr(issue, attr)
             matcher_cb(criterion_obj, fetched_obj)
-        assert some, 'the issue searched for was not found'
+        assert some, "the issue searched for was not found"
 
     def test_find_by_assignee(self):
-        self._test_find_by_criterion('assignee')
+        self._test_find_by_criterion("assignee")
 
     def test_find_by_author(self):
-        self._test_find_by_criterion('author')
+        self._test_find_by_criterion("author")
 
     def test_find_by_title(self):
         self._test_find_by_criterion(
-            'title',
-            matcher_cb=lambda crit, actual: self.assertIn(crit.lower(), actual.lower())
+            "title", matcher_cb=lambda crit, actual: self.assertIn(crit.lower(), actual.lower())
         )
 
     def test_find_by_tags(self):
         self._test_find_by_criterion(
-            'tags',
+            "tags",
             first_cb=lambda tags: bool(tags),
-            matcher_cb=lambda crit, actual: self.assertLessEqual(set(crit), set(actual))
+            matcher_cb=lambda crit, actual: self.assertLessEqual(set(crit), set(actual)),
         )
 
     def _test_find_by_fields(self):
         self._test_find_by_criterion(
-            'fields',
+            "fields",
             first_cb=lambda tags: bool(tags),
-            matcher_cb=lambda crit, actual: self.assertLessEqual(set(crit), set(actual))
+            matcher_cb=lambda crit, actual: self.assertLessEqual(set(crit), set(actual)),
         )
 
     def test_find_by_status(self):
@@ -113,14 +114,14 @@ class AsanaTest(BackendTest):
 
         q = Query()
         q.project = projects[0]
-        q.status = 'open'
+        q.status = "open"
 
         for issue, _ in zip(self.backend.iter_issues(q), range(30)):
-            self.assertEquals(issue.status.name.lower(), 'open', issue.title)
+            self.assertEquals(issue.status.name.lower(), "open", issue.title)
 
-        q.status = 'closed'
+        q.status = "closed"
         for issue, _ in zip(self.backend.iter_issues(q), range(30)):
-            self.assertEquals(issue.status.name.lower(), 'closed', issue.title)
+            self.assertEquals(issue.status.name.lower(), "closed", issue.title)
 
     def test_read_comments(self):
         projects = list(self.backend.iter_projects())
@@ -130,7 +131,7 @@ class AsanaTest(BackendTest):
         q.project = projects[0]
 
         for issue, _ in zip(self.backend.iter_issues(q), range(30)):
-            self.backend.fillobj(issue, ['history'])
+            self.backend.fillobj(issue, ["history"])
             self.assertNotEmpty(issue.history)
             if issue.history:
                 for update in issue.history:
@@ -143,4 +144,4 @@ class AsanaTest(BackendTest):
 
                 break
         else:
-            assert 0, 'no issue had history'
+            assert 0, "no issue had history"

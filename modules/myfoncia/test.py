@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest
 
 
 class MyFonciaTest(BackendTest):
-    MODULE = 'myfoncia'
+    MODULE = "myfoncia"
 
     def test_subscriptions(self):
         """

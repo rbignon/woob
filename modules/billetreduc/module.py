@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import BilletreducBrowser
 
 
-__all__ = ['BilletreducModule']
+__all__ = ["BilletreducModule"]
 
 
 class BilletreducModule(Module, CapCalendarEvent):
-    NAME = 'billetreduc'
-    DESCRIPTION = u'BilletReduc discount ticket reservation'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "billetreduc"
+    DESCRIPTION = "BilletReduc discount ticket reservation"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = BilletreducBrowser
 

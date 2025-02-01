@@ -27,13 +27,20 @@ from woob.capabilities.picross import PicrossNotFound, PicrossSolvedStatus
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 
 from .pages import (
-    DailyPicrossListPage, HiddenFormPage, HomePage, LoginCallbackPage, LoginPage, PuzzleListPage, PuzzlePage,
-    PuzzleSubmitPage, TodoPage,
+    DailyPicrossListPage,
+    HiddenFormPage,
+    HomePage,
+    LoginCallbackPage,
+    LoginPage,
+    PuzzleListPage,
+    PuzzlePage,
+    PuzzleSubmitPage,
+    TodoPage,
 )
 from .utils import obfuscate
 
 
-__all__ = ['PixNCrossBrowser']
+__all__ = ["PixNCrossBrowser"]
 
 
 def need_login(func):
@@ -41,7 +48,7 @@ def need_login(func):
     def decorated_func(browser, *args, **kwargs):
         if not browser.username:
             raise BrowserIncorrectPassword(
-                'This action cannot be done anonymously.',
+                "This action cannot be done anonymously.",
             )
 
         return func(browser, *args, **kwargs)
@@ -50,40 +57,40 @@ def need_login(func):
 
 
 class PixNCrossBrowser(LoginBrowser, StatesMixin):
-    BASEURL = 'https://www.pix-n-cross.com/'
+    BASEURL = "https://www.pix-n-cross.com/"
 
-    hidden_form = URL(r'', HiddenFormPage)
+    hidden_form = URL(r"", HiddenFormPage)
 
-    login = URL(r'visite.php', LoginPage)
-    login_callback = URL(r'action_connexion.php', LoginCallbackPage)
+    login = URL(r"visite.php", LoginPage)
+    login_callback = URL(r"action_connexion.php", LoginCallbackPage)
 
     home = URL(
-        r'$',
-        r'\?',
-        r'visite.php',
+        r"$",
+        r"\?",
+        r"visite.php",
         HomePage,
     )
-    todo = URL(r'\?', r'visite.php', TodoPage)
-    puzzle_list = URL(r'\?', r'visite.php', PuzzleListPage)
-    daily_picross_list = URL(r'\?', r'visite.php', DailyPicrossListPage)
-    puzzle = URL(r'\?', r'visite.php', PuzzlePage)
-    submit = URL(r'action_cid506.php', PuzzleSubmitPage)
+    todo = URL(r"\?", r"visite.php", TodoPage)
+    puzzle_list = URL(r"\?", r"visite.php", PuzzleListPage)
+    daily_picross_list = URL(r"\?", r"visite.php", DailyPicrossListPage)
+    puzzle = URL(r"\?", r"visite.php", PuzzlePage)
+    submit = URL(r"action_cid506.php", PuzzleSubmitPage)
 
     def do_login(self):
         if not self.username and not self.password:
             return  # No login required.
         if not self.username or not self.password:
-            raise BrowserIncorrectPassword('Missing username or password.')
+            raise BrowserIncorrectPassword("Missing username or password.")
 
-        self.login.go(params={'pag': 'connexion'})
+        self.login.go(params={"pag": "connexion"})
 
         # We set our cookies ourselves here.
         # This is because the authentication on pix-n-cross is accomplished
         # by sending the obfuscated username and password on EVERY REQUEST.
         # This page barely serves to verify that the username and password
         # are valid.
-        self.session.cookies.set('c0', obfuscate(self.username))
-        self.session.cookies.set('c1', obfuscate(self.password))
+        self.session.cookies.set("c0", obfuscate(self.username))
+        self.session.cookies.set("c1", obfuscate(self.password))
         self.page.do_login(self.username, self.password)
 
         if self.login_callback.is_here():
@@ -97,7 +104,7 @@ class PixNCrossBrowser(LoginBrowser, StatesMixin):
             self.page.submit_hidden_form()
 
         if not self.home.is_here():
-            raise AssertionError('Should be on home page')
+            raise AssertionError("Should be on home page")
 
     # NOTE: There are several types of puzzles, each identified by a three
     #       letter prefix we put in front on the identified:
@@ -131,10 +138,12 @@ class PixNCrossBrowser(LoginBrowser, StatesMixin):
         # normal members have access to the daily puzzle directly.
         # We want to be able to distinguish between both by going on the
         # same page for both.
-        self.puzzle.go(params={
-            'pag': 'cid506',
-            'idf': '3',
-        })
+        self.puzzle.go(
+            params={
+                "pag": "cid506",
+                "idf": "3",
+            }
+        )
 
         if self.daily_picross_list.is_here():
             # For premium members, this page may actually be a list of two
@@ -145,20 +154,19 @@ class PixNCrossBrowser(LoginBrowser, StatesMixin):
             for ids in (1, 2):
                 is_solved = daily_list_page.is_daily_picross_solved(ids)
 
-                if (
-                    solved_status == PicrossSolvedStatus.SOLVED
-                    and not is_solved
-                ):
+                if solved_status == PicrossSolvedStatus.SOLVED and not is_solved:
                     continue
 
                 if solved_status == PicrossSolvedStatus.UNSOLVED and is_solved:
                     continue
 
-                self.puzzle.go(params={
-                    'pag': 'cid506_daily_picross',
-                    'idf': '3',
-                    'ids': str(ids),
-                })
+                self.puzzle.go(
+                    params={
+                        "pag": "cid506_daily_picross",
+                        "idf": "3",
+                        "ids": str(ids),
+                    }
+                )
                 self.page.go_to_unsolved_if_needed()
                 yield self.page.get_puzzle()
         else:
@@ -184,10 +192,12 @@ class PixNCrossBrowser(LoginBrowser, StatesMixin):
         # an incomplete list.
         use_puzzle_list = True
         if solved_status == PicrossSolvedStatus.UNSOLVED:
-            self.todo.go(params={
-                'pag': 'cid506_todo',
-                'idf': '3',
-            })
+            self.todo.go(
+                params={
+                    "pag": "cid506_todo",
+                    "idf": "3",
+                }
+            )
 
             # If the list is incomplete, nevermind, we will just go to
             # the puzzle list to list incomplete puzzles, in order to be
@@ -196,11 +206,13 @@ class PixNCrossBrowser(LoginBrowser, StatesMixin):
             use_puzzle_list = self.page.is_incomplete()
 
         if use_puzzle_list:
-            self.puzzle_list.go(params={
-                'pag': 'cid506_picross',
-                'idf': '3',
-                'idd': 'all',  # All categories.
-            })
+            self.puzzle_list.go(
+                params={
+                    "pag": "cid506_picross",
+                    "idf": "3",
+                    "idd": "all",  # All categories.
+                }
+            )
 
         for picross in self.page.iter_puzzles(
             queried_solved_status=solved_status,
@@ -210,13 +222,15 @@ class PixNCrossBrowser(LoginBrowser, StatesMixin):
             # If the picross is solved, we have to add 'r' in front in order
             # to force a 'retry' to get the puzzle data.
             if picross.solved_status == PicrossSolvedStatus.SOLVED:
-                id_ = 'r' + id_
+                id_ = "r" + id_
 
-            self.puzzle.go(params={
-                'pag': 'cid506',
-                'idf': '3',
-                'idm': id_,
-            })
+            self.puzzle.go(
+                params={
+                    "pag": "cid506",
+                    "idf": "3",
+                    "idm": id_,
+                }
+            )
             yield self.page.get_puzzle(picross=picross)
 
     def _go_to_puzzle(self, id_):
@@ -227,33 +241,33 @@ class PixNCrossBrowser(LoginBrowser, StatesMixin):
         and no easy way to predict which daily puzzle corresponds to the
         identifier.
         """
-        if (
-            self.puzzle.is_here()
-            and not self.page.solved
-            and self.page.get_puzzle_id() == id_
-        ):
+        if self.puzzle.is_here() and not self.page.solved and self.page.get_puzzle_id() == id_:
             return
 
-        m = re.fullmatch(r'(aut|pic)(\d+)', id_)
+        m = re.fullmatch(r"(aut|pic)(\d+)", id_)
         if m is None:
             raise PicrossNotFound()
 
         typ = m.group(1)
         idm = m.group(2)
 
-        if typ == 'pic':
-            self.puzzle.go(params={
-                'pag': 'cid506',
-                'idf': '3',
-            })
+        if typ == "pic":
+            self.puzzle.go(
+                params={
+                    "pag": "cid506",
+                    "idf": "3",
+                }
+            )
 
             if self.daily_picross_list.is_here():
                 for ids in (1, 2):
-                    self.puzzle.go(params={
-                        'pag': 'cid506_daily_picross',
-                        'idf': '3',
-                        'ids': str(ids),
-                    })
+                    self.puzzle.go(
+                        params={
+                            "pag": "cid506_daily_picross",
+                            "idf": "3",
+                            "ids": str(ids),
+                        }
+                    )
                     self.page.go_to_unsolved_if_needed()
                     if self.page.get_puzzle_id() == id_:
                         # This is the correct daily picross!
@@ -265,21 +279,22 @@ class PixNCrossBrowser(LoginBrowser, StatesMixin):
                     return
 
             raise BrowserUnavailable(
-                'The picross you are trying to access is not accessible '
-                + 'today!',
+                "The picross you are trying to access is not accessible " + "today!",
             )
 
-        if typ != 'aut':
+        if typ != "aut":
             raise PicrossNotFound()
 
         # Note that we won't get an HTTP 404 for a non-existent pattern,
         # we will simply get a '%' pattern, which is detected by the
         # PuzzlePage which will raise a PicrossNotFound exception.
-        self.puzzle.go(params={
-            'pag': 'cid506',
-            'idf': '3',
-            'idm': idm,
-        })
+        self.puzzle.go(
+            params={
+                "pag": "cid506",
+                "idf": "3",
+                "idm": idm,
+            }
+        )
 
         # If we have the 'resolved' page, we need to query the 'retry'
         # page in order to get the picross definition.

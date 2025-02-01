@@ -26,7 +26,7 @@ from woob.tools.test import BackendTest
 
 
 class RadioFranceTest(BackendTest):
-    MODULE = 'radiofrance'
+    MODULE = "radiofrance"
 
     def test_ls_radios_and_selections(self):
         l = list(self.backend.iter_resources(objs=[Radio], split_path=[]))
@@ -34,37 +34,38 @@ class RadioFranceTest(BackendTest):
         self.assertTrue(0 < len(l) < 30)
         for radio in l:
             name = radio.split_path[-1]
-            if name != 'francebleu':
+            if name != "francebleu":
                 streams = self.backend.get_radio(name).streams
                 self.assertTrue(len(streams) > 0)
 
-                l_sel = list(self.backend.iter_resources(objs=[BaseAudio], split_path=[name, 'selection']))
+                l_sel = list(self.backend.iter_resources(objs=[BaseAudio], split_path=[name, "selection"]))
                 if len(l_sel) > 0:
                     self.assertTrue(len(l_sel[0].url) > 0)
 
-        l = list(self.backend.iter_resources(objs=[Radio], split_path=['francebleu']))
+        l = list(self.backend.iter_resources(objs=[Radio], split_path=["francebleu"]))
         self.assertTrue(len(l) > 30)
 
         for radio in l:
             streams = self.backend.get_radio(radio.split_path[-1]).streams
             self.assertTrue(len(streams) > 0)
 
-            l_sel1 = list(self.backend.iter_resources(objs=[BaseAudio],
-                                                      split_path=['francebleu',
-                                                                  radio.split_path[-1]]))
+            l_sel1 = list(
+                self.backend.iter_resources(objs=[BaseAudio], split_path=["francebleu", radio.split_path[-1]])
+            )
 
-            if 'Selection' in [el.title for el in l_sel1]:
-                l_sel = list(self.backend.iter_resources(objs=[BaseAudio],
-                                                         split_path=['francebleu',
-                                                                     radio.split_path[-1],
-                                                                     'selection']))
+            if "Selection" in [el.title for el in l_sel1]:
+                l_sel = list(
+                    self.backend.iter_resources(
+                        objs=[BaseAudio], split_path=["francebleu", radio.split_path[-1], "selection"]
+                    )
+                )
                 if len(l_sel) > 0:
                     self.assertTrue(len(l_sel[0].url) > 0)
 
     def test_podcasts(self):
         for key, item in self.backend._RADIOS.items():
-            if 'podcast' in item:
-                emissions = list(self.backend.iter_resources(objs=[BaseAudio], split_path=[key, 'podcasts']))
+            if "podcast" in item:
+                emissions = list(self.backend.iter_resources(objs=[BaseAudio], split_path=[key, "podcasts"]))
                 self.assertTrue(len(emissions) > 0)
                 podcasts = list(self.backend.iter_resources(objs=[BaseAudio], split_path=emissions[0].split_path))
                 self.assertTrue(len(podcasts) > 0)
@@ -72,12 +73,12 @@ class RadioFranceTest(BackendTest):
                 self.assertTrue(podcast.url)
 
     def test_search_radio(self):
-        l = list(self.backend.iter_radios_search('bleu'))
+        l = list(self.backend.iter_radios_search("bleu"))
         self.assertTrue(len(l) > 0)
         self.assertTrue(len(l[0].streams) > 0)
 
     def test_search_get_audio(self):
-        l = list(itertools.islice(self.backend.search_audio('jou'), 0, 20))
+        l = list(itertools.islice(self.backend.search_audio("jou"), 0, 20))
         self.assertTrue(len(l) > 0)
 
         a = self.backend.get_audio(l[0].id)

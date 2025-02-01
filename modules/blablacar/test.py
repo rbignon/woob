@@ -24,8 +24,8 @@ from woob.tools.test import BackendTest
 
 
 class BlablacarTest(BackendTest):
-    MODULE = 'blablacar'
+    MODULE = "blablacar"
 
     def test_blablacar(self):
-        departures = list(self.backend.iter_station_departures('lille', None, datetime.now()))
+        departures = list(self.backend.iter_station_departures("lille", None, datetime.now()))
         self.assertTrue(len(departures) > 0)

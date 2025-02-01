@@ -19,4 +19,4 @@
 from .geolocip import AppGeolocIP
 
 
-__all__ = ['AppGeolocIP']
+__all__ = ["AppGeolocIP"]

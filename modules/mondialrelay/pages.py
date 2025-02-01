@@ -78,7 +78,8 @@ class TrackPage(ParentPage, JsonPage):
                 class date(ListElement):
                     def parse(self, el):
                         self.env["date"] = Regexp(
-                            CleanText("./div/div/p/strong"), r"(\d{2}/\d{2}/\d{4})",
+                            CleanText("./div/div/p/strong"),
+                            r"(\d{2}/\d{2}/\d{4})",
                         )(el)
 
                     item_xpath = ".//div[has-class('step-suivi') and not(./input)]"
@@ -90,12 +91,11 @@ class TrackPage(ParentPage, JsonPage):
                             Format(
                                 "%s %s",
                                 Env("date"),
-                                Regexp(
-                                    CleanText("./div/p"),
-                                    r"(\d{2}:\d{2})"
-                                ),
+                                Regexp(CleanText("./div/p"), r"(\d{2}:\d{2})"),
                             ),
-                            tzinfo="Europe/Paris", dayfirst=True, strict=False,
+                            tzinfo="Europe/Paris",
+                            dayfirst=True,
+                            strict=False,
                         )
                         obj_activity = CleanText("./div/p[not(@class)]")
                         obj_location = Regexp(obj_activity, r"site logistique de ([^.]+)", default=NotAvailable)

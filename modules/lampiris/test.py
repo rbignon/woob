@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class LampirisTest(BackendTest):
-    MODULE = 'lampiris'
+    MODULE = "lampiris"
 
     def test_subscriptions(self):
         """

@@ -25,25 +25,27 @@ from woob.tools.value import Value
 from .browser import AvendrealouerBrowser
 
 
-__all__ = ['AvendrealouerModule']
+__all__ = ["AvendrealouerModule"]
 
 
 class AvendrealouerModule(Module, CapHousing):
-    NAME = u'avendrealouer'
-    DESCRIPTION = 'avendrealouer website'
-    MAINTAINER = 'ZeHiro'
-    EMAIL = 'public@abossy.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "avendrealouer"
+    DESCRIPTION = "avendrealouer website"
+    MAINTAINER = "ZeHiro"
+    EMAIL = "public@abossy.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = AvendrealouerBrowser
     CONFIG = BackendConfig(
-        Value('datadome_cookie_search', label='Cookie datadome de la page de recherche', default=''),
-        Value('datadome_cookie_detail', label='Cookie datadome de la page de détail', default=''))
+        Value("datadome_cookie_search", label="Cookie datadome de la page de recherche", default=""),
+        Value("datadome_cookie_detail", label="Cookie datadome de la page de détail", default=""),
+    )
 
     def create_default_browser(self):
-        return self.create_browser(self.config['datadome_cookie_search'].get(),
-                                   self.config['datadome_cookie_detail'].get())
+        return self.create_browser(
+            self.config["datadome_cookie_search"].get(), self.config["datadome_cookie_detail"].get()
+        )
 
     def get_housing(self, housing):
         return self.browser.get_housing(housing)
@@ -60,7 +62,7 @@ class AvendrealouerModule(Module, CapHousing):
         return housing
 
     def fill_photo(self, photo, fields):
-        if 'data' in fields and photo.url and not photo.data:
+        if "data" in fields and photo.url and not photo.data:
             photo.data = self.browser.open(photo.url).content
         return photo
 

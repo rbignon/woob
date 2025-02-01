@@ -24,21 +24,21 @@ from woob.tools.newsfeed import Newsfeed
 from woob.tools.value import Value
 
 
-__all__ = ['NewsfeedModule']
+__all__ = ["NewsfeedModule"]
 
 
 class NewsfeedModule(Module, CapMessages):
-    NAME = 'newsfeed'
-    MAINTAINER = u'Clément Schreiner'
+    NAME = "newsfeed"
+    MAINTAINER = "Clément Schreiner"
     EMAIL = "clemux@clemux.info"
-    VERSION = '3.7'
+    VERSION = "3.7"
     DESCRIPTION = "Loads RSS and Atom feeds from any website"
     LICENSE = "AGPLv3+"
-    CONFIG = BackendConfig(Value('url', label="Atom/RSS feed's url", regexp='https?://.*'))
-    STORAGE = {'seen': []}
+    CONFIG = BackendConfig(Value("url", label="Atom/RSS feed's url", regexp="https?://.*"))
+    STORAGE = {"seen": []}
 
     def iter_threads(self):
-        for article in Newsfeed(self.config['url'].get()).iter_entries():
+        for article in Newsfeed(self.config["url"].get()).iter_entries():
             yield self.get_thread(article.id, article)
 
     def get_thread(self, id, entry=None):
@@ -49,30 +49,32 @@ class NewsfeedModule(Module, CapMessages):
             thread = Thread(id)
 
         if entry is None:
-            entry = Newsfeed(self.config['url'].get()).get_entry(id)
+            entry = Newsfeed(self.config["url"].get()).get_entry(id)
         if entry is None:
             return None
 
         flags = Message.IS_HTML
-        if thread.id not in self.storage.get('seen', default=[]):
+        if thread.id not in self.storage.get("seen", default=[]):
             flags |= Message.IS_UNREAD
         if len(entry.content) > 0:
-            content = u"<p>Link %s</p> %s" % (entry.link, entry.content[0])
+            content = "<p>Link %s</p> %s" % (entry.link, entry.content[0])
         else:
             content = entry.link
 
         thread.title = entry.title
-        thread.root = Message(thread=thread,
-                              id=0,
-                              url=entry.link,
-                              title=entry.title,
-                              sender=entry.author,
-                              receivers=None,
-                              date=entry.datetime,
-                              parent=None,
-                              content=content,
-                              children=[],
-                              flags=flags)
+        thread.root = Message(
+            thread=thread,
+            id=0,
+            url=entry.link,
+            title=entry.title,
+            sender=entry.author,
+            receivers=None,
+            date=entry.datetime,
+            parent=None,
+            content=content,
+            children=[],
+            flags=flags,
+        )
         return thread
 
     def iter_unread_messages(self):
@@ -82,7 +84,7 @@ class NewsfeedModule(Module, CapMessages):
                     yield m
 
     def set_message_read(self, message):
-        self.storage.get('seen', default=[]).append(message.thread.id)
+        self.storage.get("seen", default=[]).append(message.thread.id)
         self.storage.save()
 
     def fill_thread(self, thread, fields):

@@ -25,26 +25,26 @@ from woob.tools.value import Value
 from .browser import CciBrowser
 
 
-__all__ = ['CciModule']
+__all__ = ["CciModule"]
 
 
 class CciModule(Module, CapJob):
-    NAME = 'cci'
-    DESCRIPTION = u'cci website'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "cci"
+    DESCRIPTION = "cci website"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = CciBrowser
 
-    CONFIG = BackendConfig(Value('metier', label='Job name', masked=False, default=''))
+    CONFIG = BackendConfig(Value("metier", label="Job name", masked=False, default=""))
 
     def search_job(self, pattern=None):
         return self.browser.search_job(pattern)
 
     def advanced_search_job(self):
-        return self.browser.search_job(pattern=self.config['metier'].get())
+        return self.browser.search_job(pattern=self.config["metier"].get())
 
     def get_job_advert(self, _id, advert=None):
         return self.browser.get_job_advert(_id, advert)

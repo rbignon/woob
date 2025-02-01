@@ -34,7 +34,11 @@ from woob.browser.filters.standard import QueryValue
 from woob.browser.switch import SiteSwitch
 from woob.capabilities.bank import Account
 from woob.exceptions import (
-    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUserBanned,
+    ActionNeeded,
+    ActionType,
+    BrowserIncorrectPassword,
+    BrowserPasswordExpired,
+    BrowserUserBanned,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.decorators import retry
@@ -43,57 +47,80 @@ from woob_modules.allianzbanque.browser import AllianzbanqueBrowser
 from .pages.bank import AccountsPage
 from .pages.document import DocumentsPage, SubscriptionsPage
 from .pages.login import (
-    AccountSpaceLogin, AuthorizePage, ChangepasswordPage, DeniedPage, ErrorPage, InfiniteLoopPage, LoginEndPage,
-    LoginPage, PredisconnectedPage,
+    AccountSpaceLogin,
+    AuthorizePage,
+    ChangepasswordPage,
+    DeniedPage,
+    ErrorPage,
+    InfiniteLoopPage,
+    LoginEndPage,
+    LoginPage,
+    PredisconnectedPage,
 )
 from .pages.wealth import AccessBoursePage, AccountDetailsPage
 from .pages.wealth import AccountsPage as WealthAccountsPage
 from .pages.wealth import (
-    BourseAccountsPage, ClearSessionPage, FormHistoryPage, HistoryInvestmentsPage, HistoryPage, HomePage,
-    InsuranceAccountsBouncerPage, InvestmentErrorPage, InvestmentJsonPage, InvestmentMonAxaPage, InvestmentPage,
-    NewInvestmentPage, OutremerProfilePage, PerformanceMonAxaPage, ProfilePage, WealthHistoryPage,
+    BourseAccountsPage,
+    ClearSessionPage,
+    FormHistoryPage,
+    HistoryInvestmentsPage,
+    HistoryPage,
+    HomePage,
+    InsuranceAccountsBouncerPage,
+    InvestmentErrorPage,
+    InvestmentJsonPage,
+    InvestmentMonAxaPage,
+    InvestmentPage,
+    NewInvestmentPage,
+    OutremerProfilePage,
+    PerformanceMonAxaPage,
+    ProfilePage,
+    WealthHistoryPage,
 )
 
 
 WEALTH_ACCOUNTS = (
-    Account.TYPE_LIFE_INSURANCE, Account.TYPE_MADELIN, Account.TYPE_PER, Account.TYPE_PERP,
+    Account.TYPE_LIFE_INSURANCE,
+    Account.TYPE_MADELIN,
+    Account.TYPE_PER,
+    Account.TYPE_PERP,
 )
 
 
 class AXAOldLoginBrowser(OAuth2PKCEMixin, LoginBrowser):
-    ACCESS_TOKEN_URI = 'https://connect.axa.fr/connect/token'
+    ACCESS_TOKEN_URI = "https://connect.axa.fr/connect/token"
 
-    SCOPE = 'openid profile phone email openid api-client https://connect.axa.fr/individualOrProfessional.all https://connect.axa.fr/collectiveHealth.all https://connect.axa.fr/bank.all axa-fr-salary-saving eb-fr-collective fr-gfp https://connect.axa.fr/auth/pema'
+    SCOPE = "openid profile phone email openid api-client https://connect.axa.fr/individualOrProfessional.all https://connect.axa.fr/collectiveHealth.all https://connect.axa.fr/bank.all axa-fr-salary-saving eb-fr-collective fr-gfp https://connect.axa.fr/auth/pema"
 
     # Login
-    login = URL(r'https://connect.axa.fr/api/identity/auth', LoginPage)
-    password = URL(r'https://connect.axa.fr/#/changebankpassword', ChangepasswordPage)
+    login = URL(r"https://connect.axa.fr/api/identity/auth", LoginPage)
+    password = URL(r"https://connect.axa.fr/#/changebankpassword", ChangepasswordPage)
     predisconnected = URL(
-        r'https://www.axa.fr/axa-predisconnect.html',
-        r'https://www.axa.fr/axa-postmaw-predisconnect.html',
-        PredisconnectedPage
+        r"https://www.axa.fr/axa-predisconnect.html",
+        r"https://www.axa.fr/axa-postmaw-predisconnect.html",
+        PredisconnectedPage,
     )
-    authorize = URL(r'https://connect.axa.fr/connect/authorize', AuthorizePage)
-    denied = URL(r'https://connect.axa.fr/Account/AccessDenied', DeniedPage)
-    account_space_login = URL(r'https://connect.axa.fr/api/accountspace', AccountSpaceLogin)
+    authorize = URL(r"https://connect.axa.fr/connect/authorize", AuthorizePage)
+    denied = URL(r"https://connect.axa.fr/Account/AccessDenied", DeniedPage)
+    account_space_login = URL(r"https://connect.axa.fr/api/accountspace", AccountSpaceLogin)
     errors = URL(
-        r'https://espaceclient.axa.fr/content/ecc-public/accueil-axa-connect/_jcr_content/par/text.html',
-        r'https://espaceclient.axa.fr/content/ecc-public/errors/500.html',
-        ErrorPage
+        r"https://espaceclient.axa.fr/content/ecc-public/accueil-axa-connect/_jcr_content/par/text.html",
+        r"https://espaceclient.axa.fr/content/ecc-public/errors/500.html",
+        ErrorPage,
     )
-    login_end = URL(r'https://espaceclient.axa.fr/$', LoginEndPage)
+    login_end = URL(r"https://espaceclient.axa.fr/$", LoginEndPage)
     infinite_redirect = URL(
-        r'http[s]?://www.axabanque.fr/webapp/axabanque/jsp(/erreur)?/[\d\.:]+/webapp/axabanque/jsp/erreur/erreurBanque',
+        r"http[s]?://www.axabanque.fr/webapp/axabanque/jsp(/erreur)?/[\d\.:]+/webapp/axabanque/jsp/erreur/erreurBanque",
         # ex: 'http://www.axabanque.fr/webapp/axabanque/jsp/172.25.100.12:80/webapp/axabanque/jsp/erreur/erreurBanque.faces'
-        InfiniteLoopPage
+        InfiniteLoopPage,
     )
 
     def __init__(self, config, username, password, *args, **kwargs):
         super(AXAOldLoginBrowser, self).__init__(username, password, *args, **kwargs)
         # Not sure about this one, might be needed to generate it instead of hardcoding it
-        self.client_id = 'ef65ad31-82e2-4131-99fc-f2e3504fd02c'
+        self.client_id = "ef65ad31-82e2-4131-99fc-f2e3504fd02c"
         self.oauth_state = os.urandom(5).hex()
-        self.redirect_uri = 'https://espaceclient.axa.fr/silent-redirection.html'
+        self.redirect_uri = "https://espaceclient.axa.fr/silent-redirection.html"
 
     def do_login(self):
         # Due to the website change, login changed too.
@@ -103,18 +130,15 @@ class AXAOldLoginBrowser(OAuth2PKCEMixin, LoginBrowser):
 
         self.account_space_login.go()
         password_message = self.page.get_password_information_message()
-        if 'votre code confidentiel doit être modifié' in password_message and self.password.isdigit():
-            raise BrowserPasswordExpired(
-                locale='fr-FR',
-                message=password_message
-            )
+        if "votre code confidentiel doit être modifié" in password_message and self.password.isdigit():
+            raise BrowserPasswordExpired(locale="fr-FR", message=password_message)
 
         error_message = self.page.get_error_message()
         if error_message:
             is_website_unavailable = re.search(
                 "Veuillez nous excuser pour la gêne occasionnée"
                 + "|votre espace client est temporairement indisponible",
-                error_message
+                error_message,
             )
 
             if is_website_unavailable:
@@ -125,23 +149,20 @@ class AXAOldLoginBrowser(OAuth2PKCEMixin, LoginBrowser):
             self.location(self.page.get_error_link())
 
         login_data = {
-            'email': self.username,
-            'password': self.password,
-            'rememberIdenfiant': False,
+            "email": self.username,
+            "password": self.password,
+            "rememberIdenfiant": False,
         }
 
-        self.location('https://connect.axa.fr')
+        self.location("https://connect.axa.fr")
         try:
-            self.login.go(
-                json=login_data,
-                headers={'X-XSRF-TOKEN': self.session.cookies['XSRF-TOKEN']}
-            )
+            self.login.go(json=login_data, headers={"X-XSRF-TOKEN": self.session.cookies["XSRF-TOKEN"]})
         except ClientError as err:
             response = err.response
             if response.status_code == 400:
-                if 'INVALID_CREDENTIAL' in response.text:
+                if "INVALID_CREDENTIAL" in response.text:
                     raise BrowserIncorrectPassword()
-                if 'COMMON_ERROR_LOCK_ACCOUNT' in response.text:
+                if "COMMON_ERROR_LOCK_ACCOUNT" in response.text:
                     raise BrowserUserBanned()
             raise
 
@@ -152,22 +173,23 @@ class AXAOldLoginBrowser(OAuth2PKCEMixin, LoginBrowser):
             raise BrowserPasswordExpired()
 
         url = self.page.get_url()
-        if 'bank-otp' in url:
+        if "bank-otp" in url:
             # The SCA is Cross-Browser so the user can do the SMS validation on the website
             # and then try to synchronize the connection again.
             raise ActionNeeded(
-                locale="fr-FR", message="Vous devez réaliser la double authentification sur le portail internet",
+                locale="fr-FR",
+                message="Vous devez réaliser la double authentification sur le portail internet",
                 action_type=ActionType.PERFORM_MFA,
             )
 
         # home page to finish login
-        self.location('https://espaceclient.axa.fr/', allow_redirects=False)
+        self.location("https://espaceclient.axa.fr/", allow_redirects=False)
         for _ in range(13):
             # When trying to reach home we are normally redirected a few times.
             # But very rarely we are redirected 13 times before entering
             # an infinite redirection loop between 'infinite_redirect'
             # url to another. Need to try later.
-            location = self.response.headers.get('location')
+            location = self.response.headers.get("location")
             if not location:
                 break
             self.location(location, allow_redirects=False)
@@ -175,23 +197,25 @@ class AXAOldLoginBrowser(OAuth2PKCEMixin, LoginBrowser):
                 raise BrowserUnavailable()
 
         params = self.build_authorization_parameters()
-        params.update({
-            'response_type': 'code',
-            'scope': self.SCOPE,
-            'prompt': 'none',
-        })
+        params.update(
+            {
+                "response_type": "code",
+                "scope": self.SCOPE,
+                "prompt": "none",
+            }
+        )
         self.authorize.go(params=params)
         self.request_access_token(self.url)
 
 
 class AXANewLoginBrowser(AllianzbanqueBrowser):
-    BASEURL = 'https://api-banque.axa.fr'
-    redirect_uri = 'https://banque.axa.fr/auth/checkuser'
-    error_uri = 'https://banque.axa.fr/auth/errorauthn'
-    arkea = 'AB'  # Needed for the X-ARKEA-EFS header
-    arkea_si = '0AB'
-    arkea_client_id = 'O7v09LGq4zJsi5BWfuAGFK6KGLoX3QVh'  # Hardcoded in app.js, line 33808
-    original_site = 'https://banque.axa.fr'
+    BASEURL = "https://api-banque.axa.fr"
+    redirect_uri = "https://banque.axa.fr/auth/checkuser"
+    error_uri = "https://banque.axa.fr/auth/errorauthn"
+    arkea = "AB"  # Needed for the X-ARKEA-EFS header
+    arkea_si = "0AB"
+    arkea_client_id = "O7v09LGq4zJsi5BWfuAGFK6KGLoX3QVh"  # Hardcoded in app.js, line 33808
+    original_site = "https://banque.axa.fr"
 
     def code_challenge(self):
         """Generate a code challenge needed to go through the authorize end point
@@ -206,10 +230,14 @@ class AXANewLoginBrowser(AllianzbanqueBrowser):
 
         Found in domi-auth-fat.js at line 39501"""
 
-        base = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'
-        code_challenge = b64encode(
-            ''.join(random.choices(base, k=128)).encode('utf-8')
-        ).decode('utf-8').replace('=', '').replace('+', '-').replace('/', '_')
+        base = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
+        code_challenge = (
+            b64encode("".join(random.choices(base, k=128)).encode("utf-8"))
+            .decode("utf-8")
+            .replace("=", "")
+            .replace("+", "-")
+            .replace("/", "_")
+        )
         return code_challenge
 
     def auth_state(self):
@@ -217,8 +245,8 @@ class AXANewLoginBrowser(AllianzbanqueBrowser):
         and get a session id.
         Found in domi-auth-fat.js at line 39518"""
 
-        base = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-        state = 'auth_' + ''.join(random.choices(base, k=25))
+        base = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        state = "auth_" + "".join(random.choices(base, k=25))
 
         return state
 
@@ -227,7 +255,7 @@ class AXANewLoginBrowser(AllianzbanqueBrowser):
         on the server side.
         Found in domi-auth-fat.js at line 39509"""
 
-        digest = sha256(code_challenge.encode('utf-8')).digest()
+        digest = sha256(code_challenge.encode("utf-8")).digest()
         code_verifier = b64encode(digest)
 
         return code_verifier.decode()
@@ -240,7 +268,7 @@ class AXANewLoginBrowser(AllianzbanqueBrowser):
 
     def build_authorization_uri_params(self):
         params = super(AXANewLoginBrowser, self).build_authorization_uri_params()
-        params['state'] = self.auth_state()
+        params["state"] = self.auth_state()
         return params
 
     def setup_space_after_login(self):
@@ -251,27 +279,26 @@ class AXANewLoginBrowser(AllianzbanqueBrowser):
 class AXABanqueBrowser(AXANewLoginBrowser):
     STATE_DURATION = 10
 
-    home = URL(r'https://espaceclient-connect.axa.fr/', HomePage)
+    home = URL(r"https://espaceclient-connect.axa.fr/", HomePage)
 
     insurance_accounts_bouncer = URL(
-        r'/oidc/init-sso-axf',
+        r"/oidc/init-sso-axf",
         InsuranceAccountsBouncerPage,
     )
     insurances = URL(
-        r'https://(?P<url_domain>.*).axa.fr/content/(?P<url_path>.*)/accueil.content-inner.html',
-        WealthAccountsPage
+        r"https://(?P<url_domain>.*).axa.fr/content/(?P<url_path>.*)/accueil.content-inner.html", WealthAccountsPage
     )
-    clear_session = URL(r'https://connect.axa.fr/identity/clear-session', ClearSessionPage)
-    authorize = URL(r'/oauth/authorize', AuthorizePage)
-    accounts = URL(r'/distri-account-api/api/v1/persons/me/accounts', AccountsPage)
+    clear_session = URL(r"https://connect.axa.fr/identity/clear-session", ClearSessionPage)
+    authorize = URL(r"/oauth/authorize", AuthorizePage)
+    accounts = URL(r"/distri-account-api/api/v1/persons/me/accounts", AccountsPage)
     transactions_comings = URL(
-        r'/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/upcoming-transactions',
-        AccountsPage
+        r"/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/upcoming-transactions",
+        AccountsPage,
     )
 
-    subscriptions = URL(r'/distri-account-api/api/v1/customers/me/accounts', SubscriptionsPage)
-    documents = URL(r'/documentapi/api/v2/vaults/(?P<contract_id>.*)/documents$', DocumentsPage)
-    document_pdf = URL(r'/documentapi/api/v2/vaults/(?P<contract_id>.*)/documents/(?P<document_id>.*)/file')
+    subscriptions = URL(r"/distri-account-api/api/v1/customers/me/accounts", SubscriptionsPage)
+    documents = URL(r"/documentapi/api/v2/vaults/(?P<contract_id>.*)/documents$", DocumentsPage)
+    document_pdf = URL(r"/documentapi/api/v2/vaults/(?P<contract_id>.*)/documents/(?P<document_id>.*)/file")
 
     def locate_browser(self, state):
         # access_token lasts 180 seconds according to the JSON in which
@@ -286,18 +313,20 @@ class AXABanqueBrowser(AXANewLoginBrowser):
         self.axa_assurance_url_path = None
         self.is_coming_from_axa_bank = None
         self.__states__ += (
-            'axa_assurance_base_url', 'axa_assurance_url_path', 'is_coming_from_axa_bank',
+            "axa_assurance_base_url",
+            "axa_assurance_url_path",
+            "is_coming_from_axa_bank",
         )
 
     @need_login
     def iter_accounts(self):
-        self.accounts.go(params={'types': 'CHECKING,SAVING'})
+        self.accounts.go(params={"types": "CHECKING,SAVING"})
         for account in self.page.iter_accounts():
             self.balances.go(account_id=account.id)
             self.page.fill_balance(account)
-            date_to = (date.today() + relativedelta(months=1)).strftime('%Y-%m-%dT00:00:00.000Z')
+            date_to = (date.today() + relativedelta(months=1)).strftime("%Y-%m-%dT00:00:00.000Z")
             go_balances_comings = retry(ServerError, tries=5)(self.balances_comings.go)
-            go_balances_comings(account_id=account.id, params={'dateTo': date_to})
+            go_balances_comings(account_id=account.id, params={"dateTo": date_to})
             self.page.fill_coming(account)
             yield account
 
@@ -311,7 +340,7 @@ class AXABanqueBrowser(AXANewLoginBrowser):
 
         # Going to insurances page sometimes triggers a redirection to the Axa Assurance homepage
         # instead of the insurances pages. Requesting the page a second time if that's the case.
-        if 'espaceclient.axa.fr' in self.url:
+        if "espaceclient.axa.fr" in self.url:
             self.insurances.go(url_domain=url_domain, url_path=self.axa_assurance_url_path)
 
     def go_to_insurance_accounts(self):
@@ -324,7 +353,7 @@ class AXABanqueBrowser(AXANewLoginBrowser):
         # but won't call it automatically. Calling it manually makes the redirection
         # process be the same as when we first load insurance_accounts_bouncer.
         if self.clear_session.is_here():
-            return_url = QueryValue(None, 'returnUrl').filter(self.url)
+            return_url = QueryValue(None, "returnUrl").filter(self.url)
             self.location(return_url)
 
         # In case the user has only a bank space, but no insurance one.
@@ -332,10 +361,10 @@ class AXABanqueBrowser(AXANewLoginBrowser):
             return False
 
         self.axa_assurance_base_url = self.url
-        if urlparse(self.url).netloc == 'outremer.axa.fr':
-            self.go_to_outremer_or_metropolitan('outremer-espace-client', 'outremer')
+        if urlparse(self.url).netloc == "outremer.axa.fr":
+            self.go_to_outremer_or_metropolitan("outremer-espace-client", "outremer")
         else:
-            self.go_to_outremer_or_metropolitan('espace-client', 'espaceclient')
+            self.go_to_outremer_or_metropolitan("espace-client", "espaceclient")
 
         # If we're here, then we are going to switch to insurance browser later and this information
         # will be needed to distinguish AXABanqueBrowser accounts that also have insurances from
@@ -352,25 +381,25 @@ class AXABanqueBrowser(AXANewLoginBrowser):
         # On the other hand for wealth products, there's a dedicated space for them
         # Which has nothing to do with parents modules
         elif account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-            raise SiteSwitch('bourse')
+            raise SiteSwitch("bourse")
         elif account.type in WEALTH_ACCOUNTS:
-            raise SiteSwitch('insurance')
+            raise SiteSwitch("insurance")
         else:
             return []
 
     @need_login
     def iter_investment(self, account):
         if account.type == Account.TYPE_MARKET:
-            raise SiteSwitch('bourse')
+            raise SiteSwitch("bourse")
         elif account.type in WEALTH_ACCOUNTS:
-            raise SiteSwitch('insurance')
+            raise SiteSwitch("insurance")
         return []
 
     @need_login
     def get_subscription_list(self):
         params = {
-            'types': 'CHECKING',
-            'roles': 'TIT,COT',
+            "types": "CHECKING",
+            "roles": "TIT,COT",
         }
         self.subscriptions.go(params=params)
         return self.page.iter_subscriptions()
@@ -382,20 +411,20 @@ class AXABanqueBrowser(AXANewLoginBrowser):
 
     @need_login
     def download_document(self, document):
-        params = {'flattenDoc': False}
+        params = {"flattenDoc": False}
         return self.open(document.url, params=params).content
 
 
 class AXABourseBrowser(AXABanqueBrowser):
-    BASEURL = 'https://bourse.axa.fr/'
+    BASEURL = "https://bourse.axa.fr/"
 
-    request_access = URL(r'https://api-banque.axa.fr/sso-domifront/cypher\?service=bourse', AccessBoursePage)
-    bourse = URL(r'/receiver')
+    request_access = URL(r"https://api-banque.axa.fr/sso-domifront/cypher\?service=bourse", AccessBoursePage)
+    bourse = URL(r"/receiver")
 
-    accounts = URL(r'/secure_main/accounts_list.html\?navId=SYN', BourseAccountsPage)
-    history = URL(r'/secure_account/selectedAccountMovements.html', WealthHistoryPage)
-    form_history = URL(r'/secure_ajax/accountMovementsResult.html', FormHistoryPage)
-    investments = URL(r'/secure_account/selectedAccountDetail.html', NewInvestmentPage)
+    accounts = URL(r"/secure_main/accounts_list.html\?navId=SYN", BourseAccountsPage)
+    history = URL(r"/secure_account/selectedAccountMovements.html", WealthHistoryPage)
+    form_history = URL(r"/secure_ajax/accountMovementsResult.html", FormHistoryPage)
+    investments = URL(r"/secure_account/selectedAccountDetail.html", NewInvestmentPage)
 
     def do_login(self):
         """The way we logging in the bourse space is a little bit special.
@@ -404,14 +433,14 @@ class AXABourseBrowser(AXABanqueBrowser):
         self.request_access.go()
         cypher = self.page.get_cypher()
 
-        self.bourse.go(params={'cypher': cypher})
+        self.bourse.go(params={"cypher": cypher})
 
     @need_login
     def iter_history(self, account):
         if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
-            raise SiteSwitch('main')
+            raise SiteSwitch("main")
         elif account.type in WEALTH_ACCOUNTS:
-            raise SiteSwitch('insurance')
+            raise SiteSwitch("insurance")
 
         """History of operations is quite a mess.
             We need to deal with a double pagination:
@@ -433,7 +462,7 @@ class AXABourseBrowser(AXABanqueBrowser):
         investments = {invest.code: [invest] for invest in investments}
         self.accounts.stay_or_go()
         self.history.go(
-            params={'cipher': self.page.get_cipher(account.number)},
+            params={"cipher": self.page.get_cipher(account.number)},
         )
 
         end_date = date.today()
@@ -443,9 +472,9 @@ class AXABourseBrowser(AXABanqueBrowser):
         while True:
             self.form_history.go(
                 data={
-                    'siteLanguage': 'fr',
-                    'beginDate': begin_date.strftime('%d/%m/%Y'),
-                    'endDate': end_date.strftime('%d/%m/%Y'),
+                    "siteLanguage": "fr",
+                    "beginDate": begin_date.strftime("%d/%m/%Y"),
+                    "endDate": end_date.strftime("%d/%m/%Y"),
                 },
             )
             if not self.page.has_more_transactions():
@@ -459,68 +488,68 @@ class AXABourseBrowser(AXABanqueBrowser):
     @need_login
     def iter_investment(self, account):
         if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
-            raise SiteSwitch('main')
+            raise SiteSwitch("main")
         elif account.type in WEALTH_ACCOUNTS:
-            raise SiteSwitch('insurance')
+            raise SiteSwitch("insurance")
 
         if account.balance > 0:
             self.accounts.stay_or_go()
             self.investments.go(
-                params={'cipher': self.page.get_cipher(account.number)},
+                params={"cipher": self.page.get_cipher(account.number)},
             )
             return self.page.iter_investments()
         return []
 
 
 class AXAAssuranceBrowser(AXAOldLoginBrowser):
-    BASEURL = 'https://espaceclient.axa.fr'  # Default BASEURL for AXAAssuranceBrowser accounts only
+    BASEURL = "https://espaceclient.axa.fr"  # Default BASEURL for AXAAssuranceBrowser accounts only
 
     accounts = URL(
-        r'https://apis.axa.fr/ecv2/transverse/home-dashboard/policies',
+        r"https://apis.axa.fr/ecv2/transverse/home-dashboard/policies",
         WealthAccountsPage,
     )
     history = URL(
-        r'/accueil/savings/savings/contract/_jcr_content.eccGetSavingsOperations.json',
+        r"/accueil/savings/savings/contract/_jcr_content.eccGetSavingsOperations.json",
         HistoryPage,
     )
     history_investments = URL(
-        r'/accueil/savings/savings/contract/_jcr_content.eccGetSavingOperationDetail.json',
+        r"/accueil/savings/savings/contract/_jcr_content.eccGetSavingOperationDetail.json",
         HistoryInvestmentsPage,
     )
     details = URL(
-        r'/content/espace-client/accueil/savings/retirement/contract.content-inner.pid_.*.aid_.*.html',
-        r'/#/savings/(?P<acc_number>.*)',
+        r"/content/espace-client/accueil/savings/retirement/contract.content-inner.pid_.*.aid_.*.html",
+        r"/#/savings/(?P<acc_number>.*)",
         AccountDetailsPage,
     )
     investment_error = URL(
-        r'/public/errors/500.html',
+        r"/public/errors/500.html",
         InvestmentErrorPage,
     )
     investment = URL(
-        r'/content/ecc-popin-cards/savings/[^/]+/repartition',
-        r'/popin-cards/savings/[^/]+/repartition/.*',
-        r'/content/ecc-popin-cards/savings/retirement/repartition/_jcr_content/par.pid_.*.aid_.*.html',
+        r"/content/ecc-popin-cards/savings/[^/]+/repartition",
+        r"/popin-cards/savings/[^/]+/repartition/.*",
+        r"/content/ecc-popin-cards/savings/retirement/repartition/_jcr_content/par.pid_.*.aid_.*.html",
         InvestmentPage,
     )
     investment_json = URL(
-        r'/content/(?P<url_path>.*)/accueil/_jcr_content.savingsDistribution.json',
+        r"/content/(?P<url_path>.*)/accueil/_jcr_content.savingsDistribution.json",
         InvestmentJsonPage,
     )
-    investment_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/Contrat/', InvestmentMonAxaPage)
-    performance_monaxa = URL(r'https://monaxaweb-gp.axa.fr/MonAxa/ContratPerformance/', PerformanceMonAxaPage)
+    investment_monaxa = URL(r"https://monaxaweb-gp.axa.fr/MonAxa/Contrat/", InvestmentMonAxaPage)
+    performance_monaxa = URL(r"https://monaxaweb-gp.axa.fr/MonAxa/ContratPerformance/", PerformanceMonAxaPage)
 
     profile = URL(
-        r'/content/ecc-popin-cards/transverse/userprofile.content-inner.html\?_=\d+',
+        r"/content/ecc-popin-cards/transverse/userprofile.content-inner.html\?_=\d+",
         ProfilePage,
     )
     outremer_profile = URL(
-        r'/content/outremer-espace-client/popin-cards/transverse/userprofile.content-inner.html\?_=\d+',
+        r"/content/outremer-espace-client/popin-cards/transverse/userprofile.content-inner.html\?_=\d+",
         OutremerProfilePage,
     )
 
     def __init__(self, *args, **kwargs):
         super(AXAAssuranceBrowser, self).__init__(*args, **kwargs)
-        self.axa_assurance_url_path = 'espace-client'  # Default path for URLs for AXAAssuranceBrowser accounts only
+        self.axa_assurance_url_path = "espace-client"  # Default path for URLs for AXAAssuranceBrowser accounts only
         self.is_coming_from_axa_bank = None  # Default for AXAassuranceBrowser accounts only
 
     def set_base_url(self):
@@ -553,7 +582,7 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
     # to the insurance browser.
     @property
     def logged(self):
-        return bool(self.session.headers.get('Authorization'))
+        return bool(self.session.headers.get("Authorization"))
 
     @need_login
     def iter_investment_espaceclient(self, account):
@@ -564,8 +593,7 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
             self.location(detailed_view)
             invests.extend(self.page.iter_investment(currency=account.currency))
         for inv in portfolio_page.iter_investment(currency=account.currency):
-            i = [i2 for i2 in invests if
-                 (i2.valuation == inv.valuation and i2.label == inv.label)]
+            i = [i2 for i2 in invests if (i2.valuation == inv.valuation and i2.label == inv.label)]
             assert len(i) in (0, 1)
             if i:
                 i[0].portfolio_share = inv.portfolio_share
@@ -593,15 +621,12 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
         if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
             return
         elif account.type == Account.TYPE_MARKET:
-            raise SiteSwitch('bourse')
+            raise SiteSwitch("bourse")
 
         self.set_base_url()
 
         self.go_wealth_pages(account)
-        self.investment_json.go(
-            url_path=self.axa_assurance_url_path,
-            params={'pid': account._pid}
-        )
+        self.investment_json.go(url_path=self.axa_assurance_url_path, params={"pid": account._pid})
         if self.investment_json.is_here() and not self.page.is_error():
             return self.page.iter_investments()
 
@@ -615,35 +640,35 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
         if iframe_url:
             # Set correct Referer to avoid 302 followed by 406 errors (Not Acceptable)
             base_url = self.BASEURL
-            if urlparse(self.page.url).netloc == 'outremer.axa.fr':
+            if urlparse(self.page.url).netloc == "outremer.axa.fr":
                 base_url = self.OUTREMER_BASEURL
-            headers = {'Referer': f'{base_url}/accueil.html'}
+            headers = {"Referer": f"{base_url}/accueil.html"}
             self.location(iframe_url, headers=headers)
             return self.iter_investment_monaxa(account)
 
         # No data available for this account.
-        self.logger.warning('No investment URL available for account %s, investments cannot be retrieved.', account.id)
+        self.logger.warning("No investment URL available for account %s, investments cannot be retrieved.", account.id)
         return []
 
     @need_login
     def iter_history(self, account):
         if account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
-            raise SiteSwitch('main')
+            raise SiteSwitch("main")
         elif account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-            raise SiteSwitch('bourse')
+            raise SiteSwitch("bourse")
 
         self.set_base_url()
 
-        '''
+        """
         Transactions are available 10 by 10 in a JSON.
         To access it, we need the account 'pid' and to increment
         'skip' for each transaction page until the JSON is empty.
         However, transactions are not always in the chronological order.
-        '''
+        """
         self.go_wealth_pages(account)
         skip = 0
         if not account._pid:
-            self.logger.warning('No pid available for account %s, transactions cannot be retrieved.', account.id)
+            self.logger.warning("No pid available for account %s, transactions cannot be retrieved.", account.id)
             return
 
         transactions = []
@@ -658,8 +683,8 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
         for tr in sorted_transactions(transactions):
             # Get investments for each transaction
             params = {
-                'oid': tr._oid,
-                'pid': account._pid,
+                "oid": tr._oid,
+                "pid": account._pid,
             }
             self.history_investments.go(params=params)
             if self.page.has_investments():
@@ -670,8 +695,8 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
 
     def go_to_transactions(self, pid, skip):
         params = {
-            'pid': pid,
-            'skip': skip,
+            "pid": pid,
+            "skip": skip,
         }
         self.history.go(params=params)
 
@@ -683,7 +708,7 @@ class AXAAssuranceBrowser(AXAOldLoginBrowser):
 
     @need_login
     def get_profile(self):
-        if 'outremer' in self.BASEURL:
+        if "outremer" in self.BASEURL:
             self.outremer_profile.go()
         else:
             self.profile.go()

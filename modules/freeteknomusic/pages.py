@@ -29,51 +29,51 @@ from woob.capabilities.collection import Collection
 
 class FolderPage(HTMLPage):
     def get_split_path(self):
-        ret = urlparse(self.url).path.split('/')[1:]
+        ret = urlparse(self.url).path.split("/")[1:]
         if not ret[0]:
             ret = ret[1:]
         return ret
 
     @method
     class iter_dirs(ListElement):
-        item_xpath = '//table/tr'
+        item_xpath = "//table/tr"
 
         class item(ItemElement):
             def condition(self):
-                alt = self.el.xpath('./td/img/@alt')
-                if not alt or alt[0] != '[DIR]':
+                alt = self.el.xpath("./td/img/@alt")
+                if not alt or alt[0] != "[DIR]":
                     return False
-                if self.obj_title(self) == 'Parent Directory':
+                if self.obj_title(self) == "Parent Directory":
                     return False
                 return True
 
             klass = Collection
 
-            obj_title = CleanText('./td/a')
-            obj_url = AbsoluteLink('./td/a')
+            obj_title = CleanText("./td/a")
+            obj_url = AbsoluteLink("./td/a")
 
             def obj_split_path(self):
                 return self.page.get_split_path() + [self.obj_title(self)]
 
             def obj_id(self):
-                return 'album.%s' % '/'.join(self.obj_split_path())
+                return "album.%s" % "/".join(self.obj_split_path())
 
     @method
     class iter_files(ListElement):
-        item_xpath = '//table/tr'
+        item_xpath = "//table/tr"
 
         class item(ItemElement):
             def condition(self):
-                return (self.el.xpath('./td/img/@alt') or 'x')[0] == '[SND]'
+                return (self.el.xpath("./td/img/@alt") or "x")[0] == "[SND]"
 
             klass = BaseAudio
 
-            obj_url = AbsoluteLink('./td/a')
+            obj_url = AbsoluteLink("./td/a")
 
-            filename = Decode(Regexp(Field('url'), '/([^/]+)$'))
-            obj_title = Regexp(filename, r'(.*)\.[^.]+$')
-            obj_ext = Regexp(filename, r'\.([^.]+)$')
+            filename = Decode(Regexp(Field("url"), "/([^/]+)$"))
+            obj_title = Regexp(filename, r"(.*)\.[^.]+$")
+            obj_ext = Regexp(filename, r"\.([^.]+)$")
             obj_format = obj_ext
 
             def obj_id(self):
-                return 'audio.%s' % '/'.join(self.page.get_split_path() + [self.filename(self)])
+                return "audio.%s" % "/".join(self.page.get_split_path() + [self.filename(self)])

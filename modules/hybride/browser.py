@@ -23,21 +23,20 @@ from woob.browser.profiles import Firefox
 from .pages import EventPage, ProgramPage
 
 
-__all__ = ['HybrideBrowser']
+__all__ = ["HybrideBrowser"]
 
 
 class HybrideBrowser(PagesBrowser):
     PROFILE = Firefox()
-    BASEURL = 'https://www.lhybride.org/'
+    BASEURL = "https://www.lhybride.org/"
 
-    program_page = URL('programmation/a-venir.html', ProgramPage)
-    event_page = URL('programmation/item/(?P<_id>.*)', EventPage)
+    program_page = URL("programmation/a-venir.html", ProgramPage)
+    event_page = URL("programmation/item/(?P<_id>.*)", EventPage)
 
     def list_events(self, date_from, date_to=None, city=None, categories=None):
-        return self.program_page.go().list_events(date_from=date_from,
-                                                  date_to=date_to,
-                                                  city=city,
-                                                  categories=categories)
+        return self.program_page.go().list_events(
+            date_from=date_from, date_to=date_to, city=city, categories=categories
+        )
 
     def get_event(self, _id, event=None):
         return self.event_page.go(_id=_id).get_event(obj=event)

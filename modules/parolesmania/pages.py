@@ -35,19 +35,20 @@ class SearchSongPage(HTMLPage):
             klass = SongLyrics
 
             def obj_id(self):
-                href = CleanText('./@href')(self)
-                subid = href.replace('.html','').replace('paroles_','').split('/')[-2:]
-                id = '%s|%s'%(subid[0], subid[1])
+                href = CleanText("./@href")(self)
+                subid = href.replace(".html", "").replace("paroles_", "").split("/")[-2:]
+                id = "%s|%s" % (subid[0], subid[1])
                 return id
-            obj_title = Regexp(CleanText('.', default=NotAvailable), '(.*) - .*')
-            obj_artist = Regexp(CleanText('.', default=NotAvailable), '.* - (.*)')
+
+            obj_title = Regexp(CleanText(".", default=NotAvailable), "(.*) - .*")
+            obj_artist = Regexp(CleanText(".", default=NotAvailable), ".* - (.*)")
             obj_content = NotLoaded
 
 
 class SearchArtistPage(HTMLPage):
     def get_artist_ids(self):
         artists_href = self.doc.xpath('//div[has-class("elenco")]//div[has-class("col-left")]//li//a/@href')
-        aids = [href.split('/')[-1].replace('paroles_', '').replace('.html', '') for href in artists_href]
+        aids = [href.split("/")[-1].replace("paroles_", "").replace(".html", "") for href in artists_href]
         return aids
 
 
@@ -59,13 +60,14 @@ class ArtistSongsPage(HTMLPage):
         class item(ItemElement):
             klass = SongLyrics
 
-            obj_title = CleanText('.', default=NotAvailable)
-            obj_artist = Regexp(CleanText('//head/title'), 'Paroles (.*)')
+            obj_title = CleanText(".", default=NotAvailable)
+            obj_artist = Regexp(CleanText("//head/title"), "Paroles (.*)")
             obj_content = NotLoaded
+
             def obj_id(self):
-                href = CleanText('./@href')(self)
-                subid = href.replace('.html','').replace('paroles_','').split('/')[-2:]
-                id = '%s|%s'%(subid[0], subid[1])
+                href = CleanText("./@href")(self)
+                subid = href.replace(".html", "").replace("paroles_", "").split("/")[-2:]
+                id = "%s|%s" % (subid[0], subid[1])
                 return id
 
 
@@ -75,9 +77,13 @@ class LyricsPage(HTMLPage):
         klass = SongLyrics
 
         def obj_id(self):
-            subid = self.page.url.replace('.html','').replace('paroles_','').split('/')[-2:]
-            id = '%s|%s'%(subid[0], subid[1])
+            subid = self.page.url.replace(".html", "").replace("paroles_", "").split("/")[-2:]
+            id = "%s|%s" % (subid[0], subid[1])
             return id
-        obj_content = CleanText(CleanHTML('//div[has-class("lyrics-body")]/*[not(contains(@id, "video"))]', default=NotAvailable), newlines=False)
-        obj_title = Regexp(CleanText('//title', default=NotAvailable), 'Paroles (.*) - .*')
-        obj_artist = Regexp(CleanText('//title', default=NotAvailable), 'Paroles .* - (.*)')
+
+        obj_content = CleanText(
+            CleanHTML('//div[has-class("lyrics-body")]/*[not(contains(@id, "video"))]', default=NotAvailable),
+            newlines=False,
+        )
+        obj_title = Regexp(CleanText("//title", default=NotAvailable), "Paroles (.*) - .*")
+        obj_artist = Regexp(CleanText("//title", default=NotAvailable), "Paroles .* - (.*)")

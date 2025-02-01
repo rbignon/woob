@@ -19,28 +19,36 @@ from .base import BaseObject, DecimalField, StringField
 
 
 class GeoCoordinates(BaseObject):
-    latitude = DecimalField('Latitude')
-    longitude = DecimalField('Longitude')
-    altitude = DecimalField('Altitude')
+    latitude = DecimalField("Latitude")
+    longitude = DecimalField("Longitude")
+    altitude = DecimalField("Altitude")
 
     def __repr__(self):
-        return '<%s %s;%s>' % (type(self).__name__, self.latitude, self.longitude)
+        return "<%s %s;%s>" % (type(self).__name__, self.latitude, self.longitude)
 
 
 class PostalAddress(BaseObject):
-    street = StringField('Street address')
-    postal_code = StringField('Postal code')
-    city = StringField('City')
-    region = StringField('Region')
-    country = StringField('Country')
-    country_code = StringField('ISO 3166-1 alpha-2 country code')
+    street = StringField("Street address")
+    postal_code = StringField("Postal code")
+    city = StringField("City")
+    region = StringField("Region")
+    country = StringField("Country")
+    country_code = StringField("ISO 3166-1 alpha-2 country code")
 
-    full_address = StringField('Full address if detailed address is not available')
+    full_address = StringField("Full address if detailed address is not available")
 
     def __repr__(self):
         if self.full_address:
-            return '<%s full_address=%r>' % (type(self).__name__, self.full_address)
-        return '<%s street=%r postal_code=%r region=%r city=%r country=%r country_code=%r>' % (type(self).__name__, self.street, self.postal_code, self.region, self.city, self.country, self.country_code)
+            return "<%s full_address=%r>" % (type(self).__name__, self.full_address)
+        return "<%s street=%r postal_code=%r region=%r city=%r country=%r country_code=%r>" % (
+            type(self).__name__,
+            self.street,
+            self.postal_code,
+            self.region,
+            self.city,
+            self.country,
+            self.country_code,
+        )
 
 
 def compat_field(field, sub):

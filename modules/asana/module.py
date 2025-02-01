@@ -25,22 +25,22 @@ from woob.tools.value import ValueBackendPassword
 from .browser import AsanaBrowser
 
 
-__all__ = ['AsanaModule']
+__all__ = ["AsanaModule"]
 
 
 class AsanaModule(Module, CapBugTracker):
-    NAME = 'asana'
-    DESCRIPTION = 'Asana'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
-    CONFIG = BackendConfig(ValueBackendPassword('token', label='Personal access token'))
+    NAME = "asana"
+    DESCRIPTION = "Asana"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
+    CONFIG = BackendConfig(ValueBackendPassword("token", label="Personal access token"))
 
     BROWSER = AsanaBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['token'].get())
+        return self.create_browser(self.config["token"].get())
 
     #  read-only issues and projects
     def iter_issues(self, query):
@@ -49,52 +49,64 @@ class AsanaModule(Module, CapBugTracker):
         params = {}
 
         if query.title:
-            params['text'] = query.title
+            params["text"] = query.title
 
         if query.project:
             if not isinstance(query.project, Project):
                 query.project = next(p for p in self.iter_projects() if query.project.lower() in p.name.lower())
-            params['project'] = query.project.id
+            params["project"] = query.project.id
 
             if query.tags:
-                params['tags.all'] = ','.join(query.project._tagdict[tag] for tag in query.tags)
+                params["tags.all"] = ",".join(query.project._tagdict[tag] for tag in query.tags)
 
         if query.assignee:
             if isinstance(query.assignee, User):
-                params['assignee'] = query.assignee.id
+                params["assignee"] = query.assignee.id
             else:
-                params['assignee'] = query.assignee
+                params["assignee"] = query.assignee
 
         if query.author:
             if isinstance(query.author, User):
-                params['created_by'] = query.author.id
+                params["created_by"] = query.author.id
             else:
-                params['created_by'] = query.author
+                params["created_by"] = query.author
 
         if query.status:
-            if query.status.lower() == 'closed':
-                params['completed'] = 'true'
+            if query.status.lower() == "closed":
+                params["completed"] = "true"
             else:
-                params['completed'] = 'false'
-                params['completed_since'] = 'now'  # completed=false is not enough...
+                params["completed"] = "false"
+                params["completed_since"] = "now"  # completed=false is not enough...
 
         if not query.project:
             workspaces = list(self._iter_workspaces())
             if len(workspaces) == 1:
-                params['workspace'] = workspaces[0]
+                params["workspace"] = workspaces[0]
 
         if query.project and query.assignee:
             # asana's wtf api doesn't allow more than 1 filter...
-            del params['project']
-            params['workspace'] = query.project._workspace
+            del params["project"]
+            params["workspace"] = query.project._workspace
 
-        opt = '?opt_fields=%s' % ','.join([
-            'name', 'completed', 'due_at', 'due_on', 'created_at', 'modified_at',
-            'notes', 'custom_fields', 'tags.name', 'assignee.name', 'created_by.name',
-            'projects.name', 'projects.workspace',
-        ])
+        opt = "?opt_fields=%s" % ",".join(
+            [
+                "name",
+                "completed",
+                "due_at",
+                "due_on",
+                "created_at",
+                "modified_at",
+                "notes",
+                "custom_fields",
+                "tags.name",
+                "assignee.name",
+                "created_by.name",
+                "projects.name",
+                "projects.workspace",
+            ]
+        )
         if params:
-            data = self.browser.paginate('tasks%s' % opt, params=params)
+            data = self.browser.paginate("tasks%s" % opt, params=params)
         else:
             data = []
 
@@ -127,38 +139,38 @@ class AsanaModule(Module, CapBugTracker):
             yield issue
 
     def _set_stories(self, issue):
-        ds = self.browser.request('tasks/%s/stories' % issue.id)['data']
+        ds = self.browser.request("tasks/%s/stories" % issue.id)["data"]
         issue.history = [self.browser._make_update(d) for d in ds]
 
     def get_issue(self, id):
         if not id.isdigit():
             return
 
-        data = self.browser.request('tasks/%s' % id)['data']
+        data = self.browser.request("tasks/%s" % id)["data"]
         return self.browser._make_issue(data)
 
     def iter_projects(self):
         for w in self._iter_workspaces():
-            tags = self.browser.request('tags?workspace=%s' % w)['data']
-            data = self.browser.paginate('projects?opt_fields=name,members.name,workspace&workspace=%s' % w)
+            tags = self.browser.request("tags?workspace=%s" % w)["data"]
+            data = self.browser.paginate("projects?opt_fields=name,members.name,workspace&workspace=%s" % w)
             for p in data:
                 project = self.browser._make_project(p)
                 self._assign_tags(tags, project)
                 yield project
 
     def _assign_tags(self, data, project):
-        project._tagdict = {d['name']: str(d['id']) for d in data}
+        project._tagdict = {d["name"]: str(d["id"]) for d in data}
         project.tags = list(project._tagdict)
 
     def get_project(self, id):
         if not id.isdigit():
             return
 
-        data = self.browser.request('projects/%s' % id)['data']
+        data = self.browser.request("projects/%s" % id)["data"]
         return self.browser._make_project(data)
 
     def _iter_workspaces(self):
-        return (d['id'] for d in self.browser.paginate('workspaces'))
+        return (d["id"] for d in self.browser.paginate("workspaces"))
 
     #  writing issues
     def create_issue(self, project):
@@ -169,21 +181,21 @@ class AsanaModule(Module, CapBugTracker):
     def post_issue(self, issue):
         data = {}
         if issue.title:
-            data['name'] = issue.title
+            data["name"] = issue.title
         if issue.body:
-            data['notes'] = issue.body
+            data["notes"] = issue.body
         if issue.due:
-            data['due_at'] = issue.due.strftime('%Y-%m-%d')
+            data["due_at"] = issue.due.strftime("%Y-%m-%d")
         if issue.assignee:
-            data['assignee'] = issue.assignee.id
+            data["assignee"] = issue.assignee.id
 
-        if issue.id and issue.id != '0':
-            data['projects'] = issue._project
-            self.browser.request('tasks', data=data)
+        if issue.id and issue.id != "0":
+            data["projects"] = issue._project
+            self.browser.request("tasks", data=data)
             if issue.tags:
                 self._set_tag_list(issue, True)
         else:
-            self.browser.request('tasks/%s' % issue.id, data=data, method='PUT')
+            self.browser.request("tasks/%s" % issue.id, data=data, method="PUT")
             if not empty(issue.tags):
                 self._set_tag_list(issue)
 
@@ -198,31 +210,31 @@ class AsanaModule(Module, CapBugTracker):
 
         for old in to_remove:
             tagid = issue.project._tagdict[old]
-            self.browser.request('tasks/%s/removeTag', data={'tag': tagid})
+            self.browser.request("tasks/%s/removeTag", data={"tag": tagid})
         for new in to_add:
             tagid = issue.project._tagdict[new]
-            self.browser.request('tasks/%s/addTag', data={'tag': tagid})
+            self.browser.request("tasks/%s/addTag", data={"tag": tagid})
 
     def update_issue(self, issue, update):
-        assert not update.changes, 'changes are not supported yet'
+        assert not update.changes, "changes are not supported yet"
         assert update.message
-        self.browser.request('tasks/%s/stories' % issue.id, data={'text': update.message})
+        self.browser.request("tasks/%s/stories" % issue.id, data={"text": update.message})
 
     def remove_issue(self, issue):
-        self.browser.request('tasks/%s' % issue.id, method='DELETE')
+        self.browser.request("tasks/%s" % issue.id, method="DELETE")
 
     #  filling
     def fill_project(self, project, fields):
-        if set(['members']) & set(fields):
+        if set(["members"]) & set(fields):
             return self.get_project(project.id)
 
     def fill_issue(self, issue, fields):
-        if set(['body', 'assignee', 'due', 'creation', 'updated', 'project']) & set(fields):
+        if set(["body", "assignee", "due", "creation", "updated", "project"]) & set(fields):
             new = self.get_issue(issue.id)
             for f in fields:
                 if getattr(new, f):
                     setattr(issue, f, getattr(new, f))
-        if 'history' in fields:
+        if "history" in fields:
             self._set_stories(issue)
 
     OBJECTS = {

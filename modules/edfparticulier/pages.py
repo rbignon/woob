@@ -44,18 +44,18 @@ class XUIPage(AkamaiHTMLPage):
 
 class AuthenticatePage(JsonPage):
     def has_captcha_request(self):
-        return self.doc['stage'] == "RecaptchaModuleS1"
+        return self.doc["stage"] == "RecaptchaModuleS1"
 
     def get_data(self):
         return self.doc
 
     def get_token(self):
-        return self.doc['tokenId']
+        return self.doc["tokenId"]
 
 
 class AuthorizePage(HTMLPage):
     def on_load(self):
-        if Attr('//body', 'onload', default=NotAvailable)(self.doc):
+        if Attr("//body", "onload", default=NotAvailable)(self.doc):
             self.get_form().submit()
 
 
@@ -64,12 +64,12 @@ class WrongPasswordPage(HTMLPage):
         # edf website block access after 5 wrong password, and user will have to change his password
         # this is very important because it can tell to user how much attempt it remains
         msg = CleanText('//p[@id="error1"]')(self.doc)
-        msg_remain_attemp = CleanText('//p[strong[@id="attempt-number"]]', default='')(self.doc)
-        msg_remain_attemp = msg_remain_attemp.replace('{{theme.settings.spaceName.texte}} ', '')
+        msg_remain_attemp = CleanText('//p[strong[@id="attempt-number"]]', default="")(self.doc)
+        msg_remain_attemp = msg_remain_attemp.replace("{{theme.settings.spaceName.texte}} ", "")
 
         if attempt_number > 0:
-            msg += ' ' + msg_remain_attemp.replace(
-                'Tentatives restantes : X', 'Tentatives restantes : %d' % attempt_number
+            msg += " " + msg_remain_attemp.replace(
+                "Tentatives restantes : X", "Tentatives restantes : %d" % attempt_number
             )
 
         return msg
@@ -95,21 +95,21 @@ class UnLoggedPage(HTMLPage):
 class ProfilPage(JsonPage):
     @property
     def logged(self):
-        return self.doc['errorCode'] == 0
+        return self.doc["errorCode"] == 0
 
     @method
     class iter_subscriptions(DictElement):
-        item_xpath = 'customerAccordContracts'
+        item_xpath = "customerAccordContracts"
 
         class item(ItemElement):
             klass = Subscription
 
-            obj_subscriber = Format('%s %s', Dict('bp/identity/firstName'), Dict('bp/identity/lastName'))
-            obj_id = Dict('number')
+            obj_subscriber = Format("%s %s", Dict("bp/identity/firstName"), Dict("bp/identity/lastName"))
+            obj_id = Dict("number")
             obj_label = obj_id
 
     def get_token(self):
-        return Dict('data')(self.doc)
+        return Dict("data")(self.doc)
 
 
 class DocumentsPage(LoggedPage, JsonPage):
@@ -117,52 +117,57 @@ class DocumentsPage(LoggedPage, JsonPage):
     class iter_bills(DictElement):
         def parse(self, el):
             for i, sub_group in enumerate(self.el):
-                for j, sub in enumerate(Dict('listOfBillsByAccDTO')(sub_group)):
-                    if Dict('accDTO/numAcc')(sub) in Env('subid')(self):
+                for j, sub in enumerate(Dict("listOfBillsByAccDTO")(sub_group)):
+                    if Dict("accDTO/numAcc")(sub) in Env("subid")(self):
                         self.item_xpath = "%d/listOfBillsByAccDTO/%d/listOfbills" % (i, j)
-                        self.env['bpNumber'] = Dict('%d/bpDto/bpNumber' % i)(self)
+                        self.env["bpNumber"] = Dict("%d/bpDto/bpNumber" % i)(self)
                         break
 
         class item(ItemElement):
             klass = Bill
 
-            obj_id = Format('%s_%s', Env('subid'), Dict('documentNumber'))
-            obj_date = Date(Eval(lambda t: datetime.fromtimestamp(int(t) / 1000).strftime('%Y-%m-%d'), Dict('creationDate')))
-            obj_format = 'pdf'
-            obj_label = Format('Facture %s', Dict('documentNumber'))
-            obj_price = Env('price')
-            obj_currency = 'EUR'
+            obj_id = Format("%s_%s", Env("subid"), Dict("documentNumber"))
+            obj_date = Date(
+                Eval(lambda t: datetime.fromtimestamp(int(t) / 1000).strftime("%Y-%m-%d"), Dict("creationDate"))
+            )
+            obj_format = "pdf"
+            obj_label = Format("Facture %s", Dict("documentNumber"))
+            obj_price = Env("price")
+            obj_currency = "EUR"
             obj_vat = NotAvailable
-            obj__doc_number = Dict('documentNumber')
-            obj__par_number = Dict('parNumber')
-            obj__num_acc = Env('numAcc')
-            obj__bp = Env('bpNumber')
+            obj__doc_number = Dict("documentNumber")
+            obj__par_number = Dict("parNumber")
+            obj__num_acc = Env("numAcc")
+            obj__bp = Env("bpNumber")
 
             def parse(self, el):
-                self.env['price'] = Decimal(Dict('billAmount')(self))
-                self.env['numAcc'] = str(int(Env('subid')(self)))
+                self.env["price"] = Decimal(Dict("billAmount")(self))
+                self.env["numAcc"] = str(int(Env("subid")(self)))
 
     def get_bills_informations(self):
         return {
-            'bpNumber': Dict('bpNumber')(self.doc),
-            'docId': Dict('docId')(self.doc),
-            'docName': Dict('docName')(self.doc),
-            'numAcc': Dict('numAcc')(self.doc),
-            'parNumber': Dict('parNumber')(self.doc),
+            "bpNumber": Dict("bpNumber")(self.doc),
+            "docId": Dict("docId")(self.doc),
+            "docName": Dict("docName")(self.doc),
+            "numAcc": Dict("numAcc")(self.doc),
+            "parNumber": Dict("parNumber")(self.doc),
         }
 
 
 class ProfilePage(LoggedPage, JsonPage):
     def get_profile(self):
-        data = self.doc['bp']
+        data = self.doc["bp"]
         profile = Profile()
 
-        profile.address = '%s %s %s %s' % (
-            data['streetNumber'], data['streetName'], data['postCode'], data['city'],
+        profile.address = "%s %s %s %s" % (
+            data["streetNumber"],
+            data["streetName"],
+            data["postCode"],
+            data["city"],
         )
-        profile.name = '%s %s %s' % (data['civility'], data['lastName'], data['firstName'])
-        profile.phone = data['mobilePhoneNumber'] or data['fixPhoneNumber']
-        profile.email = data['mail']
+        profile.name = "%s %s %s" % (data["civility"], data["lastName"], data["firstName"])
+        profile.phone = data["mobilePhoneNumber"] or data["fixPhoneNumber"]
+        profile.email = data["mail"]
 
         return profile
 

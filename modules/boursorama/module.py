@@ -35,25 +35,31 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import BoursoramaBrowser
 
 
-__all__ = ['BoursoramaModule']
+__all__ = ["BoursoramaModule"]
 
 
 class BoursoramaModule(
-    Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile,
-    CapContact, CapCurrencyRate, CapDocument, CapBankMatching,
+    Module,
+    CapBankWealth,
+    CapBankTransferAddRecipient,
+    CapProfile,
+    CapContact,
+    CapCurrencyRate,
+    CapDocument,
+    CapBankMatching,
 ):
-    NAME = 'boursorama'
-    MAINTAINER = 'Gabriel Kerneis'
-    EMAIL = 'gabriel@kerneis.info'
-    LICENSE = 'LGPLv3+'
-    DESCRIPTION = 'Boursorama'
+    NAME = "boursorama"
+    MAINTAINER = "Gabriel Kerneis"
+    EMAIL = "gabriel@kerneis.info"
+    LICENSE = "LGPLv3+"
+    DESCRIPTION = "Boursorama"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'^[0-9]+$'),
-        ValueBackendPassword('password', label='Mot de passe', regexp=r'[a-zA-Z0-9]+'),
-        ValueTransient('code'),
-        ValueTransient('email_code'),
-        ValueTransient('resume'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Identifiant", masked=False, regexp=r"^[0-9]+$"),
+        ValueBackendPassword("password", label="Mot de passe", regexp=r"[a-zA-Z0-9]+"),
+        ValueTransient("code"),
+        ValueTransient("email_code"),
+        ValueTransient("resume"),
+        ValueTransient("request_information"),
     )
 
     BROWSER = BoursoramaBrowser
@@ -113,18 +119,18 @@ class BoursoramaModule(
     def get_transfer(self, id):
         # we build the id of the transfer by prefixing the account id (in pages.py)
         # precisely for this use case, because we want to only query on the right account
-        account_id, _, transfer_id = id.partition('.')
+        account_id, _, transfer_id = id.partition(".")
         return find_object(self.browser.iter_transfers_for_account(account_id), id=id)
 
     def transfer_check_label(self, old, new):
         # In the confirm page the '<' is interpeted like a html tag
         # If no '>' is present the following chars are deleted
         # Else: inside '<>' chars are deleted
-        old = re.sub(r'<[^>]*>', '', old).strip()
-        old = old.split('<')[0]
+        old = re.sub(r"<[^>]*>", "", old).strip()
+        old = old.split("<")[0]
 
         # replace � by ?, like the bank does
-        old = old.replace('\ufffd', '?')
+        old = old.replace("\ufffd", "?")
         return super(BoursoramaModule, self).transfer_check_label(old, new)
 
     def transfer_check_account_id(self, old, new):
@@ -146,14 +152,14 @@ class BoursoramaModule(
 
     def fill_account(self, account, fields):
         if (
-            'opening_date' in fields
+            "opening_date" in fields
             and account.type == Account.TYPE_LIFE_INSURANCE
-            and '/compte/derive' not in account.url
+            and "/compte/derive" not in account.url
         ):
             account.opening_date = self.browser.get_opening_date(account.url)
 
     def get_document(self, _id):
-        subscription_id = _id.split('_')[0]
+        subscription_id = _id.split("_")[0]
         subscription = self.get_subscription(subscription_id)
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 
@@ -187,14 +193,11 @@ class BoursoramaModule(
 
         if account.type == Account.TYPE_CARD:
             for old_account in old_accounts:
-                if (
-                    old_account.type == Account.TYPE_CARD
-                    and old_account.number == account.number
-                ):
+                if old_account.type == Account.TYPE_CARD and old_account.number == account.number:
                     matched_accounts.append(old_account)
 
         if len(matched_accounts) > 1:
-            raise AssertionError(f'Found multiple candidates to match the card {account.label}.')
+            raise AssertionError(f"Found multiple candidates to match the card {account.label}.")
 
         if len(matched_accounts) == 1:
             return matched_accounts[0]

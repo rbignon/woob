@@ -26,15 +26,15 @@ from woob.exceptions import BrowserIncorrectPassword
 from .pages import CentQuatrePage, LoginPage, TicketsDetailsPage, TicketsPage
 
 
-__all__ = ['CentQuatreBrowser']
+__all__ = ["CentQuatreBrowser"]
 
 
 class CentQuatreBrowser(LoginBrowser):
-    BASEURL = 'https://billetterie.104.fr'
-    login = URL(r'/account/login$', LoginPage)
-    tickets = URL(r'/account/tickets', TicketsPage)
-    ticketDetails = URL(r'/account/file\?(.*)?fileId=(?P<fileId>)', TicketsDetailsPage)
-    unknown = URL(r'*', CentQuatrePage)
+    BASEURL = "https://billetterie.104.fr"
+    login = URL(r"/account/login$", LoginPage)
+    tickets = URL(r"/account/tickets", TicketsPage)
+    ticketDetails = URL(r"/account/file\?(.*)?fileId=(?P<fileId>)", TicketsDetailsPage)
+    unknown = URL(r"*", CentQuatrePage)
 
     def do_login(self):
         self.session.cookies.clear()

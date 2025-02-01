@@ -24,24 +24,27 @@ from woob.capabilities.base import UserError
 from .pages import EventPage, FilmsPage, JsonResumePage
 
 
-__all__ = ['SenscritiqueBrowser']
+__all__ = ["SenscritiqueBrowser"]
 
 
 class SenscritiqueBrowser(PagesBrowser):
 
-    BASEURL = 'https://www.senscritique.com'
+    BASEURL = "https://www.senscritique.com"
 
-    films_page = URL('/everymovie/programme-tv/cette-semaine', FilmsPage)
-    event_page = URL(r'/film/(?P<_id>.*)', EventPage)
-    json_page = URL(r'/sc2/product/storyline/(?P<_id>.*)\.json', JsonResumePage)
+    films_page = URL("/everymovie/programme-tv/cette-semaine", FilmsPage)
+    event_page = URL(r"/film/(?P<_id>.*)", EventPage)
+    json_page = URL(r"/sc2/product/storyline/(?P<_id>.*)\.json", JsonResumePage)
 
     def set_json_header(self):
-        self.session.headers.update({"User-Agent": "Mozilla/5.0 (Windows; U; Windows "
-                                     "NT 5.1; en-US; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8"
-                                     " GTB7.1 (.NET CLR 3.5.30729)",
-                                     "Accept": "application/json, text/javascript, */*; q=0.01",
-                                     "X-Requested-With": "XMLHttpRequest",
-                                     })
+        self.session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (Windows; U; Windows "
+                "NT 5.1; en-US; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8"
+                " GTB7.1 (.NET CLR 3.5.30729)",
+                "Accept": "application/json, text/javascript, */*; q=0.01",
+                "X-Requested-With": "XMLHttpRequest",
+            }
+        )
 
     def list_events(self, date_from, date_to=None):
         return self.films_page.go().iter_films(date_from=date_from, date_to=date_to)
@@ -51,9 +54,9 @@ class SenscritiqueBrowser(PagesBrowser):
             try:
                 event = next(self.films_page.go().iter_films(_id=_id))
             except StopIteration:
-                raise UserError('This event (%s) does not exists' % _id)
+                raise UserError("This event (%s) does not exists" % _id)
 
-        film_id = _id.split('#')[0]
+        film_id = _id.split("#")[0]
         event = self.event_page.go(_id=film_id).get_event(obj=event)
         resume = self.get_resume(film_id)
         event.description += resume
@@ -61,7 +64,7 @@ class SenscritiqueBrowser(PagesBrowser):
 
     def get_resume(self, film_id):
         self.set_json_header()
-        _id = film_id.split('/')[-1]
+        _id = film_id.split("/")[-1]
         resume = self.json_page.go(_id=_id).get_resume()
         self.set_profile(Firefox())
-        return resume if resume else ''
+        return resume if resume else ""

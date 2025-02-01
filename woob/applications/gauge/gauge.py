@@ -21,17 +21,17 @@ from woob.tools.application.formatters.iformatter import IFormatter
 from woob.tools.application.repl import ReplApplication
 
 
-__all__ = ['AppGauge']
+__all__ = ["AppGauge"]
 
 
 class GaugeFormatter(IFormatter):
-    MANDATORY_FIELDS = ('name', 'object', 'sensors')
-    DISPLAYED_FIELDS = ('city', )
+    MANDATORY_FIELDS = ("name", "object", "sensors")
+    DISPLAYED_FIELDS = ("city",)
 
     def start_format(self, **kwargs):
         # Name = 27   Object = 10   City = 10  Sensors = 33
-        self.output(' Name and ID                  Object     City       Sensors                         ')
-        self.output('----------------------------+----------+----------+---------------------------------')
+        self.output(" Name and ID                  Object     City       Sensors                         ")
+        self.output("----------------------------+----------+----------+---------------------------------")
 
     def format_obj(self, obj, alias):
         name = obj.name
@@ -40,12 +40,12 @@ class GaugeFormatter(IFormatter):
             city = obj.city
 
         if not obj.sensors or (len(obj.sensors) == 0):
-            result = ' %s %s %s \n' %\
-                   (self.colored('%-27s' % name[:27], 'red'),
-                    self.colored('%-10s' % obj.object[:10], 'yellow'),
-                    self.colored('%-10s' % city[:10], 'yellow')
-                    )
-            result += ' %s \n' % self.colored('%-47s' % obj.fullid[:47], 'blue')
+            result = " %s %s %s \n" % (
+                self.colored("%-27s" % name[:27], "red"),
+                self.colored("%-10s" % obj.object[:10], "yellow"),
+                self.colored("%-10s" % city[:10], "yellow"),
+            )
+            result += " %s \n" % self.colored("%-47s" % obj.fullid[:47], "blue")
         else:
             first = True
             firstaddress = obj.sensors[0].address
@@ -62,43 +62,47 @@ class GaugeFormatter(IFormatter):
                 else:
                     lastvalue = "? "
                 if first:
-                    result = ' %s %s %s ' %\
-                             (self.colored('%-27s' % name[:27], 'red'),
-                              self.colored('%-10s' % obj.object[:10], 'yellow'),
-                              self.colored('%-10s' % city[:10], 'yellow'),
-                              )
+                    result = " %s %s %s " % (
+                        self.colored("%-27s" % name[:27], "red"),
+                        self.colored("%-10s" % obj.object[:10], "yellow"),
+                        self.colored("%-10s" % city[:10], "yellow"),
+                    )
                     if not empty(firstaddress):
-                        result += '%s' % self.colored('%-33s' % sensor.address[:33], 'yellow')
-                    result += '\n'
-                    result += ' %s' % self.colored('%-47s' % obj.fullid[:47], 'blue')
-                    result += '   %s %s\n' %\
-                              (self.colored('%-20s' % sensorname[:20], 'magenta'),
-                               self.colored('%-13s' % lastvalue[:13], 'red')
-                               )
+                        result += "%s" % self.colored("%-33s" % sensor.address[:33], "yellow")
+                    result += "\n"
+                    result += " %s" % self.colored("%-47s" % obj.fullid[:47], "blue")
+                    result += "   %s %s\n" % (
+                        self.colored("%-20s" % sensorname[:20], "magenta"),
+                        self.colored("%-13s" % lastvalue[:13], "red"),
+                    )
                     first = False
                 else:
-                    result += '                                                   %s %s\n' %\
-                              (self.colored('%-20s' % sensorname[:20], 'magenta'),
-                               self.colored('%-13s' % lastvalue[:13], 'red')
-                               )
+                    result += "                                                   %s %s\n" % (
+                        self.colored("%-20s" % sensorname[:20], "magenta"),
+                        self.colored("%-13s" % lastvalue[:13], "red"),
+                    )
                     if not empty(sensor.address) and sensor.address != firstaddress:
-                        result += '                                                   %s \n' %\
-                                  self.colored('%-33s' % sensor.address[:33], 'yellow')
+                        result += "                                                   %s \n" % self.colored(
+                            "%-33s" % sensor.address[:33], "yellow"
+                        )
 
         return result
 
 
 class AppGauge(ReplApplication):
-    APPNAME = 'gauge'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2013-YEAR Florent Fourcot'
+    APPNAME = "gauge"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2013-YEAR Florent Fourcot"
     DESCRIPTION = "Console application allowing to display various sensors and gauges values."
     SHORT_DESCRIPTION = "display sensors and gauges values"
-    CAPS = (CapGauge)
-    DEFAULT_FORMATTER = 'table'
-    EXTRA_FORMATTERS = {'gauge_list':   GaugeFormatter, }
-    COMMANDS_FORMATTERS = {'search':    'gauge_list',
-                           }
+    CAPS = CapGauge
+    DEFAULT_FORMATTER = "table"
+    EXTRA_FORMATTERS = {
+        "gauge_list": GaugeFormatter,
+    }
+    COMMANDS_FORMATTERS = {
+        "search": "gauge_list",
+    }
 
     def main(self, argv):
         self.load_config()
@@ -106,8 +110,8 @@ class AppGauge(ReplApplication):
 
     def bcall_error_handler(self, backend, error, backtrace):
         if isinstance(error, SensorNotFound):
-            msg = str(error) or 'Sensor not found (hint: try details command)'
-            print('Error(%s): %s' % (backend.name, msg), file=self.stderr)
+            msg = str(error) or "Sensor not found (hint: try details command)"
+            print("Error(%s): %s" % (backend.name, msg), file=self.stderr)
         else:
             return super().bcall_error_handler(backend, error, backtrace)
 
@@ -117,13 +121,13 @@ class AppGauge(ReplApplication):
 
         Display all gauges. If PATTERN is specified, search on a pattern.
         """
-        self.change_path(['gauges'])
+        self.change_path(["gauges"])
         self.start_format()
-        for gauge in self.do('iter_gauges', pattern or None, caps=CapGauge):
+        for gauge in self.do("iter_gauges", pattern or None, caps=CapGauge):
             self.cached_format(gauge)
 
     def complete_search(self, text, line, *ignored):
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) == 2:
             return self._complete_object()
 
@@ -137,7 +141,7 @@ class AppGauge(ReplApplication):
         _id, backend_name = self.parse_id(gauge)
 
         self.start_format()
-        for sensor in self.do('iter_sensors', _id, pattern=pattern, backends=backend_name, caps=CapGauge):
+        for sensor in self.do("iter_sensors", _id, pattern=pattern, backends=backend_name, caps=CapGauge):
             self.format(sensor)
 
     def do_history(self, line):
@@ -146,15 +150,15 @@ class AppGauge(ReplApplication):
 
         Get history of a specific sensor (use 'search' to find a gauge, and sensors GAUGE_ID to list sensors attached to the gauge).
         """
-        gauge, = self.parse_command_args(line, 1, 1)
+        (gauge,) = self.parse_command_args(line, 1, 1)
         _id, backend_name = self.parse_id(gauge)
 
         self.start_format()
-        for measure in self.do('iter_gauge_history', _id, backends=backend_name, caps=CapGauge):
+        for measure in self.do("iter_gauge_history", _id, backends=backend_name, caps=CapGauge):
             self.format(measure)
 
     def complete_last_sensor_measure(self, text, line, *ignored):
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) == 2:
             return self._complete_object()
 
@@ -164,9 +168,9 @@ class AppGauge(ReplApplication):
 
         Get last measure of a sensor.
         """
-        gauge, = self.parse_command_args(line, 1, 1)
+        (gauge,) = self.parse_command_args(line, 1, 1)
         _id, backend_name = self.parse_id(gauge)
 
         self.start_format()
-        for measure in self.do('get_last_measure', _id, backends=backend_name, caps=CapGauge):
+        for measure in self.do("get_last_measure", _id, backends=backend_name, caps=CapGauge):
             self.format(measure)

@@ -35,14 +35,14 @@ class UnavailablePage(MyHTMLPage):
 class LoginPage(MyHTMLPage):
     def login(self, login, pwd):
         # we need to get iscd data from js file to complete the login form.
-        dasti_js = self.browser.open('https://d21j9nkdg2p3wo.cloudfront.net/321226/dasti.js').text
-        iscd = re.match(r'.*j=\"(\w{52})\".*', dasti_js).group(1)
+        dasti_js = self.browser.open("https://d21j9nkdg2p3wo.cloudfront.net/321226/dasti.js").text
+        iscd = re.match(r".*j=\"(\w{52})\".*", dasti_js).group(1)
 
-        form = self.get_form(name='formAccesCompte')
-        form['password'] = self.get_password_from_virtualkeyboard(pwd)
-        form['username'] = login
-        form['iscdName'] = iscd
-        form['cltName'] = '1'
+        form = self.get_form(name="formAccesCompte")
+        form["password"] = self.get_password_from_virtualkeyboard(pwd)
+        form["username"] = login
+        form["iscdName"] = iscd
+        form["cltName"] = "1"
         form.submit()
 
     def get_password_from_virtualkeyboard(self, password):
@@ -51,10 +51,10 @@ class LoginPage(MyHTMLPage):
         vk = {}
         buttons = CleanText('//div[@data-tb-cvd-id="password"]/div/button/text()')(self.doc)
 
-        for index, elt in enumerate(buttons.replace(' ', '')):
+        for index, elt in enumerate(buttons.replace(" ", "")):
             vk[elt] = str(index)
 
-        code = ''
+        code = ""
         for number in password:
             code += vk[number]
 
@@ -72,18 +72,16 @@ class LienJavascript(HTMLPage):
 
     def is_here(self):
         try:
-            Regexp(
-                CleanText('//html/head/script[@type="text/javascript"]'),
-                r'^top.location.replace\(..*.\);$')(self.doc)
+            Regexp(CleanText('//html/head/script[@type="text/javascript"]'), r"^top.location.replace\(..*.\);$")(
+                self.doc
+            )
             return True
         except ParseError:
             return False
 
     def on_load(self):
         if self.is_here():
-            url = Regexp(
-                CleanText('//script[@type="text/javascript"]'),
-                r'top.location.replace\(.(.*).\)')(self.doc)
+            url = Regexp(CleanText('//script[@type="text/javascript"]'), r"top.location.replace\(.(.*).\)")(self.doc)
             self.browser.location(url)
 
 
@@ -92,12 +90,14 @@ class repositionnerCheminCourant(LoggedPage, MyHTMLPage):
 
     def on_load(self):
         super().on_load()
-        response = self.browser.open("https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/securite/authentification/initialiser-identif.ea")
+        response = self.browser.open(
+            "https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/securite/authentification/initialiser-identif.ea"
+        )
         if isinstance(response.page, Initident):
             response.page.on_load()
         if "vous ne disposez pas" in response.text:
             raise BrowserIncorrectPassword("No online banking service for these ids")
-        if 'invitons à renouveler votre opération ultérieurement' in response.text:
+        if "invitons à renouveler votre opération ultérieurement" in response.text:
             raise BrowserUnavailable()
 
 
@@ -113,7 +113,7 @@ class Initident(LoggedPage, MyHTMLPage):
             """//p[contains(text(), "L'identifiant utilisé est celui d'une Entreprise ou d'une Association")]"""
         )(self.doc)
         if message:
-            raise BrowserIncorrectPassword(message, bad_fields=['website'])
+            raise BrowserIncorrectPassword(message, bad_fields=["website"])
         no_accounts = CleanText('//div[@class="textFCK"]')(self.doc)
         if no_accounts:
             raise NoAccountsException(no_accounts)
@@ -125,7 +125,9 @@ class CheckPassword(LoggedPage, MyHTMLPage):
 
     def on_load(self):
         MyHTMLPage.on_load(self)
-        self.browser.location("https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/securite/authentification/retourDSP2-identif.ea")
+        self.browser.location(
+            "https://voscomptesenligne.labanquepostale.fr/voscomptes/canalXHTML/securite/authentification/retourDSP2-identif.ea"
+        )
 
 
 class BadLoginPage(MyHTMLPage):
@@ -140,7 +142,9 @@ class TwoFAPage(MyHTMLPage):
     def on_load(self):
         # For pro browser this page can provoke a disconnection
         # We have to do login again without 2fa
-        deconnexion = self.doc.xpath('//iframe[contains(@id, "deconnexion")] | //p[@class="txt" and contains(text(), "Session expir")]')
+        deconnexion = self.doc.xpath(
+            '//iframe[contains(@id, "deconnexion")] | //p[@class="txt" and contains(text(), "Session expir")]'
+        )
         if deconnexion:
             self.browser.login_without_2fa()
 
@@ -151,36 +155,30 @@ class TwoFAPage(MyHTMLPage):
             status_message = CleanText('//div[contains(@id, "DSP2_Certicode_connexion_haut")]')(self.doc)
 
         if re.search(
-                'avez pas de solution d’authentification forte'
-                + '|une authentification forte est désormais nécessaire'
-                + "|avez pas encore activé votre service gratuit d'authentification forte"
-                + '|Cette validation vous sera ensuite demandée tous les 90 jours'
-                + '|authentification forte n’a pas encore été activée',
-                status_message
+            "avez pas de solution d’authentification forte"
+            + "|une authentification forte est désormais nécessaire"
+            + "|avez pas encore activé votre service gratuit d'authentification forte"
+            + "|Cette validation vous sera ensuite demandée tous les 90 jours"
+            + "|authentification forte n’a pas encore été activée",
+            status_message,
         ):
-            return 'no2fa'
+            return "no2fa"
         elif re.search(
-                'Une authentification forte via Certicode Plus vous'
-                + '|Cette étape supplémentaire est obligatoire pour accéder à votre Espace Client Internet.'
-                + '|vous rendre sur l’application mobile La Banque Postale',
-                status_message
+            "Une authentification forte via Certicode Plus vous"
+            + "|Cette étape supplémentaire est obligatoire pour accéder à votre Espace Client Internet."
+            + "|vous rendre sur l’application mobile La Banque Postale",
+            status_message,
         ):
-            return 'cer+'
+            return "cer+"
         elif re.search(
-                'authentification forte via Certicode vous'
-                + '|code de sécurité que vous recevrez par SMS',
-                status_message
+            "authentification forte via Certicode vous" + "|code de sécurité que vous recevrez par SMS", status_message
         ):
-            return 'cer'
+            return "cer"
         elif (
-            'Nous rencontrons un problème pour valider votre opération. Veuillez reessayer plus tard'
-            in status_message
+            "Nous rencontrons un problème pour valider votre opération. Veuillez reessayer plus tard" in status_message
         ):
             raise BrowserUnavailable(status_message)
-        elif (
-            "bloqué si vous n'avez pas de solution d'authentification forte"
-            in status_message.lower()
-        ):
+        elif "bloqué si vous n'avez pas de solution d'authentification forte" in status_message.lower():
             # Pour plus de sécurité, l'accès à votre Espace client Internet requiert une authentification forte tous les 90 jours,
             # En application de la Directive Européenne sur les Services de Paiement (DSP2).
             # Cette étape supplémentaire est obligatoire pour accéder à votre Espace client Internet.
@@ -194,13 +192,10 @@ class TwoFAPage(MyHTMLPage):
             short_message = CleanText('(//div[@class="textFCK"])[1]//p[1]')(self.doc)
             if short_message:
                 # short_message is the first sentence only
-                raise ActionNeeded(short_message, locale='fr-FR', action_type=ActionType.ENABLE_MFA)
+                raise ActionNeeded(short_message, locale="fr-FR", action_type=ActionType.ENABLE_MFA)
             # just in case the short message is not present
-            raise ActionNeeded(status_message, locale='fr-FR', action_type=ActionType.ENABLE_MFA)
-        elif (
-            'votre Espace Client Internet requiert une authentification forte tous les 90 jours'
-            in status_message
-        ):
+            raise ActionNeeded(status_message, locale="fr-FR", action_type=ActionType.ENABLE_MFA)
+        elif "votre Espace Client Internet requiert une authentification forte tous les 90 jours" in status_message:
             # short_message takes only the first sentence of status_message to avoid
             # some verbose explanations about how to set the SCA
             short_message = CleanText('(//div[@class="textFCK"])[1]//p[1]')(self.doc)
@@ -233,10 +228,9 @@ class SmsPage(MyHTMLPage):
         return self.get_form()
 
     def is_sms_wrong(self):
-        return (
-            'Le code de sécurité que vous avez saisi est erroné'
-            in CleanText('//div[@id="DSP2_Certicode_AF_ErreurCode1"]//div[@class="textFCK"]')(self.doc)
-        )
+        return "Le code de sécurité que vous avez saisi est erroné" in CleanText(
+            '//div[@id="DSP2_Certicode_AF_ErreurCode1"]//div[@class="textFCK"]'
+        )(self.doc)
 
 
 class DecoupledPage(MyHTMLPage):
@@ -246,4 +240,4 @@ class DecoupledPage(MyHTMLPage):
 
 class NoTerminalPage(MyHTMLPage):
     def has_no_terminal(self):
-        return 'aucun terminal trouve' in Lower('//span[@id="deviceSelected"]', transliterate=True)(self.doc)
+        return "aucun terminal trouve" in Lower('//span[@id="deviceSelected"]', transliterate=True)(self.doc)

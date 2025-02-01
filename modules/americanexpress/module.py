@@ -25,30 +25,26 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import AmericanExpressWithSeleniumBrowser
 
 
-__all__ = ['AmericanExpressModule']
+__all__ = ["AmericanExpressModule"]
 
 
 class AmericanExpressModule(Module, CapBank):
-    NAME = 'americanexpress'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = u'American Express'
-    LICENSE = 'LGPLv3+'
+    NAME = "americanexpress"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "American Express"
+    LICENSE = "LGPLv3+"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Code utilisateur', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('request_information'),
-        ValueTransient('otp', regexp=r'^\d{6}$'),
+        ValueBackendPassword("login", label="Code utilisateur", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("request_information"),
+        ValueTransient("otp", regexp=r"^\d{6}$"),
     )
     BROWSER = AmericanExpressWithSeleniumBrowser
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config,
-            self.config['login'].get(),
-            self.config['password'].get()
-        )
+        return self.create_browser(self.config, self.config["login"].get(), self.config["password"].get())
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

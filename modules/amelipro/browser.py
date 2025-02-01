@@ -31,31 +31,21 @@ from woob.tools.capabilities.bill.documents import merge_iterators
 from .pages import AuthorizationPage, DocumentsDetailsPage, DocumentsSummaryPage, LotPDF, RelevePDF, SubscriptionPage
 
 
-__all__ = ['AmeliProBrowser']
+__all__ = ["AmeliProBrowser"]
 
 
 class AmeliProBrowser(LoginBrowser):
-    BASEURL = 'https://paiements2.ameli.fr'
+    BASEURL = "https://paiements2.ameli.fr"
 
-    login_page = URL(
-        r'https://authps-espacepro.ameli.fr/oauth2/authorize',
-        AuthorizationPage
-    )
+    login_page = URL(r"https://authps-espacepro.ameli.fr/oauth2/authorize", AuthorizationPage)
     subscription_page = URL(
-        r'https://espacepro.ameli.fr/PortailPS/appmanager/portailps/professionnelsante',
-        SubscriptionPage
+        r"https://espacepro.ameli.fr/PortailPS/appmanager/portailps/professionnelsante", SubscriptionPage
     )
-    documents_summary_page = URL(
-        r'/api/hdpam/releve-mensuel/releve-compte/liste\?doTrack=false',
-        DocumentsSummaryPage
-    )
-    documents_details_page = URL(
-        r'/api/hdpam/tiers-payant/resume-lots/recherche-date-paiement',
-        DocumentsDetailsPage
-    )
-    releve_pdf_url = URL(r'/api/hdpam/releve-mensuel/releve-compte/telecharger', RelevePDF)
+    documents_summary_page = URL(r"/api/hdpam/releve-mensuel/releve-compte/liste\?doTrack=false", DocumentsSummaryPage)
+    documents_details_page = URL(r"/api/hdpam/tiers-payant/resume-lots/recherche-date-paiement", DocumentsDetailsPage)
+    releve_pdf_url = URL(r"/api/hdpam/releve-mensuel/releve-compte/telecharger", RelevePDF)
     # "lot" regroups some detailled bills depending on their administrative jurisdiction
-    lot_pdf_url = URL(r'/api/hdpam/tiers-payant/details/pdfDetailLot', LotPDF)
+    lot_pdf_url = URL(r"/api/hdpam/tiers-payant/details/pdfDetailLot", LotPDF)
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
@@ -64,20 +54,20 @@ class AmeliProBrowser(LoginBrowser):
     def do_login(self):
         # login_page redirects us to the same page but it adds many auth params in the URL
         # POST with authentication data must be done on that specific URL
-        if self.config['captcha_response'].get():
+        if self.config["captcha_response"].get():
             if self.login_page.is_here():
                 data = self.page.get_post_data()
                 data.update(
                     {
-                        'lmAuth': 'login',
-                        'user': self.username,
-                        'password': self.password,
-                        'captcha_user_code': self.config['captcha_response'].get(),
+                        "lmAuth": "login",
+                        "user": self.username,
+                        "password": self.password,
+                        "captcha_user_code": self.config["captcha_response"].get(),
                     }
                 )
                 self.location(self.url, data=data)
             else:
-                raise AssertionError('Not on login page after captcha solving, URL is %s' % self.url)
+                raise AssertionError("Not on login page after captcha solving, URL is %s" % self.url)
 
         else:
             self.login_page.go()
@@ -91,13 +81,13 @@ class AmeliProBrowser(LoginBrowser):
                 raise WrongCaptchaResponse()
             if "identifiant ou mot de passe est incorrect" in message:
                 raise BrowserIncorrectPassword()
-            raise AssertionError('Unhandled error during login: %s' % message)
+            raise AssertionError("Unhandled error during login: %s" % message)
 
     @need_login
     def iter_subscription(self):
         params = {
-            '_nfpb': 'true',
-            '_pageLabel': 'vp_accueil_page',
+            "_nfpb": "true",
+            "_pageLabel": "vp_accueil_page",
         }
         self.subscription_page.go(params=params)
         yield self.page.get_subscription()
@@ -115,14 +105,14 @@ class AmeliProBrowser(LoginBrowser):
     def _iter_details_documents(self, subscription):
         # correlation_id can be randomly generated but is needed
         # to access details documents or we get a 401
-        correlation_id = ''.join(choices(string.digits, k=10))
-        self.session.headers['correlationID'] = correlation_id
+        correlation_id = "".join(choices(string.digits, k=10))
+        self.session.headers["correlationID"] = correlation_id
 
         today = date.today()
         params = {
-            'dateDebutPaiement': today - relativedelta(years=1),
-            'dateFinPaiement': today,
-            'doTrack': 'False',
+            "dateDebutPaiement": today - relativedelta(years=1),
+            "dateFinPaiement": today,
+            "doTrack": "False",
         }
         self.documents_details_page.go(params=params)
 

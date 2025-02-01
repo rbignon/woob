@@ -25,25 +25,25 @@ from woob.tools.value import Value, ValueBool
 from .browser import ZerobinBrowser, ZeroPaste
 
 
-__all__ = ['ZerobinModule']
+__all__ = ["ZerobinModule"]
 
 
 class ZerobinModule(Module, CapPaste):
-    NAME = 'zerobin'
-    DESCRIPTION = u'ZeroBin/0bin/PrivateBin encrypted pastebin'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "zerobin"
+    DESCRIPTION = "ZeroBin/0bin/PrivateBin encrypted pastebin"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        Value('url', label='URL of the zerobin/0bin/privatebin', regexp='https?://.*', default='https://zerobin.net'),
-        ValueBool('discussion', label='Allow paste comments (ZeroBin only)', default=False),
+        Value("url", label="URL of the zerobin/0bin/privatebin", regexp="https?://.*", default="https://zerobin.net"),
+        ValueBool("discussion", label="Allow paste comments (ZeroBin only)", default=False),
     )
 
     BROWSER = ZerobinBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['url'].get(), self.config['discussion'].get())
+        return self.create_browser(self.config["url"].get(), self.config["discussion"].get())
 
     def can_post(self, contents, title=None, public=None, max_age=None):
         """
@@ -68,10 +68,10 @@ class ZerobinModule(Module, CapPaste):
         return self.browser.can_post(contents, max_age)
 
     def get_paste(self, id):
-        if '#' not in id:
+        if "#" not in id:
             return
-        elif id.startswith('http://') or id.startswith('https://'):
-            if not id.startswith(self.config['url'].get()):
+        elif id.startswith("http://") or id.startswith("https://"):
+            if not id.startswith(self.config["url"].get()):
                 return
         return self.browser.get_paste(id)
 

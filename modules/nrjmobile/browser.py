@@ -25,29 +25,30 @@ from .pages import HomePage, LoginPage, OrderBillsPage, PeriodicBillsPage, Profi
 
 
 class NRJMobileBrowser(LoginBrowser, StatesMixin):
-    BASEURL = 'https://www.nrjmobile.fr/fr/'
+    BASEURL = "https://www.nrjmobile.fr/fr/"
 
-    login_page = URL(r'identification/authentification.html', LoginPage)
-    home_page = URL(r'client/index.html', HomePage)
+    login_page = URL(r"identification/authentification.html", LoginPage)
+    home_page = URL(r"client/index.html", HomePage)
     profile_page = URL(
-        r'client/InfoPerso/CoordonneesTitulaire/Default.html',
+        r"client/InfoPerso/CoordonneesTitulaire/Default.html",
         ProfilePage,
     )
-    subscription_page = URL(r'client/HubForfait.html', SubscriptionPage)
+    subscription_page = URL(r"client/HubForfait.html", SubscriptionPage)
     order_bills_page = URL(
-        r'client/Mobile/FactureAchat/Default.html',
+        r"client/Mobile/FactureAchat/Default.html",
         OrderBillsPage,
     )
     periodic_bills_page = URL(
-        r'client/Consommations/Factures/Default.html',
+        r"client/Consommations/Factures/Default.html",
         PeriodicBillsPage,
     )
 
     def __init__(self, config, *args, **kwargs):
         super().__init__(
-            config['login'].get(),
-            config['password'].get(),
-            *args, **kwargs,
+            config["login"].get(),
+            config["password"].get(),
+            *args,
+            **kwargs,
         )
 
         self.config = config
@@ -55,7 +56,7 @@ class NRJMobileBrowser(LoginBrowser, StatesMixin):
     def do_login(self):
         self.login_page.stay_or_go()
 
-        captcha_response = self.config['captcha_response'].get()
+        captcha_response = self.config["captcha_response"].get()
         if not captcha_response:
             raise RecaptchaV2Question(
                 website_key=self.page.get_site_key(),
@@ -73,10 +74,10 @@ class NRJMobileBrowser(LoginBrowser, StatesMixin):
 
         message = self.page.get_error_message()
         if message:
-            if 'Problème technique' in message:
+            if "Problème technique" in message:
                 raise BrowserUnavailable(message)
 
-            raise AssertionError(f'Unknown error message: {message!r}')
+            raise AssertionError(f"Unknown error message: {message!r}")
 
         return self.page.get_subscription()
 
@@ -92,12 +93,12 @@ class NRJMobileBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def download_document(self, document):
-        if document._from == 'periodic':
+        if document._from == "periodic":
             self.periodic_bills_page.stay_or_go()
-        elif document._from == 'orders':
+        elif document._from == "orders":
             self.order_bills_page.stay_or_go()
         else:
-            raise AssertionError('Unknown document source %r' % document._from)
+            raise AssertionError("Unknown document source %r" % document._from)
 
         return self.page.download_document(document.id)
 

@@ -22,21 +22,24 @@ class AlbumIdFilter(Format):
     """
     Filter that help to fill Albums id field
     """
+
     def __init__(self, *args):
-        super(AlbumIdFilter, self).__init__('album.%s', *args)
+        super(AlbumIdFilter, self).__init__("album.%s", *args)
 
 
 class PlaylistIdFilter(Format):
     """
     Filter that help to fill Albums id field
     """
+
     def __init__(self, *args):
-        super(PlaylistIdFilter, self).__init__('playlist.%s', *args)
+        super(PlaylistIdFilter, self).__init__("playlist.%s", *args)
 
 
 class BaseAudioIdFilter(Format):
     """
     Filter that help to fill Albums id field
     """
+
     def __init__(self, *args):
-        super(BaseAudioIdFilter, self).__init__('audio.%s', *args)
+        super(BaseAudioIdFilter, self).__init__("audio.%s", *args)

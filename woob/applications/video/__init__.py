@@ -19,4 +19,4 @@
 from .video import AppVideo
 
 
-__all__ = ['AppVideo']
+__all__ = ["AppVideo"]

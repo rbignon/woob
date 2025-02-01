@@ -22,16 +22,16 @@ from woob.tools.backend import Module
 from .browser import FnaimBrowser
 
 
-__all__ = ['FnaimModule']
+__all__ = ["FnaimModule"]
 
 
 class FnaimModule(Module, CapHousing):
-    NAME = 'fnaim'
-    DESCRIPTION = 'www.fnaim.fr website'
-    MAINTAINER = 'Antoine BOSSY'
-    EMAIL = 'mail+github@abossy.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "fnaim"
+    DESCRIPTION = "www.fnaim.fr website"
+    MAINTAINER = "Antoine BOSSY"
+    EMAIL = "mail+github@abossy.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = FnaimBrowser
 
@@ -42,10 +42,7 @@ class FnaimModule(Module, CapHousing):
         return self.browser.search_city(pattern)
 
     def search_housings(self, query):
-        if (
-                len(query.advert_types) == 1 and
-                query.advert_types[0] == ADVERT_TYPES.PERSONAL
-        ):
+        if len(query.advert_types) == 1 and query.advert_types[0] == ADVERT_TYPES.PERSONAL:
             # Fnaim is pro only
             return list()
 
@@ -61,7 +58,7 @@ class FnaimModule(Module, CapHousing):
         return housing
 
     def fill_photo(self, photo, fields):
-        if 'data' in fields and photo.url and not photo.data:
+        if "data" in fields and photo.url and not photo.data:
             photo.data = self.browser.open(photo.url).content
         return photo
 

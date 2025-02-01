@@ -26,10 +26,10 @@ from woob.capabilities.bill import Document, DocumentTypes, Subscription
 
 class SubscriptionsTransitionPage(LoggedPage, HTMLPage):
     def submit(self, token):
-        form = self.get_form(name='formulaire')
-        form[':cq_csrf_token'] = token
-        form['largeur_ecran'] = 1920
-        form['hauteur_ecran'] = 1080
+        form = self.get_form(name="formulaire")
+        form[":cq_csrf_token"] = token
+        form["largeur_ecran"] = 1920
+        form["hauteur_ecran"] = 1080
         form.submit()
 
 
@@ -42,22 +42,24 @@ class SubscriptionsDocumentsPage(LoggedPage, HTMLPage):
         # Some subscriptions exist in 2 occurences in the page: e.g. one account has regular bank statement reports + deffered statements
         # there might be duplicate, but not a big deal woob is good and will keep only one subscription.
         ignore_duplicate = True
-        item_xpath = '//div[contains(text(), "RELEVES DE COMPTES")]/following-sibling::table//tr//div[contains(@class, "table")]'
+        item_xpath = (
+            '//div[contains(text(), "RELEVES DE COMPTES")]/following-sibling::table//tr//div[contains(@class, "table")]'
+        )
 
         class item(ItemElement):
             klass = Subscription
 
             def parse(self, el):
-                raw = CleanText('./a')(self)
+                raw = CleanText("./a")(self)
                 # ex of account_name: CCHQ, LIV A, CEL2
                 # ex of raw: CCOU 00000000000 MONSIEUR MICHU
-                m = re.match(r'(.+) (\d{5,}) (.+)$', raw)
-                assert m, 'Format of line is not: ACT 123456789 M. First Last'
-                self.env['account_name'], self.env['account_id'], self.env['account_owner'] = m.groups()
+                m = re.match(r"(.+) (\d{5,}) (.+)$", raw)
+                assert m, "Format of line is not: ACT 123456789 M. First Last"
+                self.env["account_name"], self.env["account_id"], self.env["account_owner"] = m.groups()
 
-            obj_label = Format('%s %s', Env('account_name'), Env('account_owner'))
-            obj_subscriber = Env('account_owner')
-            obj_id = Env('account_id')
+            obj_label = Format("%s %s", Env("account_name"), Env("account_owner"))
+            obj_subscriber = Env("account_owner")
+            obj_id = Env("account_id")
 
     def get_document_page_urls(self, subscription):
         # each account can be displayed several times but with different set of documents
@@ -78,9 +80,9 @@ class SubscriptionsDocumentsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Document
 
-            obj_id = Format('%s_%s', Env('sub_id'), Regexp(Link('./td/a'), r"mettreUnCookie\('(\d+)'"))
-            obj_label = CleanText('./th/span')
-            obj_date = Date(CleanText('td[1]'), dayfirst=True)
-            obj_url = Regexp(Link('./td/a'), r"ouvreTelechargement\('(.*?)'\)")
+            obj_id = Format("%s_%s", Env("sub_id"), Regexp(Link("./td/a"), r"mettreUnCookie\('(\d+)'"))
+            obj_label = CleanText("./th/span")
+            obj_date = Date(CleanText("td[1]"), dayfirst=True)
+            obj_url = Regexp(Link("./td/a"), r"ouvreTelechargement\('(.*?)'\)")
             obj_type = DocumentTypes.STATEMENT
-            obj_format = 'pdf'
+            obj_format = "pdf"

@@ -29,22 +29,23 @@ from woob.tools.application.repl import ReplApplication
 from woob.tools.misc import find_exe
 
 
-__all__ = ['AppWoobRepos']
+__all__ = ["AppWoobRepos"]
 
 
 class AppWoobRepos(ReplApplication):
-    APPNAME = 'repos'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2012-YEAR Romain Bignon'
+    APPNAME = "repos"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2012-YEAR Romain Bignon"
     DESCRIPTION = "Console application to manage a Woob Repository."
     SHORT_DESCRIPTION = "manage a woob repository"
-    COMMANDS_FORMATTERS = {'backends':    'table',
-                           'list':        'table',
-                           }
+    COMMANDS_FORMATTERS = {
+        "backends": "table",
+        "list": "table",
+    }
     DISABLE_REPL = True
 
     woob_commands = copy(ReplApplication.woob_commands)
-    woob_commands.remove('backends')
+    woob_commands.remove("backends")
 
     def load_default_backends(self):
         pass
@@ -68,9 +69,9 @@ class AppWoobRepos(ReplApplication):
             print('"%s" is not a directory' % path)
             return 1
 
-        r = Repository('https://')
+        r = Repository("https://")
         r.name = name
-        r.maintainer = self.ask('Enter maintainer of the repository')
+        r.maintainer = self.ask("Enter maintainer of the repository")
         r.save(os.path.join(path, r.INDEX))
         print('Repository "%s" created.' % path)
 
@@ -86,12 +87,12 @@ class AppWoobRepos(ReplApplication):
         source_path, repo_path = self.parse_command_args(line, 2, 2)
         index_file = os.path.join(repo_path, Repository.INDEX)
 
-        r = Repository('https://')
+        r = Repository("https://")
         try:
-            with open(index_file, 'r') as fp:
+            with open(index_file, "r") as fp:
                 r.parse_index(fp)
         except IOError as e:
-            print('Unable to open repository: %s' % e, file=self.stderr)
+            print("Unable to open repository: %s" % e, file=self.stderr)
             print('Use the "create" command before.', file=self.stderr)
             return 1
 
@@ -99,122 +100,140 @@ class AppWoobRepos(ReplApplication):
 
         if r.signed:
             sigfiles = [r.KEYRING, Repository.INDEX]
-            gpg = find_exe('gpg1') or find_exe('gpg')
+            gpg = find_exe("gpg1") or find_exe("gpg")
             if not gpg:
-                raise Exception('Unable to find the gpg executable.')
+                raise Exception("Unable to find the gpg executable.")
             krname = os.path.join(repo_path, r.KEYRING)
             if os.path.exists(krname):
-                kr_mtime = int(datetime.fromtimestamp(os.path.getmtime(krname)).strftime('%Y%m%d%H%M'))
+                kr_mtime = int(datetime.fromtimestamp(os.path.getmtime(krname)).strftime("%Y%m%d%H%M"))
             if not os.path.exists(krname) or kr_mtime < r.key_update:
-                print('Generate keyring')
+                print("Generate keyring")
                 # Remove all existing keys
                 if os.path.exists(krname):
                     os.remove(krname)
                 # Add all valid keys
                 for keyfile in os.listdir(os.path.join(source_path, r.KEYDIR)):
-                    print('Adding key %s' % keyfile)
+                    print("Adding key %s" % keyfile)
                     keypath = os.path.join(source_path, r.KEYDIR, keyfile)
-                    subprocess.check_call([
-                        gpg,
-                        '--no-options',
-                        '--quiet',
-                        '--no-default-keyring',
-                        '--keyring', os.path.realpath(krname),
-                        '--import', os.path.realpath(keypath)])
+                    subprocess.check_call(
+                        [
+                            gpg,
+                            "--no-options",
+                            "--quiet",
+                            "--no-default-keyring",
+                            "--keyring",
+                            os.path.realpath(krname),
+                            "--import",
+                            os.path.realpath(keypath),
+                        ]
+                    )
                 # Does not make much sense in our case
-                if os.path.exists(krname + '~'):
-                    os.remove(krname + '~')
+                if os.path.exists(krname + "~"):
+                    os.remove(krname + "~")
                 if not os.path.exists(krname):
-                    raise Exception('No valid key file found.')
-                kr_mtime = mktime(strptime(str(r.key_update), '%Y%m%d%H%M'))
+                    raise Exception("No valid key file found.")
+                kr_mtime = mktime(strptime(str(r.key_update), "%Y%m%d%H%M"))
                 os.chmod(krname, 0o644)
                 os.utime(krname, (kr_mtime, kr_mtime))
             else:
-                print('Keyring is up to date')
+                print("Keyring is up to date")
 
         for name, module in r.modules.items():
-            tarname = os.path.join(repo_path, '%s.tar.gz' % name)
+            tarname = os.path.join(repo_path, "%s.tar.gz" % name)
             if r.signed:
                 sigfiles.append(os.path.basename(tarname))
             module_path = os.path.join(source_path, name)
             if os.path.exists(tarname):
-                tar_mtime = int(datetime.fromtimestamp(os.path.getmtime(tarname)).strftime('%Y%m%d%H%M'))
+                tar_mtime = int(datetime.fromtimestamp(os.path.getmtime(tarname)).strftime("%Y%m%d%H%M"))
                 if tar_mtime >= module.version:
                     continue
 
-            print('Create archive for %s' % name)
-            with closing(tarfile.open(tarname, 'w:gz')) as tar:
+            print("Create archive for %s" % name)
+            with closing(tarfile.open(tarname, "w:gz")) as tar:
                 tar.add(module_path, arcname=name, filter=self._archive_excludes)
-            tar_mtime = mktime(strptime(str(module.version), '%Y%m%d%H%M'))
+            tar_mtime = mktime(strptime(str(module.version), "%Y%m%d%H%M"))
             os.utime(tarname, (tar_mtime, tar_mtime))
 
             # Copy icon.
-            icon_path = os.path.join(module_path, 'favicon.png')
+            icon_path = os.path.join(module_path, "favicon.png")
             if os.path.exists(icon_path):
-                shutil.copy(icon_path, os.path.join(repo_path, '%s.png' % name))
+                shutil.copy(icon_path, os.path.join(repo_path, "%s.png" % name))
 
         if r.signed:
-            gpg = find_exe('gpg2') or find_exe('gpg')
+            gpg = find_exe("gpg2") or find_exe("gpg")
             if not gpg:
-                raise Exception('Unable to find the gpg executable.')
+                raise Exception("Unable to find the gpg executable.")
 
             # Find out which keys are allowed to sign
-            fingerprints = [gpgline.decode('utf-8').strip(':').split(':')[-1]
-                            for gpgline
-                            in subprocess.Popen([
-                                gpg,
-                                '--no-options',
-                                '--with-fingerprint', '--with-colons',
-                                '--list-public-keys',
-                                '--no-default-keyring',
-                                '--keyring', os.path.realpath(krname)],
-                                stdout=subprocess.PIPE).communicate()[0].splitlines()
-                            if gpgline.startswith(b'fpr:')]
+            fingerprints = [
+                gpgline.decode("utf-8").strip(":").split(":")[-1]
+                for gpgline in subprocess.Popen(
+                    [
+                        gpg,
+                        "--no-options",
+                        "--with-fingerprint",
+                        "--with-colons",
+                        "--list-public-keys",
+                        "--no-default-keyring",
+                        "--keyring",
+                        os.path.realpath(krname),
+                    ],
+                    stdout=subprocess.PIPE,
+                )
+                .communicate()[0]
+                .splitlines()
+                if gpgline.startswith(b"fpr:")
+            ]
             # Find out the first secret key we have that is allowed to sign
             secret_fingerprint = None
             for fingerprint in fingerprints:
-                proc = subprocess.Popen([
-                    gpg,
-                    '--no-options',
-                    '--list-secret-keys', fingerprint],
+                proc = subprocess.Popen(
+                    [gpg, "--no-options", "--list-secret-keys", fingerprint],
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
+                    stderr=subprocess.PIPE,
+                )
                 proc.communicate()
                 # if failed
                 if proc.returncode:
                     continue
                 secret_fingerprint = fingerprint
             if secret_fingerprint is None:
-                raise Exception('No suitable secret key found')
+                raise Exception("No suitable secret key found")
 
             # Check if all files have an up to date signature
             for filename in sigfiles:
                 filepath = os.path.realpath(os.path.join(repo_path, filename))
-                sigpath = filepath + '.sig'
+                sigpath = filepath + ".sig"
                 file_mtime = int(os.path.getmtime(filepath))
                 if os.path.exists(sigpath):
                     sig_mtime = int(os.path.getmtime(sigpath))
                 if not os.path.exists(sigpath) or sig_mtime < file_mtime:
-                    print('Signing %s' % filename)
+                    print("Signing %s" % filename)
                     if os.path.exists(sigpath):
                         os.remove(sigpath)
-                    subprocess.check_call([
-                        gpg,
-                        '--no-options',
-                        '--quiet',
-                        '--local-user', secret_fingerprint,
-                        '--detach-sign',
-                        '--output', sigpath,
-                        '--sign', filepath])
+                    subprocess.check_call(
+                        [
+                            gpg,
+                            "--no-options",
+                            "--quiet",
+                            "--local-user",
+                            secret_fingerprint,
+                            "--detach-sign",
+                            "--output",
+                            sigpath,
+                            "--sign",
+                            filepath,
+                        ]
+                    )
                     os.utime(sigpath, (file_mtime, file_mtime))
-            print('Signatures are up to date')
+            print("Signatures are up to date")
 
     def _archive_excludes(self, tarinfo):
         filename = tarinfo.name
         # Skip *.pyc files in tarballs.
-        if filename.endswith('.pyc'):
+        if filename.endswith(".pyc"):
             return
         # Don't include *.png files in tarball
-        if filename.endswith('.png'):
+        if filename.endswith(".png"):
             return
         return tarinfo

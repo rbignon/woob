@@ -20,4 +20,4 @@
 from .module import YoutubeModule
 
 
-__all__ = ['YoutubeModule']
+__all__ = ["YoutubeModule"]

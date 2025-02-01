@@ -35,8 +35,16 @@ from woob.browser.switch import SiteSwitch
 from woob.browser.url import URL
 from woob.capabilities.bank import Account, AccountOwnerType
 from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword,
-    BrowserQuestion, BrowserUnavailable, OTPSentType, SentOTPQuestion,
+    ActionNeeded,
+    ActionType,
+    AppValidation,
+    AppValidationExpired,
+    AuthMethodNotImplemented,
+    BrowserIncorrectPassword,
+    BrowserQuestion,
+    BrowserUnavailable,
+    OTPSentType,
+    SentOTPQuestion,
 )
 from woob.tools.capabilities.bank.transactions import sorted_transactions
 from woob.tools.date import now_as_utc
@@ -46,101 +54,126 @@ from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from .document_pages import DocumentsPage, SubscriptionPage
 from .pages import (
-    AccountsPage, AppValidationPage, AuthenticationMethodPage, AuthenticationStepPage, AuthorizePage,
-    CaissedepargneNewKeyboard, CardsPage, ComingTransactionsPage, ConfigPage, ConsumerCreditDetailsPage,
-    CreditCooperatifMarketPage, ExtranetReroutingPage, HomePage, JsFilePage, LeaveLineBoursePage, LifeInsuranceHistory,
-    LifeInsuranceInvestments, LinebourseReroutingPage, LoanDetailsPage, LoginApi, LoginPage, LoginTokensPage,
-    MarketPage, PrepareReroutingPage, RememberTerminalPage, RevolvingDetailsPage, RevolvingHistoryPage,
-    SAMLRequestFailure, SmsPage, TokenPage, TransactionsPage, ValidationPageOption, VkImagePage,
+    AccountsPage,
+    AppValidationPage,
+    AuthenticationMethodPage,
+    AuthenticationStepPage,
+    AuthorizePage,
+    CaissedepargneNewKeyboard,
+    CardsPage,
+    ComingTransactionsPage,
+    ConfigPage,
+    ConsumerCreditDetailsPage,
+    CreditCooperatifMarketPage,
+    ExtranetReroutingPage,
+    HomePage,
+    JsFilePage,
+    LeaveLineBoursePage,
+    LifeInsuranceHistory,
+    LifeInsuranceInvestments,
+    LinebourseReroutingPage,
+    LoanDetailsPage,
+    LoginApi,
+    LoginPage,
+    LoginTokensPage,
+    MarketPage,
+    PrepareReroutingPage,
+    RememberTerminalPage,
+    RevolvingDetailsPage,
+    RevolvingHistoryPage,
+    SAMLRequestFailure,
+    SmsPage,
+    TokenPage,
+    TransactionsPage,
+    ValidationPageOption,
+    VkImagePage,
 )
 
 
-__all__ = ['CaisseEpargne']
+__all__ = ["CaisseEpargne"]
 
 
 class CaisseEpargneLogin(TwoFactorBrowser):
     HTTP_ADAPTER_CLASS = LowSecHTTPAdapter
-    BASEURL = 'https://www.caisse-epargne.fr'
-    AS_ATH_GROUP_BASEURL = 'https://www.as-ext-bad-ce.caisse-epargne.fr'
-    RS_ATH_GROUP_BASEURL = 'https://www.rs-ext-bad-ce.caisse-epargne.fr'
+    BASEURL = "https://www.caisse-epargne.fr"
+    AS_ATH_GROUP_BASEURL = "https://www.as-ext-bad-ce.caisse-epargne.fr"
+    RS_ATH_GROUP_BASEURL = "https://www.rs-ext-bad-ce.caisse-epargne.fr"
 
     # This class is also used by cenet browser
     HAS_CREDENTIALS_ONLY = True
     TWOFA_DURATION = 90 * 24 * 60
     STATE_DURATION = 10
-    CENET_URL = 'https://www.cenet.caisse-epargne.fr'
-    enseigne = 'ce'
+    CENET_URL = "https://www.cenet.caisse-epargne.fr"
+    enseigne = "ce"
 
     # In order to prevent child modules using their own BASEURL,
     # do not remove BASEURL from URLs here except if this URL is
     # redefined in the child.
-    login = URL(r'https://www.icgauth.caisse-epargne.fr/se-connecter/identifier', LoginPage)
+    login = URL(r"https://www.icgauth.caisse-epargne.fr/se-connecter/identifier", LoginPage)
     # Each js_file URL contains a different client_id that can be needed
     js_file = URL(
-        r'https://www.(icgauth\.)?caisse-epargne.fr/.*?\.js($|\?)',  # Match .js files but not .json files
-        r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js',
-        r'https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js',
-        JsFilePage
+        r"https://www.(icgauth\.)?caisse-epargne.fr/.*?\.js($|\?)",  # Match .js files but not .json files
+        r"https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js",
+        r"https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js",
+        JsFilePage,
     )
     config_page = URL(
-        r'https://www.caisse-epargne.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)',
-        ConfigPage
+        r"https://www.caisse-epargne.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)", ConfigPage
     )
-    token_page = URL(r'https://www.as-ex-ano-groupe.caisse-epargne.fr/api/oauth/v2/token', TokenPage)
+    token_page = URL(r"https://www.as-ex-ano-groupe.caisse-epargne.fr/api/oauth/v2/token", TokenPage)
     login_api = URL(
-        r'https://www.rs-ex-ano-groupe.caisse-epargne.fr/bapi/user/v1/users/identificationRouting',
-        LoginApi
+        r"https://www.rs-ex-ano-groupe.caisse-epargne.fr/bapi/user/v1/users/identificationRouting", LoginApi
     )
     # This home_page is full of JS and, as is, is not really a useful homepage. But still,
     # the website uses it as a homepage and we need some information on it to be able to
     # browse the API.
-    home_page = URL(r'https://www.caisse-epargne.fr/espace-client/compte', HomePage)
+    home_page = URL(r"https://www.caisse-epargne.fr/espace-client/compte", HomePage)
     remember_terminal = URL(
-        r'/bapi/user/v1/user/lastConnect',
+        r"/bapi/user/v1/user/lastConnect",
         RememberTerminalPage,
-        base='RS_ATH_GROUP_BASEURL',
+        base="RS_ATH_GROUP_BASEURL",
     )
     authorize = URL(
-        r'/api/oauth/v2/authorize',
+        r"/api/oauth/v2/authorize",
         AuthorizePage,
-        base='AS_ATH_GROUP_BASEURL',
+        base="AS_ATH_GROUP_BASEURL",
     )
     login_tokens = URL(
-        r'/api/oauth/v2/consume',
+        r"/api/oauth/v2/consume",
         LoginTokensPage,
-        base='AS_ATH_GROUP_BASEURL',
+        base="AS_ATH_GROUP_BASEURL",
     )
     authentication_step = URL(
-        r'https://(?P<domain>www.icgauth.[^/]+)/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step',
-        AuthenticationStepPage
+        r"https://(?P<domain>www.icgauth.[^/]+)/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step",
+        AuthenticationStepPage,
     )
     authentication_method_page = URL(
-        r'https://(?P<domain>www.icgauth.[^/]+)/dacsrest/api/v1u0/transaction/(?P<validation_id>)',
-        r'https://www.icgauth.caisse-epargne.fr/dacsrest/api/v1u0/transaction/.*',
+        r"https://(?P<domain>www.icgauth.[^/]+)/dacsrest/api/v1u0/transaction/(?P<validation_id>)",
+        r"https://www.icgauth.caisse-epargne.fr/dacsrest/api/v1u0/transaction/.*",
         AuthenticationMethodPage,
     )
-    saml_failure = URL(r'https://www.icgauth.caisse-epargne.fr/Errors/Errors.html', SAMLRequestFailure)
+    saml_failure = URL(r"https://www.icgauth.caisse-epargne.fr/Errors/Errors.html", SAMLRequestFailure)
     vk_image = URL(
-        r'https://(?P<domain>www.icgauth.[^/]+)/dacs-rest-media/api/v1u0/medias/mappings/[a-z0-9-]+/images',
+        r"https://(?P<domain>www.icgauth.[^/]+)/dacs-rest-media/api/v1u0/medias/mappings/[a-z0-9-]+/images",
         VkImagePage,
     )
     # eg of both possible regexes:
     # https://www.icgauth.caisse-epargne.fr/dacstemplate-SOL/index.html?transactionID=CtxDACSP[a-f0-9]+
     # https://www.icgauth.caisse-epargne.fr/dacstemplate-SOL/_12579/index.html?transactionID=CtxDACSP[a-f0-9]+
     validation_option = URL(
-        r'https://(?P<domain>www.icgauth.[^/]+)/dacstemplate-SOL/(?:[^/]+/)?index.html\?transactionID=.*',
-        ValidationPageOption
+        r"https://(?P<domain>www.icgauth.[^/]+)/dacstemplate-SOL/(?:[^/]+/)?index.html\?transactionID=.*",
+        ValidationPageOption,
     )
-    sms = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacswebssoissuer/AuthnRequestServlet', SmsPage)
-    app_validation = URL(r'https://(?P<domain>www.icgauth.[^/]+)/dacsrest/WaitingCallbackHandler', AppValidationPage)
+    sms = URL(r"https://(?P<domain>www.icgauth.[^/]+)/dacswebssoissuer/AuthnRequestServlet", SmsPage)
+    app_validation = URL(r"https://(?P<domain>www.icgauth.[^/]+)/dacsrest/WaitingCallbackHandler", AppValidationPage)
 
     def __init__(self, nuser, config, *args, **kwargs):
         self.nuser = nuser
         self.config = config
         self.browser_switched = False
         self.need_emv_authentication = False
-        self.request_information = config['request_information'].get()
-        self.auth_type_choice = config.get('auth_type', Value()).get() or ''  # child modules may not use this field
+        self.request_information = config["request_information"].get()
+        self.auth_type_choice = config.get("auth_type", Value()).get() or ""  # child modules may not use this field
         self.connection_type = None
         self.cdetab = None
         self.csid = None
@@ -161,9 +194,9 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         super(CaisseEpargneLogin, self).__init__(config, *args, **kwargs)
 
         self.AUTHENTICATION_METHODS = {
-            'otp_emv': self.handle_otp_emv,
-            'otp_sms': self.handle_otp_sms,
-            'resume': self.handle_polling,
+            "otp_emv": self.handle_otp_emv,
+            "otp_sms": self.handle_otp_sms,
+            "resume": self.handle_polling,
         }
 
         self.RAISE_METHODS = {
@@ -173,30 +206,33 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         }
 
         self.__states__ += (
-            'BASEURL',
-
+            "BASEURL",
             # All these attributes must be kept for the last authorization process
-            'csid', 'snid', 'nonce', 'x_bpce_sessionid',
-            'cdetab', 'connection_type', 'ent_or_pro_username',
-
+            "csid",
+            "snid",
+            "nonce",
+            "x_bpce_sessionid",
+            "cdetab",
+            "connection_type",
+            "ent_or_pro_username",
             # Login SCA
-            'login_otp_validation', 'continue_url',
-            'term_id', 'otp_validation',
-
+            "login_otp_validation",
+            "continue_url",
+            "term_id",
+            "otp_validation",
             # Both SCA
-            'validation_id',
-            'validation_domain',
-
+            "validation_id",
+            "validation_domain",
             # Browsing API after login
-            'authorization_token',
+            "authorization_token",
         )
 
     def init_login(self):
         self.do_api_pre_login()
-        if self.connection_type == 'pp' and not self.browser_switched:
-            raise SiteSwitch('old')
-        elif self.connection_type == 'ent' and not self.browser_switched:
-            raise SiteSwitch('cenet')
+        if self.connection_type == "pp" and not self.browser_switched:
+            raise SiteSwitch("old")
+        elif self.connection_type == "ent" and not self.browser_switched:
+            raise SiteSwitch("cenet")
 
         return self.do_api_login()
 
@@ -212,7 +248,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.csid = str(uuid4())
         self.nonce = str(uuid4())
 
-        self.login.go(params={'service': 'dei'})
+        self.login.go(params={"service": "dei"})
 
         main_js_file = self.page.get_main_js_file_url()
         self.location(main_js_file)
@@ -225,32 +261,32 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
         if not self.cdetab or not self.connection_type:
             data = {
-                'grant_type': 'client_credentials',
-                'client_id': self.first_client_id,
-                'scope': '',
+                "grant_type": "client_credentials",
+                "client_id": self.first_client_id,
+                "scope": "",
             }
             self.token_page.go(data=data)
 
-            bank_id = ''
-            if self.enseigne != 'ce':
+            bank_id = ""
+            if self.enseigne != "ce":
                 # bankId parent value is empty but it must
                 # be provided as the cdetab for child modules
                 bank_id = self.cdetab
 
             data = {
-                'characteristics': {
-                    'iTEntityType': {
-                        'code': '02',
-                        'label': self.enseigne.upper(),
+                "characteristics": {
+                    "iTEntityType": {
+                        "code": "02",
+                        "label": self.enseigne.upper(),
                     },
-                    'userCode': self.username,
-                    'bankId': bank_id,
-                    'subscribeTypeItems': [],
+                    "userCode": self.username,
+                    "bankId": bank_id,
+                    "subscribeTypeItems": [],
                 },
             }
             self.login_api.go(
                 json=data,
-                headers={'Authorization': 'Bearer %s' % self.page.get_access_token()},
+                headers={"Authorization": "Bearer %s" % self.page.get_access_token()},
             )
 
             self.cdetab = self.page.get_cdetab()
@@ -281,7 +317,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         return self.cdetab
 
     def handle_2fa_otp(self, otp_type, **params):
-        """ Second step of OTP authentication validation
+        """Second step of OTP authentication validation
 
         This method validate OTP SMS or EMV.
         Warning:
@@ -292,39 +328,37 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
         # It will occur when states become obsolete
         if not self.otp_validation:
-            raise BrowserIncorrectPassword('Le délai pour saisir le code a expiré, veuillez recommencer')
+            raise BrowserIncorrectPassword("Le délai pour saisir le code a expiré, veuillez recommencer")
 
         data = {
-            'validate': {
-                self.otp_validation['validation_unit_id']: [{
-                    'id': self.otp_validation['id'],
-                }],
+            "validate": {
+                self.otp_validation["validation_unit_id"]: [
+                    {
+                        "id": self.otp_validation["id"],
+                    }
+                ],
             },
         }
 
-        data_otp = data['validate'][self.otp_validation['validation_unit_id']][0]
-        data_otp['type'] = otp_type
-        if otp_type == 'SMS':
+        data_otp = data["validate"][self.otp_validation["validation_unit_id"]][0]
+        data_otp["type"] = otp_type
+        if otp_type == "SMS":
             # Transfer uses param['opt_sms'] whereas login uses value transient
-            data_otp['otp_sms'] = params.get('otp_sms') or self.otp_sms
-        elif otp_type == 'EMV':
+            data_otp["otp_sms"] = params.get("otp_sms") or self.otp_sms
+        elif otp_type == "EMV":
             # Transfer uses param['opt_sms'] whereas login uses value transient
-            data_otp['token'] = params.get('otp_emv') or self.otp_emv
+            data_otp["token"] = params.get("otp_emv") or self.otp_emv
 
         try:
-            self.authentication_step.go(
-                domain=self.validation_domain,
-                validation_id=self.validation_id,
-                json=data
-            )
+            self.authentication_step.go(domain=self.validation_domain, validation_id=self.validation_id, json=data)
         except (ClientError, ServerError) as e:
             if (
                 # "Session Expired" uses HTTP 500, as opposed to other errors which use the HTTP 400 status code.
                 # As BPCE may change code status, we don't deal "Session Expired" as a ServerError and other
                 # errors as ClientError.
                 e.response.status_code in (400, 500)
-                and 'error' in e.response.json()
-                and e.response.json()['error'].get('code', '') in (104, 105, 106)
+                and "error" in e.response.json()
+                and e.response.json()["error"].get("code", "") in (104, 105, 106)
             ):
                 # Sometimes, an error message is displayed to user :
                 # - '{"error":{"code":104,"message":"Unknown validation unit ID"}}'
@@ -332,13 +366,13 @@ class CaisseEpargneLogin(TwoFactorBrowser):
                 # - '{"error":{"code":106,"message":"Session Expired"}}'
                 # So we give a clear message and clear 'auth_data' to begin from the top next time.
                 self.authentification_data = {}
-                raise BrowserIncorrectPassword('Votre identification par code a échoué, veuillez recommencer')
+                raise BrowserIncorrectPassword("Votre identification par code a échoué, veuillez recommencer")
             raise
 
         self.otp_validation = None
 
     def do_otp_sms_authentication(self, **params):
-        self.handle_2fa_otp(otp_type='SMS', **params)
+        self.handle_2fa_otp(otp_type="SMS", **params)
 
     def raise_otp_sms_authentication(self, **params):
         self._set_login_otp_validation()
@@ -353,10 +387,10 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         raise AppValidation(message="Veuillez valider votre authentication dans votre application mobile.")
 
     def do_otp_emv_authentication(self, **params):
-        self.handle_2fa_otp(otp_type='EMV', **params)
+        self.handle_2fa_otp(otp_type="EMV", **params)
 
     def do_cloudcard_authentication(self, **params):
-        """ Second step of cloudcard authentication validation
+        """Second step of cloudcard authentication validation
 
         This method check the application validation status.
         Warning:
@@ -375,28 +409,30 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         while time.time() < timeout:
             self.app_validation.go(
                 domain=self.validation_domain,
-                headers={'Referer': referer_url},
+                headers={"Referer": referer_url},
             )
             status = self.page.get_status()
             # The status is 'valid' even when the user cancels it on
             # the application. The `authentication_step` will return
             # AUTHENTICATION_CANCELED in its response status.
-            if status == 'valid':
+            if status == "valid":
                 self.authentication_step.go(
                     domain=self.validation_domain,
                     validation_id=self.validation_id,
                     json={
-                        'validate': {
-                            self.otp_validation['validation_unit_id']: [{
-                                'id': self.otp_validation['id'],
-                                'type': 'CLOUDCARD',
-                            }],
+                        "validate": {
+                            self.otp_validation["validation_unit_id"]: [
+                                {
+                                    "id": self.otp_validation["id"],
+                                    "type": "CLOUDCARD",
+                                }
+                            ],
                         },
                     },
                 )
                 break
 
-            assert status == 'progress', 'Unhandled CloudCard status : "%s"' % status
+            assert status == "progress", 'Unhandled CloudCard status : "%s"' % status
             time.sleep(2)
         else:
             raise AppValidationExpired()
@@ -404,7 +440,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.otp_validation = None
 
     def do_vk_authentication(self, **params):
-        """ Authentication with virtual keyboard
+        """Authentication with virtual keyboard
 
         Warning: need to be used through `do_authentication_validation` method
         in order to handle authentication response
@@ -412,13 +448,13 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
         # Can have error at first authentication request.
         # In that case, it's not a vk error, return a wrongpass.
-        self.page.check_errors(feature='login')
+        self.page.check_errors(feature="login")
 
         validation_unit_id = self.page.validation_unit_id
 
         vk_info = self.page.get_authentication_method_info()
-        vk_id = vk_info['id']
-        vk_images_url = vk_info['virtualKeyboard']['externalRestMediaApiUrl']
+        vk_id = vk_info["id"]
+        vk_images_url = vk_info["virtualKeyboard"]["externalRestMediaApiUrl"]
 
         self.location(vk_images_url)
         images_url = self.page.get_all_images_data()
@@ -429,29 +465,31 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             domain=self.validation_domain,
             validation_id=self.validation_id,
             json={
-                'validate': {
-                    validation_unit_id: [{
-                        'id': vk_id,
-                        'password': code,
-                        'type': 'PASSWORD',
-                    }],
+                "validate": {
+                    validation_unit_id: [
+                        {
+                            "id": vk_id,
+                            "password": code,
+                            "type": "PASSWORD",
+                        }
+                    ],
                 },
             },
             headers={
-                'Referer': self.BASEURL,
-                'Accept': 'application/json, text/plain, */*',
+                "Referer": self.BASEURL,
+                "Accept": "application/json, text/plain, */*",
             },
         )
 
         # TODO: remove this when there's no more logs
-        if params.get('unknown_security_level'):
+        if params.get("unknown_security_level"):
             if not self.page.has_validation_unit:
-                self.logger.warning('There is no SCA for "%s" security level', params['unknown_security_level'])
+                self.logger.warning('There is no SCA for "%s" security level', params["unknown_security_level"])
             else:
                 self.logger.warning(
                     'Security level "%s" has a SCA with authentication method "%s"',
-                    params['unknown_security_level'],
-                    self.page.get_authentication_method_type()
+                    params["unknown_security_level"],
+                    self.page.get_authentication_method_type(),
                 )
 
     def raise_otp_emv_authentication(self, *params):
@@ -461,12 +499,10 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             # let's check if we can use PASSWORD authentication
             doc = self.page.doc
             self.authentication_step.go(
-                domain=self.validation_domain,
-                validation_id=self.validation_id,
-                json={"fallback": {}}
+                domain=self.validation_domain, validation_id=self.validation_id, json={"fallback": {}}
             )
 
-            if self.page.get_authentication_method_type() == 'PASSWORD':
+            if self.page.get_authentication_method_type() == "PASSWORD":
                 # We have to check if an SCA is excpected and if so, we have to check
                 # if we are in interactive mode, because the bank can send an SMS when
                 # we validate the VK.
@@ -474,7 +510,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
                     self.check_interactive()
                 # To use vk_authentication method we merge the two last json
                 # The first one with authentication values and second one with vk values
-                doc['step'] = self.page.doc
+                doc["step"] = self.page.doc
                 self.page.doc = doc
                 return self.do_vk_authentication(*params)
 
@@ -489,18 +525,17 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
     def _set_login_otp_validation(self):
         self.login_otp_validation = self.page.get_authentication_method_info()
-        self.login_otp_validation['validation_unit_id'] = self.page.validation_unit_id
+        self.login_otp_validation["validation_unit_id"] = self.page.validation_unit_id
 
     def _build_value_otp_emv(self):
         return Value(
-            "otp_emv",
-            label="Veuillez renseigner le code affiché sur le boitier (Lecteur CAP en mode « Code »)"
+            "otp_emv", label="Veuillez renseigner le code affiché sur le boitier (Lecteur CAP en mode « Code »)"
         )
 
     def _build_value_otp_sms(self):
         return Value(
             "otp_sms",
-            label="Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse."
+            label="Veuillez renseigner le mot de passe unique qui vous a été envoyé par SMS dans le champ réponse.",
         )
 
     def request_fallback(self, original_method):
@@ -511,29 +546,27 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         current_method = self.page.get_authentication_method_type()
         seen_methods = []
         while (
-            current_method != 'PASSWORD'
+            current_method != "PASSWORD"
             and self.page.is_other_authentication_method()
             and current_fallback_request < max_fallback_request
         ):
             seen_methods.append(current_method)
             self.authentication_step.go(
-                domain=self.validation_domain,
-                validation_id=self.validation_id,
-                json={"fallback": {}}
+                domain=self.validation_domain, validation_id=self.validation_id, json={"fallback": {}}
             )
             current_method = self.page.get_authentication_method_type()
 
-        if current_method in ('PASSWORD', 'EMV'):
+        if current_method in ("PASSWORD", "EMV"):
             # EMV can be not replaceable by PASSWORD (at least once in 90 days).
             # So if we end up with it we have to raise it.
             return current_method
-        elif current_method == 'CERTIFICATE':
+        elif current_method == "CERTIFICATE":
             raise AuthMethodNotImplemented(
                 "Pas de méthode d'authentification disponible pour remplacer la méthode 'CERTIFICAT'."
                 + " Cette méthode d'authentification n'est pas gérée."
             )
         else:
-            raise AssertionError('Unhandled authentication method: %s' % current_method)
+            raise AssertionError("Unhandled authentication method: %s" % current_method)
 
     def handle_otp_emv(self):
         self.otp_validation = self.login_otp_validation
@@ -581,7 +614,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
                     "An authentication operation is required but there's no validation id associated with it."
                 )
             self.handle_step(authentication_method, "login")
-            self.page.check_errors(feature='login')
+            self.page.check_errors(feature="login")
         self.end_step_process()
 
     def handle_step(self, authentication_method, feature, **params):
@@ -608,25 +641,25 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
         This method will raise an error if it cannot validate a step.
         """
-        if authentication_method == 'PASSWORD':
+        if authentication_method == "PASSWORD":
             # If we are not in 'PASSWORD' mode, we know we are in interactive mode already.
 
             is_sca = self.page.is_sca_expected()
-            if is_sca == 'unknown':
+            if is_sca == "unknown":
                 # We can't say whether there will be an SCA or not.
                 # In doubt, we need an interactive session and we'll log
                 # the security level after the VK login.
-                params['unknown_security_level'] = self.page.security_level
+                params["unknown_security_level"] = self.page.security_level
 
-            if is_sca or is_sca == 'unknown':
+            if is_sca or is_sca == "unknown":
                 # TODO Could we search for a password fallback before checking for interactive?
                 # TODO Regression: emv could be bypassed sometime in the previous version
                 self.check_interactive()
 
         AUTHENTICATION_METHODS = {
-            'SMS': self.do_otp_sms_authentication,
-            'CLOUDCARD': self.do_cloudcard_authentication,
-            'PASSWORD': self.do_vk_authentication,
+            "SMS": self.do_otp_sms_authentication,
+            "CLOUDCARD": self.do_cloudcard_authentication,
+            "PASSWORD": self.do_vk_authentication,
             "EMV": self.do_otp_emv_authentication,
         }
 
@@ -636,7 +669,7 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.page.check_errors(feature=feature)
 
     def do_authentication_validation(self, authentication_method, feature, **params):
-        """ Handle all sort of authentication with `icgauth`
+        """Handle all sort of authentication with `icgauth`
 
         This method is used transfer/new recipient authentication.
 
@@ -653,31 +686,31 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         self.validation_domain = None
 
         redirect_data = self.page.get_redirect_data()
-        assert redirect_data, 'redirect_data must not be empty'
+        assert redirect_data, "redirect_data must not be empty"
 
         self.location(
-            redirect_data['action'],
+            redirect_data["action"],
             data={
-                'SAMLResponse': redirect_data['samlResponse'],
+                "SAMLResponse": redirect_data["samlResponse"],
             },
             headers={
-                'Referer': self.BASEURL,
-                'Accept': 'application/json, text/plain, */*',
+                "Referer": self.BASEURL,
+                "Accept": "application/json, text/plain, */*",
             },
         )
 
     def get_bpcesta(self, csid, snid):
         return {
-            'csid': csid,
-            'typ_app': 'rest',
-            'enseigne': self.enseigne,
-            'typ_sp': 'out-band',
-            'typ_act': 'auth',
-            'snid': snid,
-            'cdetab': self.cdetab,
-            'typ_srv': self.connection_type,
-            'phase': '',
-            'term_id': self.term_id,
+            "csid": csid,
+            "typ_app": "rest",
+            "enseigne": self.enseigne,
+            "typ_sp": "out-band",
+            "typ_act": "auth",
+            "snid": snid,
+            "cdetab": self.cdetab,
+            "typ_srv": self.connection_type,
+            "phase": "",
+            "term_id": self.term_id,
         }
 
     def do_api_login(self):
@@ -689,52 +722,52 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         bpcesta = self.get_bpcesta(self.csid, self.snid)
 
         params = {
-            'nonce': self.nonce,
-            'response_type': 'id_token token',
-            'response_mode': 'form_post',
-            'cdetab': self.cdetab,
-            'login_hint': self.username,
-            'redirect_uri': self.continue_url,
-            'display': 'page',
-            'client_id': self.second_client_id,
-            'claims': json.dumps(
+            "nonce": self.nonce,
+            "response_type": "id_token token",
+            "response_mode": "form_post",
+            "cdetab": self.cdetab,
+            "login_hint": self.username,
+            "redirect_uri": self.continue_url,
+            "display": "page",
+            "client_id": self.second_client_id,
+            "claims": json.dumps(
                 {
-                    'userinfo': {
-                        'cdetab': None,
-                        'authMethod': None,
-                        'authLevel': None,
-                        'dacsId': None,
-                        'last_login': None,
-                        'auth_time': None,
-                        'opsId': None,
-                        'appid': None,
-                        'pro': None,
-                        'userRef': None,
-                        'apidp': None,
-                        'bpAttributeId': None,
-                        'env': None,
+                    "userinfo": {
+                        "cdetab": None,
+                        "authMethod": None,
+                        "authLevel": None,
+                        "dacsId": None,
+                        "last_login": None,
+                        "auth_time": None,
+                        "opsId": None,
+                        "appid": None,
+                        "pro": None,
+                        "userRef": None,
+                        "apidp": None,
+                        "bpAttributeId": None,
+                        "env": None,
                     },
-                    'id_token': {
-                        'auth_time': {'essential': True},
-                        'last_login': None,
-                        'cdetab': None,
-                        'pro': None,
+                    "id_token": {
+                        "auth_time": {"essential": True},
+                        "last_login": None,
+                        "cdetab": None,
+                        "pro": None,
                     },
                 },
-                separators=(',', ':'),
+                separators=(",", ":"),
             ),
-            'bpcesta': json.dumps(bpcesta, separators=(',', ':')),
+            "bpcesta": json.dumps(bpcesta, separators=(",", ":")),
         }
 
         if self.nuser:
             self.ent_or_pro_username = self.username
             if len(self.username) != 10:
-                self.ent_or_pro_username += ' '
+                self.ent_or_pro_username += " "
 
             # We must fill with the missing 0 expected by the caissedepargne server
             # Some clues are given in js file
             self.ent_or_pro_username += self.nuser.zfill(6)
-            params['login_hint'] = self.ent_or_pro_username
+            params["login_hint"] = self.ent_or_pro_username
 
         self.authorize.go(params=params)
         try:
@@ -744,19 +777,19 @@ class CaisseEpargneLogin(TwoFactorBrowser):
                 raise BrowserIncorrectPassword()
             raise
 
-        if (
-            self.response.headers.get('Page_Erreur', '') == 'INDISPO'
-            or (self.saml_failure.is_here() and self.page.is_unavailable())
+        if self.response.headers.get("Page_Erreur", "") == "INDISPO" or (
+            self.saml_failure.is_here() and self.page.is_unavailable()
         ):
             raise BrowserUnavailable()
 
         pre_login_status = self.page.get_wrong_pre_login_status()
-        if pre_login_status == 'AUTHENTICATION_FAILED':
+        if pre_login_status == "AUTHENTICATION_FAILED":
             saml_response = self.page.get_saml_response()
-            if '<saml2p:StatusMessage>NoPlugin</saml2p:StatusMessage>' in b64decode(saml_response).decode('utf8'):
+            if "<saml2p:StatusMessage>NoPlugin</saml2p:StatusMessage>" in b64decode(saml_response).decode("utf8"):
                 # The message is hardcoded in the javascript obfuscated
                 raise ActionNeeded(
-                    locale="fr-FR", message="L'accès à votre espace bancaire est impossible en raison de données manquantes. Merci de bien vouloir vous rapprocher de votre conseiller.",
+                    locale="fr-FR",
+                    message="L'accès à votre espace bancaire est impossible en raison de données manquantes. Merci de bien vouloir vous rapprocher de votre conseiller.",
                     action_type=ActionType.CONTACT,
                 )
             # failing at this step means no password has been submitted yet
@@ -764,7 +797,9 @@ class CaisseEpargneLogin(TwoFactorBrowser):
             # corresponding to 'erreur technique' on website
             raise BrowserUnavailable()
 
-        self.validation_id = None  # If the Browser crashes during an authentication operation, we don't want the old validation_id.
+        self.validation_id = (
+            None  # If the Browser crashes during an authentication operation, we don't want the old validation_id.
+        )
         self.handle_steps_login()
         self.login_finalize()
 
@@ -773,51 +808,52 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         # called when having to iter history or investments for a
         # non-cash PEA or a market account.
         params = {
-            'scope': '',
-            'cdetab': self.cdetab,
-            'client_id': self.third_client_id,
-            'response_type': 'id_token token',
-            'nonce': self.nonce,
-            'response_mode': 'form_post',
-            'claims': json.dumps(
+            "scope": "",
+            "cdetab": self.cdetab,
+            "client_id": self.third_client_id,
+            "response_type": "id_token token",
+            "nonce": self.nonce,
+            "response_mode": "form_post",
+            "claims": json.dumps(
                 {
-                    'id_token': {'cdetab': None, 'pro': None},
-                    'userinfo': {'pro': None, 'cdetab': None, 'authMethod': None, 'authLevel': None},
+                    "id_token": {"cdetab": None, "pro": None},
+                    "userinfo": {"pro": None, "cdetab": None, "authMethod": None, "authLevel": None},
                 },
-                separators=(',', ':'),
+                separators=(",", ":"),
             ),
-            'bpcesta': json.dumps(
+            "bpcesta": json.dumps(
                 {
-                    'typ_sp': 'out-band',
-                    'cdetab': self.cdetab,
-                    'enseigne': self.enseigne,
-                    'login_hint': self.login_hint,
-                    'typ_srv': self.connection_type,
-                    'typ_app': 'rest',
-                    'typ_act': 'sso',
-                }, separators=(',', ':'),
+                    "typ_sp": "out-band",
+                    "cdetab": self.cdetab,
+                    "enseigne": self.enseigne,
+                    "login_hint": self.login_hint,
+                    "typ_srv": self.connection_type,
+                    "typ_app": "rest",
+                    "typ_act": "sso",
+                },
+                separators=(",", ":"),
             ),
-            'login_hint': self.login_hint,
-            'display': 'page',
+            "login_hint": self.login_hint,
+            "display": "page",
         }
         self.authorize.go(params=params)
 
         self.page.get_form().submit()
 
         self.login_tokens.go(
-            data={'SAMLResponse': self.page.get_saml_response()},
-            headers={'Accept': 'application/json, text/plain, */*'},
+            data={"SAMLResponse": self.page.get_saml_response()},
+            headers={"Accept": "application/json, text/plain, */*"},
         )
         self.authorization_token = self.page.get_access_token()
-        self.session.headers['Authorization'] = f'Bearer {self.authorization_token}'
+        self.session.headers["Authorization"] = f"Bearer {self.authorization_token}"
 
     def login_finalize(self):
         access_token = self.page.get_access_token()
         self.id_token = self.page.get_id_token()
 
         headers = {
-            'Authorization': 'Bearer %s' % access_token,
-            'X-Id-Terminal': self.term_id,
+            "Authorization": "Bearer %s" % access_token,
+            "X-Id-Terminal": self.term_id,
         }
         # As done on the website, this associate the validated SCA with a terminal id.
         # This allows the terminal id to be remembered and bypass the SCA for 90 days.
@@ -825,19 +861,19 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         # TODO: reverse some JS to understand the browser fingerprinting. While this
         # terminal ID is still used, they added something that has still to be
         # determined to enforce the 2FA. For the moment, SCA won't be remembered in any way.
-        self.remember_terminal.go(method='PUT', headers=headers, json={})
+        self.remember_terminal.go(method="PUT", headers=headers, json={})
 
         data = {
-            'id_token': self.id_token,
-            'access_token': access_token,
+            "id_token": self.id_token,
+            "access_token": access_token,
         }
 
-        if self.connection_type == 'pp':
+        if self.connection_type == "pp":
             self.location(self.continue_url, data=data)
             # # Here we should be logged on old pp ("personnes protégées") space
             return
 
-        elif self.connection_type == 'ent':
+        elif self.connection_type == "ent":
             # Fetch data for cenet last authorization
             self.location(self.continue_url, data=data)
             self.js_file.go(js_file_name=self.page.get_main_js_file_url())
@@ -846,14 +882,14 @@ class CaisseEpargneLogin(TwoFactorBrowser):
         else:
             # Fetch data for regular last authorization
             params = {
-                'cdetab': self.cdetab,
-                'typ_srv': self.connection_type,
-                'login_hint': self.username,
-                'typ_app': 'rest',
-                'typ_sp': 'out-band',
-                'enseigne': self.enseigne,
-                'snid': self.snid,
-                'csid': self.csid,
+                "cdetab": self.cdetab,
+                "typ_srv": self.connection_type,
+                "login_hint": self.username,
+                "typ_app": "rest",
+                "typ_sp": "out-band",
+                "enseigne": self.enseigne,
+                "snid": self.snid,
+                "csid": self.csid,
             }
             self.home_page.go(params=params)
 
@@ -879,108 +915,104 @@ class CaisseEpargneLogin(TwoFactorBrowser):
 
 
 class CaisseEpargne(CaisseEpargneLogin):
-    BASEURL = 'https://www.caisse-epargne.fr'
-    EXTRANET_BASEURL = 'https://www.extranet2.caisse-epargne.fr'
+    BASEURL = "https://www.caisse-epargne.fr"
+    EXTRANET_BASEURL = "https://www.extranet2.caisse-epargne.fr"
     TIMEOUT = 30
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
 
     accounts_page = URL(
-        r'/bapi/contract/v2/augmentedSynthesisViews',
+        r"/bapi/contract/v2/augmentedSynthesisViews",
         AccountsPage,
-        base='RS_ATH_GROUP_BASEURL',
+        base="RS_ATH_GROUP_BASEURL",
     )
     cards_page = URL(
-        r'/bapi/card/v2/cardCarouselViews/search/byUser',
+        r"/bapi/card/v2/cardCarouselViews/search/byUser",
         CardsPage,
-        base='RS_ATH_GROUP_BASEURL',
+        base="RS_ATH_GROUP_BASEURL",
     )
     accounts_coming = URL(
-        r'/pfm/user/v1.1/upcoming',
+        r"/pfm/user/v1.1/upcoming",
         ComingTransactionsPage,
-        base='RS_ATH_GROUP_BASEURL',
+        base="RS_ATH_GROUP_BASEURL",
     )
     history_page = URL(
-        r'/pfm/user/v1\.1/transactions',
+        r"/pfm/user/v1\.1/transactions",
         TransactionsPage,
-        base='RS_ATH_GROUP_BASEURL',
+        base="RS_ATH_GROUP_BASEURL",
     )
     # Mandatory to access either linebourse or extranet spaces
     prepare_rerouting = URL(
-        r'/bapi/contract/v1/contracts/(?P<website_id>.*)/prepareRouting',
+        r"/bapi/contract/v1/contracts/(?P<website_id>.*)/prepareRouting",
         PrepareReroutingPage,
-        base='RS_ATH_GROUP_BASEURL',
+        base="RS_ATH_GROUP_BASEURL",
     )
-    linebourse_rerouting = URL(
-        r'https://www.caisse-epargne.offrebourse.com/ReroutageSJR',
-        LinebourseReroutingPage
-    )
+    linebourse_rerouting = URL(r"https://www.caisse-epargne.offrebourse.com/ReroutageSJR", LinebourseReroutingPage)
     extranet_rerouting = URL(
-        r'/cin-front/Authentification',
+        r"/cin-front/Authentification",
         ExtranetReroutingPage,
-        base='EXTRANET_BASEURL',
+        base="EXTRANET_BASEURL",
     )
-    leave_linebourse = URL(
-        r'https://www.espace-bourse.caisse-epargne.fr/rest/access/logout',
-        LeaveLineBoursePage
-    )
+    leave_linebourse = URL(r"https://www.espace-bourse.caisse-epargne.fr/rest/access/logout", LeaveLineBoursePage)
     revolving_details = URL(
-        r'/bapi/revolvingCredit/v1/revolvingCreditSynthesisViews/(?P<revolving_id>.*)',
+        r"/bapi/revolvingCredit/v1/revolvingCreditSynthesisViews/(?P<revolving_id>.*)",
         RevolvingDetailsPage,
-        base='RS_ATH_GROUP_BASEURL',
+        base="RS_ATH_GROUP_BASEURL",
     )
     revolving_history = URL(
-        r'/bapi/revolvingCredit/v1/revolvingCredits/(?P<revolving_id>.*)/financialTransactions',
+        r"/bapi/revolvingCredit/v1/revolvingCredits/(?P<revolving_id>.*)/financialTransactions",
         RevolvingHistoryPage,
-        base='RS_ATH_GROUP_BASEURL',
+        base="RS_ATH_GROUP_BASEURL",
     )
-    consumer_credit_home = URL(r'https://www.caisse-epargne.fr/espace-gestion/pret-personnel/#/', HomePage)
+    consumer_credit_home = URL(r"https://www.caisse-epargne.fr/espace-gestion/pret-personnel/#/", HomePage)
     consumer_credit_details = URL(
-        r'/bapi/personalLoanPrd/v1/personalLoanPrdSynthesisView/(?P<consumer_credit_id>.*)',
+        r"/bapi/personalLoanPrd/v1/personalLoanPrdSynthesisView/(?P<consumer_credit_id>.*)",
         ConsumerCreditDetailsPage,
-        base='RS_ATH_GROUP_BASEURL',
+        base="RS_ATH_GROUP_BASEURL",
     )
-    loan_home = URL(r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/', HomePage)
+    loan_home = URL(r"https://www.caisse-epargne.fr/gestion-client/credit-immobilier/", HomePage)
     loan_details = URL(
-        r'/bapi/loan/v1/loans/(?P<loan_id>.*)',
+        r"/bapi/loan/v1/loans/(?P<loan_id>.*)",
         LoanDetailsPage,
-        base='RS_ATH_GROUP_BASEURL',
+        base="RS_ATH_GROUP_BASEURL",
     )
     life_insurance_history = URL(
-        r'/cin-front/contrats/evenements',
+        r"/cin-front/contrats/evenements",
         LifeInsuranceHistory,
-        base='EXTRANET_BASEURL',
+        base="EXTRANET_BASEURL",
     )
     life_insurance_investments = URL(
-        r'/cin-front/contrats/details',
+        r"/cin-front/contrats/details",
         LifeInsuranceInvestments,
-        base='EXTRANET_BASEURL',
+        base="EXTRANET_BASEURL",
     )
     market = URL(
-        r'https://.*/Pages/Bourse.*',
-        r'https://www.caisse-epargne.offrebourse.com/ReroutageSJR',
-        r'https://www.caisse-epargne.offrebourse.com/fr/6CE.*',
-        r'https://www.caisse-epargne.offrebourse.com/app-v2/#/app-mobile',
-        MarketPage
+        r"https://.*/Pages/Bourse.*",
+        r"https://www.caisse-epargne.offrebourse.com/ReroutageSJR",
+        r"https://www.caisse-epargne.offrebourse.com/fr/6CE.*",
+        r"https://www.caisse-epargne.offrebourse.com/app-v2/#/app-mobile",
+        MarketPage,
     )
-    creditcooperatif_market = URL(r'https://www.offrebourse.com/.*', CreditCooperatifMarketPage)  # just to catch the landing page of the Credit Cooperatif's Linebourse
+    creditcooperatif_market = URL(
+        r"https://www.offrebourse.com/.*", CreditCooperatifMarketPage
+    )  # just to catch the landing page of the Credit Cooperatif's Linebourse
 
-    subscription = URL(r'https://www.rs-ex-ath-groupe.caisse-epargne.fr/bapi/user/v2/user', SubscriptionPage)
-    documents = URL(r'https://www.net444.caisse-epargne.fr/Portail.aspx', DocumentsPage)
+    subscription = URL(r"https://www.rs-ex-ath-groupe.caisse-epargne.fr/bapi/user/v2/user", SubscriptionPage)
+    documents = URL(r"https://www.net444.caisse-epargne.fr/Portail.aspx", DocumentsPage)
 
     def __init__(self, nuser, config, *args, **kwargs):
         self.default_transactions_number = 250
         self.history_maximum_days = 365
         self.market_url = kwargs.pop(
-            'market_url',
-            'https://www.caisse-epargne.offrebourse.com',
+            "market_url",
+            "https://www.caisse-epargne.offrebourse.com",
         )
 
         super(CaisseEpargne, self).__init__(nuser, config, *args, **kwargs)
 
         dirname = self.responses_dirname
         if dirname:
-            dirname += '/bourse'
+            dirname += "/bourse"
 
         self.linebourse = self.LINEBOURSE_BROWSER(
             self.market_url,
@@ -990,13 +1022,13 @@ class CaisseEpargne(CaisseEpargneLogin):
         )
 
     def load_state(self, state):
-        expire = state.get('expire')
+        expire = state.get("expire")
         if expire:
             expire = parser.parse(expire)
             if not expire.tzinfo:
                 expire = expire.replace(tzinfo=tz.tzlocal())
             if expire < now_as_utc():
-                self.logger.info('State expired, not reloading it from storage')
+                self.logger.info("State expired, not reloading it from storage")
                 return
 
         # TODO: Always loading the state might break something.
@@ -1009,13 +1041,13 @@ class CaisseEpargne(CaisseEpargneLogin):
         # after entering the emv otp the locate browser is making a request on
         # the last url we visited, and in that case we are invalidating the
         # validation_unit_id needed for sending the otp
-        if any((self.config['otp_emv'].get(), self.config['otp_sms'].get())):
+        if any((self.config["otp_emv"].get(), self.config["otp_sms"].get())):
             return
 
         if self.authorization_token:
             # If the token isn't valid anymore (it's usable for approximately 10 minutes),
             # 403 response will trigger a new login, as needed.
-            self.session.headers['Authorization'] = f'Bearer {self.authorization_token}'
+            self.session.headers["Authorization"] = f"Bearer {self.authorization_token}"
 
         try:
             super(CaisseEpargne, self).locate_browser(state)
@@ -1038,7 +1070,7 @@ class CaisseEpargne(CaisseEpargneLogin):
         # for caissedepargne the domain is 'www.caisse-epargne.offrebourse.com'
         # whereas for creditcooperatif it is 'www.offrebourse.com'
         domain = urlparse(self.url).netloc
-        self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get('XSRF-TOKEN', domain=domain)
+        self.linebourse.session.headers["X-XSRF-TOKEN"] = self.session.cookies.get("XSRF-TOKEN", domain=domain)
 
     def get_loans_token(self, account_type):
         # This authorization process is close to the one we do at the end of the login
@@ -1046,60 +1078,60 @@ class CaisseEpargne(CaisseEpargneLogin):
         # Authorization token must only be used for the right URLs, setting it for the session
         # would mess with the authorization token that we already have to navigate through
         # regular accounts.
-        if account_type == 'loans':
+        if account_type == "loans":
             self.loan_home.go()
             self.location(self.page.get_main_js_file_url())
             self.loans_client_id = self.page.get_loans_client_id()
-        elif account_type == 'consumer_credits':
+        elif account_type == "consumer_credits":
             # We could fetch the consumer credits client_id dynamically ; it has
             # its own consumer_credit_home URL that leads us to the JS containing
             # the client id but that JS page is really huge and woob can take up to
             # two minutes for it's regexp to match the pattern. If the client_id ever
             # changes (pretty unlikely, some client IDs have been hardcoded for a very long time),
             # finding a faster way to dynamically fetch that data might be necessary.
-            self.loans_client_id = '30c229b8-047f-49a0-aad4-198008c1cdd7'
+            self.loans_client_id = "30c229b8-047f-49a0-aad4-198008c1cdd7"
 
         params = {
-            'scope': '',
-            'cdetab': self.cdetab,
-            'client_id': self.loans_client_id,
-            'response_type': 'token',
-            'nonce': self.nonce,
-            'response_mode': 'form_post',
-            'bpcesta': json.dumps(
+            "scope": "",
+            "cdetab": self.cdetab,
+            "client_id": self.loans_client_id,
+            "response_type": "token",
+            "nonce": self.nonce,
+            "response_mode": "form_post",
+            "bpcesta": json.dumps(
                 {
-                    'cdetab': self.cdetab,
-                    'typ_srv': self.connection_type,
-                    'typ_sp': 'out-band',
-                    'enseigne': self.enseigne,
-                    'typ_app': 'rest',
-                    'typ_act': 'sso',
+                    "cdetab": self.cdetab,
+                    "typ_srv": self.connection_type,
+                    "typ_sp": "out-band",
+                    "enseigne": self.enseigne,
+                    "typ_app": "rest",
+                    "typ_act": "sso",
                 },
-                separators=(',', ':')
+                separators=(",", ":"),
             ),
-            'display': 'page',
+            "display": "page",
         }
         try:
             self.authorize.go(params=params)
         except ClientError as e:
             if e.response.status_code == 400:
-                raise AssertionError('Consumer credits client_id might have changed, check if it must be updated.')
+                raise AssertionError("Consumer credits client_id might have changed, check if it must be updated.")
             raise
 
         self.page.get_form().submit()
 
         self.login_tokens.go(
-            data={'SAMLResponse': self.page.get_saml_response()},
-            headers={'Accept': 'application/json, text/plain, */*'},
+            data={"SAMLResponse": self.page.get_saml_response()},
+            headers={"Accept": "application/json, text/plain, */*"},
         )
 
-        return 'Bearer %s' % self.page.get_access_token()
+        return "Bearer %s" % self.page.get_access_token()
 
     @need_login
     def iter_accounts(self):
         params = {
-            'productFamilyPFM': '1,2,3,4,6,7,17',
-            'pfmCharacteristicsIndicator': 'true',
+            "productFamilyPFM": "1,2,3,4,6,7,17",
+            "pfmCharacteristicsIndicator": "true",
         }
         self.accounts_page.go(params=params)
 
@@ -1118,8 +1150,7 @@ class CaisseEpargne(CaisseEpargneLogin):
             elif loan.type == Account.TYPE_CONSUMER_CREDIT:
                 try:
                     self.consumer_credit_details.go(
-                        consumer_credit_id=loan.id,
-                        headers={'Authorization': self.get_loans_token('consumer_credits')}
+                        consumer_credit_id=loan.id, headers={"Authorization": self.get_loans_token("consumer_credits")}
                     )
                 except ClientError as e:
                     if e.response.status_code == 400:
@@ -1133,14 +1164,14 @@ class CaisseEpargne(CaisseEpargneLogin):
             elif loan.type == Account.TYPE_LOAN:
                 self.loan_details.go(
                     loan_id=loan._website_id,
-                    headers={'Authorization': self.get_loans_token('loans')},
+                    headers={"Authorization": self.get_loans_token("loans")},
                 )
                 self.page.fill_loan_details(obj=loan)
             accounts.append(loan)
 
         if cards:
             # Get some card details
-            self.cards_page.go(params={'userId': 'currentUser'})
+            self.cards_page.go(params={"userId": "currentUser"})
             for card in cards:
                 self.page.fill_cards(card)
                 # We currently cannot retrieve the old card id for the second owner
@@ -1155,30 +1186,30 @@ class CaisseEpargne(CaisseEpargneLogin):
     def go_to_secondary_space(self, space, account):
         # Account details are located on linebourse or extranet space.
         data = {
-            'characteristics': {
-                'contractActionType': {
-                    'code': '',
-                    'label': '',
+            "characteristics": {
+                "contractActionType": {
+                    "code": "",
+                    "label": "",
                 },
-                'productFamilyPFM': {
-                    'code': '',
-                    'label': '',
+                "productFamilyPFM": {
+                    "code": "",
+                    "label": "",
                 },
-                'returnUrl': {},
+                "returnUrl": {},
             },
-            'response': {
-                'code': '',
-                'interactionId': '',
-                'label': '',
+            "response": {
+                "code": "",
+                "interactionId": "",
+                "label": "",
             },
         }
         self.prepare_rerouting.go(json=data, website_id=account._website_id)
 
-        if space == 'linebourse':
+        if space == "linebourse":
             self.linebourse_rerouting.go(data=self.page.get_linebourse_redirection_data())
             self.linebourse.session.cookies.update(self.session.cookies)
             self.update_linebourse_token()
-        elif space == 'extranet':
+        elif space == "extranet":
             self.extranet_rerouting.go(data=self.page.get_extranet_redirection_data())
 
     def handle_pagination(self, params, iter_method):
@@ -1194,10 +1225,10 @@ class CaisseEpargne(CaisseEpargneLogin):
         if total_transactions_number > self.default_transactions_number:
             transactions_threshold_reached = False
             while (
-                params['skip'] <= total_transactions_number
-                or params['skip'] >= 20000  # Arbitrary limit if something goes wrong with total_transactions_number
+                params["skip"] <= total_transactions_number
+                or params["skip"] >= 20000  # Arbitrary limit if something goes wrong with total_transactions_number
             ):
-                params['skip'] += self.default_transactions_number
+                params["skip"] += self.default_transactions_number
                 self.history_page.go(params=params)
                 for transaction in iter_method(self.page):
                     if transaction.date < (date.today() - timedelta(days=self.history_maximum_days)):
@@ -1214,17 +1245,17 @@ class CaisseEpargne(CaisseEpargneLogin):
 
     def _iter_card_history(self, account, is_coming=False):
         params = {
-            'businessType': 'UserProfile',
-            'accountIds': account._website_id,
-            'parsedData': '[{"key":"transactionGranularityCode","value":"XT"}]',
-            'skip': 0,
-            'take': self.default_transactions_number,
-            'includeDisabledAccounts': 'true',
-            'ascendingOrder': 'false',
-            'useAndSearchForParsedData': 'false',
+            "businessType": "UserProfile",
+            "accountIds": account._website_id,
+            "parsedData": '[{"key":"transactionGranularityCode","value":"XT"}]',
+            "skip": 0,
+            "take": self.default_transactions_number,
+            "includeDisabledAccounts": "true",
+            "ascendingOrder": "false",
+            "useAndSearchForParsedData": "false",
         }
         if account.owner_type == AccountOwnerType.ORGANIZATION:
-            params['businessType'] = 'BusinessProfile'
+            params["businessType"] = "BusinessProfile"
 
         self.history_page.go(params=params)
 
@@ -1245,21 +1276,21 @@ class CaisseEpargne(CaisseEpargneLogin):
             Account.TYPE_REVOLVING_CREDIT,
         ):
             # TODO Handle loans with a PSU account.
-            self.logger.info('%s is not handled or has no history' % account.type)
+            self.logger.info("%s is not handled or has no history" % account.type)
             return []
 
         if account.type in (Account.TYPE_PEA, Account.TYPE_MARKET) and not account._is_cash_pea:
-            if 'PARTS SOCIALES' in account.label:
+            if "PARTS SOCIALES" in account.label:
                 # TODO Investigate how to retrieve history
                 self.logger.warning('"CPT PARTS SOCIALES" account to investigate')
                 return []
-            self.go_to_secondary_space('linebourse', account)
+            self.go_to_secondary_space("linebourse", account)
             history = self.linebourse.iter_history(account.id)
             self.leave_linebourse_space()
             return history
 
         elif account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION):
-            self.go_to_secondary_space('extranet', account)
+            self.go_to_secondary_space("extranet", account)
             self.life_insurance_history.go()
             return sorted_transactions(self.page.iter_history())
 
@@ -1272,26 +1303,26 @@ class CaisseEpargne(CaisseEpargneLogin):
 
         else:
             params = {
-                'businessType': 'UserProfile',
-                'accountIds': account._website_id,
-                'parsedData': '[{"key":"transactionGranularityCode","value":"IN"},{"key":"transactionGranularityCode","value":"ST"}]',
-                'skip': 0,
+                "businessType": "UserProfile",
+                "accountIds": account._website_id,
+                "parsedData": '[{"key":"transactionGranularityCode","value":"IN"},{"key":"transactionGranularityCode","value":"ST"}]',
+                "skip": 0,
                 # 'take': '50' -> default parameter for the number of transactions to be returned.
                 # Response will contain 999 transactions if the param is not provided.
                 # There is apparently no limit to the number of transactions that can be
                 # returned for one call but sticking to the website behavior might avoid
                 # triggering any alert system on BPCE's side.
-                'take': self.default_transactions_number,
-                'includeDisabledAccounts': 'true',
-                'ascendingOrder': 'false',
-                'orderBy': 'ByParsedData',
-                'parsedDataNameToOrderBy': 'accountingDate',
-                'useAndSearchForParsedData': 'false',
+                "take": self.default_transactions_number,
+                "includeDisabledAccounts": "true",
+                "ascendingOrder": "false",
+                "orderBy": "ByParsedData",
+                "parsedDataNameToOrderBy": "accountingDate",
+                "useAndSearchForParsedData": "false",
                 # 'include': 'Merchant' -> Although the website always uses this parameter,
                 # avoid it since it makes the JSON way bigger.
             }
             if account.owner_type == AccountOwnerType.ORGANIZATION:
-                params['businessType'] = 'BusinessProfile'
+                params["businessType"] = "BusinessProfile"
 
             self.history_page.go(params=params)
 
@@ -1306,17 +1337,17 @@ class CaisseEpargne(CaisseEpargneLogin):
             return self._iter_card_history(account, is_coming=True)
         else:
             params = {
-                'businessType': 'UserProfile',
-                'paymentStatus': 'Open',
-                'accountIds': account._website_id,
-                'skip': 0,
-                'includeDisabledAccounts': 'true',
-                'transactionAccountingStatus': 'UP',
-                'take': self.default_transactions_number,
+                "businessType": "UserProfile",
+                "paymentStatus": "Open",
+                "accountIds": account._website_id,
+                "skip": 0,
+                "includeDisabledAccounts": "true",
+                "transactionAccountingStatus": "UP",
+                "take": self.default_transactions_number,
             }
 
             if account.owner_type == AccountOwnerType.ORGANIZATION:
-                params['businessType'] = 'BusinessProfile'
+                params["businessType"] = "BusinessProfile"
 
             self.accounts_coming.go(params=params)
 
@@ -1325,17 +1356,17 @@ class CaisseEpargne(CaisseEpargneLogin):
     @need_login
     def iter_investments(self, account):
         if account.type in (Account.TYPE_PEA, Account.TYPE_MARKET) and not account._is_cash_pea:
-            if account.label == 'CPT PARTS SOCIALES':
+            if account.label == "CPT PARTS SOCIALES":
                 # TODO Investigate how to retrieve investments
                 self.logger.warning('"CPT PARTS SOCIALES" account to investigate')
                 return
-            self.go_to_secondary_space('linebourse', account)
+            self.go_to_secondary_space("linebourse", account)
             inv = self.linebourse.iter_investments(account.id)
             self.leave_linebourse_space()
             yield from inv
 
         elif account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION):
-            self.go_to_secondary_space('extranet', account)
+            self.go_to_secondary_space("extranet", account)
             self.life_insurance_investments.go()
             yield from self.page.iter_investment()
 
@@ -1347,20 +1378,20 @@ class CaisseEpargne(CaisseEpargneLogin):
     @need_login
     def iter_documents(self, subscription):
         params = {
-            'tache': 'EDOCEG',
-            'contexte': 'DPW',
+            "tache": "EDOCEG",
+            "contexte": "DPW",
         }
         url = self.documents.build(params=params)
         id_token = jwt.get_unverified_claims(self.id_token)
 
         data = {
-            'access_token': self.authorization_token,
-            'ctx': 'typsrv=WE&sc=2&base_url=https%3A%2F%2Fwww.net444.caisse-epargne.fr%2F',
-            'ctx_routage': '',
-            'id_token': id_token,
-            'redirectUrl': url,
+            "access_token": self.authorization_token,
+            "ctx": "typsrv=WE&sc=2&base_url=https%3A%2F%2Fwww.net444.caisse-epargne.fr%2F",
+            "ctx_routage": "",
+            "id_token": id_token,
+            "redirectUrl": url,
         }
-        self.location('https://www.net444.caisse-epargne.fr/loginbel.aspx', data=data)
+        self.location("https://www.net444.caisse-epargne.fr/loginbel.aspx", data=data)
 
         return self.page.iter_documents(subid=subscription.id)
 

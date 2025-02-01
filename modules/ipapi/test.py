@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class IpapiTest(BackendTest):
-    MODULE = 'ipapi'
+    MODULE = "ipapi"
 
     def test_ipapi(self):
-        self.backend.get_location('88.198.11.130')
+        self.backend.get_location("88.198.11.130")

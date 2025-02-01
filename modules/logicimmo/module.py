@@ -25,24 +25,25 @@ from woob.tools.backend import Module
 from .browser import LogicimmoBrowser
 
 
-__all__ = ['LogicimmoModule']
+__all__ = ["LogicimmoModule"]
 
 
 class LogicImmoCitiesError(UserError):
     """
     Raised when more than 3 cities are selected
     """
-    def __init__(self, msg='You cannot select more than three cities'):
+
+    def __init__(self, msg="You cannot select more than three cities"):
         UserError.__init__(self, msg)
 
 
 class LogicimmoModule(Module, CapHousing):
-    NAME = 'logicimmo'
-    DESCRIPTION = u'logicimmo website'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "logicimmo"
+    DESCRIPTION = "logicimmo website"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = LogicimmoBrowser
 
@@ -59,13 +60,12 @@ class LogicimmoModule(Module, CapHousing):
         return self.browser.get_cities(pattern)
 
     def search_housings(self, query):
-        if(len(query.advert_types) == 1 and
-           query.advert_types[0] == ADVERT_TYPES.PERSONAL):
+        if len(query.advert_types) == 1 and query.advert_types[0] == ADVERT_TYPES.PERSONAL:
             # Logic-immo is pro only
             return list()
 
-        cities_names = ['%s' % c.name.replace(' ', '-') for c in query.cities if c.backend == self.name]
-        cities_ids = ['%s' % c.id for c in query.cities if c.backend == self.name]
+        cities_names = ["%s" % c.name.replace(" ", "-") for c in query.cities if c.backend == self.name]
+        cities_ids = ["%s" % c.id for c in query.cities if c.backend == self.name]
 
         if len(cities_names) == 0:
             return list()
@@ -73,16 +73,22 @@ class LogicimmoModule(Module, CapHousing):
         if len(cities_names) > 3:
             raise LogicImmoCitiesError()
 
-        cities = ','.join(cities_names + cities_ids)
-        return self.browser.search_housings(query.type, cities.lower(), query.nb_rooms,
-                                            query.area_min, query.area_max,
-                                            query.cost_min, query.cost_max,
-                                            query.house_types)
+        cities = ",".join(cities_names + cities_ids)
+        return self.browser.search_housings(
+            query.type,
+            cities.lower(),
+            query.nb_rooms,
+            query.area_min,
+            query.area_max,
+            query.cost_min,
+            query.cost_max,
+            query.house_types,
+        )
 
     def fill_housing(self, housing, fields):
-        if 'phone' in fields:
+        if "phone" in fields:
             housing.phone = self.browser.get_phone(housing.id)
-            fields.remove('phone')
+            fields.remove("phone")
 
         if len(fields) > 0:
             self.browser.get_housing(housing.id, housing)
@@ -90,10 +96,11 @@ class LogicimmoModule(Module, CapHousing):
         return housing
 
     def fill_photo(self, photo, fields):
-        if 'data' in fields and photo.url and not photo.data:
+        if "data" in fields and photo.url and not photo.data:
             photo.data = self.browser.open(photo.url).content
         return photo
 
-    OBJECTS = {Housing: fill_housing,
-               HousingPhoto: fill_photo,
-               }
+    OBJECTS = {
+        Housing: fill_housing,
+        HousingPhoto: fill_photo,
+    }

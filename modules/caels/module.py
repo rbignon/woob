@@ -25,21 +25,21 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import CAELSBrowser
 
 
-__all__ = ['CaelsModule']
+__all__ = ["CaelsModule"]
 
 
 class CaelsModule(Module, CapBankWealth):
-    NAME = 'caels'
-    DESCRIPTION = u'Crédit Agricole - Épargne Longue des Salariés'
-    MAINTAINER = u'Edouard Lambert'
-    EMAIL = 'elambert@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('amundi',)
+    NAME = "caels"
+    DESCRIPTION = "Crédit Agricole - Épargne Longue des Salariés"
+    MAINTAINER = "Edouard Lambert"
+    EMAIL = "elambert@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("amundi",)
     CONFIG = BackendConfig(
-            ValueBackendPassword('login',    label='Identifiant', masked=False),
-            ValueBackendPassword('password', label='Mot de passe'),
-            ValueTransient('captcha_response')
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("captcha_response"),
     )
 
     BROWSER = CAELSBrowser
@@ -47,8 +47,8 @@ class CaelsModule(Module, CapBankWealth):
     def create_default_browser(self):
         return self.create_browser(
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_accounts(self):

@@ -21,4 +21,4 @@
 from .module import MediawikiModule
 
 
-__all__ = ['MediawikiModule']
+__all__ = ["MediawikiModule"]

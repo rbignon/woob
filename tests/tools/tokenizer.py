@@ -21,7 +21,7 @@ from woob.tools.tokenizer import ReTokenizer
 
 
 def test():
-    t = ReTokenizer('foo bar baz', ' ', [('f', r'^f'), ('b', r'^b')])
+    t = ReTokenizer("foo bar baz", " ", [("f", r"^f"), ("b", r"^b")])
 
     assert t.tok(0).is_f()
     assert t.tok(1).is_b()
@@ -34,12 +34,11 @@ def test():
     assert not t.tok(0).is_b()
     assert not t.tok(0).is_eof()
 
-    t = ReTokenizer('nogroup onegroup multigroup', ' ', [
-        ('ng', r'^n.*$'),
-        ('og', r'^one(g.*)$'),
-        ('mg', r'^(m.*)(g.*)$')])
+    t = ReTokenizer(
+        "nogroup onegroup multigroup", " ", [("ng", r"^n.*$"), ("og", r"^one(g.*)$"), ("mg", r"^(m.*)(g.*)$")]
+    )
 
     assert t.tok(-1).value() is None
-    assert t.tok(0).value() == 'nogroup'
-    assert t.tok(1).value() == 'group'
-    assert t.tok(2).value() == ('multi', 'group')
+    assert t.tok(0).value() == "nogroup"
+    assert t.tok(1).value() == "group"
+    assert t.tok(2).value() == ("multi", "group")

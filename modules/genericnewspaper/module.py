@@ -29,13 +29,14 @@ class GenericNewspaperModule(Module):
     """
     GenericNewspaperModule class
     """
-    NAME = 'genericnewspaper'
-    MAINTAINER = 'Julien Hebert'
-    DESCRIPTION = 'Generic module that helps to handle newspapers modules'
-    EMAIL = 'juke@free.fr'
-    VERSION = '3.7'
-    LICENSE = 'AGPLv3+'
-    STORAGE = {'seen': {}}
+
+    NAME = "genericnewspaper"
+    MAINTAINER = "Julien Hebert"
+    DESCRIPTION = "Generic module that helps to handle newspapers modules"
+    EMAIL = "juke@free.fr"
+    VERSION = "3.7"
+    LICENSE = "AGPLv3+"
+    STORAGE = {"seen": {}}
     RSS_FEED = None
     RSSID = None
     URL2ID = None
@@ -62,7 +63,7 @@ class GenericNewspaperModule(Module):
             thread = Thread(id)
 
         flags = Message.IS_HTML
-        if thread.id not in self.storage.get('seen', default={}):
+        if thread.id not in self.storage.get("seen", default={}):
             flags |= Message.IS_UNREAD
         thread.title = content.title
         if not thread.date:
@@ -78,9 +79,10 @@ class GenericNewspaperModule(Module):
             date=thread.date,
             parent=None,
             content=content.body,
-            signature=u'<a href="%s">URL</a> \n' % content.url,
+            signature='<a href="%s">URL</a> \n' % content.url,
             flags=flags,
-            children=[])
+            children=[],
+        )
         return thread
 
     def iter_threads(self):
@@ -88,7 +90,7 @@ class GenericNewspaperModule(Module):
             thread = Thread(article.id)
             thread.title = article.title
             thread.date = article.datetime
-            yield(thread)
+            yield (thread)
 
     def fill_thread(self, thread, fields):
         "fill the thread"
@@ -97,37 +99,34 @@ class GenericNewspaperModule(Module):
 
     def iter_unread_messages(self):
         for thread in self.iter_threads():
-            if thread.id in self.storage.get('seen', default={}):
+            if thread.id in self.storage.get("seen", default={}):
                 continue
-            self.fill_thread(thread, 'root')
+            self.fill_thread(thread, "root")
             for msg in thread.iter_all_messages():
                 yield msg
 
     def set_message_read(self, message):
         self.storage.set(
-            'seen',
+            "seen",
             message.thread.id,
-            'comments',
-            self.storage.get(
-                'seen',
-                message.thread.id,
-                'comments',
-                default=[]) + [message.id])
+            "comments",
+            self.storage.get("seen", message.thread.id, "comments", default=[]) + [message.id],
+        )
 
         if self.URL2ID and self.RSSSIZE != 0:
             url2id = self.URL2ID
-            lastpurge = self.storage.get('lastpurge', default=0)
+            lastpurge = self.storage.get("lastpurge", default=0)
             l = []
             if time.time() - lastpurge > 7200:
-                self.storage.set('lastpurge', time.time())
-                for id in self.storage.get('seen', default={}):
+                self.storage.set("lastpurge", time.time())
+                for id in self.storage.get("seen", default={}):
                     l.append((int(url2id(id)), id))
                 l.sort()
                 l.reverse()
-                tosave = [v[1] for v in l[0:self.RSSSIZE + 10]]
-                toremove = set([v for v in self.storage.get('seen', default={})]).difference(tosave)
+                tosave = [v[1] for v in l[0 : self.RSSSIZE + 10]]
+                toremove = set([v for v in self.storage.get("seen", default={})]).difference(tosave)
                 for id in toremove:
-                    self.storage.delete('seen', id)
+                    self.storage.delete("seen", id)
 
         self.storage.save()
 

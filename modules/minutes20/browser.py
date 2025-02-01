@@ -22,6 +22,6 @@ from .pages import ArticlePage
 
 
 class Newspaper20minutesBrowser(GenericNewspaperBrowser):
-    BASEURL = 'http://www.20minutes.fr'
+    BASEURL = "http://www.20minutes.fr"
 
-    article_page = URL(r'/.+/?.*', ArticlePage)
+    article_page = URL(r"/.+/?.*", ArticlePage)

@@ -19,7 +19,12 @@
 
 from woob.capabilities.base import find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
+    CapDocument,
+    Document,
+    DocumentCategory,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
 )
 from woob.capabilities.profile import CapProfile
 from woob.tools.backend import BackendConfig, Module
@@ -28,29 +33,29 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import EkwateurBrowser
 
 
-__all__ = ['EkwateurModule']
+__all__ = ["EkwateurModule"]
 
 
 class EkwateurModule(Module, CapDocument, CapProfile):
-    NAME = 'ekwateur'
-    DESCRIPTION = 'ekwateur website'
-    MAINTAINER = 'Phyks (Lucas Verney)'
-    EMAIL = 'phyks@phyks.me'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "ekwateur"
+    DESCRIPTION = "ekwateur website"
+    MAINTAINER = "Phyks (Lucas Verney)"
+    EMAIL = "phyks@phyks.me"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = EkwateurBrowser
 
     CONFIG = BackendConfig(
-        Value('login', help='Email or identifier'),
-        ValueBackendPassword('password', help='Password'),
+        Value("login", help="Email or identifier"),
+        ValueBackendPassword("password", help="Password"),
     )
 
     accepted_document_types = (DocumentTypes.BILL,)
     document_categories = {DocumentCategory.ENERGY}
 
     def create_default_browser(self):
-        return self.create_browser(self.config['login'].get(), self.config['password'].get())
+        return self.create_browser(self.config["login"].get(), self.config["password"].get())
 
     def get_document(self, id):
         """
@@ -60,11 +65,7 @@ class EkwateurModule(Module, CapDocument, CapProfile):
         :rtype: :class:`Document`
         :raises: :class:`DocumentNotFound`
         """
-        return find_object(
-            self.iter_documents(id.split("#")[-1]),
-            id=id,
-            error=DocumentNotFound
-        )
+        return find_object(self.iter_documents(id.split("#")[-1]), id=id, error=DocumentNotFound)
 
     def download_document(self, doc):
         if not isinstance(doc, Document):

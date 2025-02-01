@@ -21,4 +21,4 @@
 from .module import BnpcartesentrepriseModule
 
 
-__all__ = ['BnpcartesentrepriseModule']
+__all__ = ["BnpcartesentrepriseModule"]

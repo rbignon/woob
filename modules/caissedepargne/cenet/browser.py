@@ -31,62 +31,68 @@ from woob.browser.url import URL
 from woob.capabilities.base import find_object
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable
 from woob.tools.capabilities.bank.transactions import (
-    keep_only_card_transactions, omit_deferred_transactions, sorted_transactions,
+    keep_only_card_transactions,
+    omit_deferred_transactions,
+    sorted_transactions,
 )
 from woob.tools.json import json
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from ..browser import CaisseEpargneLogin
 from .pages import (
-    CenetAccountHistoryPage, CenetAccountsPage, CenetCardsPage, CenetCardSummaryPage, CenetHomePage, CenetLoanPage,
-    CenetLoginPage, DownloadDocumentPage, LinebourseTokenPage, SubscriptionPage,
+    CenetAccountHistoryPage,
+    CenetAccountsPage,
+    CenetCardsPage,
+    CenetCardSummaryPage,
+    CenetHomePage,
+    CenetLoanPage,
+    CenetLoginPage,
+    DownloadDocumentPage,
+    LinebourseTokenPage,
+    SubscriptionPage,
 )
 
 
-__all__ = ['CenetBrowser']
+__all__ = ["CenetBrowser"]
 
 
 class CenetBrowser(CaisseEpargneLogin):
     BASEURL = "https://www.cenet.caisse-epargne.fr"
 
-    SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES = ('otp_sms',)
+    SKIP_LOCATE_BROWSER_ON_CONFIG_VALUES = ("otp_sms",)
     STATE_DURATION = 5
 
     cenet_new_home = CaisseEpargneLogin.home_page.with_urls(
-        r'https://www.caisse-epargne.fr/espace-entreprise/web-b2b/callback'
+        r"https://www.caisse-epargne.fr/espace-entreprise/web-b2b/callback"
     )
 
     js_file = CaisseEpargneLogin.js_file.with_urls(
-        r'https://www.caisse-epargne.fr/espace-entreprise/web-b2b/(?P<js_file_name>[^/]+)',
+        r"https://www.caisse-epargne.fr/espace-entreprise/web-b2b/(?P<js_file_name>[^/]+)",
         clear=False,
     )
 
-    cenet_vk = URL(r'https://www.cenet.caisse-epargne.fr/Web/Api/ApiAuthentification.asmx/ChargerClavierVirtuel')
-    cenet_home = URL(
-        r'/Default.aspx$',
-        r'/default.aspx$',
-        CenetHomePage
-    )
-    cenet_accounts = URL(r'/Web/Api/ApiComptes.asmx/ChargerSyntheseComptes', CenetAccountsPage)
-    cenet_market_accounts = URL(r'/Web/Api/ApiBourse.asmx/ChargerComptesTitres', CenetAccountsPage)
-    cenet_loans = URL(r'/Web/Api/ApiFinancements.asmx/ChargerListeFinancementsMLT', CenetLoanPage)
-    cenet_account_history = URL(r'/Web/Api/ApiComptes.asmx/ChargerHistoriqueCompte', CenetAccountHistoryPage)
-    cenet_account_coming = URL(r'/Web/Api/ApiCartesBanquaires.asmx/ChargerEnCoursCarte', CenetAccountHistoryPage)
-    cenet_tr_detail = URL(r'/Web/Api/ApiComptes.asmx/ChargerDetailOperation', CenetCardSummaryPage)
-    cenet_cards = URL(r'/Web/Api/ApiCartesBanquaires.asmx/ChargerCartes', CenetCardsPage)
+    cenet_vk = URL(r"https://www.cenet.caisse-epargne.fr/Web/Api/ApiAuthentification.asmx/ChargerClavierVirtuel")
+    cenet_home = URL(r"/Default.aspx$", r"/default.aspx$", CenetHomePage)
+    cenet_accounts = URL(r"/Web/Api/ApiComptes.asmx/ChargerSyntheseComptes", CenetAccountsPage)
+    cenet_market_accounts = URL(r"/Web/Api/ApiBourse.asmx/ChargerComptesTitres", CenetAccountsPage)
+    cenet_loans = URL(r"/Web/Api/ApiFinancements.asmx/ChargerListeFinancementsMLT", CenetLoanPage)
+    cenet_account_history = URL(r"/Web/Api/ApiComptes.asmx/ChargerHistoriqueCompte", CenetAccountHistoryPage)
+    cenet_account_coming = URL(r"/Web/Api/ApiCartesBanquaires.asmx/ChargerEnCoursCarte", CenetAccountHistoryPage)
+    cenet_tr_detail = URL(r"/Web/Api/ApiComptes.asmx/ChargerDetailOperation", CenetCardSummaryPage)
+    cenet_cards = URL(r"/Web/Api/ApiCartesBanquaires.asmx/ChargerCartes", CenetCardsPage)
     cenet_login = URL(
-        r'https://.*/$',
-        r'https://.*/default.aspx',
+        r"https://.*/$",
+        r"https://.*/default.aspx",
         CenetLoginPage,
     )
-    linebourse_token = URL(r'/Web/Api/ApiBourse.asmx/GenererJeton', LinebourseTokenPage)
+    linebourse_token = URL(r"/Web/Api/ApiBourse.asmx/GenererJeton", LinebourseTokenPage)
 
-    subscription = URL(r'/Web/Api/ApiReleves.asmx/ChargerListeEtablissements', SubscriptionPage)
-    documents = URL(r'/Web/Api/ApiReleves.asmx/ChargerListeReleves', SubscriptionPage)
-    download = URL(r'/Default.aspx\?dashboard=ComptesReleves&lien=SuiviReleves', DownloadDocumentPage)
+    subscription = URL(r"/Web/Api/ApiReleves.asmx/ChargerListeEtablissements", SubscriptionPage)
+    documents = URL(r"/Web/Api/ApiReleves.asmx/ChargerListeReleves", SubscriptionPage)
+    download = URL(r"/Default.aspx\?dashboard=ComptesReleves&lien=SuiviReleves", DownloadDocumentPage)
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
-    MARKET_URL = 'https://www.caisse-epargne.offrebourse.com'
+    MARKET_URL = "https://www.caisse-epargne.offrebourse.com"
 
     def __init__(self, *args, **kwargs):
         # This value is useful to display deferred transactions if PSU has no card but only CHECKING account
@@ -96,7 +102,7 @@ class CenetBrowser(CaisseEpargneLogin):
 
         dirname = self.responses_dirname
         if dirname:
-            dirname += '/bourse'
+            dirname += "/bourse"
 
         self.linebourse = self.LINEBOURSE_BROWSER(
             self.MARKET_URL,
@@ -137,34 +143,34 @@ class CenetBrowser(CaisseEpargneLogin):
     @need_login
     def go_linebourse(self):
         data = {
-            'contexte': '',
-            'dateEntree': None,
-            'donneesEntree': 'null',
-            'filtreEntree': None,
+            "contexte": "",
+            "dateEntree": None,
+            "donneesEntree": "null",
+            "filtreEntree": None,
         }
         try:
             self.linebourse_token.go(json=data)
         except BrowserUnavailable:
             # The linebourse space is not available on every connection
-            raise AssertionError('No linebourse space')
+            raise AssertionError("No linebourse space")
         linebourse_token = self.page.get_token()
 
         self.location(
-            self.absurl('/ReroutageSJR', self.MARKET_URL),
-            data={'SJRToken': linebourse_token},
+            self.absurl("/ReroutageSJR", self.MARKET_URL),
+            data={"SJRToken": linebourse_token},
         )
         self.linebourse.session.cookies.update(self.session.cookies)
         domain = urlparse(self.url).netloc
-        self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get('XSRF-TOKEN', domain=domain)
+        self.linebourse.session.headers["X-XSRF-TOKEN"] = self.session.cookies.get("XSRF-TOKEN", domain=domain)
 
     @need_login
     def iter_accounts(self):
         if self.accounts is None:
             data = {
-                'contexte': '',
-                'dateEntree': None,
-                'donneesEntree': 'null',
-                'filtreEntree': None,
+                "contexte": "",
+                "dateEntree": None,
+                "donneesEntree": "null",
+                "filtreEntree": None,
             }
 
             # get accounts from CenetAccountsPage
@@ -179,12 +185,12 @@ class CenetBrowser(CaisseEpargneLogin):
                 self.cenet_cards.go(json=data)
             except BrowserUnavailable:
                 # for some accounts, the site can throw us an error, during weeks
-                self.logger.warning('ignoring cards because site is unavailable...')
+                self.logger.warning("ignoring cards because site is unavailable...")
             else:
                 if not self.accounts:
                     shallow_parent_accounts = list(self.page.iter_shallow_parent_accounts())
                     if shallow_parent_accounts:
-                        self.logger.info('Found shallow parent account(s)): %s' % shallow_parent_accounts)
+                        self.logger.info("Found shallow parent account(s)): %s" % shallow_parent_accounts)
                     self.accounts.extend(shallow_parent_accounts)
 
                 cards = list(self.page.iter_cards())
@@ -192,11 +198,11 @@ class CenetBrowser(CaisseEpargneLogin):
                     self.has_cards_displayed = True
                 redacted_ids = Counter(card.id[:4] + card.id[-6:] for card in cards)
                 for redacted_id in redacted_ids:
-                    assert redacted_ids[redacted_id] == 1, 'there are several cards with the same id %r' % redacted_id
+                    assert redacted_ids[redacted_id] == 1, "there are several cards with the same id %r" % redacted_id
 
                 for card in cards:
                     card.parent = find_object(self.accounts, id=card._parent_id)
-                    assert card.parent, 'no parent account found for card %s' % card
+                    assert card.parent, "no parent account found for card %s" % card
                 self.accounts.extend(cards)
 
             # get loans from CenetLoanPage
@@ -212,12 +218,12 @@ class CenetBrowser(CaisseEpargneLogin):
                 try:
                     if any(account._access_linebourse for account in market_accounts):
                         self.go_linebourse()
-                        params = {'_': '{}'.format(int(time.time() * 1000))}
+                        params = {"_": "{}".format(int(time.time() * 1000))}
                         self.linebourse.account_codes.go(params=params)
                         if self.linebourse.account_codes.is_here():
                             linebourse_account_ids = self.linebourse.page.get_accounts_list()
                 except AssertionError as e:
-                    if str(e) != 'No linebourse space':
+                    if str(e) != "No linebourse space":
                         raise e
                 finally:
                     self.cenet_home.go()
@@ -242,7 +248,7 @@ class CenetBrowser(CaisseEpargneLogin):
         if self.has_no_history(account):
             return []
 
-        if getattr(account, '_is_linebourse', False):
+        if getattr(account, "_is_linebourse", False):
             try:
                 self.go_linebourse()
                 return self.linebourse.iter_history(account.id)
@@ -258,6 +264,7 @@ class CenetBrowser(CaisseEpargneLogin):
                 def match_card(tr):
                     # ex: account.number="1234123456123456", tr.card="1234******123456"
                     return fnmatch(account.number, tr.card)
+
                 hist = self.get_history_base(account.parent, card_number=account.number)
                 return keep_only_card_transactions(hist, match_card)
 
@@ -269,10 +276,10 @@ class CenetBrowser(CaisseEpargneLogin):
 
     def get_history_base(self, account, card_number=None, regular_account=False):
         data = {
-            'contexte': '',
-            'dateEntree': None,
-            'filtreEntree': None,
-            'donneesEntree': json.dumps(account._formated),
+            "contexte": "",
+            "dateEntree": None,
+            "filtreEntree": None,
+            "donneesEntree": json.dumps(account._formated),
         }
         self.cenet_account_history.go(json=data)
 
@@ -287,27 +294,27 @@ class CenetBrowser(CaisseEpargneLogin):
                 # or the checking account linked to a card. Depending on the case, we skip
                 # or not card_summary detail, thus the regular_account check.
                 if (
-                    tr.type == tr.TYPE_CARD_SUMMARY and (
-                        card_number or re.search(r'^CB [\d\*]+ TOT DIF .*', tr.label)
-                    ) and not regular_account
+                    tr.type == tr.TYPE_CARD_SUMMARY
+                    and (card_number or re.search(r"^CB [\d\*]+ TOT DIF .*", tr.label))
+                    and not regular_account
                 ):
                     if card_number:
                         yield tr
                         # checking if card_summary is for this card
-                        assert tr.card, 'card summary has no card number?'
+                        assert tr.card, "card summary has no card number?"
                         if not self._matches_card(tr, card_number):
                             continue
 
                     # getting detailed transactions for card_summary
                     donneesEntree = {}
-                    donneesEntree['Compte'] = account._formated
+                    donneesEntree["Compte"] = account._formated
 
-                    donneesEntree['ListeOperations'] = [tr._data]
+                    donneesEntree["ListeOperations"] = [tr._data]
                     deferred_data = {
-                        'contexte': '',
-                        'dateEntree': None,
-                        'donneesEntree': json.dumps(donneesEntree).replace('/', '\\/'),
-                        'filtreEntree': json.dumps(tr._data).replace('/', '\\/'),
+                        "contexte": "",
+                        "dateEntree": None,
+                        "donneesEntree": json.dumps(donneesEntree).replace("/", "\\/"),
+                        "filtreEntree": json.dumps(tr._data).replace("/", "\\/"),
                     }
                     tr_detail_page = self.cenet_tr_detail.open(json=deferred_data)
 
@@ -323,9 +330,11 @@ class CenetBrowser(CaisseEpargneLogin):
             if not offset:
                 break
 
-            data['filtreEntree'] = json.dumps({
-                'Offset': offset,
-            })
+            data["filtreEntree"] = json.dumps(
+                {
+                    "Offset": offset,
+                }
+            )
             self.cenet_account_history.go(json=data)
 
     @need_login
@@ -336,10 +345,10 @@ class CenetBrowser(CaisseEpargneLogin):
         trs = []
 
         data = {
-            'contexte': '',
-            'dateEntree': None,
-            'donneesEntree': json.dumps(account._hist),
-            'filtreEntree': None,
+            "contexte": "",
+            "dateEntree": None,
+            "donneesEntree": json.dumps(account._hist),
+            "filtreEntree": None,
         }
 
         self.cenet_account_coming.go(json=data)
@@ -350,7 +359,7 @@ class CenetBrowser(CaisseEpargneLogin):
 
     @need_login
     def iter_investments(self, account):
-        if getattr(account, '_is_linebourse', False):
+        if getattr(account, "_is_linebourse", False):
             try:
                 self.go_linebourse()
                 return self.linebourse.iter_investments(account.id)
@@ -360,7 +369,7 @@ class CenetBrowser(CaisseEpargneLogin):
 
     @need_login
     def iter_market_orders(self, account):
-        if getattr(account, '_is_linebourse', False):
+        if getattr(account, "_is_linebourse", False):
             try:
                 self.go_linebourse()
                 return self.linebourse.iter_market_orders(account.id)
@@ -389,10 +398,10 @@ class CenetBrowser(CaisseEpargneLogin):
     def iter_subscriptions(self):
         subscriber = self.get_profile().name
         json_data = {
-            'contexte': '',
-            'dateEntree': None,
-            'donneesEntree': 'null',
-            'filtreEntree': None,
+            "contexte": "",
+            "dateEntree": None,
+            "donneesEntree": "null",
+            "filtreEntree": None,
         }
         self.subscription.go(json=json_data)
         return self.page.iter_subscription(subscriber=subscriber)
@@ -401,21 +410,21 @@ class CenetBrowser(CaisseEpargneLogin):
     def iter_documents(self, subscription):
         sub_id = subscription.id
         input_filter = {
-            'Page': 0,
-            'NombreParPage': 0,
-            'Tris': [],
-            'Criteres': [
-                {'Champ': 'Etablissement', 'TypeCritere': 'Equals', 'Value': sub_id},
-                {'Champ': 'DateDebut', 'TypeCritere': 'Equals', 'Value': None},
-                {'Champ': 'DateFin', 'TypeCritere': 'Equals', 'Value': None},
-                {'Champ': 'MaxRelevesAffichesParNumero', 'TypeCritere': 'Equals', 'Value': '100'},
+            "Page": 0,
+            "NombreParPage": 0,
+            "Tris": [],
+            "Criteres": [
+                {"Champ": "Etablissement", "TypeCritere": "Equals", "Value": sub_id},
+                {"Champ": "DateDebut", "TypeCritere": "Equals", "Value": None},
+                {"Champ": "DateFin", "TypeCritere": "Equals", "Value": None},
+                {"Champ": "MaxRelevesAffichesParNumero", "TypeCritere": "Equals", "Value": "100"},
             ],
         }
         json_data = {
-            'contexte': '',
-            'dateEntree': None,
-            'donneesEntree': 'null',
-            'filtreEntree': json.dumps(input_filter),
+            "contexte": "",
+            "dateEntree": None,
+            "donneesEntree": "null",
+            "filtreEntree": json.dumps(input_filter),
         }
         self.documents.go(json=json_data)
         return self.page.iter_documents(sub_id=sub_id, sub_label=subscription.label, username=self.username)

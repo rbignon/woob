@@ -33,32 +33,32 @@ class ListStationsPage(HTMLPage):
         item_xpath = "//div[@id='liste-station']/table/tbody/tr"
         head_xpath = "//div[@id='liste-station']/table/thead/tr/th/@class"
 
-        col_id = 'libelle'
-        col_name = 'Nom'
-        col_city = 'commune'
-        col_adresse = 'adresse'
-        col_bikes = 'nbVelosDispo'
-        col_attachs = 'nbPlacesDispo'
-        col_status = 'etat'
+        col_id = "libelle"
+        col_name = "Nom"
+        col_city = "commune"
+        col_adresse = "adresse"
+        col_bikes = "nbVelosDispo"
+        col_attachs = "nbPlacesDispo"
+        col_status = "etat"
 
         class item(ItemElement):
             klass = Gauge
 
-            obj_id = CleanText(TableCell('id'))
-            obj_name = CleanText(TableCell('name'))
-            obj_city = CleanText(TableCell('city'))
-            obj_object = u'vLille'
+            obj_id = CleanText(TableCell("id"))
+            obj_name = CleanText(TableCell("name"))
+            obj_city = CleanText(TableCell("city"))
+            obj_object = "vLille"
 
             @staticmethod
             def _create_bikes_sensor(value, gauge_id, last_update, adresse):
-                levelbikes = GaugeSensor(gauge_id + '-bikes')
-                levelbikes.name = u'Bikes'
-                levelbikes.address = u'%s' % adresse
+                levelbikes = GaugeSensor(gauge_id + "-bikes")
+                levelbikes.name = "Bikes"
+                levelbikes.address = "%s" % adresse
                 lastvalue = GaugeMeasure()
                 lastvalue.level = Decimal(value)
                 lastvalue.date = last_update
                 if lastvalue.level < 1:
-                    lastvalue.alarm = u'Empty station'
+                    lastvalue.alarm = "Empty station"
                 levelbikes.lastvalue = lastvalue
                 levelbikes.history = NotLoaded
                 levelbikes.gaugeid = gauge_id
@@ -66,14 +66,14 @@ class ListStationsPage(HTMLPage):
 
             @staticmethod
             def _create_attach_sensor(value, gauge_id, last_update, adresse):
-                levelattach = GaugeSensor(gauge_id + '-attach')
-                levelattach.name = u'Attach'
-                levelattach.address = u'%s' % adresse
+                levelattach = GaugeSensor(gauge_id + "-attach")
+                levelattach.name = "Attach"
+                levelattach.address = "%s" % adresse
                 lastvalue = GaugeMeasure()
                 lastvalue.level = Decimal(value)
                 lastvalue.date = last_update
                 if lastvalue.level < 1:
-                    lastvalue.alarm = u'Full station'
+                    lastvalue.alarm = "Full station"
                 levelattach.lastvalue = lastvalue
                 levelattach.history = NotLoaded
                 levelattach.gaugeid = gauge_id
@@ -81,13 +81,13 @@ class ListStationsPage(HTMLPage):
 
             @staticmethod
             def _create_status_sensor(value, gauge_id, last_update, adresse):
-                levelstatus = GaugeSensor(gauge_id + '-status')
-                levelstatus.name = u'Status'
-                levelstatus.address = u'%s' % adresse
+                levelstatus = GaugeSensor(gauge_id + "-status")
+                levelstatus.name = "Status"
+                levelstatus.address = "%s" % adresse
                 lastvalue = GaugeMeasure()
                 lastvalue.level = Decimal(1) if value == "CONNECTEE" else Decimal(-1)
                 if lastvalue.level < 1:
-                    lastvalue.alarm = u'Not available station'
+                    lastvalue.alarm = "Not available station"
                 lastvalue.date = last_update
                 levelstatus.lastvalue = lastvalue
                 levelstatus.history = NotLoaded
@@ -96,15 +96,21 @@ class ListStationsPage(HTMLPage):
 
             def obj_sensors(self):
                 sensors = []
-                last_update = DateTime(CleanText('(//div[@class="maj"]/b)[1]', replace=[(u'à', '')]))(self)
-                adresse = CleanText(TableCell('adresse'))(self)
-                sensors.append(self._create_bikes_sensor(CleanText(TableCell('bikes'))(self),
-                                                         Field('id')(self),
-                                                         last_update, adresse))
-                sensors.append(self._create_attach_sensor(CleanText(TableCell('attachs'))(self),
-                                                          Field('id')(self),
-                                                          last_update, adresse))
-                sensors.append(self._create_status_sensor(CleanText(TableCell('status'))(self),
-                                                          Field('id')(self),
-                                                          last_update, adresse))
+                last_update = DateTime(CleanText('(//div[@class="maj"]/b)[1]', replace=[("à", "")]))(self)
+                adresse = CleanText(TableCell("adresse"))(self)
+                sensors.append(
+                    self._create_bikes_sensor(
+                        CleanText(TableCell("bikes"))(self), Field("id")(self), last_update, adresse
+                    )
+                )
+                sensors.append(
+                    self._create_attach_sensor(
+                        CleanText(TableCell("attachs"))(self), Field("id")(self), last_update, adresse
+                    )
+                )
+                sensors.append(
+                    self._create_status_sensor(
+                        CleanText(TableCell("status"))(self), Field("id")(self), last_update, adresse
+                    )
+                )
                 return sensors

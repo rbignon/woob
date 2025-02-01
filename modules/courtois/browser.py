@@ -21,5 +21,5 @@ from woob.browser import AbstractBrowser
 
 
 class CourtoisBrowser(AbstractBrowser):
-    BASEURL = 'https://www.banque-courtois.fr/'
-    PARENT = 'creditdunord'
+    BASEURL = "https://www.banque-courtois.fr/"
+    PARENT = "creditdunord"

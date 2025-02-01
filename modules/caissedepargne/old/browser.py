@@ -35,7 +35,10 @@ from woob.capabilities.profile import Profile
 from woob.exceptions import BrowserHTTPError, BrowserUnavailable
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import (
-    FrenchTransaction, keep_only_card_transactions, omit_deferred_transactions, sorted_transactions,
+    FrenchTransaction,
+    keep_only_card_transactions,
+    omit_deferred_transactions,
+    sorted_transactions,
 )
 from woob.tools.date import now_as_utc
 from woob.tools.decorators import retry
@@ -44,15 +47,36 @@ from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 from ..browser import CaisseEpargneLogin
 from .pages import (
-    ActivationSubscriptionPage, AuthentPage, CardsComingPage, CardsOldWebsitePage, CardsPage, ConsLoanPage,
-    CreditCooperatifMarketPage, GarbagePage, IndexPage, LifeInsurance, LifeInsuranceHistory, LifeInsuranceInvestments,
-    LoadingPage, MarketPage, MeasurePage, MessagePage, NatixisErrorPage, NatixisLIHis, NatixisLIInv,
-    NatixisRedirectPage, NewLeviesPage, OldLeviesPage, TechnicalIssuePage, TransactionPopupPage,
-    TransactionsDetailsPage, UnavailablePage,
+    ActivationSubscriptionPage,
+    AuthentPage,
+    CardsComingPage,
+    CardsOldWebsitePage,
+    CardsPage,
+    ConsLoanPage,
+    CreditCooperatifMarketPage,
+    GarbagePage,
+    IndexPage,
+    LifeInsurance,
+    LifeInsuranceHistory,
+    LifeInsuranceInvestments,
+    LoadingPage,
+    MarketPage,
+    MeasurePage,
+    MessagePage,
+    NatixisErrorPage,
+    NatixisLIHis,
+    NatixisLIInv,
+    NatixisRedirectPage,
+    NewLeviesPage,
+    OldLeviesPage,
+    TechnicalIssuePage,
+    TransactionPopupPage,
+    TransactionsDetailsPage,
+    UnavailablePage,
 )
 
 
-__all__ = ['OldCaisseEpargneBrowser']
+__all__ = ["OldCaisseEpargneBrowser"]
 
 
 def decode_utf8_cookie(data):
@@ -61,7 +85,7 @@ def decode_utf8_cookie(data):
     # Since it's not standard, requests/urllib interprets it freely... as latin-1
     # and we can't really blame for that.
     # Let's decode this shit ourselves.
-    return data.encode('latin-1').decode('utf-8')
+    return data.encode("latin-1").decode("utf-8")
 
 
 class OldCaisseEpargneBrowser(CaisseEpargneLogin):
@@ -71,109 +95,102 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
 
-    loading = URL(r'https://.*/CreditConso/ReroutageCreditConso.aspx', LoadingPage)
+    loading = URL(r"https://.*/CreditConso/ReroutageCreditConso.aspx", LoadingPage)
     revolving_details = URL(
-        r'https://www.credit-conso-cr.caisse-epargne.fr/websavcr-web/rest/contrat/getContrat',
-        ConsLoanPage
+        r"https://www.credit-conso-cr.caisse-epargne.fr/websavcr-web/rest/contrat/getContrat", ConsLoanPage
     )
     cons_details = URL(
-        r'https://www.credit-conso-pp.caisse-epargne.fr/websavpp-web/rest/contrat/getInfoContrat',
-        ConsLoanPage
+        r"https://www.credit-conso-pp.caisse-epargne.fr/websavpp-web/rest/contrat/getInfoContrat", ConsLoanPage
     )
-    cons_details_form = URL(
-        r'https://www.net.*.caisse-epargne.fr/CreditConso/ReroutageSAV_PP.aspx',
-        IndexPage
-    )
-    transaction_detail = URL(r'https://.*/Portail.aspx.*', TransactionsDetailsPage)
-    measure_page = URL(r'https://.*/Portail.aspx.*', MeasurePage)
-    cards_old = URL(r'https://.*/Portail.aspx.*', CardsOldWebsitePage)
-    cards = URL(r'https://.*/Portail.aspx.*', CardsPage)
-    cards_coming = URL(r'https://.*/Portail.aspx.*', CardsComingPage)
-    old_checkings_levies = URL(r'https://.*/Portail.aspx.*', OldLeviesPage)
-    new_checkings_levies = URL(r'https://.*/Portail.aspx.*', NewLeviesPage)
-    authent = URL(r'https://.*/Portail.aspx.*', AuthentPage)
-    activation_subscription = URL(r'https://.*/Portail.aspx.*', ActivationSubscriptionPage)
-    transaction_popup = URL(r'https://.*/Portail.aspx.*', TransactionPopupPage)
+    cons_details_form = URL(r"https://www.net.*.caisse-epargne.fr/CreditConso/ReroutageSAV_PP.aspx", IndexPage)
+    transaction_detail = URL(r"https://.*/Portail.aspx.*", TransactionsDetailsPage)
+    measure_page = URL(r"https://.*/Portail.aspx.*", MeasurePage)
+    cards_old = URL(r"https://.*/Portail.aspx.*", CardsOldWebsitePage)
+    cards = URL(r"https://.*/Portail.aspx.*", CardsPage)
+    cards_coming = URL(r"https://.*/Portail.aspx.*", CardsComingPage)
+    old_checkings_levies = URL(r"https://.*/Portail.aspx.*", OldLeviesPage)
+    new_checkings_levies = URL(r"https://.*/Portail.aspx.*", NewLeviesPage)
+    authent = URL(r"https://.*/Portail.aspx.*", AuthentPage)
+    activation_subscription = URL(r"https://.*/Portail.aspx.*", ActivationSubscriptionPage)
+    transaction_popup = URL(r"https://.*/Portail.aspx.*", TransactionPopupPage)
     market = URL(
-        r'https://.*/Pages/Bourse.*',
-        r'https://www.caisse-epargne.offrebourse.com/ReroutageSJR',
-        r'https://www.caisse-epargne.offrebourse.com/fr/6CE.*',
-        r'https://www.caisse-epargne.offrebourse.com/app-v2/#/app-mobile',
-        MarketPage
+        r"https://.*/Pages/Bourse.*",
+        r"https://www.caisse-epargne.offrebourse.com/ReroutageSJR",
+        r"https://www.caisse-epargne.offrebourse.com/fr/6CE.*",
+        r"https://www.caisse-epargne.offrebourse.com/app-v2/#/app-mobile",
+        MarketPage,
     )
-    unavailable_page = URL(r'https://www.caisse-epargne.fr/.*/au-quotidien', UnavailablePage)
+    unavailable_page = URL(r"https://www.caisse-epargne.fr/.*/au-quotidien", UnavailablePage)
 
-    creditcooperatif_market = URL(r'https://www.offrebourse.com/.*', CreditCooperatifMarketPage)  # just to catch the landing page of the Credit Cooperatif's Linebourse
+    creditcooperatif_market = URL(
+        r"https://www.offrebourse.com/.*", CreditCooperatifMarketPage
+    )  # just to catch the landing page of the Credit Cooperatif's Linebourse
     life_insurance_history = URL(
-        r'https://www.extranet2.caisse-epargne.fr/cin-front/contrats/evenements',
-        LifeInsuranceHistory
+        r"https://www.extranet2.caisse-epargne.fr/cin-front/contrats/evenements", LifeInsuranceHistory
     )
     life_insurance_investments = URL(
-        r'https://www.extranet2.caisse-epargne.fr/cin-front/contrats/details',
-        LifeInsuranceInvestments
+        r"https://www.extranet2.caisse-epargne.fr/cin-front/contrats/details", LifeInsuranceInvestments
     )
     life_insurance = URL(
-        r'https://.*/Assurance/Pages/Assurance.aspx',
-        r'https://www.extranet2.caisse-epargne.fr.*',
-        LifeInsurance
+        r"https://.*/Assurance/Pages/Assurance.aspx", r"https://www.extranet2.caisse-epargne.fr.*", LifeInsurance
     )
 
     natixis_redirect = URL(
-        r'/NaAssuranceRedirect/NaAssuranceRedirect.aspx',
+        r"/NaAssuranceRedirect/NaAssuranceRedirect.aspx",
         # TODO: adapt domain to children of CE
-        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/views/common/routage-itce.xhtml',
-        NatixisRedirectPage
+        r"https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/views/common/routage-itce.xhtml",
+        NatixisRedirectPage,
     )
     natixis_life_ins_his = URL(
         # TODO: adapt domain to children of CE
-        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load-operation(?P<account_path>)',
-        NatixisLIHis
+        r"https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load-operation(?P<account_path>)",
+        NatixisLIHis,
     )
     natixis_life_ins_inv = URL(
         # TODO: adapt domain to children of CE
-        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load(?P<account_path>)',
-        NatixisLIInv
+        r"https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/rest/v2/contratVie/load(?P<account_path>)",
+        NatixisLIInv,
     )
     natixis_error = URL(
         # TODO: adapt domain to children of CE
-        r'https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/page500.xhtml',
-        NatixisErrorPage
+        r"https://www.espace-assurances.caisse-epargne.fr/espaceinternet-ce/page500.xhtml",
+        NatixisErrorPage,
     )
 
-    message = URL(r'https://www.caisse-epargne.offrebourse.com/DetailMessage\?refresh=O', MessagePage)
-    home = URL(r'https://.*/Portail.aspx.*', IndexPage)
-    home_tache = URL(r'https://.*/Portail.aspx\?tache=(?P<tache>).*', IndexPage)
+    message = URL(r"https://www.caisse-epargne.offrebourse.com/DetailMessage\?refresh=O", MessagePage)
+    home = URL(r"https://.*/Portail.aspx.*", IndexPage)
+    home_tache = URL(r"https://.*/Portail.aspx\?tache=(?P<tache>).*", IndexPage)
     garbage = URL(
-        r'https://www.caisse-epargne.offrebourse.com/Portefeuille',
-        r'https://www.caisse-epargne.fr/particuliers/.*/emprunter.aspx',
-        r'https://.*/particuliers/emprunter.*',
-        r'https://.*/particuliers/epargner.*',
-        r'https://www.caisse-epargne.fr/.*/epargner',
-        GarbagePage
+        r"https://www.caisse-epargne.offrebourse.com/Portefeuille",
+        r"https://www.caisse-epargne.fr/particuliers/.*/emprunter.aspx",
+        r"https://.*/particuliers/emprunter.*",
+        r"https://.*/particuliers/epargner.*",
+        r"https://www.caisse-epargne.fr/.*/epargner",
+        GarbagePage,
     )
 
-    tech_issue = URL(r'https://.*/erreur_technique', TechnicalIssuePage)
+    tech_issue = URL(r"https://.*/erreur_technique", TechnicalIssuePage)
 
     # Accounts managed in life insurance space (not in linebourse)
 
     insurance_accounts = (
-        'AIKIDO',
-        'ASSURECUREUIL',
-        'ECUREUIL PROJET',
-        'GARANTIE RETRAITE EU',
-        'INITIATIVES PLUS',
-        'INITIATIVES TRANSMIS',
-        'LIVRET ASSURANCE VIE',
-        'OCEOR EVOLUTION',
-        'PATRIMONIO CRESCENTE',
-        'PEP TRANSMISSION',
-        'PERP',
-        'PERSPECTIVES ECUREUI',
-        'POINTS RETRAITE ECUR',
-        'RICOCHET',
-        'SOLUTION PERP',
-        'TENDANCES',
-        'YOGA',
+        "AIKIDO",
+        "ASSURECUREUIL",
+        "ECUREUIL PROJET",
+        "GARANTIE RETRAITE EU",
+        "INITIATIVES PLUS",
+        "INITIATIVES TRANSMIS",
+        "LIVRET ASSURANCE VIE",
+        "OCEOR EVOLUTION",
+        "PATRIMONIO CRESCENTE",
+        "PEP TRANSMISSION",
+        "PERP",
+        "PERSPECTIVES ECUREUI",
+        "POINTS RETRAITE ECUR",
+        "RICOCHET",
+        "SOLUTION PERP",
+        "TENDANCES",
+        "YOGA",
     )
 
     def __init__(self, nuser, config, *args, **kwargs):
@@ -186,20 +203,24 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         self.is_send_sms = None
         self.is_use_emv = None
         self.market_url = kwargs.pop(
-            'market_url',
-            'https://www.caisse-epargne.offrebourse.com',
+            "market_url",
+            "https://www.caisse-epargne.offrebourse.com",
         )
         self.has_subscription = True
 
         super().__init__(nuser, config, *args, **kwargs)
 
         self.__states__ += (
-            'recipient_form', 'is_send_sms', 'is_app_validation',
-            'is_use_emv', 'new_website', 'cards_not_reached',
+            "recipient_form",
+            "is_send_sms",
+            "is_app_validation",
+            "is_use_emv",
+            "new_website",
+            "cards_not_reached",
         )
         dirname = self.responses_dirname
         if dirname:
-            dirname += '/bourse'
+            dirname += "/bourse"
 
         self.linebourse = self.LINEBOURSE_BROWSER(
             self.market_url,
@@ -209,13 +230,13 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         )
 
     def load_state(self, state):
-        expire = state.get('expire')
+        expire = state.get("expire")
         if expire:
             expire = parser.parse(expire)
             if not expire.tzinfo:
                 expire = expire.replace(tzinfo=tz.tzlocal())
             if expire < now_as_utc():
-                self.logger.info('State expired, not reloading it from storage')
+                self.logger.info("State expired, not reloading it from storage")
                 return
 
         # TODO: Always loading the state might break something.
@@ -228,7 +249,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         # after entering the emv otp the locate browser is making a request on
         # the last url we visited, and in that case we are invalidating the
         # validation_unit_id needed for sending the otp
-        if any((self.config['otp_emv'].get(), self.config['otp_sms'].get())):
+        if any((self.config["otp_emv"].get(), self.config["otp_sms"].get())):
             return
 
         try:
@@ -241,8 +262,8 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
 
     def deleteCTX(self):
         # For connection to offrebourse and natixis, we need to delete duplicate of CTX cookie
-        if len([k for k in self.session.cookies.keys() if k == 'CTX']) > 1:
-            del self.session.cookies['CTX']
+        if len([k for k in self.session.cookies.keys() if k == "CTX"]) > 1:
+            del self.session.cookies["CTX"]
 
     def do_login(self):
         self.browser_switched = True
@@ -250,31 +271,36 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         return
 
     def go_details_revolving_or_cons(self, loan_type):
-        days = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
-        month = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+        days = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        month = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
         now = datetime.today()
         # for non-DST
         # d = '%s %s %s %s %s:%s:%s GMT+0100 (heure normale d’Europe centrale)' % (days[now.weekday()], now.day, month[now.month - 1], now.year, now.hour, format(now.minute, "02"), now.second)
         # TODO use babel library to simplify this code
-        d = '%s %s %s %s %s:%s:%s GMT+0200 (heure d’été d’Europe centrale)' % (
-            days[now.weekday()], now.day, month[now.month - 1], now.year,
-            now.hour, format(now.minute, "02"), now.second,
+        d = "%s %s %s %s %s:%s:%s GMT+0200 (heure d’été d’Europe centrale)" % (
+            days[now.weekday()],
+            now.day,
+            month[now.month - 1],
+            now.year,
+            now.hour,
+            format(now.minute, "02"),
+            now.second,
         )
 
         if self.home.is_here():
             msg = self.page.loan_unavailable_msg()
             if msg:
-                self.logger.warning('%s' % msg)
+                self.logger.warning("%s" % msg)
                 return None
-        if loan_type == 'cons':
+        if loan_type == "cons":
             message = self.page.get_partial_accounts_error_message()
             if message:
                 raise BrowserUnavailable(message)
 
             self.page.submit_conso_details()
-            self.cons_details.go(params={'datePourIE': d})
-        elif loan_type == 'revolving':
-            self.revolving_details.go(params={'datePourIE': d})
+            self.cons_details.go(params={"datePourIE": d})
+        elif loan_type == "revolving":
+            self.revolving_details.go(params={"datePourIE": d})
 
         return self.page.get_conso()
 
@@ -282,7 +308,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         self.home.go()
 
         if not self.measure_page.is_here():
-            raise AssertionError('Should be on measure_page')
+            raise AssertionError("Should be on measure_page")
 
         self.page.go_measure_list()
         for _ in range(page_num):
@@ -290,7 +316,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
 
     def get_owner_name(self):
         # Get name from profile to verify who is the owner of accounts.
-        name = self.get_profile().name.upper().split(' ', 1)
+        name = self.get_profile().name.upper().split(" ", 1)
         if len(name) == 2:  # if the name is complete (with first and last name)
             owner_name = name[1]
         else:  # if there is only first name
@@ -307,11 +333,11 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                     for new_account in self.page.get_list(owner_name):
                         # joint accounts can be present twice, once per owner
                         if new_account.id in [account.id for account in accounts]:
-                            self.logger.warning('Skip the duplicate account, id :  %s' % new_account.id)
+                            self.logger.warning("Skip the duplicate account, id :  %s" % new_account.id)
                             continue
 
-                        new_account._info['measure_id'] = measure_id
-                        new_account._info['measure_id_page_num'] = page_num
+                        new_account._info["measure_id"] = measure_id
+                        new_account._info["measure_id_page_num"] = page_num
                         accounts.append(new_account)
 
                 self.go_measure_list(page_num)
@@ -338,9 +364,9 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
             self.accounts = self.get_accounts(owner_name)
 
             for account in self.accounts:
-                if 'acc_type' in account._info and account._info['acc_type'] == Account.TYPE_LIFE_INSURANCE:
-                    self.go_measure_list(account._info['measure_id_page_num'])
-                    self.page.go_measure_accounts_list(account._info['measure_id'])
+                if "acc_type" in account._info and account._info["acc_type"] == Account.TYPE_LIFE_INSURANCE:
+                    self.go_measure_list(account._info["measure_id_page_num"])
+                    self.page.go_measure_accounts_list(account._info["measure_id"])
                     self.page.go_history(account._info)
 
                     if self.message.is_here():
@@ -360,13 +386,13 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         # for caissedepargne the domain is 'www.caisse-epargne.offrebourse.com'
         # whereas for creditcooperatif it is 'www.offrebourse.com'
         domain = urlparse(self.url).netloc
-        self.linebourse.session.headers['X-XSRF-TOKEN'] = self.session.cookies.get('XSRF-TOKEN', domain=domain)
+        self.linebourse.session.headers["X-XSRF-TOKEN"] = self.session.cookies.get("XSRF-TOKEN", domain=domain)
 
     def add_linebourse_accounts_data(self):
         for account in self.accounts:
             self.deleteCTX()
             if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
-                self.home_tache.go(tache='CPTSYNT0')
+                self.home_tache.go(tache="CPTSYNT0")
                 self.page.go_history(account._info)
 
                 if self.message.is_here():
@@ -378,7 +404,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                     continue
                 self.page.submit()
 
-                if 'offrebourse.com' in self.url:
+                if "offrebourse.com" in self.url:
                     # Some users may not have access to this.
                     if self.page.is_error():
                         continue
@@ -390,7 +416,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                     account.valuation_diff = page.get_valuation_diff()
 
                     # We need to go back to the synthesis, else we can not go home later
-                    self.home_tache.go(tache='CPTSYNT0')
+                    self.home_tache.go(tache="CPTSYNT0")
                 else:
                     raise AssertionError("new domain that hasn't been seen so far?")
 
@@ -435,10 +461,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
             for card in self.page.iter_cards():
                 card.parent = find_object(self.accounts, number=card._parent_id)
                 if not card.parent:
-                    self.logger.info(
-                        "The parent %s of the card %s wasn't found."
-                        % (card._parent_id, card.id)
-                    )
+                    self.logger.info("The parent %s of the card %s wasn't found." % (card._parent_id, card.id))
                     continue
 
                 card.owner_type = card.parent.owner_type
@@ -459,7 +482,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                     card._coming_info = self.page.get_card_coming_info(card.number, info.copy())
 
                     if not card._coming_info:
-                        self.logger.warning('Skip card %s (not found on checking account)', card.number)
+                        self.logger.warning("Skip card %s (not found on checking account)", card.number)
                         continue
                 self.accounts.append(card)
 
@@ -467,7 +490,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         elif self.cards_old.is_here():
             for card in self.page.iter_cards():
                 card.parent = find_object(self.accounts, number=card._parent_id)
-                assert card.parent, 'card account parent %s was not found' % card.number
+                assert card.parent, "card account parent %s was not found" % card.number
                 card.owner_type = card.parent.owner_type
                 self.accounts.append(card)
 
@@ -484,7 +507,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
 
         try:
             # Get wealth accounts that are not on the summary page
-            self.home_tache.go(tache='EPASYNT0')
+            self.home_tache.go(tache="EPASYNT0")
             # If there are no wealth accounts we are redirected to the "garbage page"
             if self.home.is_here():
                 for account in self.page.get_list(owner_name):
@@ -539,11 +562,11 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         if not self.activation_subscription.is_here():
             return
         self.page.send_check_no_accounts_form()
-        assert self.activation_subscription.is_here(), 'Expected to be on ActivationSubscriptionPage'
+        assert self.activation_subscription.is_here(), "Expected to be on ActivationSubscriptionPage"
         self.page.check_no_accounts()
 
     def iter_accounts(self):
-        self.BASEURL = 'https://' + urlparse(self.continue_url).netloc
+        self.BASEURL = "https://" + urlparse(self.continue_url).netloc
         accounts = self.get_accounts_list()
         accounts.extend(self.get_loans_list())
         return accounts
@@ -583,7 +606,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                     return []
 
             for _ in range(2):
-                self.home_tache.go(tache='CRESYNT0')
+                self.home_tache.go(tache="CRESYNT0")
                 if self.tech_issue.is_here():
                     raise BrowserUnavailable()
 
@@ -594,9 +617,9 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                             self.loans = list(self.page.get_loan_list())
                         except BrowserUnavailable:
                             # The old website often returns errors
-                            self.logger.warning('Loan access has failed, which can potentially delete loan account.')
+                            self.logger.warning("Loan access has failed, which can potentially delete loan account.")
                         except ServerError:
-                            self.logger.warning('Access to loans failed, we try again')
+                            self.logger.warning("Access to loans failed, we try again")
                         else:
                             if self.home.is_here() and self.page.is_old_loan_website():
                                 for loan in self.loans:
@@ -607,7 +630,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
 
             for _ in range(3):
                 try:
-                    self.home_tache.go(tache='CPTSYNT0')
+                    self.home_tache.go(tache="CPTSYNT0")
 
                     if self.home.is_here():
                         self.page.go_list()
@@ -625,31 +648,31 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
     @need_login
     def _get_history(self, info, account_card=None):
         # Only fetch deferred debit card transactions if `account_card` is not None
-        if isinstance(info['link'], list):
-            info['link'] = info['link'][0]
-        if not info['link'].startswith('HISTORIQUE'):
+        if isinstance(info["link"], list):
+            info["link"] = info["link"][0]
+        if not info["link"].startswith("HISTORIQUE"):
             return
-        if 'measure_id' in info:
-            self.home_tache.go(tache='CPTSYNT0')
-            self.go_measure_list(info['measure_id_page_num'])
-            self.page.go_measure_accounts_list(info['measure_id'])
+        if "measure_id" in info:
+            self.home_tache.go(tache="CPTSYNT0")
+            self.go_measure_list(info["measure_id_page_num"])
+            self.page.go_measure_accounts_list(info["measure_id"])
         elif self.home.is_here():
             self.page.go_list()
         else:
-            self.home_tache.go(tache='CPTSYNT0')
+            self.home_tache.go(tache="CPTSYNT0")
 
         self.page.go_history(info)
 
         # ensure we are on the correct history page
-        if 'netpro' in self.page.url and not self.page.is_history_of(info['id']):
+        if "netpro" in self.page.url and not self.page.is_history_of(info["id"]):
             self.page.go_history_netpro(info)
 
         # In this case, we want the coming transaction for the new website
         # (old website return coming directly in `get_coming()` )
-        if account_card and info and info['type'] == 'HISTORIQUE_CB':
-            self.page.go_coming(account_card._coming_info['link'])
+        if account_card and info and info["type"] == "HISTORIQUE_CB":
+            self.page.go_coming(account_card._coming_info["link"])
 
-        info['link'] = [info['link']]
+        info["link"] = [info["link"]]
 
         for i in range(self.HISTORY_MAX_PAGE):
 
@@ -666,16 +689,15 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                             card_and_forms.append((tr.card, self.page.get_form_to_detail(tr)))
                         else:
                             self.logger.debug(
-                                'will skip summary detail (%r) for different card %r',
-                                tr, account_card.number
+                                "will skip summary detail (%r) for different card %r", tr, account_card.number
                             )
-                elif tr.type == FrenchTransaction.TYPE_CARD and 'fac cb' in tr.raw.lower() and not account_card:
+                elif tr.type == FrenchTransaction.TYPE_CARD and "fac cb" in tr.raw.lower() and not account_card:
                     # for immediate debits made with a def card the label is way too empty for certain clients
                     # we therefore open a popup and find the rest of the label
                     # can't do that for every type of transactions because it makes a lot a additional requests
                     form = self.page.get_form_to_detail(tr)
                     transaction_popup_page = self.open(form.url, data=form)
-                    tr.raw += ' ' + transaction_popup_page.page.complete_label()
+                    tr.raw += " " + transaction_popup_page.page.complete_label()
 
             # For deferred card history only :
             #
@@ -688,7 +710,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
             for card, form in card_and_forms:
                 form.submit()
                 if self.home.is_here() and self.page.is_access_error():
-                    self.logger.warning('Access to card details is unavailable for this user')
+                    self.logger.warning("Access to card details is unavailable for this user")
                     continue
                 assert self.transaction_detail.is_here()
                 for tr in self.page.get_detail():
@@ -717,7 +739,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
             if not self.page.go_next():
                 return
 
-        raise AssertionError('More than {} history pages'.format(self.HISTORY_MAX_PAGE))
+        raise AssertionError("More than {} history pages".format(self.HISTORY_MAX_PAGE))
 
     @need_login
     def _get_history_invests(self, account):
@@ -726,19 +748,19 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         else:
             self.home.go()
 
-        if account._info['type'] == 'SYNTHESE_EPARGNE':
+        if account._info["type"] == "SYNTHESE_EPARGNE":
             # If the type is not SYNTHESE_EPARGNE, it means we have a direct link and going
             # this way would set off a SyntaxError.
             self.page.go_history(account._info)
 
         if account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION, Account.TYPE_PERP):
             if self.page.is_account_inactive(account.id):
-                self.logger.warning('Account %s %s is inactive.' % (account.label, account.id))
+                self.logger.warning("Account %s %s is inactive." % (account.label, account.id))
                 return []
 
             if "MILLEVIE" in account.label:
                 # This way we ensure we can access all type of MILLEVIE accounts
-                self.home_tache.go(tache='EPASYNT0')
+                self.home_tache.go(tache="EPASYNT0")
                 self.page.go_life_insurance(account)
 
                 self.natixis_life_ins_inv.go(account_path=account._natixis_url_path)
@@ -757,15 +779,15 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                     raise
                 return sorted_transactions(self.page.get_history())
 
-            if account.label.startswith('NUANCES ') or account.label in self.insurance_accounts:
+            if account.label.startswith("NUANCES ") or account.label in self.insurance_accounts:
                 # Some life insurances are not on the accounts summary
-                self.home_tache.go(tache='EPASYNT0')
+                self.home_tache.go(tache="EPASYNT0")
                 self.page.go_life_insurance(account)
                 # To access the life insurance space, we need to delete the JSESSIONID cookie
                 # to avoid an expired session
                 # There might be duplicated JSESSIONID cookies (eg with different paths),
                 # that's why we need to use remove_cookie_by_name()
-                remove_cookie_by_name(self.session.cookies, 'JSESSIONID')
+                remove_cookie_by_name(self.session.cookies, "JSESSIONID")
 
             if self.home.is_here():
                 # no detail available for this account
@@ -793,6 +815,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         self.deleteCTX()
 
         if account.type == account.TYPE_CARD:
+
             def match_cb(tr):
                 return self.card_matches(tr.card, account.number)
 
@@ -800,18 +823,18 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
             hist = keep_only_card_transactions(hist, match_cb)
             return hist
 
-        if not hasattr(account, '_info'):
+        if not hasattr(account, "_info"):
             raise NotImplementedError
         if (
             account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION)
-            and 'measure_id' not in account._info
+            and "measure_id" not in account._info
         ):
             return self._get_history_invests(account)
         if account.type in (Account.TYPE_MARKET, Account.TYPE_PEA):
             self.page.go_history(account._info)
             if "Bourse" in self.url:
                 self.page.submit()
-                if 'offrebourse.com' in self.url:
+                if "offrebourse.com" in self.url:
                     # Some users may not have access to this.
                     if self.page.is_error():
                         return []
@@ -820,7 +843,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                     self.update_linebourse_token()
                     history = self.linebourse.iter_history(account.id)
                     # We need to go back to the synthesis, else we can not go home later
-                    self.home_tache.go(tache='CPTSYNT0')
+                    self.home_tache.go(tache="CPTSYNT0")
                     return history
 
         hist = self._get_history(account._info, False)
@@ -840,9 +863,9 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         # We need to go to a specific levies page where we can find past and coming levies (such as recurring ones)
         trs = []
         self.home.go()
-        if 'measure_id' in getattr(account, '_info', ''):
-            self.go_measure_list(account._info['measure_id_page_num'])
-            self.page.go_measure_accounts_list(account._info['measure_id'])
+        if "measure_id" in getattr(account, "_info", ""):
+            self.go_measure_list(account._info["measure_id_page_num"])
+            self.page.go_measure_accounts_list(account._info["measure_id"])
             self.page.go_history(account._info)
 
         self.page.go_cards()  # need to go to cards page to have access to the nav bar where we can choose LeviesPage from
@@ -862,10 +885,10 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
 
     def get_coming_card(self, account):
         trs = []
-        if not hasattr(account.parent, '_info'):
+        if not hasattr(account.parent, "_info"):
             raise NotImplementedError()
         # We are on the old website
-        if hasattr(account, '_coming_eventargument'):
+        if hasattr(account, "_coming_eventargument"):
             if not self.cards_old.is_here():
                 self.home.go()
                 self.page.go_list()
@@ -887,16 +910,15 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         self.deleteCTX()
 
         investable_types = (
-            Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION,
-            Account.TYPE_MARKET, Account.TYPE_PEA,
+            Account.TYPE_LIFE_INSURANCE,
+            Account.TYPE_CAPITALISATION,
+            Account.TYPE_MARKET,
+            Account.TYPE_PEA,
         )
-        if (
-            account.type not in investable_types
-            or 'measure_id' in account._info
-        ):
+        if account.type not in investable_types or "measure_id" in account._info:
             raise NotImplementedError()
 
-        if account.type == Account.TYPE_PEA and account.label == 'PEA NUMERAIRE':
+        if account.type == Account.TYPE_PEA and account.label == "PEA NUMERAIRE":
             yield create_french_liquidity(account.balance)
             return
 
@@ -912,7 +934,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                 return
             self.page.submit()
 
-            if 'offrebourse.com' in self.url:
+            if "offrebourse.com" in self.url:
                 # Some users may not have access to this.
                 if self.page.is_error():
                     return
@@ -922,21 +944,21 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                     yield investment
 
                 # We need to go back to the synthesis, else we can not go home later
-                self.home_tache.go(tache='CPTSYNT0')
+                self.home_tache.go(tache="CPTSYNT0")
                 return
 
         elif account.type in (Account.TYPE_LIFE_INSURANCE, Account.TYPE_CAPITALISATION):
-            if account._info['type'] == 'SYNTHESE_EPARGNE':
+            if account._info["type"] == "SYNTHESE_EPARGNE":
                 # If the type is not SYNTHESE_EPARGNE, it means we have a direct link and going
                 # this way would set off a SyntaxError.
                 self.page.go_history(account._info)
 
             if self.page.is_account_inactive(account.id):
-                self.logger.warning('Account %s %s is inactive.' % (account.label, account.id))
+                self.logger.warning("Account %s %s is inactive." % (account.label, account.id))
                 return
             if "MILLEVIE" in account.label:
                 # This way we ensure we can access all type of MILLEVIE accounts
-                self.home_tache.go(tache='EPASYNT0')
+                self.home_tache.go(tache="EPASYNT0")
                 self.page.go_life_insurance(account)
                 self.natixis_life_ins_inv.go(account_path=account._natixis_url_path)
                 if self.natixis_error.is_here():
@@ -959,7 +981,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
     @need_login
     def go_life_insurance_investments(self, account):
         # Returns whether it managed to go to the page
-        self.home_tache.go(tache='EPASYNT0')
+        self.home_tache.go(tache="EPASYNT0")
         self.page.go_life_insurance(account)
         if self.home.is_here():
             # no detail is available for this account
@@ -984,7 +1006,7 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         self.page.go_history(account._info)
         if "Bourse" in self.url:
             self.page.submit()
-            if 'offrebourse.com' in self.url:
+            if "offrebourse.com" in self.url:
                 # Some users may not have access to this.
                 if self.page.is_error():
                     return
@@ -995,22 +1017,22 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
                         yield order
                 finally:
                     # We need to go back to the synthesis, else we can not go home later
-                    self.home_tache.go(tache='CPTSYNT0')
+                    self.home_tache.go(tache="CPTSYNT0")
 
     @retry_on_logout()
     @need_login
     def get_profile(self):
         profile = Profile()
-        if len([k for k in self.session.cookies.keys() if k == 'CTX']) > 1:
-            del self.session.cookies['CTX']
+        if len([k for k in self.session.cookies.keys() if k == "CTX"]) > 1:
+            del self.session.cookies["CTX"]
 
-        ctx = decode_utf8_cookie(self.session.cookies.get('CTX', str()))
+        ctx = decode_utf8_cookie(self.session.cookies.get("CTX", str()))
         # str() to make sure a native str is used as expected by decode_utf8_cookie
-        headerdei = decode_utf8_cookie(self.session.cookies.get('headerdei', str()))
-        if 'username=' in ctx:
-            profile.name = re.search('username=([^&]+)', ctx).group(1)
-        elif 'nomusager=' in headerdei:
-            profile.name = re.search('nomusager=(?:[^&]+/ )?([^&]+)', headerdei).group(1)
+        headerdei = decode_utf8_cookie(self.session.cookies.get("headerdei", str()))
+        if "username=" in ctx:
+            profile.name = re.search("username=([^&]+)", ctx).group(1)
+        elif "nomusager=" in headerdei:
+            profile.name = re.search("nomusager=(?:[^&]+/ )?([^&]+)", headerdei).group(1)
         return profile
 
     def card_matches(self, a, b):

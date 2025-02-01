@@ -35,32 +35,34 @@ from .base import MyHTMLPage
 
 class RedirectPage(LoggedPage, MyHTMLPage):
     def check_for_perso(self):
-        return self.doc.xpath('''//p[contains(text(), "L'identifiant utilisé est celui d'un compte de Particuliers")]''')
+        return self.doc.xpath(
+            """//p[contains(text(), "L'identifiant utilisé est celui d'un compte de Particuliers")]"""
+        )
 
     def get_error(self):
         return CleanText('//div[contains(@class, "bloc-erreur")]/h3')(self.doc)
 
     def is_logged(self):
-        return 'Vous êtes bien authentifié' in CleanText('//p[@class="txt"]')(self.doc)
+        return "Vous êtes bien authentifié" in CleanText('//p[@class="txt"]')(self.doc)
 
 
 ACCOUNT_TYPES = {
-    'COMPTE_PLACEMENT': Account.TYPE_MARKET,  # seen for a compte titre
-    'COMPTE_EPARGNE': Account.TYPE_SAVINGS,
-    'COMPTE_COURANT': Account.TYPE_CHECKING,
+    "COMPTE_PLACEMENT": Account.TYPE_MARKET,  # seen for a compte titre
+    "COMPTE_EPARGNE": Account.TYPE_SAVINGS,
+    "COMPTE_COURANT": Account.TYPE_CHECKING,
 }
 
 TRANSACTION_TYPES = {
     # TODO: 12+ categories ? (bank type id is at least up to 12)
-    'Prélèvement': Transaction.TYPE_ORDER,
-    'Achat CB': Transaction.TYPE_CHECK,
-    'Virement': Transaction.TYPE_TRANSFER,
-    'Frais/Taxes/Agios': Transaction.TYPE_BANK,
-    'Versement': Transaction.TYPE_CASH_DEPOSIT,
-    'Chèque': Transaction.TYPE_CHECK,
-    'Retrait': Transaction.TYPE_WITHDRAWAL,
-    'Annul/Régul/Extourn': Transaction.TYPE_PAYBACK,
-    'Remise chèques': Transaction.TYPE_DEPOSIT,
+    "Prélèvement": Transaction.TYPE_ORDER,
+    "Achat CB": Transaction.TYPE_CHECK,
+    "Virement": Transaction.TYPE_TRANSFER,
+    "Frais/Taxes/Agios": Transaction.TYPE_BANK,
+    "Versement": Transaction.TYPE_CASH_DEPOSIT,
+    "Chèque": Transaction.TYPE_CHECK,
+    "Retrait": Transaction.TYPE_WITHDRAWAL,
+    "Annul/Régul/Extourn": Transaction.TYPE_PAYBACK,
+    "Remise chèques": Transaction.TYPE_DEPOSIT,
 }
 
 
@@ -90,16 +92,16 @@ class ProAccountsList(LoggedPage, JsonPage):
             for data in self.el.values():
                 if not isinstance(data, dict):
                     continue
-                for account in data.get('comptes', []):
+                for account in data.get("comptes", []):
                     yield account
 
         class item(ItemElement):
             klass = Account
 
-            obj_id = Dict('numero')
-            obj_balance = CleanDecimal.US(Dict('solde'))
-            obj_currency = 'EUR'
-            obj_type = Map(Dict('type'), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
+            obj_id = Dict("numero")
+            obj_balance = CleanDecimal.US(Dict("solde"))
+            obj_currency = "EUR"
+            obj_type = Map(Dict("type"), ACCOUNT_TYPES, Account.TYPE_UNKNOWN)
             obj_owner_type = AccountOwnerType.ORGANIZATION
             obj__account_holder = NotAvailable
 
@@ -108,9 +110,9 @@ class ProAccountsList(LoggedPage, JsonPage):
             # The intituleDetenteur is the owner of the account.
             obj_label = CleanText(
                 Format(
-                    '%s %s',
-                    Dict('intituleCourt'),
-                    Dict('intituleDetenteur'),
+                    "%s %s",
+                    Dict("intituleCourt"),
+                    Dict("intituleDetenteur"),
                 )
             )
 
@@ -121,21 +123,21 @@ class ProAccountHistory(LoggedPage, JsonPage):
         class item(ItemElement):
             klass = Transaction
 
-            obj_label = Dict('libelle')
-            obj_date = Date(Dict('date'))  # skip time since it is always 00:00:00. Days last.
+            obj_label = Dict("libelle")
+            obj_date = Date(Dict("date"))  # skip time since it is always 00:00:00. Days last.
 
             # transaction typing: don't rely on labels as the bank already provides types.
-            obj_type = Map(Dict('libelleNature'), TRANSACTION_TYPES, Transaction.TYPE_UNKNOWN)
+            obj_type = Map(Dict("libelleNature"), TRANSACTION_TYPES, Transaction.TYPE_UNKNOWN)
 
             def obj_amount(self):
-                amount = CleanDecimal.US(Dict('montant'))(self)  # absolute value
-                sign = Dict('codeSens')(self)
-                if sign == 'D':  # debit
-                    return - amount
-                elif sign == 'C':  # credit
+                amount = CleanDecimal.US(Dict("montant"))(self)  # absolute value
+                sign = Dict("codeSens")(self)
+                if sign == "D":  # debit
+                    return -amount
+                elif sign == "C":  # credit
                     return amount
                 else:
-                    raise AssertionError('unhandled value for transaction sign')
+                    raise AssertionError("unhandled value for transaction sign")
 
 
 class DownloadRib(LoggedPage, MyHTMLPage):
@@ -143,7 +145,7 @@ class DownloadRib(LoggedPage, MyHTMLPage):
         opt = self.doc.xpath('//select[@id="idxSelection"]/optgroup//option')
         for o in opt:
             if acc_id in o.text:
-                return o.xpath('./@value')[0]
+                return o.xpath("./@value")[0]
         return None
 
 
@@ -153,7 +155,8 @@ class RibPage(LoggedPage, MyHTMLPage):
             return (
                 CleanText()
                 .filter(self.doc.xpath('//div[@class="blocbleu"][2]//table[@class="datalist"]')[0])
-                .replace(' ', '').strip()
+                .replace(" ", "")
+                .strip()
             )
         return None
 
@@ -180,7 +183,7 @@ class RedirectAfterVKPage(MyHTMLPage):
             # the self.encoding encoding in the condition.
             if website_error.encode().decode(self.encoding) in error_message:
                 raise BrowserIncorrectPassword(website_error)
-            raise AssertionError('Unhandled error message: %s' % error_message)
+            raise AssertionError("Unhandled error message: %s" % error_message)
 
 
 class SwitchQ5CPage(MyHTMLPage):
@@ -189,12 +192,13 @@ class SwitchQ5CPage(MyHTMLPage):
 
 class Detect2FAPage(MyHTMLPage):
     def raise_if_2fa_needed(self):
-        url = Attr('//iframe[@id="iFrame1"]', 'src', default='')(self.doc)
+        url = Attr('//iframe[@id="iFrame1"]', "src", default="")(self.doc)
         if url:
-            twofa_type = dict(parse_qsl(urlparse(url).query)).get('action', '')
-            if twofa_type != 'NULL':  # seen so far: CERTICODE (sms), NULL (no 2fa activated by the user)
-                self.logger.info('A two factor auth is required on this connection')
+            twofa_type = dict(parse_qsl(urlparse(url).query)).get("action", "")
+            if twofa_type != "NULL":  # seen so far: CERTICODE (sms), NULL (no 2fa activated by the user)
+                self.logger.info("A two factor auth is required on this connection")
                 raise ActionNeeded(
-                    locale="fr-FR", message="Une authentification forte est requise sur votre espace client",
+                    locale="fr-FR",
+                    message="Une authentification forte est requise sur votre espace client",
                     action_type=ActionType.PERFORM_MFA,
                 )

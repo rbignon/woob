@@ -20,15 +20,15 @@ from collections import OrderedDict
 from .base import BaseObject, Capability, Field, StringField, UserError
 
 
-__all__ = ['CapCollection', 'BaseCollection', 'Collection', 'CollectionNotFound']
+__all__ = ["CapCollection", "BaseCollection", "Collection", "CollectionNotFound"]
 
 
 class CollectionNotFound(UserError):
     def __init__(self, split_path=None):
         if split_path is not None:
-            msg = 'Collection not found: %s' % '/'.join(split_path)
+            msg = "Collection not found: %s" % "/".join(split_path)
         else:
-            msg = 'Collection not found'
+            msg = "Collection not found"
         super(CollectionNotFound, self).__init__(msg)
 
 
@@ -57,12 +57,12 @@ class BaseCollection(BaseObject):
     def to_dict(self):
         def iter_decorate(d):
             for key, value in d:
-                if key == 'id' and self.backend is not None:
-                    value = '%s@%s' % (self.basename, self.backend)
+                if key == "id" and self.backend is not None:
+                    value = "%s@%s" % (self.basename, self.backend)
                 yield key, value
 
-                if key == 'split_path':
-                    yield key, '/'.join(value)
+                if key == "split_path":
+                    yield key, "/".join(value)
 
         fields_iterator = self.iter_fields()
         return OrderedDict(iter_decorate(fields_iterator))
@@ -78,8 +78,9 @@ class Collection(BaseCollection):
     Do not inherit from this class if you want to make a regular BaseObject
     a Collection, use BaseCollection instead.
     """
-    title = StringField('Collection title')
-    split_path = Field('Full collection path', list)
+
+    title = StringField("Collection title")
+    split_path = Field("Full collection path", list)
 
     def __init__(self, split_path=None, title=None, id=None, url=None):
         self.title = title
@@ -87,11 +88,11 @@ class Collection(BaseCollection):
 
     def __str__(self):
         if self.title and self.basename:
-            return '%s (%s)' % (self.basename, self.title)
+            return "%s (%s)" % (self.basename, self.title)
         elif self.basename:
-            return '%s' % self.basename
+            return "%s" % self.basename
         else:
-            return 'Unknown collection'
+            return "Unknown collection"
 
 
 class CapCollection(Capability):

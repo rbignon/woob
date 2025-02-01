@@ -26,9 +26,9 @@ from woob.capabilities.bank.base import Account, Transaction
 
 
 TRANSACTION_TYPES = {
-    'FRAIS GESTION COMPTE COURANT': Transaction.TYPE_BANK,
-    'ACHAT PAR CARTE': Transaction.TYPE_CARD,
-    'VIREMENT SEPA REÇU': Transaction.TYPE_TRANSFER,
+    "FRAIS GESTION COMPTE COURANT": Transaction.TYPE_BANK,
+    "ACHAT PAR CARTE": Transaction.TYPE_CARD,
+    "VIREMENT SEPA REÇU": Transaction.TYPE_TRANSFER,
 }
 
 
@@ -42,38 +42,40 @@ class LoginPage(HTMLPage):
 
 class LoginAjaxPage(JsonPage):
     def is_sca_required(self):
-        return Dict('showSca', default=False)(self.doc)
+        return Dict("showSca", default=False)(self.doc)
 
     def is_successful(self):
-        return Dict('successful', default=False)(self.doc)
+        return Dict("successful", default=False)(self.doc)
 
     def get_error_message(self):
         # Coalesce is used here since 'errorMessageTitle' can exist and
         # be null, and we want to provide '' to CleanText in this case.
-        return CleanText(Coalesce(
-            Dict('errorMessageTitle'),
-            default='',
-        ))(self.doc)
+        return CleanText(
+            Coalesce(
+                Dict("errorMessageTitle"),
+                default="",
+            )
+        )(self.doc)
 
 
 class HomePage(LoggedPage, HTMLPage):
     def get_nonce(self):
         return Attr(
             '//input[@name="__NonceValue"]',
-            'value',
+            "value",
         )(self.doc)
 
     def get_verification_token(self):
         return Attr(
             '//input[@name="__RequestVerificationToken"]',
-            'value',
+            "value",
         )(self.doc)
 
 
 class CheckingAccountsPage(LoggedPage, JsonPage):
     @method
     class iter_accounts(DictElement):
-        item_xpath = 'properties/CurrentAccountsList'
+        item_xpath = "properties/CurrentAccountsList"
 
         class item(ItemElement):
             klass = Account
@@ -87,11 +89,11 @@ class CheckingAccountsPage(LoggedPage, JsonPage):
             # account, unlike on other websites where it might be
             # hidden behind pages or behind a second factor validation,
             # so we also set it as Account.number.
-            obj_id = obj_iban = obj_number = CleanText(Dict('cID'))
-            obj_label = CleanText(Dict('cProductName'))
+            obj_id = obj_iban = obj_number = CleanText(Dict("cID"))
+            obj_label = CleanText(Dict("cProductName"))
             obj_type = Account.TYPE_CHECKING
-            obj_balance = CleanDecimal.SI(Dict('mBalance'))
-            obj_currency = Currency(Dict('cCurrency'))
+            obj_balance = CleanDecimal.SI(Dict("mBalance"))
+            obj_currency = Currency(Dict("cCurrency"))
 
 
 class HistorySearchPage(LoggedPage, PartialHTMLPage):
@@ -100,9 +102,8 @@ class HistorySearchPage(LoggedPage, PartialHTMLPage):
         # We want to get the X-es here to search the equivalent checkbox
         # and extract the product identifier out of it.
         return Attr(
-            '//div[@class="filter"][.//label/span[2]="%s"]//input'
-            % account_id[14:],
-            'value',
+            '//div[@class="filter"][.//label/span[2]="%s"]//input' % account_id[14:],
+            "value",
         )(self.doc)
 
 
@@ -124,7 +125,7 @@ class HistoryPage(LoggedPage, PartialHTMLPage):
             )
 
             # Required to get the transaction detail.
-            obj__transaction_id = Attr('.', 'data-id')
+            obj__transaction_id = Attr(".", "data-id")
 
 
 class HistoryDetailPage(LoggedPage, PartialHTMLPage):
@@ -139,20 +140,17 @@ class HistoryDetailPage(LoggedPage, PartialHTMLPage):
         )
         obj_date = Date(
             CleanText(
-                '//th[contains(., "Date de l\'opération")]'
-                + '/following-sibling::td',
+                '//th[contains(., "Date de l\'opération")]' + "/following-sibling::td",
             ),
             dayfirst=True,
         )
         obj_rdate = Date(
             Coalesce(
                 CleanText(
-                    '//th[contains(., "Date de règlement")]'
-                    + '/following-sibling::td',
+                    '//th[contains(., "Date de règlement")]' + "/following-sibling::td",
                 ),
                 CleanText(
-                    '//th[contains(., "Date d\'exécution")]'
-                    + '/following-sibling::td',
+                    '//th[contains(., "Date d\'exécution")]' + "/following-sibling::td",
                 ),
             ),
             dayfirst=True,

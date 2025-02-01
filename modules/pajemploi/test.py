@@ -22,4 +22,4 @@ from woob.tools.test import BackendTest
 
 
 class PajemploiTest(BackendTest):
-    MODULE = 'pajemploi'
+    MODULE = "pajemploi"

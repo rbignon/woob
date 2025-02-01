@@ -23,7 +23,7 @@ from woob.tools.misc import to_unicode
 from .iformatter import IFormatter
 
 
-__all__ = ['CSVFormatter']
+__all__ = ["CSVFormatter"]
 
 
 class CSVFormatter(IFormatter):
@@ -39,7 +39,7 @@ class CSVFormatter(IFormatter):
         if not isinstance(self.outfile, str):
             return self.write_dict(item, self.outfile)
 
-        with open(self.outfile, "a+", encoding='utf-8') as fp:
+        with open(self.outfile, "a+", encoding="utf-8") as fp:
             return self.write_dict(item, fp)
 
     def write_dict(self, item, fp):

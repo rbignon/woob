@@ -29,70 +29,82 @@ from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bank import Account
 from woob.capabilities.base import Currency, empty
 from woob.exceptions import (
-    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable, OfflineOTPQuestion,
+    ActionNeeded,
+    ActionType,
+    BrowserIncorrectPassword,
+    BrowserPasswordExpired,
+    BrowserUnavailable,
+    OfflineOTPQuestion,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.decorators import retry
 
 from .pages import (
-    AccountDetailsPage, AccountsPage, ExchangesPage, HistoryPage, InvestmentPage, LoginPage, MaintenancePage,
-    MarketOrdersPage, OtpPage,
+    AccountDetailsPage,
+    AccountsPage,
+    ExchangesPage,
+    HistoryPage,
+    InvestmentPage,
+    LoginPage,
+    MaintenancePage,
+    MarketOrdersPage,
+    OtpPage,
 )
 
 
 class URLWithDate(URL):
     def go(self, fromDate, toDate=None, *args, **kwargs):
-        toDate_ = toDate or datetime.datetime.now().strftime('%d/%m/%Y')
+        toDate_ = toDate or datetime.datetime.now().strftime("%d/%m/%Y")
         return super(URLWithDate, self).go(
             toDate=toDate_,
             fromDate=fromDate,
             account_id=self.browser.int_account,
             session_id=self.browser.session_id,
-            headers={'Accept': 'application/json, text/plain, */*'},
+            headers={"Accept": "application/json, text/plain, */*"},
         )
 
 
 class DegiroBrowser(TwoFactorBrowser):
-    BASEURL = 'https://trader.degiro.nl'
+    BASEURL = "https://trader.degiro.nl"
 
     TIMEOUT = 60  # Market orders queries can take a long time
     HAS_CREDENTIALS_ONLY = True
 
-    maintenance = URL(r'https://www.degiro.nl/maintenance/', MaintenancePage)
-    login = URL(r'/login/secure/login', LoginPage)
-    send_otp = URL(r'/login/secure/login/totp', OtpPage)
-    client = URL(r'/pa/secure/client\?sessionId=(?P<session_id>.*)', LoginPage)
-    product = URL(r'/product_search/secure/v5/products/info\?sessionId=(?P<session_id>.*)', InvestmentPage)
-    exchanges = URL(r'/product_search/config/dictionary/', ExchangesPage)
+    maintenance = URL(r"https://www.degiro.nl/maintenance/", MaintenancePage)
+    login = URL(r"/login/secure/login", LoginPage)
+    send_otp = URL(r"/login/secure/login/totp", OtpPage)
+    client = URL(r"/pa/secure/client\?sessionId=(?P<session_id>.*)", LoginPage)
+    product = URL(r"/product_search/secure/v5/products/info\?sessionId=(?P<session_id>.*)", InvestmentPage)
+    exchanges = URL(r"/product_search/config/dictionary/", ExchangesPage)
     accounts = URL(
-        r'/trading(?P<staging>\w*)/secure/v5/update/(?P<account_id>.*);jsessionid=(?P<session_id>.*)\?historicalOrders=0' +
-        r'&orders=0&portfolio=0&totalPortfolio=0&transactions=0&alerts=0&cashFunds=0&currencyExchange=0&',
-        AccountsPage
+        r"/trading(?P<staging>\w*)/secure/v5/update/(?P<account_id>.*);jsessionid=(?P<session_id>.*)\?historicalOrders=0"
+        + r"&orders=0&portfolio=0&totalPortfolio=0&transactions=0&alerts=0&cashFunds=0&currencyExchange=0&",
+        AccountsPage,
     )
     account_details = URL(
-        r'https://trader.degiro.nl/trading(?P<staging>\w*)/secure/v5/account/info/(?P<account_id>.*);jsessionid=(?P<session_id>.*)',
-        AccountDetailsPage
+        r"https://trader.degiro.nl/trading(?P<staging>\w*)/secure/v5/account/info/(?P<account_id>.*);jsessionid=(?P<session_id>.*)",
+        AccountDetailsPage,
     )
     transaction_investments = URLWithDate(
-        r'/reporting/secure/v4/transactions\?fromDate=(?P<fromDate>.*)' +
-        '&groupTransactionsByOrder=false&intAccount=(?P<account_id>.*)' +
-        '&orderId=&product=&sessionId=(?P<session_id>.*)' +
-        '&toDate=(?P<toDate>.*)',
-        HistoryPage
+        r"/reporting/secure/v4/transactions\?fromDate=(?P<fromDate>.*)"
+        + "&groupTransactionsByOrder=false&intAccount=(?P<account_id>.*)"
+        + "&orderId=&product=&sessionId=(?P<session_id>.*)"
+        + "&toDate=(?P<toDate>.*)",
+        HistoryPage,
     )
     history = URLWithDate(
-        r'/reporting/secure/v6/accountoverview\?fromDate=(?P<fromDate>.*)' +
-        '&groupTransactionsByOrder=false&intAccount=(?P<account_id>.*)' +
-        '&orderId=&product=&sessionId=(?P<session_id>.*)&toDate=(?P<toDate>.*)',
-        HistoryPage
+        r"/reporting/secure/v6/accountoverview\?fromDate=(?P<fromDate>.*)"
+        + "&groupTransactionsByOrder=false&intAccount=(?P<account_id>.*)"
+        + "&orderId=&product=&sessionId=(?P<session_id>.*)&toDate=(?P<toDate>.*)",
+        HistoryPage,
     )
     market_orders = URLWithDate(
-        r'/reporting/secure/v4/order-history\?fromDate=(?P<fromDate>.*)' +
-        '&toDate=(?P<toDate>.*)&intAccount=(?P<account_id>.*)&sessionId=(?P<session_id>.*)',
-        MarketOrdersPage
+        r"/reporting/secure/v4/order-history\?fromDate=(?P<fromDate>.*)"
+        + "&toDate=(?P<toDate>.*)&intAccount=(?P<account_id>.*)&sessionId=(?P<session_id>.*)",
+        MarketOrdersPage,
     )
 
-    __states__ = ('staging', 'session_id', 'int_account', 'name')
+    __states__ = ("staging", "session_id", "int_account", "name")
 
     def __init__(self, config, *args, **kwargs):
         super(DegiroBrowser, self).__init__(config, *args, **kwargs)
@@ -108,7 +120,7 @@ class DegiroBrowser(TwoFactorBrowser):
         self.stock_market_exchanges = {}
 
         self.AUTHENTICATION_METHODS = {
-            'otp': self.handle_otp,
+            "otp": self.handle_otp,
         }
 
     def locate_browser(self, state):
@@ -116,10 +128,10 @@ class DegiroBrowser(TwoFactorBrowser):
         if not self.session_id:
             return
 
-        if not state.get('staging'):
-            self.staging = ''
-            if 'staging' in self.session_id:
-                self.staging = '_s'
+        if not state.get("staging"):
+            self.staging = ""
+            if "staging" in self.session_id:
+                self.staging = "_s"
 
         try:
             # We try reloading the session with the previous states if they are not expired.
@@ -132,36 +144,42 @@ class DegiroBrowser(TwoFactorBrowser):
     @retry(BrowserTooManyRequests, delay=30)
     def init_login(self):
         try:
-            self.login.go(json={'username': self.username, 'password': self.password})
+            self.login.go(json={"username": self.username, "password": self.password})
         except ClientError as e:
             if e.response.status_code == 400:
                 raise BrowserIncorrectPassword()
             elif e.response.status_code == 403:
-                status = e.response.json().get('statusText', '')
-                if status == 'accountBlocked':
-                    raise BrowserIncorrectPassword('Your credentials are invalid and your account is currently blocked.')
+                status = e.response.json().get("statusText", "")
+                if status == "accountBlocked":
+                    raise BrowserIncorrectPassword(
+                        "Your credentials are invalid and your account is currently blocked."
+                    )
                 raise Exception('Login failed with status: "%s".', status)
             elif e.response.status_code == 412:
-                status = e.response.json().get('statusText')
+                status = e.response.json().get("statusText")
                 # https://trader.degiro.nl/translations/?language=fr&country=FR&modules=commonFE%2CloginFE
                 # for status_messages
 
-                if status == 'jointAccountPersonNeeded':
+                if status == "jointAccountPersonNeeded":
                     # After the first post in a joint account, we get a json containing IDs of
                     # the account holders. Then we need to make a second post to send the
                     # ID of the user trying to log in.
-                    persons = e.response.json().get('persons')
+                    persons = e.response.json().get("persons")
                     if not persons:
-                        raise AssertionError('No profiles to select from')
-                    self.login.go(json={
-                        'password': self.password,
-                        'personId': persons[0]['id'],
-                        'username': self.username,
-                    })
-                elif status == 'passwordReset':
-                    raise BrowserPasswordExpired("Un e-mail vous a été envoyé afin de réinitialiser votre mot de passe. Veuillez consulter votre boite de réception. Si vous n’êtes pas à l’origine de cette demande, merci de contacter notre service clients.")
+                        raise AssertionError("No profiles to select from")
+                    self.login.go(
+                        json={
+                            "password": self.password,
+                            "personId": persons[0]["id"],
+                            "username": self.username,
+                        }
+                    )
+                elif status == "passwordReset":
+                    raise BrowserPasswordExpired(
+                        "Un e-mail vous a été envoyé afin de réinitialiser votre mot de passe. Veuillez consulter votre boite de réception. Si vous n’êtes pas à l’origine de cette demande, merci de contacter notre service clients."
+                    )
                 elif status:
-                    raise AssertionError('Unhandled status: %s' % status)
+                    raise AssertionError("Unhandled status: %s" % status)
                 else:
                     raise
             elif e.response.status_code == 429:
@@ -182,28 +200,28 @@ class DegiroBrowser(TwoFactorBrowser):
             # An authenticator is used here, so no notification or SMS,
             # we use the same message as on the website.
             raise OfflineOTPQuestion(
-                'otp',
-                message='Enter your confirmation code',
+                "otp",
+                message="Enter your confirmation code",
             )
         else:
             self.finalize_login()
 
     def handle_otp(self):
         data = {
-            'oneTimePassword': self.config['otp'].get(),
-            'password': self.password,
-            'queryParams': {
-                'redirectUrl': 'https://trader.degiro.nl/trader/#/markets?enabledLanguageCodes=fr&hasPortfolio=false&favouritesListsIds='
+            "oneTimePassword": self.config["otp"].get(),
+            "password": self.password,
+            "queryParams": {
+                "redirectUrl": "https://trader.degiro.nl/trader/#/markets?enabledLanguageCodes=fr&hasPortfolio=false&favouritesListsIds="
             },
-            'username': self.username.lower(),
+            "username": self.username.lower(),
         }
 
         try:
             self.send_otp.go(json=data)
         except ClientError as e:
-            json_err = e.response.json().get('statusText')
-            if e.response.status_code == 400 and json_err == 'badCredentials':
-                raise BrowserIncorrectPassword('The confirmation code is incorrect', bad_fields=['otp'])
+            json_err = e.response.json().get("statusText")
+            if e.response.status_code == 400 and json_err == "badCredentials":
+                raise BrowserIncorrectPassword("The confirmation code is incorrect", bad_fields=["otp"])
             raise
 
         self.finalize_login()
@@ -212,22 +230,23 @@ class DegiroBrowser(TwoFactorBrowser):
         self.session_id = self.page.get_session_id()
         if not self.session_id:
             raise AssertionError(
-                'Missing a session identifier when finalizing the login.',
+                "Missing a session identifier when finalizing the login.",
             )
 
-        self.staging = ''
-        if 'staging' in self.session_id:
-            self.staging = '_s'
+        self.staging = ""
+        if "staging" in self.session_id:
+            self.staging = "_s"
 
         self.client.go(session_id=self.session_id)
 
-        self.int_account = self.page.get_information('intAccount')
-        self.name = self.page.get_information('displayName')
+        self.int_account = self.page.get_information("intAccount")
+        self.name = self.page.get_information("displayName")
 
         if self.int_account is None:
             # For various ActionNeeded, field intAccount is not present in the json.
             raise ActionNeeded(
-                locale="fr-FR", message="Merci de compléter votre profil sur le site de Degiro",
+                locale="fr-FR",
+                message="Merci de compléter votre profil sur le site de Degiro",
                 action_type=ActionType.FILL_KYC,
             )
 
@@ -248,13 +267,16 @@ class DegiroBrowser(TwoFactorBrowser):
                 if e.response.status_code == 412:
                     # No useful message on the API response. On the website, there is a form to complete after login.
                     raise ActionNeeded(
-                        locale="fr-FR", message="Merci de compléter votre profil sur le site de Degiro",
+                        locale="fr-FR",
+                        message="Merci de compléter votre profil sur le site de Degiro",
                         action_type=ActionType.FILL_KYC,
                     )
                 raise
             self.account.currency = self.page.get_currency()
             # Account balance is the sum of investments valuations
-            self.account.balance = sum(inv.valuation.quantize(Decimal('0.00')) for inv in self.iter_investment(self.account))
+            self.account.balance = sum(
+                inv.valuation.quantize(Decimal("0.00")) for inv in self.iter_investment(self.account)
+            )
         yield self.account
 
     @need_login
@@ -263,7 +285,9 @@ class DegiroBrowser(TwoFactorBrowser):
 
         if account.id not in self.invs:
             self.accounts.stay_or_go(staging=self.staging, account_id=self.int_account, session_id=self.session_id)
-            raw_invests = list(self.page.iter_investment(currency=account.currency, exchanges=self.stock_market_exchanges))
+            raw_invests = list(
+                self.page.iter_investment(currency=account.currency, exchanges=self.stock_market_exchanges)
+            )
             # Some invests are present twice. We need to combine them into one, as it's done on the website.
             invests = {}
             for raw_inv in raw_invests:
@@ -288,12 +312,12 @@ class DegiroBrowser(TwoFactorBrowser):
         self.fill_stock_market_exchanges()
 
         market_orders = []
-        self.market_orders.go(fromDate=from_date.strftime('%d/%m/%Y'), toDate=to_date.strftime('%d/%m/%Y'))
+        self.market_orders.go(fromDate=from_date.strftime("%d/%m/%Y"), toDate=to_date.strftime("%d/%m/%Y"))
         # Market orders are displayed chronogically so we must reverse them
         for market_order in sorted(
             self.page.iter_market_orders(exchanges=self.stock_market_exchanges),
             reverse=True,
-            key=lambda order: order.date
+            key=lambda order: order.date,
         ):
             market_orders.append(market_order)
 
@@ -308,9 +332,9 @@ class DegiroBrowser(TwoFactorBrowser):
         # We must fetch market orders 2 weeks at a time because if we fetch too many orders at a time the API crashes
         market_orders = []
         to_date = datetime.datetime.now()
-        oldest = (to_date - relativedelta(months=3) + relativedelta(days=1))
+        oldest = to_date - relativedelta(months=3) + relativedelta(days=1)
         step = relativedelta(weeks=2)
-        from_date = (to_date - step)
+        from_date = to_date - step
 
         while to_date > oldest:
             try:
@@ -320,9 +344,9 @@ class DegiroBrowser(TwoFactorBrowser):
                 # Since we can't fetch 3 months of available market order history with a 2-weeks step,
                 # we will fetch 2 weeks market order history (by editing 'oldest') and set the 'step' to 2 days.
                 # That way, we will still fetch recent orders within a reasonable amount of time and prevent any crash.
-                oldest = (to_date - relativedelta(weeks=2) + relativedelta(days=1))
+                oldest = to_date - relativedelta(weeks=2) + relativedelta(days=1)
                 step = relativedelta(days=2)
-                from_date = (to_date - step)
+                from_date = to_date - step
                 market_orders.extend(self.fetch_market_orders(from_date, to_date))
 
             to_date = from_date - relativedelta(days=1)
@@ -336,7 +360,7 @@ class DegiroBrowser(TwoFactorBrowser):
     @need_login
     def iter_history(self, account):
         if account.id not in self.trs:
-            fromDate = (datetime.datetime.now() - relativedelta(years=1)).strftime('%d/%m/%Y')
+            fromDate = (datetime.datetime.now() - relativedelta(years=1)).strftime("%d/%m/%Y")
 
             self.transaction_investments.go(fromDate=fromDate)
 
@@ -349,7 +373,9 @@ class DegiroBrowser(TwoFactorBrowser):
             # avoid doing O(n*n) operation
             trinv_dict = {(inv.code, inv._action, inv._datetime): inv for inv in transaction_investments}
 
-            trs = list(self.page.iter_history(transaction_investments=NoCopy(trinv_dict), account_currency=account.currency))
+            trs = list(
+                self.page.iter_history(transaction_investments=NoCopy(trinv_dict), account_currency=account.currency)
+            )
             self.trs[account.id] = trs
         return self.trs[account.id]
 

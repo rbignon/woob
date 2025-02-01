@@ -20,11 +20,13 @@
 from woob_modules.cmes.browser import CmesBrowser
 
 
-__all__ = ['GroupamaesBrowser']
+__all__ = ["GroupamaesBrowser"]
 
 
 class GroupamaesBrowser(CmesBrowser):
-    login = CmesBrowser.login.with_urls(r'/groupama-es/(?P<client_space>.*)fr/identification/authentification.html')
-    mfa = CmesBrowser.mfa.with_urls(r'/groupama-es/espace-client/fr/epargnants/premiers-pas/authentification-forte/index.html')
+    login = CmesBrowser.login.with_urls(r"/groupama-es/(?P<client_space>.*)fr/identification/authentification.html")
+    mfa = CmesBrowser.mfa.with_urls(
+        r"/groupama-es/espace-client/fr/epargnants/premiers-pas/authentification-forte/index.html"
+    )
 
-    client_space = 'espace-client/'
+    client_space = "espace-client/"

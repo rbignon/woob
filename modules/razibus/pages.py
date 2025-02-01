@@ -41,11 +41,12 @@ class EventListPage(HTMLPage):
             klass = RazibusCalendarEvent
 
             def validate(self, obj):
-                return (self.is_valid_event(obj, self.env['city'], self.env['categories']) and
-                        self.is_event_in_valid_period(obj.start_date, self.env['date_from'], self.env['date_to']))
+                return self.is_valid_event(
+                    obj, self.env["city"], self.env["categories"]
+                ) and self.is_event_in_valid_period(obj.start_date, self.env["date_from"], self.env["date_to"])
 
             def is_valid_event(self, event, city, categories):
-                if city and city != '' and city.upper() != event.city.upper():
+                if city and city != "" and city.upper() != event.city.upper():
                     return False
                 if categories and len(categories) > 0 and event.category not in categories:
                     return False
@@ -60,10 +61,10 @@ class EventListPage(HTMLPage):
                             return True
                 return False
 
-            obj_id = Regexp(Link('./p/strong/a[@itemprop="url"]'), 'http://razibus.net/(.*).html')
+            obj_id = Regexp(Link('./p/strong/a[@itemprop="url"]'), "http://razibus.net/(.*).html")
             obj_summary = CleanText('./p/strong/a[@itemprop="url"]')
             obj_start_date = DateTime(CleanText('./p/span[@itemprop="startDate"]/@content'))
-            obj_end_date = CombineDate(DateTime(CleanText('./p/span[@itemprop="startDate"]/@content')), EndTime('.'))
+            obj_end_date = CombineDate(DateTime(CleanText('./p/span[@itemprop="startDate"]/@content')), EndTime("."))
             obj_location = CleanText('./p/span[@itemprop="location"]/@content')
             obj_city = CleanText('./p/span[@itemprop="location"]')
 
@@ -73,10 +74,10 @@ class EventPage(HTMLPage):
     class get_event(ItemElement):
         klass = RazibusCalendarEvent
 
-        obj_id = Env('_id')
+        obj_id = Env("_id")
         obj_summary = CleanText('//h2[@itemprop="name"]')
         obj_start_date = DateTime(CleanText('//span[@itemprop="startDate"]/time/@datetime'))
-        obj_end_date = CombineDate(DateTime(CleanText('//span[@itemprop="startDate"]/time/@datetime')), EndTime('.'))
+        obj_end_date = CombineDate(DateTime(CleanText('//span[@itemprop="startDate"]/time/@datetime')), EndTime("."))
         obj_location = CleanText('//meta[@property="og:street-address"]/@content')
         obj_city = CleanText('//meta[@property="og:locality"]/@content')
         obj_url = CleanText('//meta[@property="og:url"]/@content')

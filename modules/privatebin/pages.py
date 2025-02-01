@@ -46,7 +46,7 @@ class ReadPage(JsonPage):
         return decrypt(textkey, self.doc)
 
     def get_expire(self):
-        ts = self.doc['meta']["created"] + self.doc['meta']["time_to_live"]
+        ts = self.doc["meta"]["created"] + self.doc["meta"]["time_to_live"]
         return datetime.datetime.fromtimestamp(ts, datetime.timezone.utc)
 
     def has_paste(self):
@@ -55,22 +55,22 @@ class ReadPage(JsonPage):
 
 def fix_base64(s):
     pad = {
-        2: '==',
-        3: '=',
+        2: "==",
+        3: "=",
     }
-    return s + pad.get(len(s) % 4, '')
+    return s + pad.get(len(s) % 4, "")
 
 
 ALL_AGES = [
-    (365 * 86400, '1year'),
-    (30.5 * 86400, '1month'),  # pastoob's definition of "1 month" is approximately okay
-    (30 * 86400, '1month'),
-    (7 * 86400, '1week'),
-    (86400, '1day'),
-    (3600, '1hour'),
-    (600, '10min'),
-    (300, '5min'),
-    (None, 'never'),
+    (365 * 86400, "1year"),
+    (30.5 * 86400, "1month"),  # pastoob's definition of "1 month" is approximately okay
+    (30 * 86400, "1month"),
+    (7 * 86400, "1week"),
+    (86400, "1day"),
+    (3600, "1hour"),
+    (600, "10min"),
+    (300, "5min"),
+    (None, "never"),
 ]
 
 
@@ -97,7 +97,7 @@ def decrypt(textkey, params):
     # not base64, but base58, just because.
     key = derive_key(base58.decode(textkey.encode("ascii")), salt, keylen, iterations)
 
-    data = b64decode(params['ct'])
+    data = b64decode(params["ct"])
     ciphertext = data[:-taglen]
     tag = data[-taglen:]
 
@@ -132,7 +132,7 @@ def encrypt(plaintext, expire_string="1week", burn_after_reading=False, discussi
 
     plaintext = json.dumps({"paste": plaintext})
     compressor = compressobj(-1, DEFLATED, -MAX_WBITS)
-    contents = compressor.compress(plaintext.encode('utf-8'))
+    contents = compressor.compress(plaintext.encode("utf-8"))
     contents += compressor.flush()
 
     iv = urandom(16)
@@ -165,7 +165,7 @@ def encrypt(plaintext, expire_string="1week", burn_after_reading=False, discussi
     ]
 
     cipher.update(build_header(adata))
-    ciphertext = b''.join(cipher.encrypt_and_digest(contents))
+    ciphertext = b"".join(cipher.encrypt_and_digest(contents))
 
     return (
         {
@@ -175,7 +175,8 @@ def encrypt(plaintext, expire_string="1week", burn_after_reading=False, discussi
             "meta": {
                 "expire": expire_string,
             },
-        }, base58.encode(url_bin_key).decode("ascii"),
+        },
+        base58.encode(url_bin_key).decode("ascii"),
     )
 
 

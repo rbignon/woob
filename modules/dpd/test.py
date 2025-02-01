@@ -23,7 +23,7 @@ from woob.tools.test import BackendTest
 
 
 class DPDTest(BackendTest):
-    MODULE = 'dpd'
+    MODULE = "dpd"
 
     def test_dpd(self):
         self.assertRaises(ParcelNotFound, self.backend.get_parcel_tracking, "foo")

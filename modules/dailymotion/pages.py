@@ -31,14 +31,14 @@ from woob.exceptions import ParseError
 from woob.tools.json import json
 
 
-def determine_ext(url, default_ext='unknown_video'):
+def determine_ext(url, default_ext="unknown_video"):
     if url is None:
         return default_ext
-    guess = url.partition('?')[0].rpartition('.')[2]
-    if re.match(r'^[A-Za-z0-9]+$', guess):
+    guess = url.partition("?")[0].rpartition(".")[2]
+    if re.match(r"^[A-Za-z0-9]+$", guess):
         return guess
-    elif guess.rstrip('/') in ('mp4', 'm3u8'):
-        return guess.rstrip('/')
+    elif guess.rstrip("/") in ("mp4", "m3u8"):
+        return guess.rstrip("/")
     else:
         return default_ext
 
@@ -47,7 +47,7 @@ class IndexPage(HTMLPage):
     @pagination
     @method
     class iter_videos(ListElement):
-        item_xpath = '//div[@data-video-id]'
+        item_xpath = "//div[@data-video-id]"
         next_page = Link('//a[@title="suivant"]')
 
         class item(ItemElement):
@@ -56,13 +56,13 @@ class IndexPage(HTMLPage):
             def validate(self, obj):
                 return obj.id
 
-            obj_id = CleanText('./div/@data-playable')
+            obj_id = CleanText("./div/@data-playable")
             obj_title = CleanText('./div[@class="media-block"]/h3')
             obj_author = CleanText('./div[@class="media-block"]/div/span/a')
             obj_duration = Duration(CleanText('./div/a/div[has-class("badge--duration")]'), default=NotAvailable)
 
             def obj_thumbnail(self):
-                url = CleanText('./div/a/img/@data-src')(self)
+                url = CleanText("./div/a/img/@data-src")(self)
                 thumbnail = Thumbnail(url)
                 thumbnail.url = url
                 return thumbnail
@@ -74,8 +74,8 @@ class VideoPage(HTMLPage):
     class get_video(ItemElement):
         klass = BaseVideo
 
-        obj_id = Env('_id')
-        obj_title = CleanText('//title')
+        obj_id = Env("_id")
+        obj_title = CleanText("//title")
         obj_author = CleanText('//meta[@name="author"]/@content')
         obj_description = CleanText('//meta[@name="description"]/@content')
 
@@ -92,21 +92,23 @@ class VideoPage(HTMLPage):
         obj_date = DateTime(CleanText('//meta[@property="video:release_date"]/@content'))
 
         def obj__formats(self):
-            player = Regexp(CleanText('//script'), r'.*var config = ({"context".*}}});\s*buildPlayer\(config\);.*', default=None)(self)
+            player = Regexp(
+                CleanText("//script"), r'.*var config = ({"context".*}}});\s*buildPlayer\(config\);.*', default=None
+            )(self)
             if player:
                 info = json.loads(player)
-                if info.get('error') is not None:
-                    raise ParseError(info['error']['title'])
-                metadata = info.get('metadata')
+                if info.get("error") is not None:
+                    raise ParseError(info["error"]["title"])
+                metadata = info.get("metadata")
 
                 formats = {}
-                for quality, media_list in metadata['qualities'].items():
+                for quality, media_list in metadata["qualities"].items():
                     for media in media_list:
-                        media_url = media.get('url')
+                        media_url = media.get("url")
                         if not media_url:
                             continue
-                        type_ = media.get('type')
-                        if type_ == 'application/vnd.lumberjack.manifest':
+                        type_ = media.get("type")
+                        if type_ == "application/vnd.lumberjack.manifest":
                             continue
                         ext = determine_ext(media_url)
                         if ext in formats:

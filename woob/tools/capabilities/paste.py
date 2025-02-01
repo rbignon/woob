@@ -47,7 +47,7 @@ class BasePasteModule(CapPaste):
                 return e
 
 
-def image_mime(data_base64, supported_formats=('gif', 'jpeg', 'png')):
+def image_mime(data_base64, supported_formats=("gif", "jpeg", "png")):
     """
     Return the MIME type of an image or None.
 
@@ -60,20 +60,19 @@ def image_mime(data_base64, supported_formats=('gif', 'jpeg', 'png')):
     except binascii.Error:
         return None
 
-    if 'gif' in supported_formats and b'GIF8' in beginning:
-        return 'image/gif'
-    elif 'jpeg' in supported_formats and b'JFIF' in beginning:
-        return 'image/jpeg'
-    elif 'png' in supported_formats and b'\x89PNG' in beginning:
-        return 'image/png'
-    elif 'xcf' in supported_formats and b'gimp xcf' in beginning:
-        return 'image/x-xcf'
-    elif 'pdf' in supported_formats and b'%PDF' in beginning:
-        return 'application/pdf'
-    elif 'tiff' in supported_formats and (b'II\x00\x2a' in beginning or
-            b'MM\x2a\x00' in beginning):
-        return 'image/tiff'
+    if "gif" in supported_formats and b"GIF8" in beginning:
+        return "image/gif"
+    elif "jpeg" in supported_formats and b"JFIF" in beginning:
+        return "image/jpeg"
+    elif "png" in supported_formats and b"\x89PNG" in beginning:
+        return "image/png"
+    elif "xcf" in supported_formats and b"gimp xcf" in beginning:
+        return "image/x-xcf"
+    elif "pdf" in supported_formats and b"%PDF" in beginning:
+        return "application/pdf"
+    elif "tiff" in supported_formats and (b"II\x00\x2a" in beginning or b"MM\x2a\x00" in beginning):
+        return "image/tiff"
 
 
 def bin_to_b64(b):
-    return b64encode(b).decode('ascii')
+    return b64encode(b).decode("ascii")

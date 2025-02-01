@@ -23,19 +23,19 @@ To use it, add :class:`CloudScraperMixin` as a mixin of your browser class.
 try:
     from cloudscraper import CloudScraper
 except ImportError as exc:
-    raise ImportError('Please install cloudscraper') from exc
+    raise ImportError("Please install cloudscraper") from exc
 
 
-__all__ = ['CloudScraperSession', 'CloudScraperMixin']
+__all__ = ["CloudScraperSession", "CloudScraperMixin"]
 
 
 class CloudScraperSession(CloudScraper):
     def send(self, *args, **kwargs):
-        callback = kwargs.pop('callback', lambda future, response: response)
-        is_async = kwargs.pop('is_async', False)
+        callback = kwargs.pop("callback", lambda future, response: response)
+        is_async = kwargs.pop("is_async", False)
 
         if is_async:
-            raise ValueError('Async requests are not supported')
+            raise ValueError("Async requests are not supported")
 
         resp = super().send(*args, **kwargs)
 
@@ -49,8 +49,8 @@ class CloudScraperMixin:
     def _setup_session(self, profile):
         session = self._create_session()
 
-        session.hooks['response'].append(self.set_normalized_url)
+        session.hooks["response"].append(self.set_normalized_url)
         if self.responses_dirname is not None:
-            session.hooks['response'].append(self.save_response)
+            session.hooks["response"].append(self.save_response)
 
         self.session = session

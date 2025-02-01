@@ -16,7 +16,7 @@
 # along with woob. If not, see <http://www.gnu.org/licenses/>.
 
 
-__all__ = ['Javascript']
+__all__ = ["Javascript"]
 
 
 from woob.tools.log import getLogger
@@ -88,10 +88,10 @@ class Javascript:
         try:
             import execjs
         except ImportError:
-            raise ImportError('Please install PyExecJS')
+            raise ImportError("Please install PyExecJS")
 
         self.runner = execjs.get()
-        self.logger = getLogger('js', logger)
+        self.logger = getLogger("js", logger)
 
         window_emulator = self.HEADER
 
@@ -110,6 +110,6 @@ class Javascript:
     def call(self, *args, **kwargs):
         retval = self.ctx.call(*args, **kwargs)
 
-        self.logger.debug('Calling %s%s = %s', args[0], args[1:], retval)
+        self.logger.debug("Calling %s%s = %s", args[0], args[1:], retval)
 
         return retval

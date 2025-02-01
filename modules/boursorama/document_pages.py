@@ -34,21 +34,21 @@ class BankStatementsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Subscription
 
-            obj__account_key = Attr('.//input', 'value')
+            obj__account_key = Attr(".//input", "value")
             # we must catch id's formed like "1234********5678" and "12345678912" but we must be careful
             # and avoid catching digits that can be in the label (which is in the same div as the id)
             # hence the 11 characters minimum condition which corresponds to the minimum length of id
-            obj_id = Regexp(CleanText('.'), r'(?:^|-)\s*([\d\*]{11,})\s*(?:-|$)')
+            obj_id = Regexp(CleanText("."), r"(?:^|-)\s*([\d\*]{11,})\s*(?:-|$)")
             obj_subscriber = CleanText('//div[@id="dropdown-profile"]//div[has-class("user__username")]')
 
             def obj_label(self):
-                _id = Field('id')(self)
-                subscriber = Field('subscriber')(self)
-                label = CleanText('.')(self)
+                _id = Field("id")(self)
+                subscriber = Field("subscriber")(self)
+                label = CleanText(".")(self)
 
                 # label looks like: sequence1 - sequence2 - sequence3
                 # but may contains more or less sequence
-                values = [el.strip(' -') for el in label.split(' -' ) if el.strip(' -') != '']
+                values = [el.strip(" -") for el in label.split(" -") if el.strip(" -") != ""]
                 position = values.index(_id)
                 if position >= 0:
                     # obj_id is inside it, we remove it from label, since it's gotten in obj_id
@@ -67,7 +67,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
                             values.pop(idx)
                             break
 
-                return ' - '.join(values)
+                return " - ".join(values)
 
     @method
     class iter_documents(ListElement):
@@ -83,7 +83,7 @@ class BankStatementsPage(LoggedPage, HTMLPage):
             n = 1
             while _id in self.objects:
                 n += 1
-                _id = '%s-%s' % (obj.id, n)
+                _id = "%s-%s" % (obj.id, n)
             obj.id = _id
             self.objects[obj.id] = obj
             return obj
@@ -91,49 +91,49 @@ class BankStatementsPage(LoggedPage, HTMLPage):
         class item(ItemElement):
             klass = Document
 
-            obj_id = Format('%s_%s', Env('subid'), Field('date'))
+            obj_id = Format("%s_%s", Env("subid"), Field("date"))
             obj_type = DocumentTypes.STATEMENT
-            obj_url = Link('.//td[2]/a')
-            obj_label = CleanText('.//td[2]/a')
+            obj_url = Link(".//td[2]/a")
+            obj_label = CleanText(".//td[2]/a")
 
             def obj_format(self):
-                if 'file-pdf' in Attr('.//td[1]/svg/use', 'xlink:href', default='')(self):
-                    return 'pdf'
+                if "file-pdf" in Attr(".//td[1]/svg/use", "xlink:href", default="")(self):
+                    return "pdf"
 
             def obj_date(self):
                 try:
-                    return Date(CleanText('.//td[4]'), dayfirst=True)(self)
+                    return Date(CleanText(".//td[4]"), dayfirst=True)(self)
                 except FilterError:
                     # in some cases, there is no day (for example, with Relevés espèces for some action accounts)
                     # in this case, we return the first day of the given year and month
-                    return Date(CleanText('.//td[4]'), strict=False)(self).replace(day=1)
+                    return Date(CleanText(".//td[4]"), strict=False)(self).replace(day=1)
 
 
 class BankIdentityPage(LoggedPage, HTMLPage):
     @method
     class get_document(ListElement):
-        item_xpath = '//table/tbody/tr'
+        item_xpath = "//table/tbody/tr"
 
         class item(ItemElement):
             klass = Document
 
             def condition(self):
-                return Env('subid')(self) == Regexp(CleanText('.//td[2]/a'), r'(\d+)')(self)
+                return Env("subid")(self) == Regexp(CleanText(".//td[2]/a"), r"(\d+)")(self)
 
-            obj_id = Format('%s_RIB', Env('subid'))
+            obj_id = Format("%s_RIB", Env("subid"))
 
             def obj_url(self):
-                link = Link('.//td[2]/a')(self)
-                return urljoin(self.page.url, urljoin(link, 'telecharger'))
+                link = Link(".//td[2]/a")(self)
+                return urljoin(self.page.url, urljoin(link, "telecharger"))
 
             def obj_format(self):
-                if 'file-pdf' in Attr('.//td[1]/svg/use', 'xlink:href', default='')(self):
-                    return 'pdf'
+                if "file-pdf" in Attr(".//td[1]/svg/use", "xlink:href", default="")(self):
+                    return "pdf"
 
-            obj_label = CleanText('.//td[2]/a')
+            obj_label = CleanText(".//td[2]/a")
             obj_type = DocumentTypes.RIB
 
 
 class PdfDocumentPage(LoggedPage, RawPage):
     def is_here(self):
-        return self.text.startswith('%PDF')
+        return self.text.startswith("%PDF")

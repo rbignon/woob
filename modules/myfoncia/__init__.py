@@ -21,4 +21,4 @@
 from .module import MyFonciaModule
 
 
-__all__ = ['MyFonciaModule']
+__all__ = ["MyFonciaModule"]

@@ -27,205 +27,208 @@ from woob.tools.config.yamlconfig import YamlConfig
 from woob.tools.date import parse_date
 
 
-__all__ = ['AppCalendar']
+__all__ = ["AppCalendar"]
 
 
 class UpcomingSimpleFormatter(IFormatter):
-    MANDATORY_FIELDS = ('id', 'start_date', 'category', 'summary', 'status')
+    MANDATORY_FIELDS = ("id", "start_date", "category", "summary", "status")
 
     def format_obj(self, obj, alias):
-        result = '%s - %s' % (obj.backend, obj.category)
+        result = "%s - %s" % (obj.backend, obj.category)
         if not empty(obj.start_date):
-            result += ' - %s' % obj.start_date.strftime('%H:%M')
-        result += ' - %s' % obj.summary
+            result += " - %s" % obj.start_date.strftime("%H:%M")
+        result += " - %s" % obj.summary
         if obj.status == STATUS.CANCELLED:
-            result += ' (cancelled)'
+            result += " (cancelled)"
         return result
 
 
 class ICalFormatter(IFormatter):
-    MANDATORY_FIELDS = ('id', 'start_date', 'end_date', 'summary', 'status')
+    MANDATORY_FIELDS = ("id", "start_date", "end_date", "summary", "status")
 
     def start_format(self, **kwargs):
-        result = 'BEGIN:VCALENDAR\r\n'
-        result += 'VERSION:2.0\r\n'
-        result += 'PRODID:-//hacksw/handcal//NONSGML v1.0//EN\r\n'
+        result = "BEGIN:VCALENDAR\r\n"
+        result += "VERSION:2.0\r\n"
+        result += "PRODID:-//hacksw/handcal//NONSGML v1.0//EN\r\n"
         self.output(result)
 
     def format_obj(self, obj, alias):
-        result = 'BEGIN:VEVENT\r\n'
+        result = "BEGIN:VEVENT\r\n"
 
-        utc_zone = tz.gettz('UTC')
+        utc_zone = tz.gettz("UTC")
 
         event_timezone = tz.gettz(obj.timezone)
         start_date = obj.start_date if not empty(obj.start_date) else datetime.now()
         if isinstance(start_date, datetime):
             start_date = start_date.replace(tzinfo=event_timezone)
             utc_start_date = start_date.astimezone(utc_zone)
-            result += 'DTSTART:%s\r\n' % utc_start_date.strftime("%Y%m%dT%H%M%SZ")
+            result += "DTSTART:%s\r\n" % utc_start_date.strftime("%Y%m%dT%H%M%SZ")
         else:
-            result += 'DTSTART:%s\r\n' % start_date.strftime("%Y%m%d")
+            result += "DTSTART:%s\r\n" % start_date.strftime("%Y%m%d")
 
         end_date = obj.end_date if not empty(obj.end_date) else datetime.combine(start_date, time.max)
         if isinstance(end_date, datetime):
             end_date = end_date.replace(tzinfo=event_timezone)
             utc_end_date = end_date.astimezone(utc_zone)
-            result += 'DTEND:%s\r\n' % utc_end_date.strftime("%Y%m%dT%H%M%SZ")
+            result += "DTEND:%s\r\n" % utc_end_date.strftime("%Y%m%dT%H%M%SZ")
         else:
-            result += 'DTEND:%s\r\n' % end_date.strftime("%Y%m%d")
+            result += "DTEND:%s\r\n" % end_date.strftime("%Y%m%d")
 
-        result += 'SUMMARY:%s\r\n' % obj.summary
-        result += 'UID:%s\r\n' % obj.id
-        result += 'STATUS:%s\r\n' % obj.status
+        result += "SUMMARY:%s\r\n" % obj.summary
+        result += "UID:%s\r\n" % obj.id
+        result += "STATUS:%s\r\n" % obj.status
 
-        location = ''
-        if hasattr(obj, 'location') and not empty(obj.location):
-            location += obj.location + ' '
+        location = ""
+        if hasattr(obj, "location") and not empty(obj.location):
+            location += obj.location + " "
 
-        if hasattr(obj, 'city') and not empty(obj.city):
-            location += obj.city + ' '
+        if hasattr(obj, "city") and not empty(obj.city):
+            location += obj.city + " "
 
         if not empty(location):
-            result += 'LOCATION:%s\r\n' % location
+            result += "LOCATION:%s\r\n" % location
 
-        if hasattr(obj, 'categories') and not empty(obj.categories):
-            result += 'CATEGORIES:%s\r\n' % obj.categories
+        if hasattr(obj, "categories") and not empty(obj.categories):
+            result += "CATEGORIES:%s\r\n" % obj.categories
 
-        if hasattr(obj, 'description') and not empty(obj.description):
-            result += 'DESCRIPTION:%s\r\n' % obj.description.strip(' \t\n\r')\
-                                                             .replace('\r', '')\
-                                                             .replace('\n', r'\n')\
-                                                             .replace(',', r'\,')
+        if hasattr(obj, "description") and not empty(obj.description):
+            result += "DESCRIPTION:%s\r\n" % obj.description.strip(" \t\n\r").replace("\r", "").replace(
+                "\n", r"\n"
+            ).replace(",", r"\,")
 
-        if hasattr(obj, 'transp') and not empty(obj.transp):
-            result += 'TRANSP:%s\r\n' % obj.transp
+        if hasattr(obj, "transp") and not empty(obj.transp):
+            result += "TRANSP:%s\r\n" % obj.transp
 
-        if hasattr(obj, 'sequence') and not empty(obj.sequence):
-            result += 'SEQUENCE:%s\r\n' % obj.sequence
+        if hasattr(obj, "sequence") and not empty(obj.sequence):
+            result += "SEQUENCE:%s\r\n" % obj.sequence
 
-        if hasattr(obj, 'url') and not empty(obj.url):
-            result += 'URL:%s\r\n' % obj.url
+        if hasattr(obj, "url") and not empty(obj.url):
+            result += "URL:%s\r\n" % obj.url
 
-        result += 'END:VEVENT\r\n'
+        result += "END:VEVENT\r\n"
         return result
 
     def flush(self, **kwargs):
-        self.output('END:VCALENDAR')
+        self.output("END:VCALENDAR")
 
 
 class UpcomingListFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'start_date', 'end_date', 'summary', 'category', 'status')
+    MANDATORY_FIELDS = ("id", "start_date", "end_date", "summary", "category", "status")
 
     def get_title(self, obj):
-        return ' %s - %s ' % (obj.category, obj.summary)
+        return " %s - %s " % (obj.category, obj.summary)
 
     def get_description(self, obj):
-        result = ''
+        result = ""
         if not empty(obj.start_date):
-            result += '\tDate: %s\n' % obj.start_date.strftime('%A %d %B %Y')
-            result += '\tHour: %s' % obj.start_date.strftime('%H:%M')
+            result += "\tDate: %s\n" % obj.start_date.strftime("%A %d %B %Y")
+            result += "\tHour: %s" % obj.start_date.strftime("%H:%M")
             if not empty(obj.end_date):
-                result += ' - %s' % obj.end_date.strftime('%H:%M')
+                result += " - %s" % obj.end_date.strftime("%H:%M")
                 days_diff = (obj.end_date - obj.start_date).days
                 if days_diff >= 1:
-                    result += ' (%i day(s) later)' % (days_diff)
-            result += '\n'
+                    result += " (%i day(s) later)" % (days_diff)
+            result += "\n"
         if obj.status == STATUS.CANCELLED:
-            result += '\tStatus: Cancelled\n'
-        return result.strip('\n\t')
+            result += "\tStatus: Cancelled\n"
+        return result.strip("\n\t")
 
 
 class UpcomingFormatter(IFormatter):
-    MANDATORY_FIELDS = ('id', 'start_date', 'end_date', 'summary', 'category', 'status')
+    MANDATORY_FIELDS = ("id", "start_date", "end_date", "summary", "category", "status")
 
     def format_obj(self, obj, alias):
-        result = '%s%s - %s%s\n' % (self.BOLD, obj.category, obj.summary, self.NC)
+        result = "%s%s - %s%s\n" % (self.BOLD, obj.category, obj.summary, self.NC)
 
         if not empty(obj.start_date):
             if not empty(obj.end_date):
                 days_diff = (obj.end_date - obj.start_date).days
                 if days_diff >= 1:
-                    result += 'From: %s to %s ' % (obj.start_date.strftime('%A %d %B %Y'),
-                                                   obj.end_date.strftime('%A %d %B %Y'))
+                    result += "From: %s to %s " % (
+                        obj.start_date.strftime("%A %d %B %Y"),
+                        obj.end_date.strftime("%A %d %B %Y"),
+                    )
                 else:
-                    result += 'Date: %s\n' % obj.start_date.strftime('%A %d %B %Y')
-                    result += 'Hour: %s' % obj.start_date.strftime('%H:%M')
-                    result += ' - %s' % obj.end_date.strftime('%H:%M')
+                    result += "Date: %s\n" % obj.start_date.strftime("%A %d %B %Y")
+                    result += "Hour: %s" % obj.start_date.strftime("%H:%M")
+                    result += " - %s" % obj.end_date.strftime("%H:%M")
             else:
-                result += 'Date: %s\n' % obj.start_date.strftime('%A %d %B %Y')
-                result += 'Hour: %s' % obj.start_date.strftime('%H:%M')
+                result += "Date: %s\n" % obj.start_date.strftime("%A %d %B %Y")
+                result += "Hour: %s" % obj.start_date.strftime("%H:%M")
 
-            result += '\n'
+            result += "\n"
 
-        if hasattr(obj, 'location') and not empty(obj.location):
-            result += 'Location: %s\n' % obj.location
+        if hasattr(obj, "location") and not empty(obj.location):
+            result += "Location: %s\n" % obj.location
 
-        if hasattr(obj, 'city') and not empty(obj.city):
-            result += 'City: %s\n' % obj.city
+        if hasattr(obj, "city") and not empty(obj.city):
+            result += "City: %s\n" % obj.city
 
-        if hasattr(obj, 'event_planner') and not empty(obj.event_planner):
-            result += 'Event planner: %s\n' % obj.event_planner
+        if hasattr(obj, "event_planner") and not empty(obj.event_planner):
+            result += "Event planner: %s\n" % obj.event_planner
 
-        if hasattr(obj, 'booked_entries') and not empty(obj.booked_entries) and \
-           hasattr(obj, 'max_entries') and not empty(obj.max_entries):
-            result += 'Entry: %s/%s \n' % (obj.booked_entries, obj.max_entries)
-        elif hasattr(obj, 'booked_entries') and not empty(obj.booked_entries):
-            result += 'Entry: %s \n' % (obj.booked_entries)
-        elif hasattr(obj, 'max_entries') and not empty(obj.max_entries):
-            result += 'Max entries: %s \n' % (obj.max_entries)
+        if (
+            hasattr(obj, "booked_entries")
+            and not empty(obj.booked_entries)
+            and hasattr(obj, "max_entries")
+            and not empty(obj.max_entries)
+        ):
+            result += "Entry: %s/%s \n" % (obj.booked_entries, obj.max_entries)
+        elif hasattr(obj, "booked_entries") and not empty(obj.booked_entries):
+            result += "Entry: %s \n" % (obj.booked_entries)
+        elif hasattr(obj, "max_entries") and not empty(obj.max_entries):
+            result += "Max entries: %s \n" % (obj.max_entries)
 
-        if hasattr(obj, 'description') and not empty(obj.description):
-            result += 'Description:\n %s\n\n' % obj.description
+        if hasattr(obj, "description") and not empty(obj.description):
+            result += "Description:\n %s\n\n" % obj.description
 
-        if hasattr(obj, 'price') and not empty(obj.price):
-            result += 'Price: %.2f\n' % obj.price
+        if hasattr(obj, "price") and not empty(obj.price):
+            result += "Price: %.2f\n" % obj.price
 
-        if hasattr(obj, 'ticket') and not empty(obj.ticket):
-            result += 'Ticket: %s\n' % obj.ticket
+        if hasattr(obj, "ticket") and not empty(obj.ticket):
+            result += "Ticket: %s\n" % obj.ticket
 
-        if hasattr(obj, 'url') and not empty(obj.url):
-            result += 'URL: %s\n' % obj.url
+        if hasattr(obj, "url") and not empty(obj.url):
+            result += "URL: %s\n" % obj.url
 
-        if hasattr(obj, 'status') and not empty(obj.status):
-            result += 'Status: %s\n' % obj.status
+        if hasattr(obj, "status") and not empty(obj.status):
+            result += "Status: %s\n" % obj.status
 
         return result
 
 
 class AppCalendar(ReplApplication):
-    APPNAME = 'calendar'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2012-YEAR Bezleputh'
+    APPNAME = "calendar"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2012-YEAR Bezleputh"
     DESCRIPTION = "Console application to see upcoming events."
     SHORT_DESCRIPTION = "see upcoming events"
     CAPS = CapCalendarEvent
-    EXTRA_FORMATTERS = {'upcoming_list': UpcomingListFormatter,
-                        'upcoming': UpcomingFormatter,
-                        'simple_upcoming': UpcomingSimpleFormatter,
-                        'ical_formatter': ICalFormatter,
-                        }
-    COMMANDS_FORMATTERS = {'list': 'upcoming_list',
-                           'search': 'upcoming_list',
-                           'load': 'upcoming_list',
-                           'ls': 'upcoming_list',
-                           'info': 'upcoming',
-                           'export': 'ical_formatter'
-                           }
+    EXTRA_FORMATTERS = {
+        "upcoming_list": UpcomingListFormatter,
+        "upcoming": UpcomingFormatter,
+        "simple_upcoming": UpcomingSimpleFormatter,
+        "ical_formatter": ICalFormatter,
+    }
+    COMMANDS_FORMATTERS = {
+        "list": "upcoming_list",
+        "search": "upcoming_list",
+        "load": "upcoming_list",
+        "ls": "upcoming_list",
+        "info": "upcoming",
+        "export": "ical_formatter",
+    }
 
     def main(self, argv):
         self.load_config(klass=YamlConfig)
         return super().main(argv)
 
     def select_values(self, values_from, values_to, query_str):
-        r = 'notempty'
-        while r != '':
+        r = "notempty"
+        while r != "":
             for i, value in enumerate(values_from, 1):
-                print('  %s%2d)%s [%s] %s' % (self.BOLD,
-                                              i,
-                                              self.NC,
-                                              'x' if value in values_to else ' ',
-                                              value))
-            r = self.ask(query_str, regexp=r'(\d+|)', default='')
+                print("  %s%2d)%s [%s] %s" % (self.BOLD, i, self.NC, "x" if value in values_to else " ", value))
+            r = self.ask(query_str, regexp=r"(\d+|)", default="")
 
             if not r.isdigit():
                 continue
@@ -246,15 +249,15 @@ class AppCalendar(ReplApplication):
         search for an event. Parameters interactively asked
         """
         query = Query()
-        self.select_values(CATEGORIES, query.categories, '  Select category (or empty to stop)')
-        self.select_values(TICKET, query.ticket, '  Select tickets status (or empty to stop)')
+        self.select_values(CATEGORIES, query.categories, "  Select category (or empty to stop)")
+        self.select_values(TICKET, query.ticket, "  Select tickets status (or empty to stop)")
 
         if query.categories and len(query.categories) > 0 and query.ticket and len(query.ticket) > 0:
-            query.city = self.ask('Enter a city', default='')
-            query.summary = self.ask('Enter a title', default='')
+            query.city = self.ask("Enter a city", default="")
+            query.summary = self.ask("Enter a title", default="")
 
-            start_date = self.ask_date('Enter a start date', default='today')
-            end_date = self.ask_date('Enter a end date', default='')
+            start_date = self.ask_date("Enter a start date", default="today")
+            end_date = self.ask_date("Enter a end date", default="")
 
             if end_date:
                 if end_date == start_date:
@@ -265,24 +268,24 @@ class AppCalendar(ReplApplication):
             query.start_date = datetime.combine(start_date, time.min)
             query.end_date = end_date
 
-            save_query = self.ask('Save query (y/n)', default='n')
-            if save_query.upper() == 'Y':
-                name = ''
+            save_query = self.ask("Save query (y/n)", default="n")
+            if save_query.upper() == "Y":
+                name = ""
                 while not name:
-                    name = self.ask('Query name')
+                    name = self.ask("Query name")
 
-                self.config.set('queries', name, query)
+                self.config.set("queries", name, query)
                 self.config.save()
             self.complete_search(query)
 
     def complete_search(self, query):
-        self.change_path(['events'])
+        self.change_path(["events"])
         self.start_format()
-        for event in self.do('search_events', query):
+        for event in self.do("search_events", query):
             if event:
                 self.cached_format(event)
 
-    def ask_date(self, txt, default=''):
+    def ask_date(self, txt, default=""):
         r = self.ask(txt, default=default)
         return parse_date(r)
 
@@ -293,22 +296,20 @@ class AppCalendar(ReplApplication):
         without query name : list loadable queries
         with query name laod query
         """
-        queries = self.config.get('queries')
+        queries = self.config.get("queries")
         if not queries:
-            print('There is no saved queries', file=self.stderr)
+            print("There is no saved queries", file=self.stderr)
             return 2
 
         if not query_name:
             for name in queries.keys():
-                print('  %s* %s %s' % (self.BOLD,
-                                       self.NC,
-                                       name))
-            query_name = self.ask('Which one')
+                print("  %s* %s %s" % (self.BOLD, self.NC, name))
+            query_name = self.ask("Which one")
 
         if query_name in queries:
             self.complete_search(queries.get(query_name))
         else:
-            print('Unknown query', file=self.stderr)
+            print("Unknown query", file=self.stderr)
             return 2
 
     @defaultcount(10)
@@ -318,11 +319,11 @@ class AppCalendar(ReplApplication):
         List upcoming events, pattern can be an english or french week day, 'today' or a date (dd/mm/yy[yy])
         """
 
-        self.change_path(['events'])
+        self.change_path(["events"])
         if line:
             _date = parse_date(line)
             if not _date:
-                print('Invalid argument: %s' % self.get_command_help('list'), file=self.stderr)
+                print("Invalid argument: %s" % self.get_command_help("list"), file=self.stderr)
                 return 2
 
             date_from = datetime.combine(_date, time.min)
@@ -331,11 +332,11 @@ class AppCalendar(ReplApplication):
             date_from = datetime.now()
             date_to = None
 
-        for event in self.do('list_events', date_from, date_to):
+        for event in self.do("list_events", date_from, date_to):
             self.cached_format(event)
 
     def complete_info(self, text, line, *ignored):
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) == 2:
             return self._complete_object()
 
@@ -347,13 +348,13 @@ class AppCalendar(ReplApplication):
         """
 
         if not _id:
-            print('This command takes an argument: %s' % self.get_command_help('info', short=True), file=self.stderr)
+            print("This command takes an argument: %s" % self.get_command_help("info", short=True), file=self.stderr)
             return 2
 
-        event = self.get_object(_id, 'get_event')
+        event = self.get_object(_id, "get_event")
 
         if not event:
-            print('Upcoming event not found: %s' % _id, file=self.stderr)
+            print("Upcoming event not found: %s" % _id, file=self.stderr)
             return 3
 
         self.start_format()
@@ -370,7 +371,7 @@ class AppCalendar(ReplApplication):
         Export event in ICALENDAR format
         """
         if not line:
-            print('This command takes at leat one argument: %s' % self.get_command_help('export'), file=self.stderr)
+            print("This command takes at leat one argument: %s" % self.get_command_help("export"), file=self.stderr)
             return 2
 
         _file, args = self.parse_command_args(line, 2, req_n=1)
@@ -392,16 +393,16 @@ class AppCalendar(ReplApplication):
 
         if not args:
             _ids = []
-            for event in self.do('list_events', datetime.now(), None):
+            for event in self.do("list_events", datetime.now(), None):
                 _ids.append(event.id)
         else:
-            _ids = args.strip().split(' ')
+            _ids = args.strip().split(" ")
 
         for _id in _ids:
-            event = self.get_object(_id, 'get_event')
+            event = self.get_object(_id, "get_event")
 
             if not event:
-                print('Upcoming event not found: %s' % _id, file=self.stderr)
+                print("Upcoming event not found: %s" % _id, file=self.stderr)
                 return 3
 
             l.append(event)
@@ -409,8 +410,8 @@ class AppCalendar(ReplApplication):
         return l
 
     def check_file_ext(self, _file):
-        splitted_file = _file.split('.')
-        if splitted_file[-1] != 'ics':
+        splitted_file = _file.split(".")
+        if splitted_file[-1] != "ics":
             return "%s.ics" % _file
         else:
             return _file
@@ -423,7 +424,7 @@ class AppCalendar(ReplApplication):
         ID is the identifier of the event.
         """
         if not line:
-            print('This command takes at leat one argument: %s' % self.get_command_help('attends'), file=self.stderr)
+            print("This command takes at leat one argument: %s" % self.get_command_help("attends"), file=self.stderr)
             return 2
 
         args = self.parse_command_args(line, 1, req_n=1)
@@ -431,7 +432,7 @@ class AppCalendar(ReplApplication):
         l = self.retrieve_events(args[0])
         for event in l:
             # we wait till the work be done, else the errors are not handled
-            self.do('attends_event', event, True).wait()
+            self.do("attends_event", event, True).wait()
 
     def do_unattends(self, line):
         """
@@ -442,11 +443,11 @@ class AppCalendar(ReplApplication):
         """
 
         if not line:
-            print('This command takes at leat one argument: %s' % self.get_command_help('unattends'), file=self.stderr)
+            print("This command takes at leat one argument: %s" % self.get_command_help("unattends"), file=self.stderr)
             return 2
 
         args = self.parse_command_args(line, 1, req_n=1)
 
         l = self.retrieve_events(args[0])
         for event in l:
-            self.do('attends_event', event, False)
+            self.do("attends_event", event, False)

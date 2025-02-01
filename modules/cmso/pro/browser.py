@@ -34,48 +34,53 @@ from woob.tools.date import LinearDateGuesser
 
 from ..par.browser import CmsoLoginBrowser
 from .pages import (
-    AccountsPage, AuthCheckUser, EmptyPage, ErrorPage, HistoryPage, InvestmentAccountPage, InvestmentPage, LoansPage,
-    ProfilePage, SSODomiPage, SubscriptionPage,
+    AccountsPage,
+    AuthCheckUser,
+    EmptyPage,
+    ErrorPage,
+    HistoryPage,
+    InvestmentAccountPage,
+    InvestmentPage,
+    LoansPage,
+    ProfilePage,
+    SSODomiPage,
+    SubscriptionPage,
 )
 
 
 class CmsoProBrowser(CmsoLoginBrowser):
-    subscription = URL(r'https://api.(?P<website>[\w.]+)/domiapi/oauth/json/accesAbonnement', SubscriptionPage)
+    subscription = URL(r"https://api.(?P<website>[\w.]+)/domiapi/oauth/json/accesAbonnement", SubscriptionPage)
     accounts = URL(
-        r'https://www.(?P<website>[\w.]+)/domiweb/prive/professionnel/situationGlobaleProfessionnel/0-situationGlobaleProfessionnel.act',
-        AccountsPage
+        r"https://www.(?P<website>[\w.]+)/domiweb/prive/professionnel/situationGlobaleProfessionnel/0-situationGlobaleProfessionnel.act",
+        AccountsPage,
     )
     loans = URL(
-        r'https://www.(?P<website>[\w.]+)/domiweb/prive/particulier/encoursCredit/0-encoursCredit.act',
-        LoansPage
+        r"https://www.(?P<website>[\w.]+)/domiweb/prive/particulier/encoursCredit/0-encoursCredit.act", LoansPage
     )
     history = URL(
-        r'https://www.(?P<website>[\w.]+)/domiweb/prive/professionnel/situationGlobaleProfessionnel/1-situationGlobaleProfessionnel.act',
-        HistoryPage
+        r"https://www.(?P<website>[\w.]+)/domiweb/prive/professionnel/situationGlobaleProfessionnel/1-situationGlobaleProfessionnel.act",
+        HistoryPage,
     )
     investment = URL(
-        r'https://www.(?P<website>[\w.]+)/domiweb/prive/particulier/portefeuilleSituation/0-situationPortefeuille.act',
-        InvestmentPage
+        r"https://www.(?P<website>[\w.]+)/domiweb/prive/particulier/portefeuilleSituation/0-situationPortefeuille.act",
+        InvestmentPage,
     )
     invest_account = URL(
-        r'https://www.(?P<website>[\w.]+)/domiweb/prive/particulier/portefeuilleSituation/2-situationPortefeuille.act\?(?:csrf=[^&]*&)?indiceCompte=(?P<idx>\d+)&idRacine=(?P<idroot>\d+)',
-        InvestmentAccountPage
+        r"https://www.(?P<website>[\w.]+)/domiweb/prive/particulier/portefeuilleSituation/2-situationPortefeuille.act\?(?:csrf=[^&]*&)?indiceCompte=(?P<idx>\d+)&idRacine=(?P<idroot>\d+)",
+        InvestmentAccountPage,
     )
     error = URL(
-        r'https://pro.(?P<website>[\w.]+)/auth/errorauthn',
-        r'https://espacepro.(?P<website>[\w.]+)#error',
-        ErrorPage
+        r"https://pro.(?P<website>[\w.]+)/auth/errorauthn", r"https://espacepro.(?P<website>[\w.]+)#error", ErrorPage
     )
-    profile = URL(r'https://api.(?P<website>[\w.]+)/domiapi/oauth/json/edr/infosPerson', ProfilePage)
-    ssoDomiweb = URL(r'https://api.(?P<website>[\w.]+)/domiapi/oauth/json/ssoDomiwebEmbedded', SSODomiPage)
-    auth_checkuser = URL(r'https://api.(?P<website>[\w.]+)/securityapi/checkuser', AuthCheckUser)
+    profile = URL(r"https://api.(?P<website>[\w.]+)/domiapi/oauth/json/edr/infosPerson", ProfilePage)
+    ssoDomiweb = URL(r"https://api.(?P<website>[\w.]+)/domiapi/oauth/json/ssoDomiwebEmbedded", SSODomiPage)
+    auth_checkuser = URL(r"https://api.(?P<website>[\w.]+)/securityapi/checkuser", AuthCheckUser)
     empty_page = URL(
-        r'https://www.cmb.fr/domiweb/prive/particulier/identification/afficherMessageRepDecede.jsp*.+',
-        EmptyPage
+        r"https://www.cmb.fr/domiweb/prive/particulier/identification/afficherMessageRepDecede.jsp*.+", EmptyPage
     )
-    filter_page = URL(r'https://pro.(?P<website>[\w.]+)/espace/filter')
+    filter_page = URL(r"https://pro.(?P<website>[\w.]+)/espace/filter")
 
-    space = 'PRO'
+    space = "PRO"
 
     def __init__(self, config, *args, **kwargs):
         super(CmsoProBrowser, self).__init__(config, *args, **kwargs)
@@ -84,56 +89,53 @@ class CmsoProBrowser(CmsoLoginBrowser):
         self.curr_area = None
         self.last_csrf = None
         # This ids can be found pro.{website}/mabanque/config-XXXXXX.js
-        self.client_id = 'nMdBJgaYgVaT67Ysf7XvTS9ayr9fdI69'
+        self.client_id = "nMdBJgaYgVaT67Ysf7XvTS9ayr9fdI69"
 
     def load_state(self, state):
         # The stored state keeps us connected to the user space,
         # but not to the API, which we need to browse the other areas.
         # We remove the URL to force a relogin.
-        state.pop('url', None)
+        state.pop("url", None)
         super(CmsoProBrowser, self).load_state(state)
 
     def fetch_areas(self):
         if not self.areas:
             self.subscription.go(
-                json={'includePart': False},
+                json={"includePart": False},
                 website=self.website,
             )
 
-            for sub in self.page.get('listAbonnement'):
-                current_area = {'contract': sub['numContratBAD']}
-                if 'numeroPersonne' in sub.keys():
-                    current_area['id'] = sub['numeroPersonne']
+            for sub in self.page.get("listAbonnement"):
+                current_area = {"contract": sub["numContratBAD"]}
+                if "numeroPersonne" in sub.keys():
+                    current_area["id"] = sub["numeroPersonne"]
                 else:
                     # 'contract' key is the most important because we will use it later.
                     self.logger.warning('unavailable "numeroPersonne" key')
                 self.areas.append(current_area)
 
     def go_with_ssodomi(self, path):
-        '''
+        """
         'go_with_ssodomi' is a process of defined requests needed to succeed to
         go on the targeted page
-        '''
+        """
         # We must check the url given here and substract /domiweb from it since the next request is
         # containing 'service', which is supposed to be the url without /domiweb
         if isinstance(path, URL):
             path = path.urls[0]
-        if path.startswith(r'https://www.(?P<website>[\w.]+)/domiweb'):
-            path = path[len(r'https://www.(?P<website>[\w.]+)/domiweb'):]
+        if path.startswith(r"https://www.(?P<website>[\w.]+)/domiweb"):
+            path = path[len(r"https://www.(?P<website>[\w.]+)/domiweb") :]
 
         json = {
-            'rwdStyle': 'true',
-            'service': path,
+            "rwdStyle": "true",
+            "service": path,
         }
 
-        url = self.ssoDomiweb.go(
-            website=self.website,
-            headers={'ADRIM': 'isAjax:true'},
-            json=json).get_sso_url()
+        url = self.ssoDomiweb.go(website=self.website, headers={"ADRIM": "isAjax:true"}, json=json).get_sso_url()
 
         page = self.location(url).page
         # each time we get a new csrf we store it because it can be used in further navigation
-        self.last_csrf = self.url.split('csrf=')[1]
+        self.last_csrf = self.url.split("csrf=")[1]
         return page
 
     def go_on_area(self, area):
@@ -141,18 +143,21 @@ class CmsoProBrowser(CmsoLoginBrowser):
             return
 
         ret = self.location(
-            'https://api.%s/securityapi/changeSpace' % (self.website),
+            "https://api.%s/securityapi/changeSpace" % (self.website),
             json={
-                'clientIdSource': self.client_id,
-                'espaceDestination': 'PRO',
-                'fromMobile': False,
-                'numContractDestination': area['contract'],
-            }).json()
+                "clientIdSource": self.client_id,
+                "espaceDestination": "PRO",
+                "fromMobile": False,
+                "numContractDestination": area["contract"],
+            },
+        ).json()
         # Csrf is updated each time we change area
-        self.session.headers.update({
-            'Authorization': "Bearer %s" % ret['accessToken'],
-            'X-Csrf-Token': ret['accessToken'],
-        })
+        self.session.headers.update(
+            {
+                "Authorization": "Bearer %s" % ret["accessToken"],
+                "X-Csrf-Token": ret["accessToken"],
+            }
+        )
         self.curr_area = area
 
     @need_login
@@ -184,7 +189,7 @@ class CmsoProBrowser(CmsoLoginBrowser):
 
                     seenkey = (a.id, a._owner)
                     if seenkey in seen:
-                        self.logger.warning('skipping seemingly duplicate account %r', a)
+                        self.logger.warning("skipping seemingly duplicate account %r", a)
                         continue
 
                     a._area = area
@@ -196,10 +201,10 @@ class CmsoProBrowser(CmsoLoginBrowser):
                         loan._area = area
                         yield loan
             except ServerError:
-                self.logger.warning('Area unavailable.')
+                self.logger.warning("Area unavailable.")
 
     def _build_next_date_range(self, date_range):
-        date_format = '%d/%m/%Y'
+        date_format = "%d/%m/%Y"
 
         last_day = datetime.datetime.strptime(date_range[10:], date_format)
         first_day = last_day + datetime.timedelta(days=1)
@@ -211,7 +216,7 @@ class CmsoProBrowser(CmsoLoginBrowser):
 
     @need_login
     def iter_history(self, account):
-        if not account._history_url or account._history_url.startswith('javascript:') or account._history_url == '#':
+        if not account._history_url or account._history_url.startswith("javascript:") or account._history_url == "#":
             raise NotImplementedError()
 
         account = find_object(self.iter_accounts(), id=account.id)
@@ -235,10 +240,10 @@ class CmsoProBrowser(CmsoLoginBrowser):
         for date_range in date_range_list:
             date_guesser = LinearDateGuesser(datetime.datetime.strptime(date_range[10:], "%d/%m/%Y"))
             try:
-                self.location(account._history_url, data={'date': date_range})
+                self.location(account._history_url, data={"date": date_range})
             except ServerError as error:
                 if error.response.status_code == 500:
-                    if 'RELEVE NON DISPONIBLE A CETTE PERIODE' in error.response.text:
+                    if "RELEVE NON DISPONIBLE A CETTE PERIODE" in error.response.text:
                         continue
                         # just skip because it's still possible to have transactions next months
                         # Yes, they really did that heresy...
@@ -248,7 +253,7 @@ class CmsoProBrowser(CmsoLoginBrowser):
                 yield tr
 
     def update_csrf_token(self, history_url):
-        return re.sub('(?<=csrf=)[0-9a-zA-Z]+', self.last_csrf, history_url)
+        return re.sub("(?<=csrf=)[0-9a-zA-Z]+", self.last_csrf, history_url)
 
     @need_login
     def iter_coming(self, account):
@@ -258,8 +263,8 @@ class CmsoProBrowser(CmsoLoginBrowser):
         # account id in investment page, is a little bit different from the account page
         # some part of id have swapped and one other (with two digit) is not present
         # if account_page_id is 222223333311111111144 then investment_page_id will be 111111111.33333xx
-        if '.' in investment_page_id:
-            number, _id = investment_page_id.split('.')
+        if "." in investment_page_id:
+            number, _id = investment_page_id.split(".")
             _id = _id[:-2] + number
 
             return _id in account_page_id
@@ -288,7 +293,7 @@ class CmsoProBrowser(CmsoLoginBrowser):
 
         if self.investment.is_here():
             assert self.page.has_error()
-            self.logger.warning('account %r does not seem to be usable', account)
+            self.logger.warning("account %r does not seem to be usable", account)
             return []
 
         assert self.invest_account.is_here()
@@ -299,15 +304,12 @@ class CmsoProBrowser(CmsoLoginBrowser):
         self.go_on_area(self.areas[0])
 
         headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'ADRIM': 'isAjax:true',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "ADRIM": "isAjax:true",
         }
 
         # Prevent an error 403
         self.filter_page.go(website=self.website)
 
-        return self.profile.go(
-            website=self.website,
-            json={},
-            headers=headers).get_profile()
+        return self.profile.go(website=self.website, json={}, headers=headers).get_profile()

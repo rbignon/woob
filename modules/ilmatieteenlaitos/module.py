@@ -25,16 +25,16 @@ from woob.tools.backend import Module
 from .browser import IlmatieteenlaitosBrowser
 
 
-__all__ = ['IlmatieteenlaitosModule']
+__all__ = ["IlmatieteenlaitosModule"]
 
 
 class IlmatieteenlaitosModule(Module, CapWeather):
-    NAME = 'ilmatieteenlaitos'
-    MAINTAINER = u'Matthieu Weber'
-    EMAIL = 'mweber+weboob@free.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'Get forecasts from the Ilmatieteenlaitos.fi website'
-    LICENSE = 'AGPLv3+'
+    NAME = "ilmatieteenlaitos"
+    MAINTAINER = "Matthieu Weber"
+    EMAIL = "mweber+weboob@free.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Get forecasts from the Ilmatieteenlaitos.fi website"
+    LICENSE = "AGPLv3+"
     BROWSER = IlmatieteenlaitosBrowser
 
     def get_current(self, city_id):

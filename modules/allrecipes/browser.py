@@ -24,17 +24,16 @@ from woob.browser import URL, PagesBrowser
 from .pages import RecipePage, ResultsPage
 
 
-__all__ = ['AllrecipesBrowser']
+__all__ = ["AllrecipesBrowser"]
 
 
 class AllrecipesBrowser(PagesBrowser):
 
-    BASEURL = 'https://www.allrecipes.com'
-    results = URL(r'/element-api/content-proxy/faceted-searches-load-more\?search=(?P<search>.*)&page=(?P<page>.*)',
-                  ResultsPage)
-    recipe = URL(r'/recipe/(?P<id>\d*)/',
-                 r'/recipe/\d*/.*/',
-                 RecipePage)
+    BASEURL = "https://www.allrecipes.com"
+    results = URL(
+        r"/element-api/content-proxy/faceted-searches-load-more\?search=(?P<search>.*)&page=(?P<page>.*)", ResultsPage
+    )
+    recipe = URL(r"/recipe/(?P<id>\d*)/", r"/recipe/\d*/.*/", RecipePage)
 
     def iter_recipes(self, pattern):
         return self.results.go(search=quote(pattern), page=1).iter_recipes()

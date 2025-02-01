@@ -30,7 +30,7 @@ from .pages import CaptchaHTMLPage, CaptchaImagePage, PrepareApplicationPage, Se
 class RDVPrefectureBrowser(PagesBrowser, StatesMixin):
     __states__ = ("captcha_vars",)
 
-    BASEURL = 'https://www.rdv-prefecture.interieur.gouv.fr/'
+    BASEURL = "https://www.rdv-prefecture.interieur.gouv.fr/"
     CAPTCHETAT_BASEURL = "https://api.piste.gouv.fr/piste/captcha/"
 
     captcha_html_endpoint = URL(
@@ -80,10 +80,7 @@ class RDVPrefectureBrowser(PagesBrowser, StatesMixin):
         self.captcha_vars = None
 
         self.validate_captcha.go(proc_id=procedure_id, data=captcha_data)
-        if (
-            self.prepare_application.is_here()
-            and get_url_param(self.page.url, "error", default="") == "invalidCaptcha"
-        ):
+        if self.prepare_application.is_here() and get_url_param(self.page.url, "error", default="") == "invalidCaptcha":
             raise InvalidCaptcha()
 
         assert self.select_slot.is_here()

@@ -21,14 +21,28 @@ from .accounts_page import AccountInfoPage, AccountsPage, ComingPage, HistoryPag
 from .login import LoginPage
 from .profile_page import ProfilePage
 from .transfer_page import (
-    AddRecipientPage, ConfirmOtpPage, CreditAccountsPage, DebitAccountsPage, OtpChannelsPage, TransferPage,
+    AddRecipientPage,
+    ConfirmOtpPage,
+    CreditAccountsPage,
+    DebitAccountsPage,
+    OtpChannelsPage,
+    TransferPage,
 )
 
 
 __all__ = [
-    'LoginPage', 'AccountsPage', 'HistoryPage', 'ComingPage', 'AccountInfoPage',
-    'InvestTokenPage', 'LifeInsurancePage',
-    'DebitAccountsPage', 'CreditAccountsPage', 'TransferPage',
-    'AddRecipientPage', 'OtpChannelsPage', 'ConfirmOtpPage',
-    'ProfilePage',
+    "LoginPage",
+    "AccountsPage",
+    "HistoryPage",
+    "ComingPage",
+    "AccountInfoPage",
+    "InvestTokenPage",
+    "LifeInsurancePage",
+    "DebitAccountsPage",
+    "CreditAccountsPage",
+    "TransferPage",
+    "AddRecipientPage",
+    "OtpChannelsPage",
+    "ConfirmOtpPage",
+    "ProfilePage",
 ]

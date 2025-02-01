@@ -23,7 +23,7 @@ from woob.tools.test import BackendTest
 
 
 class GLSTest(BackendTest):
-    MODULE = 'gls'
+    MODULE = "gls"
 
     def test_gls(self):
         self.assertRaises(ParcelNotFound, self.backend.get_parcel_tracking, "foo")

@@ -20,25 +20,27 @@ from .collection import CapCollection
 from .date import DateField
 
 
-__all__ = ['Book', 'Renew', 'CapBook']
+__all__ = ["Book", "Renew", "CapBook"]
 
 
 class Book(BaseObject):
     """
     Describes a book.
     """
-    name =      StringField('Name of the book')
-    author =    StringField('Author of the book')
-    location =  StringField('Location')
-    date =      DateField('The due date')
-    late =      BoolField('Are you late?')
+
+    name = StringField("Name of the book")
+    author = StringField("Author of the book")
+    location = StringField("Location")
+    date = DateField("The due date")
+    late = BoolField("Are you late?")
 
 
 class Renew(BaseObject):
     """
     A renew message.
     """
-    message = StringField('Message')
+
+    message = StringField("Message")
 
 
 class CapBook(CapCollection):

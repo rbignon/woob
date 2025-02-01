@@ -23,98 +23,120 @@ def enum(**enums):
     _keys = list(enums.keys())
     _items = list(enums.items())
     _types = list((type(value) for value in enums.values()))
-    _index = {(value if not isinstance(value, dict) else next(iter(value.values()))): i
-              for i, value in enumerate(enums.values())}
+    _index = {
+        (value if not isinstance(value, dict) else next(iter(value.values()))): i
+        for i, value in enumerate(enums.values())
+    }
 
-    enums['keys'] = _keys
-    enums['values'] = _values
-    enums['items'] = _items
-    enums['index'] = _index
-    enums['types'] = _types
-    return type('Enum', (), enums)
+    enums["keys"] = _keys
+    enums["values"] = _values
+    enums["items"] = _items
+    enums["index"] = _index
+    enums["types"] = _types
+    return type("Enum", (), enums)
 
 
-FORMATS = enum(HTTP_MP4=u'HBBTV', HLS=u'M3U8', RTMP=u'RTMP', HLS_MOBILE=u'MOBILE')
+FORMATS = enum(HTTP_MP4="HBBTV", HLS="M3U8", RTMP="RTMP", HLS_MOBILE="MOBILE")
 
-LANG = enum(FRENCH={u'label': u'French', u'webservice': u'F', u'site': u'fr', u'version': u'1', u'title': u'titleFR'},
-            GERMAN={u'label': u'German', u'webservice': u'D', u'site': u'de', u'version': u'1', u'title': u'titleDE'})
+LANG = enum(
+    FRENCH={"label": "French", "webservice": "F", "site": "fr", "version": "1", "title": "titleFR"},
+    GERMAN={"label": "German", "webservice": "D", "site": "de", "version": "1", "title": "titleDE"},
+)
 
-CONCERT = enum(CLASSIQUE={u'id': u'CLA', u'label': u'Classique'},
-               ACTUELLE={u'id': u'MUA', u'label': u'Musiques actuelles'},
-               OPERA={u'id': u'OPE', u'label': u'Opera'},
-               JAZZ={u'id': u'JAZ', u'label': u'Jazz'},
-               MONDE={u'id': u'MUD', u'label': u'Musiques du monde'},
-               SCENE={u'id': u'ADS', u'label': u'Arts de la scène'},
-               COLLECTION={u'id': u'collections_ARS', u'label': u'Collections'},
-               PLAYLIST={u'id': u'playlists_ARS', u'label': u'Playlists'})
+CONCERT = enum(
+    CLASSIQUE={"id": "CLA", "label": "Classique"},
+    ACTUELLE={"id": "MUA", "label": "Musiques actuelles"},
+    OPERA={"id": "OPE", "label": "Opera"},
+    JAZZ={"id": "JAZ", "label": "Jazz"},
+    MONDE={"id": "MUD", "label": "Musiques du monde"},
+    SCENE={"id": "ADS", "label": "Arts de la scène"},
+    COLLECTION={"id": "collections_ARS", "label": "Collections"},
+    PLAYLIST={"id": "playlists_ARS", "label": "Playlists"},
+)
 
-CINEMA = enum(FILM={u'id': u'FLM', u'label': u'Films'},
-              CLASSIQUES={u'id': u'MCL', u'label': u'Les grands du 7e art'},
-              COURT_METRAGES={u'id': u'CMG', u'label': u'Courts métrages'},
-              FILM_MUETS={u'id': u'CMU', u'label': u'Films muets'},
-              ACTU={u'id': u'ACC', u'label': u'Actualité du cinéma'},
-              COLLECTION={u'id': u'collections_CIN', u'label': u'Collections'},
-              MAGAZINE={u'id': u'magazines_CIN', u'label': u'Émissions'})
+CINEMA = enum(
+    FILM={"id": "FLM", "label": "Films"},
+    CLASSIQUES={"id": "MCL", "label": "Les grands du 7e art"},
+    COURT_METRAGES={"id": "CMG", "label": "Courts métrages"},
+    FILM_MUETS={"id": "CMU", "label": "Films muets"},
+    ACTU={"id": "ACC", "label": "Actualité du cinéma"},
+    COLLECTION={"id": "collections_CIN", "label": "Collections"},
+    MAGAZINE={"id": "magazines_CIN", "label": "Émissions"},
+)
 
-SERIE = enum(SERIES={u'id': u'SES', u'label': u'Séries'},
-             FICTIONS={u'id': u'FIC', u'label': u'Fictions'},
-             HUMOUR={u'id': u'CHU', u'label': u'Courts humoristiques'},
-             COLLECTION={u'id': u'collections_SER', u'label': u'Collections'})
+SERIE = enum(
+    SERIES={"id": "SES", "label": "Séries"},
+    FICTIONS={"id": "FIC", "label": "Fictions"},
+    HUMOUR={"id": "CHU", "label": "Courts humoristiques"},
+    COLLECTION={"id": "collections_SER", "label": "Collections"},
+)
 
-POP = enum(POP={u'id': u'POP', u'label': u'Culture pop'},
-           ART={u'id': u'ART', u'label': u'Arts'},
-           IDE={u'id': u'IDE', u'label': u'Idées'},
-           COLLECTION={u'id': u'collections_CPO', u'label': u'Collections'},
-           MAGAZINE={u'id': u'magazines_CPO', u'label': u'Émissions'})
+POP = enum(
+    POP={"id": "POP", "label": "Culture pop"},
+    ART={"id": "ART", "label": "Arts"},
+    IDE={"id": "IDE", "label": "Idées"},
+    COLLECTION={"id": "collections_CPO", "label": "Collections"},
+    MAGAZINE={"id": "magazines_CPO", "label": "Émissions"},
+)
 
-SCIENCE = enum(POP={u'id': u'SAN', u'label': u'Médecine et santé'},
-               EEN={u'id': u'ENN', u'label': u'Environnement et nature'},
-               TEC={u'id': u'TEC', u'label': u'Technologies et innovations'},
-               ENB={u'id': u'ENB', u'label': u'En bref'},
-               COLLECTION={u'id': u'collections_SCI', u'label': u'Collections'},
-               MAGAZINE={u'id': u'magazines_SCI', u'label': u'Émissions'})
+SCIENCE = enum(
+    POP={"id": "SAN", "label": "Médecine et santé"},
+    EEN={"id": "ENN", "label": "Environnement et nature"},
+    TEC={"id": "TEC", "label": "Technologies et innovations"},
+    ENB={"id": "ENB", "label": "En bref"},
+    COLLECTION={"id": "collections_SCI", "label": "Collections"},
+    MAGAZINE={"id": "magazines_SCI", "label": "Émissions"},
+)
 
-VOYAGE = enum(NEA={u'id': u'NEA', u'label': u'Nature et animaux'},
-              EVA={u'id': u'EVA', u'label': u'Evasion'},
-              ATA={u'id': u'ATA', u'label': u'A table !'},
-              VIA={u'id': u'VIA', u'label': u'Vies d\'ailleurs'},
-              COLLECTION={u'id': u'collections_DEC', u'label': u'Collections'},
-              MAGAZINE={u'id': u'magazines_DEC', u'label': u'Émissions'})
+VOYAGE = enum(
+    NEA={"id": "NEA", "label": "Nature et animaux"},
+    EVA={"id": "EVA", "label": "Evasion"},
+    ATA={"id": "ATA", "label": "A table !"},
+    VIA={"id": "VIA", "label": "Vies d'ailleurs"},
+    COLLECTION={"id": "collections_DEC", "label": "Collections"},
+    MAGAZINE={"id": "magazines_DEC", "label": "Émissions"},
+)
 
-HISTOIRE = enum(XXE={u'id': u'XXE', u'label': u'XXe siècle'},
-                CIV={u'id': u'CIV', u'label': u'Civilisations'},
-                LGP={u'id': u'LGP', u'label': u'Les grands personnages'},
-                COLLECTION={u'id': u'collections_DEC', u'label': u'Collections'})
+HISTOIRE = enum(
+    XXE={"id": "XXE", "label": "XXe siècle"},
+    CIV={"id": "CIV", "label": "Civilisations"},
+    LGP={"id": "LGP", "label": "Les grands personnages"},
+    COLLECTION={"id": "collections_DEC", "label": "Collections"},
+)
 
-SITE = enum(PROGRAM={u'id': u'program', u'label': u'Arte Programs'},
-            CREATIVE={u'id': u'creative', u'label': u'Arte Creative'},
-            GUIDE={u'id': u'guide', u'label': u'Arte Guide TV'},
-            CONCERT={u'id': u'concert', u'label': u'Arte Concert videos', u'enum': CONCERT},
-            CINEMA={u'id': u'cinema', u'label': u'Arte Cinema', u'enum': CINEMA},
-            SERIE={u'id': u'series-et-fictions', u'label': u'Arte CreativeSéries et fictions', u'enum': SERIE},
-            POP={u'id': u'culture-et-pop', u'label': u'Culture et pop', u'enum': POP},
-            SCIENCE={u'id': u'sciences', u'label': u'Sciences', u'enum': SCIENCE},
-            VOYAGE={u'id': u'voyages-et-decouvertes', u'label': u'Voyages et découvertes', u'enum': VOYAGE},
-            HISTOIRE={u'id': u'histoire', u'label': u'Histoire', u'enum': HISTOIRE})
+SITE = enum(
+    PROGRAM={"id": "program", "label": "Arte Programs"},
+    CREATIVE={"id": "creative", "label": "Arte Creative"},
+    GUIDE={"id": "guide", "label": "Arte Guide TV"},
+    CONCERT={"id": "concert", "label": "Arte Concert videos", "enum": CONCERT},
+    CINEMA={"id": "cinema", "label": "Arte Cinema", "enum": CINEMA},
+    SERIE={"id": "series-et-fictions", "label": "Arte CreativeSéries et fictions", "enum": SERIE},
+    POP={"id": "culture-et-pop", "label": "Culture et pop", "enum": POP},
+    SCIENCE={"id": "sciences", "label": "Sciences", "enum": SCIENCE},
+    VOYAGE={"id": "voyages-et-decouvertes", "label": "Voyages et découvertes", "enum": VOYAGE},
+    HISTOIRE={"id": "histoire", "label": "Histoire", "enum": HISTOIRE},
+)
 
-QUALITY = enum(HD={'label': u'SQ', 'order': 3},
-               MD={'label': u'EQ', 'order': 2},
-               SD={'label': u'MQ', 'order': 1},
-               LD={'label': u'LQ', 'order': 0},
-               XD={'label': u'XQ', 'order': 4},)
+QUALITY = enum(
+    HD={"label": "SQ", "order": 3},
+    MD={"label": "EQ", "order": 2},
+    SD={"label": "MQ", "order": 1},
+    LD={"label": "LQ", "order": 0},
+    XD={"label": "XQ", "order": 4},
+)
 
-VERSION_VIDEO = enum(VOSTA={u'label': u'Original version subtitled (German)', LANG.GERMAN.get('label'): u'3'},
-                     VOSTF={u'label': u'Original version subtitled (French)', LANG.FRENCH.get('label'): u'3'},
-                     VASTA={u'label': u'Translated version (German)',
-                            LANG.GERMAN.get('label'): u'1', LANG.FRENCH.get('label'): u'2'},
-                     VFSTF={u'label': u'Translated version (French)',
-                            LANG.FRENCH.get('label'): u'1', LANG.GERMAN.get('label'): u'2'},
-                     VASTMA={u'label': u'Deaf version (German)', LANG.GERMAN.get('label'): u'8'},
-                     VFSTMF={u'label': u'Deaf version (French)', LANG.FRENCH.get('label'): u'8'})
+VERSION_VIDEO = enum(
+    VOSTA={"label": "Original version subtitled (German)", LANG.GERMAN.get("label"): "3"},
+    VOSTF={"label": "Original version subtitled (French)", LANG.FRENCH.get("label"): "3"},
+    VASTA={"label": "Translated version (German)", LANG.GERMAN.get("label"): "1", LANG.FRENCH.get("label"): "2"},
+    VFSTF={"label": "Translated version (French)", LANG.FRENCH.get("label"): "1", LANG.GERMAN.get("label"): "2"},
+    VASTMA={"label": "Deaf version (German)", LANG.GERMAN.get("label"): "8"},
+    VFSTMF={"label": "Deaf version (French)", LANG.FRENCH.get("label"): "8"},
+)
 
 
 def get_site_enum_by_id(id):
     for s in SITE.values:
-        if s.get('id') == id:
+        if s.get("id") == id:
             return s
     return

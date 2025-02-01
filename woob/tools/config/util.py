@@ -22,17 +22,18 @@ from datetime import datetime
 from woob.tools.log import getLogger
 
 
-__all__ = ['LOGGER', 'replace', 'time_buffer']
+__all__ = ["LOGGER", "replace", "time_buffer"]
 
 
-LOGGER = getLogger('woob.config')
+LOGGER = getLogger("woob.config")
 
 
 try:
     from os import replace
 except ImportError:
+
     def replace(src, dst, *args, **kwargs):
-        if os.name != 'posix':
+        if os.name != "posix":
             try:
                 os.remove(dst)
             except OSError:
@@ -43,19 +44,20 @@ except ImportError:
 def time_buffer(since_seconds=None, last_run=True, logger=False):
     def decorator_time_buffer(func):
         def wrapper_time_buffer(*args, **kwargs):
-            since_seconds = kwargs.pop('since_seconds', None)
+            since_seconds = kwargs.pop("since_seconds", None)
             if since_seconds is None:
                 since_seconds = decorator_time_buffer.since_seconds
             if logger:
-                logger.debug('Time buffer for %r of %s. Last run %s.'
-                             % (func, since_seconds, decorator_time_buffer.last_run))
+                logger.debug(
+                    "Time buffer for %r of %s. Last run %s." % (func, since_seconds, decorator_time_buffer.last_run)
+                )
             if since_seconds and decorator_time_buffer.last_run:
                 if (datetime.now() - decorator_time_buffer.last_run).seconds < since_seconds:
                     if logger:
-                        logger.debug('Too soon to run %r, ignore.' % func)
+                        logger.debug("Too soon to run %r, ignore." % func)
                     return
             if logger:
-                logger.debug('Run %r and record' % func)
+                logger.debug("Run %r and record" % func)
             res = func(*args, **kwargs)
             decorator_time_buffer.last_run = datetime.now()
             return res
@@ -64,4 +66,5 @@ def time_buffer(since_seconds=None, last_run=True, logger=False):
         decorator_time_buffer.last_run = datetime.now() if last_run is True else last_run
 
         return wrapper_time_buffer
+
     return decorator_time_buffer

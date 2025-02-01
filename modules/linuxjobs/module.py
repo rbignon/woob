@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import LinuxJobsBrowser
 
 
-__all__ = ['LinuxJobsModule']
+__all__ = ["LinuxJobsModule"]
 
 
 class LinuxJobsModule(Module, CapJob):
-    NAME = 'linuxjobs'
-    DESCRIPTION = u'linuxjobs website'
-    MAINTAINER = u'François Revol'
-    EMAIL = 'revol@free.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "linuxjobs"
+    DESCRIPTION = "linuxjobs website"
+    MAINTAINER = "François Revol"
+    EMAIL = "revol@free.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = LinuxJobsBrowser
 

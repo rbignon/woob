@@ -26,7 +26,17 @@ from deprecated.sphinx import deprecated
 from unidecode import unidecode
 
 from woob.capabilities.base import (
-    BaseObject, Capability, Currency, DecimalField, Enum, EnumField, Field, StringField, UserError, empty, find_object,
+    BaseObject,
+    Capability,
+    Currency,
+    DecimalField,
+    Enum,
+    EnumField,
+    Field,
+    StringField,
+    UserError,
+    empty,
+    find_object,
 )
 from woob.capabilities.date import DateField
 from woob.exceptions import BrowserQuestion
@@ -35,16 +45,39 @@ from .base import Account, BaseAccount, CapBank, IBANField, ObjectNotFound
 
 
 __all__ = [
-    'AddRecipientBankError', 'AddRecipientError', 'AddRecipientStep', 'AddRecipientTimeout',
-    'BeneficiaryType',
-    'CapBankTransfer', 'CapBankTransferAddRecipient',
-    'CapTransfer', 'Emitter', 'EmitterNumberType', 'Recipient',
-    'RecipientInvalidIban', 'RecipientInvalidLabel', 'RecipientInvalidOTP', 'RecipientNotFound',
-    'Transfer',
-    'TransferBankError', 'TransferCancelledByUser', 'TransferDateType', 'TransferError', 'TransferFrequency',
-    'TransferInsufficientFunds', 'TransferInvalidAmount', 'TransferInvalidCurrency',
-    'TransferInvalidDate', 'TransferInvalidEmitter', 'TransferInvalidLabel', 'TransferTimeout', 'TransferInvalidOTP',
-    'TransferInvalidRecipient', 'TransferNotFound', 'TransferStatus', 'TransferStep',
+    "AddRecipientBankError",
+    "AddRecipientError",
+    "AddRecipientStep",
+    "AddRecipientTimeout",
+    "BeneficiaryType",
+    "CapBankTransfer",
+    "CapBankTransferAddRecipient",
+    "CapTransfer",
+    "Emitter",
+    "EmitterNumberType",
+    "Recipient",
+    "RecipientInvalidIban",
+    "RecipientInvalidLabel",
+    "RecipientInvalidOTP",
+    "RecipientNotFound",
+    "Transfer",
+    "TransferBankError",
+    "TransferCancelledByUser",
+    "TransferDateType",
+    "TransferError",
+    "TransferFrequency",
+    "TransferInsufficientFunds",
+    "TransferInvalidAmount",
+    "TransferInvalidCurrency",
+    "TransferInvalidDate",
+    "TransferInvalidEmitter",
+    "TransferInvalidLabel",
+    "TransferTimeout",
+    "TransferInvalidOTP",
+    "TransferInvalidRecipient",
+    "TransferNotFound",
+    "TransferStatus",
+    "TransferStep",
 ]
 
 
@@ -53,12 +86,12 @@ class RecipientNotFound(ObjectNotFound):
     Raised when a recipient is not found.
     """
 
-    def __init__(self, msg: str = 'Recipient not found'):
+    def __init__(self, msg: str = "Recipient not found"):
         super().__init__(msg)
 
 
 class TransferNotFound(ObjectNotFound):
-    def __init__(self, msg: str = 'Transfer not found'):
+    def __init__(self, msg: str = "Transfer not found"):
         super().__init__(msg)
 
 
@@ -72,7 +105,7 @@ class TransferError(UserError):
     :type message: str
     """
 
-    code = 'transferError'
+    code = "transferError"
 
     def __init__(self, description: str | None = None, message: str | None = None):
         super().__init__(message or description)
@@ -83,65 +116,65 @@ class TransferError(UserError):
 class TransferBankError(TransferError):
     """The transfer was rejected by the bank with a message."""
 
-    code = 'bankMessage'
+    code = "bankMessage"
 
 
 class TransferTimeout(TransferError):
     """The transfer request timed out"""
 
-    code = 'timeout'
+    code = "timeout"
 
 
 class TransferInvalidLabel(TransferError):
     """The transfer label is invalid."""
 
-    code = 'invalidLabel'
+    code = "invalidLabel"
 
 
 class TransferInvalidEmitter(TransferError):
     """The emitter account cannot be used for transfers."""
 
-    code = 'invalidEmitter'
+    code = "invalidEmitter"
 
 
 class TransferInvalidRecipient(TransferError):
     """The emitter cannot transfer to this recipient."""
 
-    code = 'invalidRecipient'
+    code = "invalidRecipient"
 
 
 class TransferInvalidAmount(TransferError):
     """This amount is not allowed."""
 
-    code = 'invalidAmount'
+    code = "invalidAmount"
 
 
 class TransferInvalidCurrency(TransferInvalidAmount):
     """The transfer currency is invalid."""
 
-    code = 'invalidCurrency'
+    code = "invalidCurrency"
 
 
 class TransferInsufficientFunds(TransferInvalidAmount):
     """Not enough funds on emitter account."""
 
-    code = 'insufficientFunds'
+    code = "insufficientFunds"
 
 
 class TransferInvalidDate(TransferError):
     """This execution date cannot be used."""
 
-    code = 'invalidDate'
+    code = "invalidDate"
 
 
 class TransferInvalidOTP(TransferError):
-    code = 'invalidOTP'
+    code = "invalidOTP"
 
 
 class TransferCancelledByUser(TransferError):
     """The transfer is cancelled by the emitter or an authorized user"""
 
-    code = 'cancelledByUser'
+    code = "cancelledByUser"
 
 
 class AddRecipientError(UserError):
@@ -154,7 +187,7 @@ class AddRecipientError(UserError):
     :type message: str
     """
 
-    code = 'AddRecipientError'
+    code = "AddRecipientError"
 
     def __init__(self, description: str | None = None, message: str | None = None):
         super().__init__(message or description)
@@ -165,13 +198,13 @@ class AddRecipientError(UserError):
 class AddRecipientBankError(AddRecipientError):
     """The new recipient was rejected by the bank with a message."""
 
-    code = 'bankMessage'
+    code = "bankMessage"
 
 
 class AddRecipientTimeout(AddRecipientError):
     """Add new recipient request has timeout"""
 
-    code = 'timeout'
+    code = "timeout"
 
 
 @deprecated(
@@ -179,28 +212,29 @@ class AddRecipientTimeout(AddRecipientError):
     reason="IBANs are now handled by IBANField which raises its own errors",
 )
 class RecipientInvalidIban(AddRecipientError):
-    code = 'invalidIban'
+    code = "invalidIban"
 
 
 class RecipientInvalidLabel(AddRecipientError):
-    code = 'invalidLabel'
+    code = "invalidLabel"
 
 
 class RecipientInvalidOTP(AddRecipientError):
-    code = 'invalidOTP'
+    code = "invalidOTP"
 
 
 class Recipient(BaseAccount):
     """
     Recipient of a transfer.
     """
-    enabled_at =     DateField('Date of availability')
-    category =       StringField('Recipient category')
-    iban =           IBANField('International Bank Account Number')
+
+    enabled_at = DateField("Date of availability")
+    category = StringField("Recipient category")
+    iban = IBANField("International Bank Account Number")
 
     # Needed for multispaces case
-    origin_account_id = StringField('Account id which recipient belong to')
-    origin_account_iban = StringField('Account iban which recipient belong to')
+    origin_account_id = StringField("Account id which recipient belong to")
+    origin_account_iban = StringField("Account iban which recipient belong to")
 
     def __repr__(self):
         return "<%s id=%r label=%r>" % (type(self).__name__, self.id, self.label)
@@ -225,16 +259,16 @@ class BeneficiaryType(Enum):
     Type of the Transfer.beneficiary_number property.
     """
 
-    IBAN = 'iban'
+    IBAN = "iban"
     """beneficiary number is an IBAN as defined in ISO 13616"""
 
-    SORT_CODE_ACCOUNT_NUMBER = 'sort_code_account_number'
+    SORT_CODE_ACCOUNT_NUMBER = "sort_code_account_number"
     """account number is a national UK/Ireland number including sortcode"""
 
-    PHONE_NUMBER = 'phone_number'
+    PHONE_NUMBER = "phone_number"
     """beneficiary number is an E.164 encoded phone number"""
 
-    RECIPIENT = 'recipient'
+    RECIPIENT = "recipient"
     """
     beneficiary number is a beneficiary identifier as returned by
     the iter_transfer_recipients method.
@@ -242,56 +276,56 @@ class BeneficiaryType(Enum):
 
 
 class TransferStatus(Enum):
-    UNKNOWN = 'unknown'
+    UNKNOWN = "unknown"
 
-    INTERMEDIATE = 'intermediate'
+    INTERMEDIATE = "intermediate"
     """Transfer is not validated yet"""
 
-    SCHEDULED = 'scheduled'
+    SCHEDULED = "scheduled"
     """Transfer to be executed later"""
 
-    ACTIVE = 'active'
+    ACTIVE = "active"
     """Periodic transfer is still active"""
 
-    DONE = 'done'
+    DONE = "done"
     """Transfer was executed"""
 
-    CANCELLED = 'cancelled'
+    CANCELLED = "cancelled"
     """Transfer was cancelled by the bank or by the user"""
 
-    ACCEPTED_NO_BANK_STATUS = 'accepted_no_bank_status'
+    ACCEPTED_NO_BANK_STATUS = "accepted_no_bank_status"
     """Transfer was sent to the bank but we will not get more information
     after that. This is used for banks that do not give us final states after pending."""
 
 
 class TransferFrequency(Enum):
-    UNKNOWN = 'unknown'
-    DAILY = 'daily'
-    WEEKLY = 'weekly'
-    TWOWEEKLY = 'two-weekly'  # every two weeks, not 2 times per week
-    MONTHLY = 'monthly'
-    TWOMONTHLY  = 'two-monthly'  # every two months, not 2 times per month
-    QUARTERLY = 'quarterly'
-    FOURMONTHLY = 'four-monthly'  # every four months, not 4 times per month
-    SEMIANNUALLY = 'semiannually'
-    YEARLY = 'yearly'
+    UNKNOWN = "unknown"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    TWOWEEKLY = "two-weekly"  # every two weeks, not 2 times per week
+    MONTHLY = "monthly"
+    TWOMONTHLY = "two-monthly"  # every two months, not 2 times per month
+    QUARTERLY = "quarterly"
+    FOURMONTHLY = "four-monthly"  # every four months, not 4 times per month
+    SEMIANNUALLY = "semiannually"
+    YEARLY = "yearly"
 
     # (deprecated)
-    BIMONTHLY = 'bimonthly'  # use TWOWEEKLY instead
-    BIANNUAL = 'biannual'  # use SEMIANNUALLY instead
+    BIMONTHLY = "bimonthly"  # use TWOWEEKLY instead
+    BIANNUAL = "biannual"  # use SEMIANNUALLY instead
 
 
 class TransferDateType(Enum):
-    FIRST_OPEN_DAY = 'first_open_day'
+    FIRST_OPEN_DAY = "first_open_day"
     """Transfer to execute when possible (accounting opening days)"""
 
-    INSTANT = 'instant'
+    INSTANT = "instant"
     """Transfer to execute immediately (not accounting opening days)"""
 
-    DEFERRED = 'deferred'
+    DEFERRED = "deferred"
     """Transfer to execute on a chosen date"""
 
-    PERIODIC = 'periodic'
+    PERIODIC = "periodic"
     """Transfer to execute periodically"""
 
 
@@ -299,68 +333,70 @@ class Transfer(BaseObject, Currency):
     """
     Transfer from an account to a recipient.
     """
-    amount =          DecimalField('Amount to transfer')
-    currency =        StringField('Currency', default=None)
-    fees =            DecimalField('Fees', default=None)
 
-    exec_date =       Field('Date of transfer', date, datetime)
-    label =           StringField('Reason')
+    amount = DecimalField("Amount to transfer")
+    currency = StringField("Currency", default=None)
+    fees = DecimalField("Fees", default=None)
 
-    account_id =      StringField('ID of origin account')
-    account_iban =    StringField('International Bank Account Number')
-    account_label =   StringField('Label of origin account')
-    account_balance = DecimalField('Balance of origin account before transfer')
+    exec_date = Field("Date of transfer", date, datetime)
+    label = StringField("Reason")
+
+    account_id = StringField("ID of origin account")
+    account_iban = StringField("International Bank Account Number")
+    account_label = StringField("Label of origin account")
+    account_balance = DecimalField("Balance of origin account before transfer")
 
     # Information for beneficiary in recipient list
-    recipient_id =      StringField('ID of recipient account')
-    recipient_iban =    StringField('International Bank Account Number')
-    recipient_label =   StringField('Label of recipient account')
+    recipient_id = StringField("ID of recipient account")
+    recipient_iban = StringField("International Bank Account Number")
+    recipient_label = StringField("Label of recipient account")
 
     # Information for beneficiary not only in recipient list
     # Like transfer to iban beneficiary
-    beneficiary_type =    StringField('Transfer creditor number type', default=BeneficiaryType.RECIPIENT)
-    beneficiary_number =  StringField('Transfer creditor number')
-    beneficiary_label =  StringField('Transfer creditor label')
-    beneficiary_bic = StringField('Transfer creditor BIC')
+    beneficiary_type = StringField("Transfer creditor number type", default=BeneficiaryType.RECIPIENT)
+    beneficiary_number = StringField("Transfer creditor number")
+    beneficiary_label = StringField("Transfer creditor label")
+    beneficiary_bic = StringField("Transfer creditor BIC")
 
-    date_type = EnumField('Transfer execution date type', TransferDateType)
+    date_type = EnumField("Transfer execution date type", TransferDateType)
 
-    frequency = EnumField('Frequency of periodic transfer', TransferFrequency)
-    first_due_date = DateField('Date of first transfer of periodic transfer')
-    last_due_date = DateField('Date of last transfer of periodic transfer')
+    frequency = EnumField("Frequency of periodic transfer", TransferFrequency)
+    first_due_date = DateField("Date of first transfer of periodic transfer")
+    last_due_date = DateField("Date of last transfer of periodic transfer")
 
-    creation_date = DateField('Creation date of transfer')
-    status = EnumField('Transfer status', TransferStatus)
+    creation_date = DateField("Creation date of transfer")
+    status = EnumField("Transfer status", TransferStatus)
 
-    cancelled_exception = Field('Transfer cancelled reason', TransferError)
+    cancelled_exception = Field("Transfer cancelled reason", TransferError)
 
     # End to end ID given by the client
-    reference_id = StringField('End to end ID given by client')
+    reference_id = StringField("End to end ID given by client")
 
 
 class EmitterNumberType(Enum):
-    UNKNOWN = 'unknown'
-    IBAN = 'iban'
-    BBAN = 'bban'
+    UNKNOWN = "unknown"
+    IBAN = "iban"
+    BBAN = "bban"
 
 
 class Emitter(BaseAccount):
     """
     Transfer emitter account.
     """
-    number_type = EnumField('Account number type', EmitterNumberType, default=EmitterNumberType.UNKNOWN)
-    number = StringField('Account number value')
-    balance = DecimalField('Balance of emitter account')
+
+    number_type = EnumField("Account number type", EmitterNumberType, default=EmitterNumberType.UNKNOWN)
+    number = StringField("Account number value")
+    balance = DecimalField("Balance of emitter account")
 
 
 class DebtorAccountRequirement(Enum):
-    MANDATORY = 'mandatory'
+    MANDATORY = "mandatory"
     """Debtor account is needed to initiate a payment"""
 
-    OPTIONAL = 'optional'
+    OPTIONAL = "optional"
     """Debtor account is optional (may change module behaviour)"""
 
-    NOT_USED = 'not_used'
+    NOT_USED = "not_used"
     """Debtor account must not be given"""
 
 
@@ -372,10 +408,10 @@ class Platform(str, enum.Enum):
     the browser.
     """
 
-    ANDROID = 'android'
+    ANDROID = "android"
     """Android based platforms."""
 
-    IOS = 'ios'
+    IOS = "ios"
     """Apple's iOS platform."""
 
 
@@ -405,7 +441,7 @@ class CapTransfer(Capability):
     should set this to True.
     """
 
-    accepted_beneficiary_types = (BeneficiaryType.RECIPIENT, )
+    accepted_beneficiary_types = (BeneficiaryType.RECIPIENT,)
     accepted_execution_date_types = (TransferDateType.FIRST_OPEN_DAY, TransferDateType.DEFERRED)
     accepted_execution_frequencies = set(TransferFrequency) - set([TransferFrequency.UNKNOWN])
     maximum_number_of_instructions = 1
@@ -497,7 +533,7 @@ class CapTransfer(Capability):
         transfer = self.optional_confirm_transfer_cancellation(transfer, **params)
         # Check that the transfer has been successfully cancelled.
         if transfer.status != TransferStatus.CANCELLED:
-            raise AssertionError('Transfer is not cancelled after cancellation request.')
+            raise AssertionError("Transfer is not cancelled after cancellation request.")
         return transfer
 
     def optional_confirm_transfer_cancellation(self, transfer: Transfer, **params) -> Transfer:
@@ -525,13 +561,32 @@ class CapTransfer(Capability):
         """
 
         transfer_not_check_fields = {
-            BeneficiaryType.RECIPIENT: ('id', 'beneficiary_number', 'beneficiary_label',),
-            BeneficiaryType.IBAN: ('id', 'recipient_id', 'recipient_iban', 'recipient_label',),
-            BeneficiaryType.PHONE_NUMBER: ('id', 'recipient_id', 'recipient_iban', 'recipient_label',),
-            BeneficiaryType.SORT_CODE_ACCOUNT_NUMBER: ('id', 'recipient_id', 'recipient_iban', 'recipient_label',),
+            BeneficiaryType.RECIPIENT: (
+                "id",
+                "beneficiary_number",
+                "beneficiary_label",
+            ),
+            BeneficiaryType.IBAN: (
+                "id",
+                "recipient_id",
+                "recipient_iban",
+                "recipient_label",
+            ),
+            BeneficiaryType.PHONE_NUMBER: (
+                "id",
+                "recipient_id",
+                "recipient_iban",
+                "recipient_label",
+            ),
+            BeneficiaryType.SORT_CODE_ACCOUNT_NUMBER: (
+                "id",
+                "recipient_id",
+                "recipient_iban",
+                "recipient_label",
+            ),
         }
 
-        if hasattr(transfer, 'instructions'):
+        if hasattr(transfer, "instructions"):
             instructions = transfer.instructions
         else:
             instructions = [transfer]
@@ -539,29 +594,31 @@ class CapTransfer(Capability):
 
         for instr in instructions:
             if not instr.amount or instr.amount <= 0:
-                raise TransferInvalidAmount('amount must be strictly positive')
+                raise TransferInvalidAmount("amount must be strictly positive")
 
         instructions = sorted(
-            instructions,
-            key=lambda x: (x.reference_id, x.beneficiary_number, x.recipient_iban, x.amount, x.exec_date)
+            instructions, key=lambda x: (x.reference_id, x.beneficiary_number, x.recipient_iban, x.amount, x.exec_date)
         )
 
         # Initiate the transfer
         t = self.init_transfer(transfer, **params)
 
         # Verify the created transfer before execution
-        if hasattr(t, 'instructions'):
+        if hasattr(t, "instructions"):
             new_instructions = t.instructions
         else:
             new_instructions = [t]
         nb_new_instructions = len(new_instructions)
         new_instructions = sorted(
             new_instructions,
-            key=lambda x: (x.reference_id, x.beneficiary_number, x.recipient_iban, x.amount, x.exec_date)
+            key=lambda x: (x.reference_id, x.beneficiary_number, x.recipient_iban, x.amount, x.exec_date),
         )
 
-        assert nb_instructions == nb_new_instructions, (
-            'Number of instructions changed during transfer processing (from "%s" to "%s")' % (nb_instructions, nb_new_instructions)
+        assert (
+            nb_instructions == nb_new_instructions
+        ), 'Number of instructions changed during transfer processing (from "%s" to "%s")' % (
+            nb_instructions,
+            nb_new_instructions,
         )
 
         changed_msg_template = '%s changed during transfer processing (from "%s" to "%s") for instruction %s'
@@ -574,21 +631,21 @@ class CapTransfer(Capability):
                     transfer_val = getattr(orig_instr, key)
                 except AttributeError:
                     continue
-                transfer_check_fn = getattr(self, 'transfer_check_%s' % key, None)
+                transfer_check_fn = getattr(self, "transfer_check_%s" % key, None)
                 if transfer_check_fn:
                     if not transfer_check_fn(transfer_val, value):
-                        raise AssertionError(changed_msg_template % (
-                            key, transfer_val, value, orig_instr.reference_id or ''
-                        ))
+                        raise AssertionError(
+                            changed_msg_template % (key, transfer_val, value, orig_instr.reference_id or "")
+                        )
                 elif transfer_val != value and not empty(transfer_val):
-                    raise AssertionError(changed_msg_template % (
-                        key, transfer_val, value, orig_instr.reference_id or ''
-                    ))
+                    raise AssertionError(
+                        changed_msg_template % (key, transfer_val, value, orig_instr.reference_id or "")
+                    )
         return self.execute_transfer(t, **params)
 
     def transfer_check_label(self, old: str, new: str) -> bool:
-        old = re.sub(r'\s+', ' ', old).strip()
-        new = re.sub(r'\s+', ' ', new).strip()
+        old = re.sub(r"\s+", " ", old).strip()
+        new = re.sub(r"\s+", " ", new).strip()
         return unidecode(old) == unidecode(new)
 
     def iter_transfers(self, account: Account | None = None) -> Iterator[Transfer]:
@@ -674,5 +731,5 @@ class CapBankTransferAddRecipient(CapBankTransfer):
         :rtype: :class:`Recipient`
         """
         if not recipient.label:
-            raise RecipientInvalidLabel('Recipient label is mandatory.')
+            raise RecipientInvalidLabel("Recipient label is mandatory.")
         return self.new_recipient(recipient, **params)

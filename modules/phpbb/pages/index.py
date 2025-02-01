@@ -28,14 +28,14 @@ class PhpBBPage(HTMLPage):
 
     def get_feed_url(self):
         links = self.doc.xpath('//link[@type="application/atom+xml"]')
-        return links[-1].attrib['href']
+        return links[-1].attrib["href"]
 
     def get_error_message(self):
         errors = []
         for div in self.doc.xpath('//div[has-class("error")] | //p[has-class("error")]'):
             if div.text:
                 errors.append(div.text.strip())
-        return ', '.join(errors)
+        return ", ".join(errors)
 
 
 class LoginPage(PhpBBPage):

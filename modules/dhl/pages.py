@@ -29,31 +29,31 @@ from woob.capabilities.parcel import Event, Parcel, ParcelNotFound
 class DHLExpressSearchPage(JsonPage):
     # Based on http://www.dhl.com/etc/designs/dhl/docroot/tracking/less/tracking.css
     STATUSES = {
-        u'105': Parcel.STATUS_PLANNED,
-        u'104': Parcel.STATUS_PLANNED,
-        u'102': Parcel.STATUS_IN_TRANSIT,
-        u'101': Parcel.STATUS_ARRIVED,
+        "105": Parcel.STATUS_PLANNED,
+        "104": Parcel.STATUS_PLANNED,
+        "102": Parcel.STATUS_IN_TRANSIT,
+        "101": Parcel.STATUS_ARRIVED,
     }
 
     def get_info(self, _id):
-        if u'errors' in self.doc:
+        if "errors" in self.doc:
             raise ParcelNotFound("No such ID: %s" % _id)
-        elif u'results' in self.doc:
-            result = self.doc[u'results'][0]
+        elif "results" in self.doc:
+            result = self.doc["results"][0]
             p = Parcel(_id)
-            p.history = [self.build_event(e) for e in result[u'checkpoints']]
-            p.status = self.STATUSES.get(result[u'delivery'][u'code'], Parcel.STATUS_UNKNOWN)
+            p.history = [self.build_event(e) for e in result["checkpoints"]]
+            p.status = self.STATUSES.get(result["delivery"]["code"], Parcel.STATUS_UNKNOWN)
             p.info = p.history[0].activity
             return p
         else:
             raise ParcelNotFound("Unexpected reply from server")
 
     def build_event(self, e):
-        index = e[u'counter']
+        index = e["counter"]
         event = Event(index)
-        event.date = parse_date(e[u'date'] + " " + e.get(u'time', ''), dayfirst=True, fuzzy=True)
-        event.location = e.get(u'location', '')
-        event.activity = e[u'description']
+        event.date = parse_date(e["date"] + " " + e.get("time", ""), dayfirst=True, fuzzy=True)
+        event.location = e.get("location", "")
+        event.activity = e["description"]
         return event
 
 
@@ -83,7 +83,9 @@ class DeutschePostDHLSearchPage(HTMLPage):
 
         p = Parcel(_id)
         events = self.doc.xpath('//div[@id="events-content-0"]//dl/div/*')
-        p.history = list(reversed([self.build_html_event(i, dt, dd) for i,(dt,dd) in enumerate(zip(events[0::2], events[1::2]))]))
+        p.history = list(
+            reversed([self.build_html_event(i, dt, dd) for i, (dt, dd) in enumerate(zip(events[0::2], events[1::2]))])
+        )
         status_msg = self.doc.xpath('//div[@class="mm_shipmentStatusText"]//dd[1]')[0].text.split(" ", 1)[1]
         if len(status_msg) > 0:
             p.status = self.STATUSES.get(status_msg, Parcel.STATUS_UNKNOWN)
@@ -103,7 +105,7 @@ class DeutschePostDHLSearchPage(HTMLPage):
 
         p = Parcel(_id)
         events = data["sendungen"][0]["sendungsdetails"]["sendungsverlauf"]["events"]
-        p.history = [self.build_json_event(i, e) for i,e in enumerate(events)]
+        p.history = [self.build_json_event(i, e) for i, e in enumerate(events)]
         status_msg = data["sendungen"][0]["sendungsdetails"]["sendungsverlauf"]["kurzStatus"]
         if len(status_msg) > 0:
             p.status = self.STATUSES.get(status_msg, Parcel.STATUS_UNKNOWN)

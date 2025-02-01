@@ -23,29 +23,35 @@ from woob.browser.url import URL
 from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
 
 from .pages import (
-    AuthenticatePage, DocumentCategoriesPage, DocumentsPage, HomePage, LoginPage, PasswordExpiredPage, ProfilePage,
+    AuthenticatePage,
+    DocumentCategoriesPage,
+    DocumentsPage,
+    HomePage,
+    LoginPage,
+    PasswordExpiredPage,
+    ProfilePage,
 )
 
 
-__all__ = ['GercopBrowser']
+__all__ = ["GercopBrowser"]
 
 
 class GercopBrowser(LoginBrowser, StatesMixin):
-    login = URL(r'connexion/', LoginPage)
-    home = URL(r'extranet$', HomePage)
-    password_expired = URL(r'password-expiration', PasswordExpiredPage)
+    login = URL(r"connexion/", LoginPage)
+    home = URL(r"extranet$", HomePage)
+    password_expired = URL(r"password-expiration", PasswordExpiredPage)
 
-    authenticate = URL(r'authenticate', AuthenticatePage)
-    profile = URL(r'extranet/locataire$', ProfilePage)
+    authenticate = URL(r"authenticate", AuthenticatePage)
+    profile = URL(r"extranet/locataire$", ProfilePage)
     document_categories = URL(
-        r'extranet/locataire/documents/classeur/$',
+        r"extranet/locataire/documents/classeur/$",
         DocumentCategoriesPage,
     )
     documents = URL(
-        r'extranet/locataire/documents/classeur/(?P<category_id>\d+)',
+        r"extranet/locataire/documents/classeur/(?P<category_id>\d+)",
         DocumentsPage,
     )
-    document = URL(r'extranet/documents/download/(?P<document_id>\d+)')
+    document = URL(r"extranet/documents/download/(?P<document_id>\d+)")
 
     def __init__(self, baseurl, *args, **kwargs):
         self.BASEURL = baseurl
@@ -55,18 +61,20 @@ class GercopBrowser(LoginBrowser, StatesMixin):
         self.login.go()
 
         try:
-            page = self.authenticate.open(json={
-                'login': self.username,
-                'password': self.password,
-                'password_confirmation_validation': False,
-                'password_strenght_validation': False,
-            })
+            page = self.authenticate.open(
+                json={
+                    "login": self.username,
+                    "password": self.password,
+                    "password_confirmation_validation": False,
+                    "password_strenght_validation": False,
+                }
+            )
         except ClientError as exc:
             page = AuthenticatePage(self, exc.response)
 
         result = page.get_authentication_result()
-        if not result['authentication']:
-            raise BrowserIncorrectPassword(result['message'])
+        if not result["authentication"]:
+            raise BrowserIncorrectPassword(result["message"])
 
         self.home.go()
         if self.password_expired.is_here():
@@ -76,14 +84,14 @@ class GercopBrowser(LoginBrowser, StatesMixin):
     def iter_documents(self):
         self.document_categories.go()
         for category in self.page.iter_categories():
-            if category['fileCount'] == 0:
+            if category["fileCount"] == 0:
                 continue
 
             self.documents.go(
-                category_id=category['id'],
+                category_id=category["id"],
                 params={
-                    'itemCountPerPage': 100,
-                    'currentPageNumber': 1,
+                    "itemCountPerPage": 100,
+                    "currentPageNumber": 1,
                 },
             )
 

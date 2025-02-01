@@ -30,15 +30,19 @@ from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired, Br
 
 
 class TiimeBrowser(LoginBrowser, StatesMixin):
-    BASEURL = 'https://apps.tiime.fr/'
+    BASEURL = "https://apps.tiime.fr/"
 
-    login = URL('https://auth0.tiime.fr/co/authenticate')
-    login_redirect = URL(r'https://auth0.tiime.fr/authorize\?client_id=(?P<client_id>)&response_type=token%20id_token&redirect_uri=https%3A%2F%2Fapps.tiime.fr%2Fauth-callback%3Flogin_initiator%3Duser&scope=openid%20email&audience=https%3A%2F%2Fchronos-prod-api%2F&realm=Chronos-prod-db&state=(?P<state>)&nonce=(?P<nonce>)&login_ticket=(?P<login_ticket>)&auth0Client=(?P<auth_zero_client>)')
+    login = URL("https://auth0.tiime.fr/co/authenticate")
+    login_redirect = URL(
+        r"https://auth0.tiime.fr/authorize\?client_id=(?P<client_id>)&response_type=token%20id_token&redirect_uri=https%3A%2F%2Fapps.tiime.fr%2Fauth-callback%3Flogin_initiator%3Duser&scope=openid%20email&audience=https%3A%2F%2Fchronos-prod-api%2F&realm=Chronos-prod-db&state=(?P<state>)&nonce=(?P<nonce>)&login_ticket=(?P<login_ticket>)&auth0Client=(?P<auth_zero_client>)"
+    )
 
     my_informations = URL("https://chronos-api.tiime-apps.com/v1/users/me")
     my_account = URL(r"https://chronos-api.tiime-apps.com/v1/companies/(?P<company_id>)/bank_accounts\?enabled=true")
-    my_transactions = URL(r"https://chronos-api.tiime-apps.com/v1/companies/(?P<company_id>)/bank_transactions\?hide_refused=false&bank_account=(?P<account_id>)")
-    token_regexp = re.compile(r'access\_token\S{975}')
+    my_transactions = URL(
+        r"https://chronos-api.tiime-apps.com/v1/companies/(?P<company_id>)/bank_transactions\?hide_refused=false&bank_account=(?P<account_id>)"
+    )
+    token_regexp = re.compile(r"access\_token\S{975}")
 
     # TODO: add states & refresh token later
     # __states__ = ["token", "company_id"]
@@ -50,7 +54,7 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
 
     @staticmethod
     def generate_nonce(length=32):
-        generate = ''
+        generate = ""
         while length > 0:
             generate += random.choice(string.ascii_letters)
             length -= 1
@@ -102,8 +106,11 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
 
         try:
             self.login_redirect.go(
-                client_id=client_id_auth_app, state=state, nonce=nonce,
-                login_ticket=login_ticket, auth_zero_client=auth_zero_client,
+                client_id=client_id_auth_app,
+                state=state,
+                nonce=nonce,
+                login_ticket=login_ticket,
+                auth_zero_client=auth_zero_client,
             )
             gettoken = self.response.url
             try:
@@ -116,7 +123,7 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
             result = e.response.json()
             raise BrowserUnavailable(result)
 
-        self.session.headers['authorization'] = "Bearer " + self.token
+        self.session.headers["authorization"] = "Bearer " + self.token
 
     @need_login
     def get_company_id(self):
@@ -144,10 +151,7 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
         pr = Profile()
         pr.name = result["firstname"] + " " + result["lastname"]
         pr.email = result["email"]
-        pr.address = (
-            result["mailing_street"] + " - " + result["mailing_city"]
-            + ", " + result["mailing_postal_code"]
-        )
+        pr.address = result["mailing_street"] + " - " + result["mailing_city"] + ", " + result["mailing_postal_code"]
         pr.country = result["nationality"]
         pr.phone = result["phone"]
         pr.id = result["id"]
@@ -158,7 +162,8 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
         self.get_company_id()
         try:
             self.my_transactions.go(
-                company_id=self.company_id, account_id=account_id.id,
+                company_id=self.company_id,
+                account_id=account_id.id,
                 headers={"Range": "items=0-100"},
             )
         except ClientError as e:
@@ -172,7 +177,7 @@ class TiimeBrowser(LoginBrowser, StatesMixin):
             t.id = tr["id"]
             t.amount = tr["amount"]
             t.label = tr["original_wording"]
-            t.date = datetime.strptime(tr["transaction_date"], '%Y-%m-%d')
+            t.date = datetime.strptime(tr["transaction_date"], "%Y-%m-%d")
             transactions.append(t)
 
         return transactions

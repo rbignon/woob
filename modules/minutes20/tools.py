@@ -25,7 +25,7 @@ def url2id(url):
     "return an id from an url"
     regexp = re.compile(r"http://www\.20min\.fr/(\w+)/([0-9]+)/(.*$)")
     match = regexp.match(url)
-    return '%s.%d.%s' % (match.group(1), int(match.group(2)), match.group(3))
+    return "%s.%d.%s" % (match.group(1), int(match.group(2)), match.group(3))
 
 
 def rssid(entry):

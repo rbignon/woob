@@ -23,18 +23,23 @@ from woob.browser.url import URL
 from .pages import ObservationsPage, SearchCitiesPage, WeatherPage
 
 
-__all__ = ['IlmatieteenlaitosBrowser']
+__all__ = ["IlmatieteenlaitosBrowser"]
 
 
 class IlmatieteenlaitosBrowser(PagesBrowser):
-    BASEURL = 'http://ilmatieteenlaitos.fi'
-    cities = URL(r'/etusivu\?p_p_id=locationmenuportlet_WAR_fmiwwwweatherportlets&p_p_lifecycle=2&p_p_state=normal&'
-                 r'p_p_mode=view&p_p_cacheability=cacheLevelFull&term=(?P<pattern>.*)', SearchCitiesPage)
-    weather_query = URL(r'/paikallissaa\?p_p_id=locationmenuportlet_WAR_fmiwwwweatherportlets&p_p_lifecycle=1&'
-                        'p_p_state=normal&p_p_mode=view&_locationmenuportlet_WAR_fmiwwwweatherportlets_action='
-                        'changelocation')
-    weather = URL(r'/saa/(?P<city_url>.*)', WeatherPage)
-    observations = URL(r'/observation-data\?station=(?P<station_id>.*)', ObservationsPage)
+    BASEURL = "http://ilmatieteenlaitos.fi"
+    cities = URL(
+        r"/etusivu\?p_p_id=locationmenuportlet_WAR_fmiwwwweatherportlets&p_p_lifecycle=2&p_p_state=normal&"
+        r"p_p_mode=view&p_p_cacheability=cacheLevelFull&term=(?P<pattern>.*)",
+        SearchCitiesPage,
+    )
+    weather_query = URL(
+        r"/paikallissaa\?p_p_id=locationmenuportlet_WAR_fmiwwwweatherportlets&p_p_lifecycle=1&"
+        "p_p_state=normal&p_p_mode=view&_locationmenuportlet_WAR_fmiwwwweatherportlets_action="
+        "changelocation"
+    )
+    weather = URL(r"/saa/(?P<city_url>.*)", WeatherPage)
+    observations = URL(r"/observation-data\?station=(?P<station_id>.*)", ObservationsPage)
 
     def iter_city_search(self, pattern):
         return self.cities.go(pattern=pattern).iter_cities()

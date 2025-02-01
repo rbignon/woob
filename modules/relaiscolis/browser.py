@@ -25,26 +25,21 @@ from woob.browser.browsers import DomainBrowser
 from woob.capabilities.parcel import Event, ParcelNotFound
 
 
-__all__ = ['RelaiscolisBrowser']
+__all__ = ["RelaiscolisBrowser"]
 
 
 class RelaiscolisBrowser(DomainBrowser):
-    BASEURL = 'https://www.relaiscolis.com'
+    BASEURL = "https://www.relaiscolis.com"
 
     def iter_events(self, merchant, code, name):
-        data = dict(
-            codeEnseigne=merchant,
-            nomClient=name,
-            typeRecherche='EXP',
-            valeur=code
-        )
+        data = dict(codeEnseigne=merchant, nomClient=name, typeRecherche="EXP", valeur=code)
         # Ref: https://www.relaiscolis.com/js/lib/suivi.js
-        req = self.open('/suivi-de-colis/index/tracking/', data=data)
+        req = self.open("/suivi-de-colis/index/tracking/", data=data)
         resp = None
         try:
             resp = req.json()
-            if resp and 'error' in resp:
-                raise ParcelNotFound(resp['error']['msg'])
+            if resp and "error" in resp:
+                raise ParcelNotFound(resp["error"]["msg"])
         except (ValueError, KeyError):
             self.raise_for_status(req)
             raise
@@ -56,34 +51,31 @@ class RelaiscolisBrowser(DomainBrowser):
                 return data
             return [data]
 
-        parcel_data = ensure_list(resp['Colis']['Colis'])[-1]
-        events_data = ensure_list(parcel_data['ListEvenements'].get('Evenement', []))
+        parcel_data = ensure_list(resp["Colis"]["Colis"])[-1]
+        events_data = ensure_list(parcel_data["ListEvenements"].get("Evenement", []))
 
         final_location = None
         try:
-            relay = resp['Relais']['Relais']
-            name = relay['Nom'].strip()
-            city = relay['Commune'].strip()
-            final_location = ' '.join((name, city))
+            relay = resp["Relais"]["Relais"]
+            name = relay["Nom"].strip()
+            city = relay["Commune"].strip()
+            final_location = " ".join((name, city))
         except KeyError:
             pass
 
         for event_data in events_data:
             event = Event()
-            event.date = parse_date(event_data['Date'].strip())
-            event.activity = event_data['Libelle'].strip()
+            event.date = parse_date(event_data["Date"].strip())
+            event.activity = event_data["Libelle"].strip()
 
-            if final_location and (
-                    "Votre colis est disponible" in event.activity):
+            if final_location and ("Votre colis est disponible" in event.activity):
                 event.location = final_location
             yield event
 
     def get_merchants(self):
-        req = self.open('/suivi-de-colis/index/getEnseignes/')
+        req = self.open("/suivi-de-colis/index/getEnseignes/")
         resp = req.json()
 
         return OrderedDict(
-            (merchant['Code'], '{Nom} ({Code})'.format(**merchant))
-            for merchant in resp
-            if merchant['Nom']
+            (merchant["Code"], "{Nom} ({Code})".format(**merchant)) for merchant in resp if merchant["Nom"]
         )

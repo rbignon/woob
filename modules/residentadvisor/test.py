@@ -25,11 +25,11 @@ from woob.tools.test import BackendTest
 
 
 class ResidentadvisorTest(BackendTest):
-    MODULE = 'residentadvisor'
+    MODULE = "residentadvisor"
 
     def test_searchcity(self):
         query = Query()
-        query.city = u'Melbourne'
+        query.city = "Melbourne"
 
         self.assertTrue(len(list(self.backend.search_events(query))) > 0)
 
@@ -38,7 +38,7 @@ class ResidentadvisorTest(BackendTest):
 
     def test_datefrom(self):
         query = Query()
-        later = (datetime.now() + timedelta(days=31))
+        later = datetime.now() + timedelta(days=31)
         query.start_date = later
 
         event = next(self.backend.search_events(query))

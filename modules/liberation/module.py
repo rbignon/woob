@@ -26,14 +26,14 @@ from .tools import rssid, url2id
 
 
 class NewspaperLibeModule(GenericNewspaperModule, CapMessages):
-    MAINTAINER = 'Florent Fourcot'
-    EMAIL = 'weboob@flo.fourcot.fr'
-    VERSION = '3.7'
-    DEPENDENCIES = ('genericnewspaper',)
-    LICENSE = 'AGPLv3+'
-    STORAGE = {'seen': {}}
-    NAME = 'liberation'
-    DESCRIPTION = 'Libération newspaper website'
+    MAINTAINER = "Florent Fourcot"
+    EMAIL = "weboob@flo.fourcot.fr"
+    VERSION = "3.7"
+    DEPENDENCIES = ("genericnewspaper",)
+    LICENSE = "AGPLv3+"
+    STORAGE = {"seen": {}}
+    NAME = "liberation"
+    DESCRIPTION = "Libération newspaper website"
     BROWSER = NewspaperLibeBrowser
     RSSID = staticmethod(rssid)
     URL2ID = staticmethod(url2id)
@@ -41,22 +41,22 @@ class NewspaperLibeModule(GenericNewspaperModule, CapMessages):
 
     CONFIG = BackendConfig(
         Value(
-            'feed',
-            label='RSS feed',
+            "feed",
+            label="RSS feed",
             choices={
-                '9': u'A la une sur Libération',
-                '10': u'Monde',
-                '11': u'Politiques',
-                '12': u'Société',
-                '13': u'Économie',
-                '14': u'Sports',
-                '17': u'Labo: audio, vidéo, diapos, podcasts',
-                '18': u'Rebonds',
-                '44': u'Les chroniques de Libération',
-                '53': u'Écrans',
-                '54': u'Next',
-                '58': u'Cinéma'
-            }
+                "9": "A la une sur Libération",
+                "10": "Monde",
+                "11": "Politiques",
+                "12": "Société",
+                "13": "Économie",
+                "14": "Sports",
+                "17": "Labo: audio, vidéo, diapos, podcasts",
+                "18": "Rebonds",
+                "44": "Les chroniques de Libération",
+                "53": "Écrans",
+                "54": "Next",
+                "58": "Cinéma",
+            },
         )
     )
 

@@ -23,14 +23,14 @@ from .tools import rssid
 
 
 class NewspaperInrocksModule(GenericNewspaperModule, CapMessages):
-    MAINTAINER = u'Julien Hebert'
-    EMAIL = 'juke@free.fr'
-    VERSION = '3.7'
-    DEPENDENCIES = ('genericnewspaper',)
-    LICENSE = 'AGPLv3+'
-    STORAGE = {'seen': {}}
-    NAME = 'inrocks'
-    DESCRIPTION = u'Les Inrocks French news website'
+    MAINTAINER = "Julien Hebert"
+    EMAIL = "juke@free.fr"
+    VERSION = "3.7"
+    DEPENDENCIES = ("genericnewspaper",)
+    LICENSE = "AGPLv3+"
+    STORAGE = {"seen": {}}
+    NAME = "inrocks"
+    DESCRIPTION = "Les Inrocks French news website"
     BROWSER = NewspaperInrocksBrowser
-    RSS_FEED = 'http://www.lesinrocks.com/fileadmin/rss/actus.xml'
+    RSS_FEED = "http://www.lesinrocks.com/fileadmin/rss/actus.xml"
     RSSID = rssid

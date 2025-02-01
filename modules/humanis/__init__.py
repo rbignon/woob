@@ -20,4 +20,4 @@
 from .module import HumanisModule
 
 
-__all__ = ['HumanisModule']
+__all__ = ["HumanisModule"]

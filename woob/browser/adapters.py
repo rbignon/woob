@@ -20,7 +20,7 @@ import requests
 from urllib3.util.ssl_ import create_urllib3_context
 
 
-__all__ = ['HTTPAdapter', 'LowSecHTTPAdapter']
+__all__ = ["HTTPAdapter", "LowSecHTTPAdapter"]
 
 
 class HTTPAdapter(requests.adapters.HTTPAdapter):
@@ -30,8 +30,9 @@ class HTTPAdapter(requests.adapters.HTTPAdapter):
     :param proxy_headers: headers to send to proxy (if any)
     :type proxy_headers: dict
     """
+
     def __init__(self, *args, **kwargs):
-        self._proxy_headers = kwargs.pop('proxy_headers', {})
+        self._proxy_headers = kwargs.pop("proxy_headers", {})
         super().__init__(*args, **kwargs)
 
     def add_proxy_header(self, key, value):
@@ -60,10 +61,10 @@ class LowSecHTTPAdapter(HTTPAdapter):
 
     def init_poolmanager(self, *args, **kwargs):
         context = create_urllib3_context(ciphers="DEFAULT:@SECLEVEL=1")
-        kwargs['ssl_context'] = context
+        kwargs["ssl_context"] = context
         return super().init_poolmanager(*args, **kwargs)
 
     def proxy_manager_for(self, *args, **kwargs):
         context = create_urllib3_context(ciphers="DEFAULT:@SECLEVEL=1")
-        kwargs['ssl_context'] = context
+        kwargs["ssl_context"] = context
         return super().proxy_manager_for(*args, **kwargs)

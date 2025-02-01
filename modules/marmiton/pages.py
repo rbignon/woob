@@ -29,10 +29,9 @@ from woob.tools.json import json
 
 
 class ResultsPage(HTMLPage):
-    """ Page which contains results as a list of recipies
-    """
+    """Page which contains results as a list of recipies"""
 
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
 
     def build_doc(self, content):
         content = HTMLPage.build_doc(self, content)
@@ -44,40 +43,40 @@ class ResultsPage(HTMLPage):
         item_xpath = "props/pageProps/searchResults/hits"
 
         def next_page(self):
-            current_page = int(Env('page')(self))
-            if Dict('props/pageProps/searchResults/nbPages')(self) >= current_page:
-                return BrowserURL('search', pattern=Env('pattern'), start=Env('start'), page=current_page + 1)(self)
+            current_page = int(Env("page")(self))
+            if Dict("props/pageProps/searchResults/nbPages")(self) >= current_page:
+                return BrowserURL("search", pattern=Env("pattern"), start=Env("start"), page=current_page + 1)(self)
 
         class item(ItemElement):
             klass = Recipe
-            obj_id = Regexp(Dict('url'),
-                            '/recettes/recette_(.*).aspx')
-            obj_title = Dict('title')
-            obj_short_description = Format('%s - %s - Nutriscore : %s - Note : %s/5',
-                                           Dict('dishType'),
-                                           Dict('cookingType'),
-                                           Dict('nutriScore'),
-                                           Dict('averageRating'))
-            obj_ingredients = Dict('ingredients')
+            obj_id = Regexp(Dict("url"), "/recettes/recette_(.*).aspx")
+            obj_title = Dict("title")
+            obj_short_description = Format(
+                "%s - %s - Nutriscore : %s - Note : %s/5",
+                Dict("dishType"),
+                Dict("cookingType"),
+                Dict("nutriScore"),
+                Dict("averageRating"),
+            )
+            obj_ingredients = Dict("ingredients")
 
             class obj_picture(ItemElement):
                 klass = BaseImage
 
-                obj_url = Dict('image/pictureUrls/origin', default=NotAvailable)
+                obj_url = Dict("image/pictureUrls/origin", default=NotAvailable)
 
                 def obj_thumbnail(self):
                     return Eval(Thumbnail, self.obj_url)(self)
 
         def obj_preparation_time(self):
-            return Dict('preparationTime')(self) / 60
+            return Dict("preparationTime")(self) / 60
 
         def obj_cooking_time(self):
-            return Dict('cookingTime')(self) / 60
+            return Dict("cookingTime")(self) / 60
 
 
 class RecipePage(HTMLPage):
-    """ Page which contains a recipe
-    """
+    """Page which contains a recipe"""
 
     @method
     class get_recipe(ItemElement):
@@ -85,52 +84,51 @@ class RecipePage(HTMLPage):
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            items = XPath(u'//script[@type="application/ld+json"]')(self.el)
+            items = XPath('//script[@type="application/ld+json"]')(self.el)
 
             for item in items:
-                content = json.loads(CleanText(u'.')(item))
-                if content['@type'] == "Recipe":
+                content = json.loads(CleanText(".")(item))
+                if content["@type"] == "Recipe":
                     self.el = content
                     break
 
-        obj_id = Env('id')
-        obj_title = Dict('name')
-        obj_ingredients = Dict('recipeIngredient')
+        obj_id = Env("id")
+        obj_title = Dict("name")
+        obj_ingredients = Dict("recipeIngredient")
 
         class obj_picture(ItemElement):
             klass = BaseImage
 
             def obj_url(self):
-                url = Dict('image', default='')(self)
+                url = Dict("image", default="")(self)
                 return url[0] if url else url
 
             obj_thumbnail = Eval(Thumbnail, obj_url)
 
         def obj_instructions(self):
-            instructions = ''
-            for item in Dict('recipeInstructions')(self):
-                instructions = u"{0} - {1}\n\n".format(instructions, item['text'])
+            instructions = ""
+            for item in Dict("recipeInstructions")(self):
+                instructions = "{0} - {1}\n\n".format(instructions, item["text"])
             return instructions
 
-        obj_preparation_time = Eval(int, CleanDecimal(Dict('prepTime')))
-        obj_cooking_time = Eval(int, CleanDecimal(Dict('cookTime')))
+        obj_preparation_time = Eval(int, CleanDecimal(Dict("prepTime")))
+        obj_cooking_time = Eval(int, CleanDecimal(Dict("cookTime")))
 
         def obj_nb_person(self):
-            return [Dict('recipeYield')(self)]
+            return [Dict("recipeYield")(self)]
 
 
 class CommentsPage(JsonPage):
-    """ Page which contains a comments
-    """
+    """Page which contains a comments"""
 
     @method
     class get_comments(DictElement):
-        item_xpath = 'reviews'
+        item_xpath = "reviews"
 
         class item(ItemElement):
             klass = Comment
 
-            obj_author = Dict('username')
-            obj_rate = CleanText(Dict('rating'))
-            obj_text = Dict('content')
-            obj_id = Dict('reviewId')
+            obj_author = Dict("username")
+            obj_rate = CleanText(Dict("rating"))
+            obj_text = Dict("content")
+            obj_id = Dict("reviewId")

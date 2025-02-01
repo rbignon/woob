@@ -21,4 +21,4 @@
 from .module import MailinatorModule
 
 
-__all__ = ['MailinatorModule']
+__all__ = ["MailinatorModule"]

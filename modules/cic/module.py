@@ -28,17 +28,17 @@ from woob_modules.creditmutuel.module import CreditMutuelModule
 from .browser import CICBrowser
 
 
-__all__ = ['CICModule']
+__all__ = ["CICModule"]
 
 
 class CICModule(CreditMutuelModule, CapBankTransferAddRecipient, CapDocument, CapContact, CapProfile, CapBankMatching):
-    NAME = 'cic'
-    MAINTAINER = 'Julien Veyssier'
-    EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'CIC'
-    LICENSE = 'LGPLv3+'
-    DEPENDENCIES = ('creditmutuel',)
+    NAME = "cic"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "julien.veyssier@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "CIC"
+    LICENSE = "LGPLv3+"
+    DEPENDENCIES = ("creditmutuel",)
 
     BROWSER = CICBrowser
 
@@ -52,17 +52,13 @@ class CICModule(CreditMutuelModule, CapBankTransferAddRecipient, CapDocument, Ca
             """
             Match two cards, based on their numbers and/or their other attributes(label, balance, coming)
             """
-            if hasattr(card, '_numbers') and card._numbers:
+            if hasattr(card, "_numbers") and card._numbers:
                 # we try to match the based on the numbers
                 if old_card.number in card._numbers:
                     return True
 
             # if the numbers do not match, we match the cards based on their other attributes
-            return (
-                old_card.label == card.label
-                and old_card.coming == card.coming
-                and old_card.balance == card.balance
-            )
+            return old_card.label == card.label and old_card.coming == card.coming and old_card.balance == card.balance
 
         # We define it only for cards
         if account.type != Account.TYPE_CARD:

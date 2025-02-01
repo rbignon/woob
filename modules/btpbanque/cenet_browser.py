@@ -20,26 +20,22 @@
 from woob_modules.caissedepargne.cenet.browser import CenetBrowser as _CenetBrowser
 
 
-__all__ = ['CenetBrowser']
+__all__ = ["CenetBrowser"]
 
 
 class CenetBrowser(_CenetBrowser):
-    BASEURL = CENET_URL = 'https://www.entreprises.btp-banque.fr'
-    enseigne = 'btp'
+    BASEURL = CENET_URL = "https://www.entreprises.btp-banque.fr"
+    enseigne = "btp"
 
-    login = _CenetBrowser.login.with_urls(
-        r'https://www.icgauth.btp-banque.fr/se-connecter/sso'
-    )
-    home_page = _CenetBrowser.home_page.with_urls(
-        r'https://www.btp-banque.fr/espace-entreprise/web-b2b/callback'
-    )
+    login = _CenetBrowser.login.with_urls(r"https://www.icgauth.btp-banque.fr/se-connecter/sso")
+    home_page = _CenetBrowser.home_page.with_urls(r"https://www.btp-banque.fr/espace-entreprise/web-b2b/callback")
     js_file = _CenetBrowser.js_file.with_urls(
-        r'https://www.btp-banque.fr/espace-entreprise/web-b2b/(?P<js_file_name>[^/]+)',
-        r'https://www.icgauth.btp-banque.fr/se-connecter/main\..*.js$',
-        r'https://www.caisse-epargne.fr/espace-client/main\..*\.js',
-        r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js',
-        r'https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js',
+        r"https://www.btp-banque.fr/espace-entreprise/web-b2b/(?P<js_file_name>[^/]+)",
+        r"https://www.icgauth.btp-banque.fr/se-connecter/main\..*.js$",
+        r"https://www.caisse-epargne.fr/espace-client/main\..*\.js",
+        r"https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js",
+        r"https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js",
     )
     config_page = _CenetBrowser.config_page.with_urls(
-        r'https://www.btp-banque.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)'
+        r"https://www.btp-banque.fr/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)"
     )

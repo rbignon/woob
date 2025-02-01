@@ -21,4 +21,4 @@
 from .module import PeertubeModule
 
 
-__all__ = ['PeertubeModule']
+__all__ = ["PeertubeModule"]

@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class MareeinfoTest(BackendTest):
-    MODULE = 'mareeinfo'
+    MODULE = "mareeinfo"
 
     def test_mareeinfo(self):
         l = list(self.backend.iter_gauges())

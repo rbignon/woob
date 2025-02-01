@@ -25,25 +25,25 @@ from woob.tools.backend import Module
 from .browser import MareeinfoBrowser
 
 
-__all__ = ['MareeinfoModule']
+__all__ = ["MareeinfoModule"]
 
 
 class MareeinfoModule(Module, CapGauge):
-    NAME = 'mareeinfo'
-    DESCRIPTION = u'Un module qui permet d\' aller a la pêche aux moules totalement informé'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "mareeinfo"
+    DESCRIPTION = "Un module qui permet d' aller a la pêche aux moules totalement informé"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = MareeinfoBrowser
 
     def get_last_measure(self, sensor_id):
-        gauge_id = sensor_id.split('-')[0]
+        gauge_id = sensor_id.split("-")[0]
         return find_object(self.iter_sensors(gauge_id), id=sensor_id, error=SensorNotFound).lastvalue
 
     def iter_gauge_history(self, sensor_id):
-        gauge_id = sensor_id.split('-')[0]
+        gauge_id = sensor_id.split("-")[0]
         return find_object(self.iter_sensors(gauge_id), id=sensor_id, error=SensorNotFound).history
 
     def iter_gauges(self, pattern=None):

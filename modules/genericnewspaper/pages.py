@@ -23,14 +23,14 @@ from woob.browser.pages import HTMLPage
 
 
 class Article(object):
-    author = ''
-    title = ''
+    author = ""
+    title = ""
 
     def __init__(self, browser, _id):
         self.browser = browser
         self.id = _id
-        self.body = ''
-        self.url = ''
+        self.body = ""
+        self.url = ""
         self.date = None
 
 
@@ -52,14 +52,14 @@ class GenericNewsPage(HTMLPage):
 
     def get_body(self):
         try:
-            return CleanText('.')(self.get_element_body())
-        except (AttributeError):
+            return CleanText(".")(self.get_element_body())
+        except AttributeError:
             return self.__article.body
 
     def get_author(self):
         try:
-            return CleanText('.')(self.get_element_author())
-        except (AttributeError):
+            return CleanText(".")(self.get_element_author())
+        except AttributeError:
             return self.__article.author
 
     def get_title(self):
@@ -68,8 +68,8 @@ class GenericNewsPage(HTMLPage):
         except AttributeError:
             if self.main_div is None:
                 raise XPathNotFound("main_div is none on %s" % (self.browser))
-            elif self.element_title_selector != 'h1':
-                self.element_title_selector = 'h1'
+            elif self.element_title_selector != "h1":
+                self.element_title_selector = "h1"
                 return self.get_title()
             else:
                 raise AttributeError("no title on %s" % (self.browser))
@@ -95,9 +95,9 @@ class GenericNewsPage(HTMLPage):
     def get_article(self, _id):
         __article = Article(self.browser, _id)
         __article.author = self.get_author()
-        __article.title  = self.get_title()
-        __article.url    = self.url
-        __article.body   = self.get_body()
+        __article.title = self.get_title()
+        __article.url = self.url
+        __article.body = self.get_body()
 
         return __article
 
@@ -126,10 +126,10 @@ class GenericNewsPage(HTMLPage):
 
     @staticmethod
     def clean_relativ_urls(base_element, domain):
-        for a in base_element.findall('.//a'):
+        for a in base_element.findall(".//a"):
             if "href" in a.attrib:
                 if a.attrib["href"] and a.attrib["href"][0:7] != "http://" and a.attrib["href"][0:7] != "https://":
                     a.attrib["href"] = domain + a.attrib["href"]
-        for img in base_element.findall('.//img'):
+        for img in base_element.findall(".//img"):
             if img.attrib["src"][0:7] != "http://" and img.attrib["src"][0:7] != "https://":
                 img.attrib["src"] = domain + img.attrib["src"]

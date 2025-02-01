@@ -25,16 +25,16 @@ from woob.tools.backend import Module
 from .browser import PornhubBrowser
 
 
-__all__ = ['PornhubModule']
+__all__ = ["PornhubModule"]
 
 
 class PornhubModule(Module, CapVideo, CapCollection):
-    NAME = 'pornhub'
-    MAINTAINER = u'Roger Philibert'
-    EMAIL = 'roger.philibert@gmail.com'
-    VERSION = '3.7'
-    DESCRIPTION = 'Pornhub pornographic video streaming website'
-    LICENSE = 'AGPLv3+'
+    NAME = "pornhub"
+    MAINTAINER = "Roger Philibert"
+    EMAIL = "roger.philibert@gmail.com"
+    VERSION = "3.7"
+    DESCRIPTION = "Pornhub pornographic video streaming website"
+    LICENSE = "AGPLv3+"
     BROWSER = PornhubBrowser
 
     def get_video(self, _id):
@@ -47,10 +47,10 @@ class PornhubModule(Module, CapVideo, CapCollection):
         return self.browser.search_videos(pattern)
 
     def fill_video(self, video, fields):
-        if fields != ['thumbnail']:
+        if fields != ["thumbnail"]:
             # if we don't want only the thumbnail, we probably want also every fields
             video = self.browser.get_video(video.id, video)
-        if 'thumbnail' in fields and video.thumbnail:
+        if "thumbnail" in fields and video.thumbnail:
             video.thumbnail.data = self.browser.open(video.thumbnail.url).content
 
         return video
@@ -59,16 +59,16 @@ class PornhubModule(Module, CapVideo, CapCollection):
         if BaseVideo in objs:
             collection = self.get_collection(objs, split_path)
             if collection.path_level == 0:
-                yield self.get_collection(objs, [u'latest_nsfw'])
-            if collection.split_path == [u'latest_nsfw']:
+                yield self.get_collection(objs, ["latest_nsfw"])
+            if collection.split_path == ["latest_nsfw"]:
                 for video in self.browser.latest_videos():
                     yield video
 
     def validate_collection(self, objs, collection):
         if collection.path_level == 0:
             return
-        if BaseVideo in objs and collection.split_path == [u'latest_nsfw']:
-            collection.title = u'Latest Pornhub videos (NSFW)'
+        if BaseVideo in objs and collection.split_path == ["latest_nsfw"]:
+            collection.title = "Latest Pornhub videos (NSFW)"
             return
         raise CollectionNotFound(collection.split_path)
 

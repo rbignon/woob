@@ -25,20 +25,22 @@ from .pages import AccountsPage, HistoryPage, LoginConfirmPage, LoginPage, RibPa
 
 
 class ThemisBrowser(LoginBrowser):
-    BASEURL = 'https://esab.themisbanque.eu/'
+    BASEURL = "https://esab.themisbanque.eu/"
 
     TIMEOUT = 400
 
-    home = URL(r'/es@b/fr/esab.jsp')
-    login = URL(r'/es@b/fr/codeident.jsp', LoginPage)
-    login_confirm = URL(r'/es@b/servlet/internet0.ressourceWeb.servlet.Login', LoginConfirmPage)
-    accounts = URL(r'/es@b/servlet/internet0.ressourceWeb.servlet.PremierePageServlet\?pageToTreatError=fr/Infos.jsp&dummyDate=',
-                r'/es@b/servlet/internet0.ressourceWeb.servlet.PremierePageServlet\?cryptpara=.*',
-                r'/es@b/servlet/internet0.ressourceWeb.servlet.EsabServlet.*',
-                AccountsPage)
-    history = URL(r'/es@b/servlet/internet0.ressourceWeb.servlet.ListeDesMouvementsServlet.*', HistoryPage)
-    rib = URL(r'/es@b/fr/rib.jsp\?cryptpara=.*', RibPage)
-    rib_pdf = URL(r'/es@b/servlet/internet0.ressourceWeb.servlet.RibPdfDownloadServlet', RibPDFPage)
+    home = URL(r"/es@b/fr/esab.jsp")
+    login = URL(r"/es@b/fr/codeident.jsp", LoginPage)
+    login_confirm = URL(r"/es@b/servlet/internet0.ressourceWeb.servlet.Login", LoginConfirmPage)
+    accounts = URL(
+        r"/es@b/servlet/internet0.ressourceWeb.servlet.PremierePageServlet\?pageToTreatError=fr/Infos.jsp&dummyDate=",
+        r"/es@b/servlet/internet0.ressourceWeb.servlet.PremierePageServlet\?cryptpara=.*",
+        r"/es@b/servlet/internet0.ressourceWeb.servlet.EsabServlet.*",
+        AccountsPage,
+    )
+    history = URL(r"/es@b/servlet/internet0.ressourceWeb.servlet.ListeDesMouvementsServlet.*", HistoryPage)
+    rib = URL(r"/es@b/fr/rib.jsp\?cryptpara=.*", RibPage)
+    rib_pdf = URL(r"/es@b/servlet/internet0.ressourceWeb.servlet.RibPdfDownloadServlet", RibPDFPage)
 
     def do_login(self):
         self.home.go()

@@ -20,7 +20,11 @@
 # flake8: compatible
 
 from woob.capabilities.bank import (
-    Account, AccountNotFound, CapBankTransferAddRecipient, RecipientNotFound, TransferInvalidLabel,
+    Account,
+    AccountNotFound,
+    CapBankTransferAddRecipient,
+    RecipientNotFound,
+    TransferInvalidLabel,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
 from woob.capabilities.base import find_object, find_object_any_match
@@ -31,29 +35,29 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import FortuneoBrowser
 
 
-__all__ = ['FortuneoModule']
+__all__ = ["FortuneoModule"]
 
 
 class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProfile):
-    NAME = 'fortuneo'
-    MAINTAINER = u'Gilles-Alexandre Quenot'
-    EMAIL = 'gilles.quenot@gmail.com'
-    VERSION = '3.7'
-    LICENSE = 'LGPLv3+'
-    DESCRIPTION = u'Fortuneo'
+    NAME = "fortuneo"
+    MAINTAINER = "Gilles-Alexandre Quenot"
+    EMAIL = "gilles.quenot@gmail.com"
+    VERSION = "3.7"
+    LICENSE = "LGPLv3+"
+    DESCRIPTION = "Fortuneo"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False, required=True),
-        ValueBackendPassword('password', label='Mot de passe', required=True),
-        ValueTransient('code'),
-        ValueTransient('request_information')
+        ValueBackendPassword("login", label="Identifiant", masked=False, required=True),
+        ValueBackendPassword("password", label="Mot de passe", required=True),
+        ValueTransient("code"),
+        ValueTransient("request_information"),
     )
     BROWSER = FortuneoBrowser
 
     def create_default_browser(self):
         return self.create_browser(
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_accounts(self):
@@ -105,13 +109,13 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
 
     def find_account_for_transfer(self, account_id, account_iban, accounts=None, raise_not_found=True):
         if not (account_id or account_iban):
-            raise ValueError('You must at least provide an account ID or IBAN')
+            raise ValueError("You must at least provide an account ID or IBAN")
 
         if not accounts:
             accounts = list(self.iter_accounts())
 
         # Basic find object - try 1
-        account = find_object_any_match(accounts, (('id', account_id), ('iban', account_iban)))
+        account = find_object_any_match(accounts, (("id", account_id), ("iban", account_iban)))
 
         # fallback search with a trick - try 2
         if not account and account_iban:
@@ -139,17 +143,17 @@ class FortuneoModule(Module, CapBankWealth, CapBankTransferAddRecipient, CapProf
         return True
 
     def init_transfer(self, transfer, **params):
-        if 'code' in params:
+        if "code" in params:
             return transfer
 
         if not transfer.label:
             raise TransferInvalidLabel()
 
-        self.logger.info('Going to do a new transfer')
+        self.logger.info("Going to do a new transfer")
         account = self.find_account_for_transfer(transfer.account_id, transfer.account_iban)
         recipient = find_object_any_match(
             self.iter_transfer_recipients(account),
-            (('id', transfer.recipient_id), ('iban', transfer.recipient_iban)),
+            (("id", transfer.recipient_id), ("iban", transfer.recipient_iban)),
             error=RecipientNotFound,
         )
         return self.browser.init_transfer(account, recipient, transfer.amount, transfer.label, transfer.exec_date)

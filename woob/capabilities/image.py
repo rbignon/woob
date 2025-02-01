@@ -22,7 +22,7 @@ from .base import BoolField, BytesField, Field, empty
 from .file import BaseFile, CapFile
 
 
-__all__ = ['BaseImage', 'Thumbnail', 'CapImage']
+__all__ = ["BaseImage", "Thumbnail", "CapImage"]
 
 
 class _BaseImage(BaseFile):
@@ -30,6 +30,7 @@ class _BaseImage(BaseFile):
     Fake class to allow the inclusion of a BaseImage property within
     the real BaseImage class
     """
+
     pass
 
 
@@ -38,17 +39,17 @@ class Thumbnail(_BaseImage):
     Thumbnail of an image.
     """
 
-    data = BytesField('Data')
+    data = BytesField("Data")
 
     def __init__(self, url=""):
         super(Thumbnail, self).__init__(url)
-        self.url = url.replace(' ', '%20')
+        self.url = url.replace(" ", "%20")
 
     def __str__(self):
         return self.url
 
     def __repr__(self):
-        return '<Thumbnail url=%r>' % self.url
+        return "<Thumbnail url=%r>" % self.url
 
     def __iscomplete__(self):
         return not empty(self.data)
@@ -58,9 +59,10 @@ class BaseImage(_BaseImage):
     """
     Represents an image file.
     """
-    nsfw =      BoolField('Is this Not Safe For Work', default=False)
-    thumbnail = Field('Thumbnail of the image', Thumbnail)
-    data =      BytesField('Data of image')
+
+    nsfw = BoolField("Is this Not Safe For Work", default=False)
+    thumbnail = Field("Thumbnail of the image", Thumbnail)
+    data = BytesField("Data of image")
 
     def __iscomplete__(self):
         return not empty(self.data)
@@ -68,10 +70,10 @@ class BaseImage(_BaseImage):
     def to_dict(self):
         def iter_decorate(d):
             for key, value in d:
-                if key == 'data':
+                if key == "data":
                     continue
 
-                if key == 'id' and self.backend is not None:
+                if key == "id" and self.backend is not None:
                     value = self.fullid
 
                 yield key, value

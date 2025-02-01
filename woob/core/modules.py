@@ -33,12 +33,12 @@ from woob.tools.log import getLogger
 from woob.tools.packaging import parse_requirements
 
 
-__all__ = ['LoadedModule', 'ModulesLoader', 'RepositoryModulesLoader']
+__all__ = ["LoadedModule", "ModulesLoader", "RepositoryModulesLoader"]
 
 
 class LoadedModule:
     def __init__(self, package):
-        self.logger = getLogger('woob.backend')
+        self.logger = getLogger("woob.backend")
         self.package = package
         self.klass = None
 
@@ -65,10 +65,7 @@ class LoadedModule:
                 continue
 
             module_name = module.__name__
-            if (
-                not module_name.startswith(full_name)
-                or module_name[len(full_name):][:1] not in ('', '.')
-            ):
+            if not module_name.startswith(full_name) or module_name[len(full_name) :][:1] not in ("", "."):
                 continue
 
             # Check that there is indeed only one Module subclass defined
@@ -76,15 +73,14 @@ class LoadedModule:
 
             if self.klass is not None:
                 raise ImportError(
-                    f'At least two modules are defined in "{full_name}": '
-                    + f'{attr!r} and {self.klass!r}',
+                    f'At least two modules are defined in "{full_name}": ' + f"{attr!r} and {self.klass!r}",
                 )
 
             self.klass = attr
 
         if not self.klass:
             raise ImportError(
-                f'{package} is not a backend (no Module class found)',
+                f"{package} is not a backend (no Module class found)",
             )
 
     @property
@@ -93,15 +89,11 @@ class LoadedModule:
 
     @property
     def maintainer(self):
-        return f'{self.klass.MAINTAINER} <{self.klass.EMAIL}>'
+        return f"{self.klass.MAINTAINER} <{self.klass.EMAIL}>"
 
     @property
     def version(self):
-        warnings.warn(
-            'The LoadedModule.version attribute will be removed.',
-            DeprecationWarning,
-            stacklevel=2
-        )
+        warnings.warn("The LoadedModule.version attribute will be removed.", DeprecationWarning, stacklevel=2)
 
         return Version(__version__).base_version
 
@@ -119,10 +111,10 @@ class LoadedModule:
 
     @property
     def website(self):
-        if self.klass.BROWSER and hasattr(self.klass.BROWSER, 'BASEURL') and self.klass.BROWSER.BASEURL:
+        if self.klass.BROWSER and hasattr(self.klass.BROWSER, "BASEURL") and self.klass.BROWSER.BASEURL:
             return self.klass.BROWSER.BASEURL
-        if self.klass.BROWSER and hasattr(self.klass.BROWSER, 'DOMAIN') and self.klass.BROWSER.DOMAIN:
-            return f'{self.klass.BROWSER.PROTOCOL}://{self.klass.BROWSER.DOMAIN}'
+        if self.klass.BROWSER and hasattr(self.klass.BROWSER, "DOMAIN") and self.klass.BROWSER.DOMAIN:
+            return f"{self.klass.BROWSER.PROTOCOL}://{self.klass.BROWSER.DOMAIN}"
 
         return None
 
@@ -149,8 +141,9 @@ class LoadedModule:
     def has_caps(self, *caps):
         """Return True if module implements at least one of the caps."""
         for c in caps:
-            if (isinstance(c, str) and c in [cap.__name__ for cap in self.iter_caps()]) or \
-               (type(c) == type and issubclass(self.klass, c)):
+            if (isinstance(c, str) and c in [cap.__name__ for cap in self.iter_caps()]) or (
+                type(c) == type and issubclass(self.klass, c)
+            ):
                 return True
         return False
 
@@ -166,8 +159,8 @@ def _add_in_modules_path(path):
     except ImportError:
         from types import ModuleType
 
-        woob_modules = ModuleType('woob_modules')
-        sys.modules['woob_modules'] = woob_modules
+        woob_modules = ModuleType("woob_modules")
+        sys.modules["woob_modules"] = woob_modules
 
         woob_modules.__path__ = [path]
     else:
@@ -205,7 +198,7 @@ class ModulesLoader:
             return
 
         for module in pkgutil.iter_modules(woob_modules.__path__):
-            if module.name.startswith('_') or module.name.endswith('_'):
+            if module.name.startswith("_") or module.name.endswith("_"):
                 continue
             yield module.name
 
@@ -220,7 +213,7 @@ class ModulesLoader:
             try:
                 self.load_module(existing_module_name)
             except ModuleLoadError as e:
-                self.logger.warning('could not load module %s: %s', existing_module_name, e)
+                self.logger.warning("could not load module %s: %s", existing_module_name, e)
 
     def load_module(self, module_name):
         module_path = self.get_module_path(module_name)
@@ -234,13 +227,13 @@ class ModulesLoader:
         # Load spec for now to check version without trying to load the module,
         # as if it depends of an uninstalled dependence or a newest version of
         # woob, it may crash.
-        module_spec = importlib.util.find_spec(f'woob_modules.{module_name}')
+        module_spec = importlib.util.find_spec(f"woob_modules.{module_name}")
         if module_spec is None:
-            raise ModuleLoadError(module_name, f'Module {module_name} does not exist')
+            raise ModuleLoadError(module_name, f"Module {module_name} does not exist")
         self.check_version(module_name, module_spec)
 
         try:
-            pymodule = importlib.import_module(f'woob_modules.{module_name}')
+            pymodule = importlib.import_module(f"woob_modules.{module_name}")
             module = self.LOADED_MODULE(pymodule)
         except Exception as e:
             if logging.root.level <= logging.DEBUG:
@@ -248,10 +241,13 @@ class ModulesLoader:
             raise ModuleLoadError(module_name, e) from e
 
         self.loaded[module_name] = module
-        self.logger.debug('Loaded module "%s" from %s' % (
-            module.name,
-            module.path,
-        ))
+        self.logger.debug(
+            'Loaded module "%s" from %s'
+            % (
+                module.name,
+                module.path,
+            )
+        )
 
     def get_module_path(self, module_name):
         return self.path
@@ -265,16 +261,16 @@ class ModulesLoader:
         # 'woob_modules/bnp.py' so get 'woob_modules/'.
         # In that case, that's not a problem, we can assume the parent
         # requirements.txt file applies on all single-file modules.
-        requirements_path = Path(module_spec.origin).parent / 'requirements.txt'
+        requirements_path = Path(module_spec.origin).parent / "requirements.txt"
 
         for name, spec in parse_requirements(requirements_path).items():
-            if name == 'woob':
+            if name == "woob":
                 if woob_version and woob_version not in spec:
                     # specific user friendly error message
                     raise ModuleLoadError(
                         module_name,
                         f"Module requires woob {spec}, but you use woob {self.version}'.\n"
-                        "Hint: use 'woob update' or install a newer version of woob"
+                        "Hint: use 'woob update' or install a newer version of woob",
                     )
                 continue
 
@@ -282,14 +278,13 @@ class ModulesLoader:
                 pkg = metadata.distribution(name)
             except metadata.PackageNotFoundError as exc:
                 raise ModuleLoadError(
-                    module_name,
-                    f'Module requires python package "{name}" but not installed.'
+                    module_name, f'Module requires python package "{name}" but not installed.'
                 ) from exc
 
             if Version(pkg.version) not in spec:
                 raise ModuleLoadError(
                     module_name,
-                    f'Module requires python package "{name}" {spec} but version {pkg.version} is installed'
+                    f'Module requires python package "{name}" {spec} but version {pkg.version} is installed',
                 )
 
 
@@ -313,8 +308,8 @@ class RepositoryModulesLoader(ModulesLoader):
     def get_module_path(self, module_name):
         minfo = self.repositories.get_module_info(module_name)
         if minfo is None:
-            raise ModuleLoadError(module_name, f'No such module {module_name}')
+            raise ModuleLoadError(module_name, f"No such module {module_name}")
         if minfo.path is None:
-            raise ModuleLoadError(module_name, f'Module {module_name} is not installed')
+            raise ModuleLoadError(module_name, f"Module {module_name} is not installed")
 
         return minfo.path

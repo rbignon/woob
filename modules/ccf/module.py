@@ -41,13 +41,9 @@ class CCFModule(CmsoModule, CapDocument):
     DEPENDENCIES = ("cmso",)
     AVAILABLE_BROWSERS = {"par": CCFParBrowser, "pro": CCFProBrowser}
     CONFIG = BackendConfig(
-        ValueBackendPassword(
-            "login", label="Identifiant", regexp=r"^\d{9}$", masked=False
-        ),
+        ValueBackendPassword("login", label="Identifiant", regexp=r"^\d{9}$", masked=False),
         ValueBackendPassword("password", label="Mot de passe", regexp=r"^\d{8}$"),
-        ValueBackendPassword(
-            "security_code", label="Code de sécurité", regexp=r"^\d{5}$"
-        ),
+        ValueBackendPassword("security_code", label="Code de sécurité", regexp=r"^\d{5}$"),
         ValueTransient("code"),
         ValueTransient("request_information"),
         Value(
@@ -84,9 +80,7 @@ class CCFModule(CmsoModule, CapDocument):
         subid = _id.rsplit("_", 1)[0]
         subscription = self.get_subscription(subid)
 
-        return find_object(
-            self.iter_documents(subscription), id=_id, error=DocumentNotFound
-        )
+        return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)
 
     def iter_documents(self, subscription):
         """
@@ -100,9 +94,7 @@ class CCFModule(CmsoModule, CapDocument):
             subscription = self.get_subscription(subscription)
         return self.browser.iter_documents(subscription)
 
-    def iter_resources(
-        self, objs: List[BaseObject], split_path: List[str]
-    ) -> Iterable[BaseObject]:
+    def iter_resources(self, objs: List[BaseObject], split_path: List[str]) -> Iterable[BaseObject]:
         """
         Iter resources.
 

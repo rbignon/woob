@@ -26,23 +26,23 @@ from .pages import DeparturesPage
 
 
 class BlablacarBrowser(PagesBrowser):
-    BASEURL = 'https://www.blablacar.fr'
+    BASEURL = "https://www.blablacar.fr"
 
-    departures = URL(r'/search_xhr\?(?P<qry>.*)', DeparturesPage)
+    departures = URL(r"/search_xhr\?(?P<qry>.*)", DeparturesPage)
 
     def get_roadmap(self, departure, arrival, filters):
         pass
 
     def get_station_departures(self, station_id, arrival_id, date):
-        query = {'fn': station_id}
+        query = {"fn": station_id}
         if arrival_id:
-            query['tn'] = arrival_id
+            query["tn"] = arrival_id
 
             if date:
                 _date = datetime.strftime(date, "%d/%m/%Y")
-                query['db'] = _date
+                query["db"] = _date
                 _heure = datetime.strftime(date, "%H")
-                query['hb'] = _heure
-                query['he'] = '24'
+                query["hb"] = _heure
+                query["he"] = "24"
 
         return self.departures.open(qry=urlencode(query)).get_station_departures()

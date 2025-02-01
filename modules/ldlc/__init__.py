@@ -19,4 +19,4 @@
 from .module import LdlcModule
 
 
-__all__ = ['LdlcModule']
+__all__ = ["LdlcModule"]

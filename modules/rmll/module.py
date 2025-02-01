@@ -25,16 +25,16 @@ from .browser import RmllBrowser
 from .video import RmllVideo
 
 
-__all__ = ['RmllModule']
+__all__ = ["RmllModule"]
 
 
 class RmllModule(Module, CapVideo, CapCollection):
-    NAME = 'rmll'
-    MAINTAINER = u'Guyou'
-    EMAIL = 'guilhem.bonnefille@gmail.com'
-    VERSION = '3.7'
-    DESCRIPTION = 'Videos from RMLL'
-    LICENSE = 'AGPLv3+'
+    NAME = "rmll"
+    MAINTAINER = "Guyou"
+    EMAIL = "guilhem.bonnefille@gmail.com"
+    VERSION = "3.7"
+    DESCRIPTION = "Videos from RMLL"
+    LICENSE = "AGPLv3+"
 
     BROWSER = RmllBrowser
 
@@ -50,10 +50,10 @@ class RmllModule(Module, CapVideo, CapCollection):
 
     def fill_video(self, video, fields):
         self.logger.debug("Fill video %s for fields %s", video.id, fields)
-        if fields != ['thumbnail']:
+        if fields != ["thumbnail"]:
             # if we don't want only the thumbnail, we probably want also every fields
             video = self.browser.get_video(video.id, video)
-        if 'thumbnail' in fields and video and video.thumbnail:
+        if "thumbnail" in fields and video and video.thumbnail:
             video.thumbnail.data = self.browser.open(video.thumbnail.url).content
 
         return video
@@ -62,8 +62,8 @@ class RmllModule(Module, CapVideo, CapCollection):
         if BaseVideo in objs:
             if len(split_path) == 0:
                 # Add fake Collection
-                yield Collection(['latest'], u'Latest')
-            if len(split_path) == 1 and split_path[0] == 'latest':
+                yield Collection(["latest"], "Latest")
+            if len(split_path) == 1 and split_path[0] == "latest":
                 for video in self.browser.get_latest_videos():
                     yield video
             else:

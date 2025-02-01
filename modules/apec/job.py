@@ -18,15 +18,15 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 APEC_CONTRATS = {
-        ' ': u'-- Indifférent --',
-        '101888': u'CDI',
-        '101887': u'CDD',
-        '101889': u'Interim',
+    " ": "-- Indifférent --",
+    "101888": "CDI",
+    "101887": "CDD",
+    "101889": "Interim",
 }
 
 
 APEC_EXPERIENCE = {
-        '101882': u'Tous niveaux d\'expérience',
-        '101881': u'Débutant',
-        '101883': u'Expérimenté',
+    "101882": "Tous niveaux d'expérience",
+    "101881": "Débutant",
+    "101883": "Expérimenté",
 }

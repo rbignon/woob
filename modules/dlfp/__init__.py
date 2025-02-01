@@ -22,4 +22,4 @@ from .browser import DLFP
 from .module import DLFPModule
 
 
-__all__ = ['DLFP', 'DLFPModule']
+__all__ = ["DLFP", "DLFPModule"]

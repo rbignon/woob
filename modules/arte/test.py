@@ -27,27 +27,27 @@ from .video import SITE
 
 
 class ArteTest(BackendTest):
-    MODULE = 'arte'
+    MODULE = "arte"
 
     def setUp(self):
         if not self.is_backend_configured():
-            self.backend.config['lang'] = Value(value='FRENCH')
-            self.backend.config['quality'] = Value(value='HD')
-            self.backend.config['order'] = Value(value='LAST_CHANCE')
-            self.backend.config['format'] = Value(value='HLS')
-            self.backend.config['version'] = Value(value='VOSTF')
+            self.backend.config["lang"] = Value(value="FRENCH")
+            self.backend.config["quality"] = Value(value="HD")
+            self.backend.config["order"] = Value(value="LAST_CHANCE")
+            self.backend.config["format"] = Value(value="HLS")
+            self.backend.config["version"] = Value(value="VOSTF")
 
     def test_search(self):
-        l = list(zip(self.backend.search_videos('a'), range(30)))
+        l = list(zip(self.backend.search_videos("a"), range(30)))
         assert len(l)
         v = l[0][0]
-        self.backend.fillobj(v, ('url',))
+        self.backend.fillobj(v, ("url",))
         self.assertTrue(v.url, 'URL for video "%s" not found' % (v.id))
 
     def test_sites(self):
         for site in SITE.values:
 
-            l1 = list(itertools.islice(self.backend.iter_resources([BaseVideo], [site.get('id')]), 0, 20))
+            l1 = list(itertools.islice(self.backend.iter_resources([BaseVideo], [site.get("id")]), 0, 20))
             assert len(l1)
 
             while not isinstance(l1[0], BaseVideo):
@@ -55,7 +55,7 @@ class ArteTest(BackendTest):
                 assert len(l1)
 
             for v in l1:
-                v = self.backend.fillobj(v, ('url',))
+                v = self.backend.fillobj(v, ("url",))
                 if type(v) == BaseVideo:
                     exit
 

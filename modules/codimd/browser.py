@@ -25,22 +25,18 @@ from .pages import MePage, NewNotePage, NotePage, RevisionListPage, RevisionPage
 
 
 class CodimdBrowser(PagesBrowser):
-    BASEURL = 'https://hackmd.io/'
+    BASEURL = "https://hackmd.io/"
 
-    login_ldap = URL(r'/auth/ldap')
-    login_email = URL(r'/login')
-    me = URL(r'/me', MePage)
-    note_dl = URL(r'/(?P<note>[a-zA-Z0-9_-]+)/download', NotePage)
-    one_revision = URL(r'/(?P<note>[a-zA-Z0-9_-]+)/revision/(?P<rev>\d+)', RevisionPage)
-    revisions = URL(r'/(?P<note>[a-zA-Z0-9_-]+)/revision$', RevisionListPage)
-    new_note = URL(
-        r'/new',
-        r'/new/(?P<note>[a-zA-Z0-9_-]+)',
-        NewNotePage
-    )
-    base_note = URL(r'/(?P<note>[a-zA-Z0-9_-]+)$')
-    socket = URL(r'/socket.io/\?noteId=(?P<note>[a-zA-Z0-9_-]+)&EIO=3&transport=polling&t=(?P<t>[a-zA-Z]+)')
-    root = URL(r'/$', RootPage)
+    login_ldap = URL(r"/auth/ldap")
+    login_email = URL(r"/login")
+    me = URL(r"/me", MePage)
+    note_dl = URL(r"/(?P<note>[a-zA-Z0-9_-]+)/download", NotePage)
+    one_revision = URL(r"/(?P<note>[a-zA-Z0-9_-]+)/revision/(?P<rev>\d+)", RevisionPage)
+    revisions = URL(r"/(?P<note>[a-zA-Z0-9_-]+)/revision$", RevisionListPage)
+    new_note = URL(r"/new", r"/new/(?P<note>[a-zA-Z0-9_-]+)", NewNotePage)
+    base_note = URL(r"/(?P<note>[a-zA-Z0-9_-]+)$")
+    socket = URL(r"/socket.io/\?noteId=(?P<note>[a-zA-Z0-9_-]+)&EIO=3&transport=polling&t=(?P<t>[a-zA-Z]+)")
+    root = URL(r"/$", RootPage)
 
     def __init__(self, baseurl, username, password, *args, **kwargs):
         self.BASEURL = baseurl
@@ -50,26 +46,28 @@ class CodimdBrowser(PagesBrowser):
 
     def do_login(self):
         if not self.username:
-            raise BrowserIncorrectPassword('Missing login')
+            raise BrowserIncorrectPassword("Missing login")
         elif not self.password:
-            raise BrowserIncorrectPassword('Missing password')
+            raise BrowserIncorrectPassword("Missing password")
 
-        if '@' in self.username:
+        if "@" in self.username:
             url = self.login_email
-            larg = 'email'
+            larg = "email"
         else:
             url = self.login_ldap
-            larg = 'username'
+            larg = "username"
 
-        url.go(data={
-            larg: self.username,
-            'password': self.password,
-        })
+        url.go(
+            data={
+                larg: self.username,
+                "password": self.password,
+            }
+        )
         if self.root.is_here():
             self.page.check_error()
 
         self.me.go()
-        assert self.page.doc['status'] == 'ok'
+        assert self.page.doc["status"] == "ok"
 
     def _call_with_login(self, func, *args, **kwargs):
         # TODO handle 404 error when note is not found
@@ -123,21 +121,22 @@ class CodimdBrowser(PagesBrowser):
     def push_content(self, content):
         if content.id:
             # TODO do we have to do it with /socket.io route?
-            raise NotImplementedError('Pushing a new revision is not implemented yet')
+            raise NotImplementedError("Pushing a new revision is not implemented yet")
 
         self._call_with_login(
-            self.new_note.go, data=content.content,
-            headers={'Content-Type': 'text/markdown'},
+            self.new_note.go,
+            data=content.content,
+            headers={"Content-Type": "text/markdown"},
         )
 
         match = self.base_note.match(self.url)
         if match:
             content.url = self.url
-            content.id = match['note']
+            content.id = match["note"]
 
             # add the note to user history
             # t= is supposed to be unique? a constant works fine
-            self.socket.open(note=content.id, t='WOOB')
+            self.socket.open(note=content.id, t="WOOB")
             return content
 
     # deleting a note is done in /socket.io route

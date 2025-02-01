@@ -57,9 +57,7 @@ class AprilModule(Module, CapDocument, CapProfile):
     )
 
     def create_default_browser(self):
-        return self.create_browser(
-            self.config["username"].get(), self.config["password"].get()
-        )
+        return self.create_browser(self.config["username"].get(), self.config["password"].get())
 
     def download_document(self, document):
         if not isinstance(document, Document):
@@ -70,9 +68,7 @@ class AprilModule(Module, CapDocument, CapProfile):
         return self.browser.open(document.url).content
 
     def get_document(self, _id):
-        return find_object(
-            self.iter_documents(None), id=_id, error=DocumentNotFound
-        )
+        return find_object(self.iter_documents(None), id=_id, error=DocumentNotFound)
 
     def iter_documents(self, subscription):
         return self.browser.iter_documents()

@@ -33,17 +33,16 @@ def clean_label(text):
     User shouldn't be able to see the difference, so we
     need to make labels from both sources look the same.
     """
-    for pattern in [r' \d+\.\d+ +POUND STERLING',
-                    'Subject to Foreign Fee',
-                    'Description']:
-        text = re.sub(pattern, '', text, re.UNICODE)
-    return re.sub(r' +', ' ', text.strip().upper(), re.UNICODE)
+    for pattern in [r" \d+\.\d+ +POUND STERLING", "Subject to Foreign Fee", "Description"]:
+        text = re.sub(pattern, "", text, re.UNICODE)
+    return re.sub(r" +", " ", text.strip().upper(), re.UNICODE)
 
 
 def formatted(read_func):
     """
     Reads boilerplate PDF formatting around the data of interest.
     """
+
     def wrapped(self, pos):
         startPos = pos
         pos, ws = self.read_whitespace(pos)
@@ -52,11 +51,11 @@ def formatted(read_func):
         pos, tm = self.read_layout_tm(pos)
         pos, data = read_func(self, pos)
         pos, et = self.read_layout_et(pos)
-        if ws is None or bt is None or tf is None \
-           or tm is None or data is None or et is None:
+        if ws is None or bt is None or tf is None or tm is None or data is None or et is None:
             return startPos, None
         else:
             return pos, data
+
     return wrapped
 
 
@@ -68,20 +67,20 @@ class StatementParser(object):
     """
 
     LEX = [
-        ('date_range', r'^\((\d{2}/\d{2}/\d{2})-(\d{2}/\d{2}/\d{2})\) Tj$'),
-        ('amount', r'^\((-?\$\d+(,\d{3})*\.\d{2})\) Tj$'),
-        ('date', r'^\((\d{2}/\d{2})\) Tj$'),
-        ('text', r'^\((.*)\) Tj$'),
-        ('layout_tf', r'^.* Tf$'),
-        ('layout_tm', r'^' + (6*r'([^ ]+) ') + r'Tm$'),
-        ('layout_bt', r'^BT$'),
-        ('layout_et', r'^ET$'),
-        ('whitespace', r'^$')
+        ("date_range", r"^\((\d{2}/\d{2}/\d{2})-(\d{2}/\d{2}/\d{2})\) Tj$"),
+        ("amount", r"^\((-?\$\d+(,\d{3})*\.\d{2})\) Tj$"),
+        ("date", r"^\((\d{2}/\d{2})\) Tj$"),
+        ("text", r"^\((.*)\) Tj$"),
+        ("layout_tf", r"^.* Tf$"),
+        ("layout_tm", r"^" + (6 * r"([^ ]+) ") + r"Tm$"),
+        ("layout_bt", r"^BT$"),
+        ("layout_et", r"^ET$"),
+        ("whitespace", r"^$"),
     ]
 
     def __init__(self, pdf):
         self._pdf = decompress_pdf(pdf)
-        self._tok = ReTokenizer(self._pdf, '\n', self.LEX)
+        self._tok = ReTokenizer(self._pdf, "\n", self.LEX)
 
     def read_transactions(self):
         # Read statement dates range.
@@ -108,8 +107,7 @@ class StatementParser(object):
     def read_date_range(self, pos):
         t = self._tok.tok(pos)
         if t.is_date_range():
-            return (pos+1, [datetime.datetime.strptime(v, '%m/%d/%y')
-                            for v in t.value()])
+            return (pos + 1, [datetime.datetime.strptime(v, "%m/%d/%y") for v in t.value()])
         else:
             return (pos, None)
 
@@ -179,12 +177,12 @@ class StatementParser(object):
                     pos += 1
 
         if descs:
-            return pos, clean_label(' '.join(descs))
+            return pos, clean_label(" ".join(descs))
         else:
             return startPos, None
 
     def __getattr__(self, name):
-        if name.startswith('read_'):
+        if name.startswith("read_"):
             return lambda pos: self._tok.simple_read(name[5:], pos)
         raise AttributeError()
 
@@ -192,19 +190,18 @@ class StatementParser(object):
     def read_date(self, pos):
         def parse_date(v):
             for year in [1900, 1904]:  # try leap and non-leap years
-                fullstr = '%s/%i' % (v, year)
+                fullstr = "%s/%i" % (v, year)
                 try:
-                    return datetime.datetime.strptime(fullstr, '%m/%d/%Y')
+                    return datetime.datetime.strptime(fullstr, "%m/%d/%Y")
                 except ValueError as e:
                     last_error = e
             raise last_error
 
-        return self._tok.simple_read('date', pos, parse_date)
+        return self._tok.simple_read("date", pos, parse_date)
 
     @formatted
     def read_amount(self, pos):
-        return self._tok.simple_read('amount', pos,
-                                     lambda xs: AmTr.decimal_amount(xs[0]))
+        return self._tok.simple_read("amount", pos, lambda xs: AmTr.decimal_amount(xs[0]))
 
     def read_text(self, pos):
         startPos = pos
@@ -212,11 +209,9 @@ class StatementParser(object):
         pos, bt = self.read_layout_bt(pos)
         pos, tf = self.read_layout_tf(pos)
         pos, tm = self.read_layout_tm(pos)
-        pos, text = self._tok.simple_read('text', pos,
-            lambda v: str(v, errors='ignore'))
+        pos, text = self._tok.simple_read("text", pos, lambda v: str(v, errors="ignore"))
         pos, et = self.read_layout_et(pos)
-        if ws is None or bt is None or tf is None \
-           or tm is None or text is None or et is None:
+        if ws is None or bt is None or tf is None or tm is None or text is None or et is None:
             return startPos, None
         else:
             return pos, (text, tm)

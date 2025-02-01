@@ -21,4 +21,4 @@
 from .module import PixabayModule
 
 
-__all__ = ['PixabayModule']
+__all__ = ["PixabayModule"]

@@ -25,39 +25,39 @@ from .collection import CapCollection, Collection, CollectionNotFound
 from .date import DateField
 
 
-__all__ = ['BaseCalendarEvent', 'CapCalendarEvent']
+__all__ = ["BaseCalendarEvent", "CapCalendarEvent"]
 
 
 class CATEGORIES(Enum):
-    CONCERT = 'Concert'
-    CINE = 'Cinema'
-    THEATRE = 'Theatre'
-    TELE = 'Television'
-    CONF = 'Conference'
-    AUTRE = 'Autre'
-    EXPO = 'Exposition'
-    SPECTACLE = 'Spectacle'
-    FEST = 'Festival'
-    SPORT = 'Sport'
+    CONCERT = "Concert"
+    CINE = "Cinema"
+    THEATRE = "Theatre"
+    TELE = "Television"
+    CONF = "Conference"
+    AUTRE = "Autre"
+    EXPO = "Exposition"
+    SPECTACLE = "Spectacle"
+    FEST = "Festival"
+    SPORT = "Sport"
 
 
 # the following elements deal with ICalendar standards
 # see https://fr.wikipedia.org/wiki/ICalendar#%C3%89v%C3%A9nements_(VEVENT)
 class TRANSP(Enum):
-    OPAQUE = 'OPAQUE'
-    TRANSPARENT = 'TRANSPARENT'
+    OPAQUE = "OPAQUE"
+    TRANSPARENT = "TRANSPARENT"
 
 
 class STATUS(Enum):
-    TENTATIVE = 'TENTATIVE'
-    CONFIRMED = 'CONFIRMED'
-    CANCELLED = 'CANCELLED'
+    TENTATIVE = "TENTATIVE"
+    CONFIRMED = "CONFIRMED"
+    CANCELLED = "CANCELLED"
 
 
 class TICKET(Enum):
-    AVAILABLE = 'Available'
-    NOTAVAILABLE = 'Not available'
-    CLOSED = 'Closed'
+    AVAILABLE = "Available"
+    NOTAVAILABLE = "Not available"
+    CLOSED = "Closed"
 
 
 class BaseCalendarEvent(BaseObject):
@@ -65,31 +65,31 @@ class BaseCalendarEvent(BaseObject):
     Represents a calendar event
     """
 
-    start_date = DateField('Start date of the event')
-    end_date = DateField('End date of the event')
-    timezone = StringField('Timezone of the event in order to convert to utc time', default='Etc/UCT')
-    summary = StringField('Title of the event')
-    address = Field('Address where event will take place', PostalAddress)
-    category = EnumField('Category of the event', CATEGORIES)
-    description = StringField('Description of the event')
-    price = FloatField('Price of the event')
-    booked_entries = IntField('Entry number')
-    max_entries = IntField('Max entry number')
-    event_planner = StringField('Name of the event planner')
+    start_date = DateField("Start date of the event")
+    end_date = DateField("End date of the event")
+    timezone = StringField("Timezone of the event in order to convert to utc time", default="Etc/UCT")
+    summary = StringField("Title of the event")
+    address = Field("Address where event will take place", PostalAddress)
+    category = EnumField("Category of the event", CATEGORIES)
+    description = StringField("Description of the event")
+    price = FloatField("Price of the event")
+    booked_entries = IntField("Entry number")
+    max_entries = IntField("Max entry number")
+    event_planner = StringField("Name of the event planner")
 
-    city = compat_field('address', 'city')
-    location = compat_field('address', 'street')
+    city = compat_field("address", "city")
+    location = compat_field("address", "street")
 
     # the following elements deal with ICalendar standards
     # see https://fr.wikipedia.org/wiki/ICalendar#%C3%89v%C3%A9nements_(VEVENT)
-    sequence = IntField('Number of updates, the first is number 1')
+    sequence = IntField("Number of updates, the first is number 1")
 
     # (TENTATIVE, CONFIRMED, CANCELLED)
-    status = EnumField('Status of the event', STATUS)
+    status = EnumField("Status of the event", STATUS)
     # (OPAQUE, TRANSPARENT)
-    transp = EnumField('Describes if event is available', TRANSP)
+    transp = EnumField("Describes if event is available", TRANSP)
     # (AVAILABLE, NOTAVAILABLE, CLOSED)
-    ticket = EnumField('Describes if tickets are available', TICKET)
+    ticket = EnumField("Describes if tickets are available", TICKET)
 
     @classmethod
     def id2url(cls, _id):
@@ -109,12 +109,12 @@ class Query(BaseObject):
     Query to find events
     """
 
-    start_date = DateField('Start date of the event')
-    end_date = DateField('End date of the event')
-    city = StringField('Name of the city in witch event will take place')
-    categories = Field('List of categories of the event', list, tuple, default=list(CATEGORIES))
-    ticket = Field('List of status of the tickets sale', list, tuple, default=list(TICKET))
-    summary = StringField('Title of the event')
+    start_date = DateField("Start date of the event")
+    end_date = DateField("End date of the event")
+    city = StringField("Name of the city in witch event will take place")
+    categories = Field("List of categories of the event", list, tuple, default=list(CATEGORIES))
+    ticket = Field("List of status of the tickets sale", list, tuple, default=list(TICKET))
+    summary = StringField("Title of the event")
 
 
 class CapCalendarEvent(CapCollection):
@@ -122,10 +122,10 @@ class CapCalendarEvent(CapCollection):
     Capability of calendar event type sites
     """
 
-    ASSOCIATED_CATEGORIES = 'ALL'
+    ASSOCIATED_CATEGORIES = "ALL"
 
     def has_matching_categories(self, query):
-        if self.ASSOCIATED_CATEGORIES == 'ALL':
+        if self.ASSOCIATED_CATEGORIES == "ALL":
             return True
 
         for category in query.categories:
@@ -179,7 +179,7 @@ class CapCalendarEvent(CapCollection):
         """
         Iter events by category
         """
-        if len(split_path) == 0 and self.ASSOCIATED_CATEGORIES != 'ALL':
+        if len(split_path) == 0 and self.ASSOCIATED_CATEGORIES != "ALL":
             for category in self.ASSOCIATED_CATEGORIES:
                 collection = Collection([category], category)
                 yield collection
@@ -187,9 +187,9 @@ class CapCalendarEvent(CapCollection):
         elif len(split_path) == 1 and split_path[0] in self.ASSOCIATED_CATEGORIES:
             query = Query()
             query.categories = split_path
-            query.start_date = datetime.combine(parse_date('today'), time.min)
-            query.end_date = parse_date('')
-            query.city = ''
+            query.start_date = datetime.combine(parse_date("today"), time.min)
+            query.end_date = parse_date("")
+            query.city = ""
             for event in self.search_events(query):
                 yield event
 

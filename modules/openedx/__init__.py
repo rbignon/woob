@@ -21,4 +21,4 @@
 from .module import OpenEDXModule
 
 
-__all__ = ['OpenEDXModule']
+__all__ = ["OpenEDXModule"]

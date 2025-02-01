@@ -45,11 +45,13 @@ if sys.stdout.encoding is None:
 def removeNonAscii(s):
     return "".join(i for i in s if ord(i) < 128)
 
-rx = re.compile(u'[ \\/\\?\\:\\>\\<\\!\\\\\\*]+', re.UNICODE)
+
+rx = re.compile("[ \\/\\?\\:\\>\\<\\!\\\\\\*]+", re.UNICODE)
 
 
 def removeSpecial(s):
-    return rx.sub(u' ', u'%s' % s)
+    return rx.sub(" ", "%s" % s)
+
 
 DOWNLOAD_DIRECTORY = ".files"
 
@@ -72,10 +74,10 @@ class Downloadboob(object):
         for local_link_name in dirList:
             link_name = self.links_directory + "/" + local_link_name
             if not self.check_link(link_name):
-                print(u"Remove %s" % link_name)
+                print("Remove %s" % link_name)
                 os.remove(link_name)
             else:
-                print(u"Keep %s" % link_name)
+                print("Keep %s" % link_name)
 
     def check_link(self, link_name):
         if os.path.islink(link_name):
@@ -87,7 +89,15 @@ class Downloadboob(object):
         else:
             return True
 
-    def download(self, pattern=None, sortby=CapVideo.SEARCH_RELEVANCE, nsfw=False, max_results=None, title_exclude=[], id_regexp=None):
+    def download(
+        self,
+        pattern=None,
+        sortby=CapVideo.SEARCH_RELEVANCE,
+        nsfw=False,
+        max_results=None,
+        title_exclude=[],
+        id_regexp=None,
+    ):
         print("For backend %s, search for '%s'" % (backend_name, pattern))
 
         # create directory for links
@@ -101,9 +111,9 @@ class Downloadboob(object):
             if i == max_results:
                 break
 
-            self.backend.fillobj(video, ('url', 'title', 'url', 'duration', 'ext'))
+            self.backend.fillobj(video, ("url", "title", "url", "duration", "ext"))
             if not self.is_downloaded(video):
-                if not(self.is_excluded(video.title, title_exclude)) and self.id_regexp_matched(video.id, id_regexp):
+                if not (self.is_excluded(video.title, title_exclude)) and self.id_regexp_matched(video.id, id_regexp):
                     print("  %s\n    Id:%s\n    Duration:%s" % (video.title, video.id, video.duration))
                     videos.append(video)
             else:
@@ -131,9 +141,9 @@ class Downloadboob(object):
     def get_downloaded_ext(self, video):
         ext = video.ext
         if not ext:
-            ext = 'avi'
-        elif ext == u'm3u8':
-            ext = 'mp4'
+            ext = "avi"
+        elif ext == "m3u8":
+            ext = "mp4"
         return ext
 
     def get_filename(self, video, relative=False):
@@ -146,7 +156,7 @@ class Downloadboob(object):
 
         ext = self.get_downloaded_ext(video)
 
-        return u"%s/%s.%s" % (directory, removeNonAscii(video.id), ext)
+        return "%s/%s.%s" % (directory, removeNonAscii(video.id), ext)
 
     def get_linkname(self, video):
         if not os.path.exists(self.links_directory):
@@ -158,7 +168,7 @@ class Downloadboob(object):
         if not misc:
             misc = video.id
 
-        return u"%s/%s (%s).%s" % (self.links_directory, removeSpecial(video.title), removeSpecial(misc), ext)
+        return "%s/%s (%s).%s" % (self.links_directory, removeSpecial(video.title), removeSpecial(misc), ext)
 
     def is_downloaded(self, video):
         # check if the file is 0 byte
@@ -170,10 +180,10 @@ class Downloadboob(object):
             # already empty
             return
 
-        print('Remove video %s' % video.title)
+        print("Remove video %s" % video.title)
 
         # Empty it to keep information we have already downloaded it.
-        with open(path, 'w'):
+        with open(path, "w"):
             pass
 
     def set_linkname(self, video):
@@ -186,11 +196,11 @@ class Downloadboob(object):
 
     def do_download(self, video):
         if not video:
-            print('Video not found: %s' % video, file=sys.stderr)
+            print("Video not found: %s" % video, file=sys.stderr)
             return 3
 
         if not video.url:
-            print('Error: the direct URL is not available.', file=sys.stderr)
+            print("Error: the direct URL is not available.", file=sys.stderr)
             return 4
 
         def check_exec(executable):
@@ -201,30 +211,37 @@ class Downloadboob(object):
 
         dest = self.get_filename(video)
 
-        if video.url.startswith('rtmp'):
-            if not check_exec('rtmpdump'):
+        if video.url.startswith("rtmp"):
+            if not check_exec("rtmpdump"):
                 return 1
-            args = ('rtmpdump', '-e', '-r', video.url, '-o', dest)
-        elif video.url.startswith('mms'):
-            if not check_exec('mimms'):
+            args = ("rtmpdump", "-e", "-r", video.url, "-o", dest)
+        elif video.url.startswith("mms"):
+            if not check_exec("mimms"):
                 return 1
-            args = ('mimms', video.url, dest)
-        elif u'm3u8' == video.ext:
+            args = ("mimms", video.url, dest)
+        elif "m3u8" == video.ext:
             _dest, _ = os.path.splitext(dest)
-            dest = u'%s.%s' % (_dest, 'mp4')
+            dest = "%s.%s" % (_dest, "mp4")
             content = tuple()
-            baseurl = video.url.rpartition('/')[0]
+            baseurl = video.url.rpartition("/")[0]
             for line in self.read_url(video.url):
-                if not line.startswith('#'):
-                    if not line.startswith('http'):
-                        line = u'%s/%s' % (baseurl, line)
+                if not line.startswith("#"):
+                    if not line.startswith("http"):
+                        line = "%s/%s" % (baseurl, line)
                     content += (line,)
-            args = ('wget', '-nv',) + content + ('-O', dest)
+            args = (
+                (
+                    "wget",
+                    "-nv",
+                )
+                + content
+                + ("-O", dest)
+            )
         else:
-            if check_exec('wget'):
-                args = ('wget', '-c', video.url, '-O', dest)
-            elif check_exec('curl'):
-                args = ('curl', '-C', '-', video.url, '-o', dest)
+            if check_exec("wget"):
+                args = ("wget", "-c", video.url, "-O", dest)
+            elif check_exec("curl"):
+                args = ("curl", "-C", "-", video.url, "-o", dest)
             else:
                 return 1
 
@@ -236,7 +253,7 @@ class Downloadboob(object):
         return r.iter_lines()
 
 
-config_file = 'downloadboob.conf'
+config_file = "downloadboob.conf"
 sections = None
 if len(sys.argv) >= 3:
     sections = sys.argv[2:]
@@ -244,17 +261,17 @@ if len(sys.argv) >= 2:
     config_file = sys.argv[1]
 
 config = ConfigParser.ConfigParser()
-config.read(['/etc/downloadboob.conf', os.path.expanduser('~/downloadboob.conf'), config_file])
+config.read(["/etc/downloadboob.conf", os.path.expanduser("~/downloadboob.conf"), config_file])
 if sections is None:
     sections = config.sections()
 
 try:
-    links_directory = os.path.expanduser(config.get('main', 'directory', '.'))
+    links_directory = os.path.expanduser(config.get("main", "directory", "."))
 except ConfigParser.NoSectionError:
     print("Please create a documentation file (see the README file and the downloadboob.conf example file)")
     sys.exit(2)
 
-links_directory = links_directory.decode('utf-8')
+links_directory = links_directory.decode("utf-8")
 
 download_directory = os.path.join(links_directory, DOWNLOAD_DIRECTORY)
 
@@ -265,7 +282,7 @@ for section in config.sections():
         backend_name = config.get(section, "backend")
         pattern = config.get(section, "pattern")
         if config.has_option(section, "title_exclude"):
-            title_exclude = config.get(section, "title_exclude").decode('utf-8').split('|')
+            title_exclude = config.get(section, "title_exclude").decode("utf-8").split("|")
         else:
             title_exclude = []
         if config.has_option(section, "id_regexp"):

@@ -23,65 +23,76 @@ from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, Browse
 from woob.tools.json import json
 
 from .pages import (
-    AiguillagePage, AuraPage, AuthenticationErrorPage, AuthPage, ClientPremiumSpace, ClientSpace, CnicePage, ErrorPage,
-    LoginPage, MaintenancePage, PdfPage, RedirectPage, ValidatePage,
+    AiguillagePage,
+    AuraPage,
+    AuthenticationErrorPage,
+    AuthPage,
+    ClientPremiumSpace,
+    ClientSpace,
+    CnicePage,
+    ErrorPage,
+    LoginPage,
+    MaintenancePage,
+    PdfPage,
+    RedirectPage,
+    ValidatePage,
 )
 
 
 class EdfproBrowser(LoginBrowser):
-    BASEURL = 'https://entreprises-collectivites.edf.fr'
-    AUTH_BASEURL = 'https://auth.entreprises-collectivites.edf.fr'
+    BASEURL = "https://entreprises-collectivites.edf.fr"
+    AUTH_BASEURL = "https://auth.entreprises-collectivites.edf.fr"
 
-    VERIFY = 'certificate.pem'  # Expire: 28/04/2024
+    VERIFY = "certificate.pem"  # Expire: 28/04/2024
 
-    login = URL(r'/openam/json/authenticate', LoginPage, base='AUTH_BASEURL')
+    login = URL(r"/openam/json/authenticate", LoginPage, base="AUTH_BASEURL")
     auth = URL(
-        r'/openam/UI/Login.*',
-        r'/ice/rest/aiguillagemp/redirect',
+        r"/openam/UI/Login.*",
+        r"/ice/rest/aiguillagemp/redirect",
         AuthPage,
-        base='AUTH_BASEURL',
+        base="AUTH_BASEURL",
     )
-    error = URL(r'/page_erreur/', ErrorPage, base='AUTH_BASEURL')
+    error = URL(r"/page_erreur/", ErrorPage, base="AUTH_BASEURL")
     premium_client_space = URL(
-        r'/espaceclientpremium/s/$',
-        r'/espaceclientpremium/s/aiguillage',
-        r'/espaceclientpremium/secur/frontdoor.jsp',
+        r"/espaceclientpremium/s/$",
+        r"/espaceclientpremium/s/aiguillage",
+        r"/espaceclientpremium/secur/frontdoor.jsp",
         ClientPremiumSpace,
     )
     client_space = URL(
-        r'/espaceclient/s/$',
-        r'/espaceclient/s/aiguillage',
-        r'/espaces/secur/frontdoor.jsp',
-        r'/espaces/s/$',
+        r"/espaceclient/s/$",
+        r"/espaceclient/s/aiguillage",
+        r"/espaces/secur/frontdoor.jsp",
+        r"/espaces/s/$",
         ClientSpace,
     )
-    authentication_error = URL(r'/espaceclient/_nc_external', AuthenticationErrorPage)
+    authentication_error = URL(r"/espaceclient/_nc_external", AuthenticationErrorPage)
     cnice = URL(
-        r'/espace(s|client(premium)?)/services/authcallback/CNICE',
-        r'/espaceclient(premium)?/apex/CNICE',
-        r'/espaceclient(premium)?/CNICE_VFP234_EPIRedirect',
+        r"/espace(s|client(premium)?)/services/authcallback/CNICE",
+        r"/espaceclient(premium)?/apex/CNICE",
+        r"/espaceclient(premium)?/CNICE_VFP234_EPIRedirect",
         CnicePage,
     )
-    aura = URL(r'/espaceclient/s/sfsites/aura', AuraPage)
-    premium_aura = URL(r'/espaceclientpremium/s/sfsites/aura', AuraPage)
-    download_page = URL(r'/espaceclient/sfc/servlet.shepherd/version/download/(?P<id_download>.*)', PdfPage)
+    aura = URL(r"/espaceclient/s/sfsites/aura", AuraPage)
+    premium_aura = URL(r"/espaceclientpremium/s/sfsites/aura", AuraPage)
+    download_page = URL(r"/espaceclient/sfc/servlet.shepherd/version/download/(?P<id_download>.*)", PdfPage)
     premium_download_page = URL(
-        r'/espaceclientpremium/sfc/servlet.shepherd/version/download/(?P<id_download>.*)',
+        r"/espaceclientpremium/sfc/servlet.shepherd/version/download/(?P<id_download>.*)",
         PdfPage,
     )
-    validate_page = URL(r'/espace(s|client)/loginflow/loginFlowOnly.apexp', ValidatePage)
-    aiguillage = URL(r'/espace(s|client)/apex/CNICE_VFP234', AiguillagePage)
-    redirect = URL(r'/espace(s|client)/CNICE_VFP234_EPIRedirect', RedirectPage)
+    validate_page = URL(r"/espace(s|client)/loginflow/loginFlowOnly.apexp", ValidatePage)
+    aiguillage = URL(r"/espace(s|client)/apex/CNICE_VFP234", AiguillagePage)
+    redirect = URL(r"/espace(s|client)/CNICE_VFP234_EPIRedirect", RedirectPage)
     maintenance = URL(
-        r'/page_maintenance/index.html',
+        r"/page_maintenance/index.html",
         MaintenancePage,
-        base='AUTH_BASEURL',
+        base="AUTH_BASEURL",
     )
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        kwargs['username'] = self.config['login'].get()
-        kwargs['password'] = self.config['password'].get()
+        kwargs["username"] = self.config["login"].get()
+        kwargs["password"] = self.config["password"].get()
         super().__init__(*args, **kwargs)
         self.token = None
         self.context = None
@@ -92,32 +103,32 @@ class EdfproBrowser(LoginBrowser):
         # we need one of the redirections which is the auth_url
         # used several times during the login process
         self.location(
-            'https://entreprises-collectivites.edf.fr/espaceclient/services/auth/sso/CNICE',
-            params={'startURL': '/espaceclient/s/'},
+            "https://entreprises-collectivites.edf.fr/espaceclient/services/auth/sso/CNICE",
+            params={"startURL": "/espaceclient/s/"},
             allow_redirects=False,
         )
 
-        auth_url = self.response.headers['location']
+        auth_url = self.response.headers["location"]
 
         # this headers is mandatory to avoid a 403 response code
-        headers = {'x-requested-with': 'XMLHttpRequest'}
+        headers = {"x-requested-with": "XMLHttpRequest"}
         params = {
-            'realm': '/front_office',
-            'goto': auth_url,
+            "realm": "/front_office",
+            "goto": auth_url,
         }
-        self.login.go(method='POST', params=params, headers=headers)
+        self.login.go(method="POST", params=params, headers=headers)
 
         login_data = self.page.get_data(self.username, self.password)
         self.login.go(json=login_data, headers=headers)
 
         error_message = self.page.get_error_message()
         if error_message:
-            if 'compte bloqué' in error_message:
+            if "compte bloqué" in error_message:
                 raise BrowserUserBanned(error_message)
-            elif 'identifiant ou votre mot de passe est incorrect' in error_message:
+            elif "identifiant ou votre mot de passe est incorrect" in error_message:
                 # error_message can't be displayed to the user unless it's filtered through a regexp
-                raise BrowserIncorrectPassword('Votre identifiant ou votre mot de passe est incorrect.')
-            raise AssertionError(f'Unhandled error during login: {error_message}')
+                raise BrowserIncorrectPassword("Votre identifiant ou votre mot de passe est incorrect.")
+            raise AssertionError(f"Unhandled error during login: {error_message}")
 
         self.location(auth_url)
 
@@ -126,17 +137,17 @@ class EdfproBrowser(LoginBrowser):
 
         # Not sure if these two exceptions can still happen
         if self.auth.is_here() and self.page.response.status_code != 303:
-            self.logger.warning('Old BrowserIncorrectPassword triggered by auth_url')
+            self.logger.warning("Old BrowserIncorrectPassword triggered by auth_url")
             raise BrowserIncorrectPassword()
 
         if self.error.is_here():
-            self.logger.warning('Old BrowserUnavailable triggered by auth_url')
+            self.logger.warning("Old BrowserUnavailable triggered by auth_url")
             raise BrowserUnavailable(self.page.get_message())
 
         # Frontdoor URL is on CNICE page
         self.location(
-            'https://entreprises-collectivites.edf.fr/espaces/services/auth/sso/CNICE',
-            params={'startURL': '/espaces/s/'},
+            "https://entreprises-collectivites.edf.fr/espaces/services/auth/sso/CNICE",
+            params={"startURL": "/espaces/s/"},
             allow_redirects=True,
         )
 
@@ -156,64 +167,64 @@ class EdfproBrowser(LoginBrowser):
             self.is_premium = True
 
         for cookie in self.session.cookies:
-            if cookie.name.startswith('__Host-ERIC_PROD'):
+            if cookie.name.startswith("__Host-ERIC_PROD"):
                 self.token = cookie.value
                 break
         else:
             # In case Eric is fired
-            self.logger.warning('Could not find token cookie, check if its name has changed')
+            self.logger.warning("Could not find token cookie, check if its name has changed")
 
         aura_config = self.page.get_aura_config()
-        self.context = aura_config['context']
+        self.context = aura_config["context"]
 
-    def go_aura(self, message, page_uri=''):
-        uri = f'/espaceclient/s/{page_uri}'
+    def go_aura(self, message, page_uri=""):
+        uri = f"/espaceclient/s/{page_uri}"
         page = self.aura
         if self.is_premium:
-            uri = '/espaceclientpremium/s/%s' % page_uri
+            uri = "/espaceclientpremium/s/%s" % page_uri
             page = self.premium_aura
 
         context = {
-            'mode': self.context['mode'],
-            'fwuid': self.context['fwuid'],  # this value changes sometimes, (not at every synchronization)
-            'app': self.context['app'],
-            'loaded': self.context['loaded'],
-            'dn': [],
-            'globals': {},
-            'uad': False,
+            "mode": self.context["mode"],
+            "fwuid": self.context["fwuid"],  # this value changes sometimes, (not at every synchronization)
+            "app": self.context["app"],
+            "loaded": self.context["loaded"],
+            "dn": [],
+            "globals": {},
+            "uad": False,
         }
         data = {
-            'aura.pageURI': uri,
-            'aura.token': self.token,
-            'aura.context': json.dumps(context),
-            'message': json.dumps(message),  # message determines kind of response
+            "aura.pageURI": uri,
+            "aura.token": self.token,
+            "aura.context": json.dumps(context),
+            "message": json.dumps(message),  # message determines kind of response
         }
         page.go(data=data)
 
     def get_subscriber(self):
         message = {
-            'actions': [
+            "actions": [
                 {
-                    'id': '894;a',
-                    'descriptor': 'apex://CNICE_VFC172_DisplayUserProfil/ACTION$getContactInfo',
-                    'callingDescriptor': 'markup://c:CNICE_LC265_DisplayUserProfil',
-                    'params': {},
+                    "id": "894;a",
+                    "descriptor": "apex://CNICE_VFC172_DisplayUserProfil/ACTION$getContactInfo",
+                    "callingDescriptor": "markup://c:CNICE_LC265_DisplayUserProfil",
+                    "params": {},
                 },
             ],
         }
-        self.go_aura(message, 'historique-factures')
+        self.go_aura(message, "historique-factures")
         return self.page.get_subscriber()
 
     @need_login
     def get_subscription_list(self):
         subscriber = self.get_subscriber()
         message = {
-            'actions': [
+            "actions": [
                 {
-                    'id': '557;a',
-                    'descriptor': 'apex://CNICE_VFC151_CompteurListe/ACTION$getCarouselInfos',
-                    'callingDescriptor': 'markup://c:CNICE_LC218_CompteurListe',
-                    'params': {},
+                    "id": "557;a",
+                    "descriptor": "apex://CNICE_VFC151_CompteurListe/ACTION$getCarouselInfos",
+                    "callingDescriptor": "markup://c:CNICE_LC218_CompteurListe",
+                    "params": {},
                 },
             ],
         }
@@ -223,22 +234,21 @@ class EdfproBrowser(LoginBrowser):
     @need_login
     def iter_documents(self, subscription):
         message = {
-            'actions': [
+            "actions": [
                 {
-                    'id': '685;a',
-                    'descriptor': 'apex://CNICE_VFC158_HistoFactu/ACTION$initializeReglementSolde',
-                    'callingDescriptor': 'markup://c:CNICE_LC230_HistoFactu',
-                    'params': {},
+                    "id": "685;a",
+                    "descriptor": "apex://CNICE_VFC158_HistoFactu/ACTION$initializeReglementSolde",
+                    "callingDescriptor": "markup://c:CNICE_LC230_HistoFactu",
+                    "params": {},
                 },
                 {
-                    'id': '751;a',
-                    'descriptor': 'apex://CNICE_VFC160_ListeFactures/ACTION$getFacturesbyId',
-                    'callingDescriptor': 'markup://c:CNICE_LC232_ListeFactures2',
-                    'params':
-                        {
-                            'moeid': subscription._moe_idpe,
-                            'originBy': 'byMoeIdPE',
-                        },
+                    "id": "751;a",
+                    "descriptor": "apex://CNICE_VFC160_ListeFactures/ACTION$getFacturesbyId",
+                    "callingDescriptor": "markup://c:CNICE_LC232_ListeFactures2",
+                    "params": {
+                        "moeid": subscription._moe_idpe,
+                        "originBy": "byMoeIdPE",
+                    },
                 },
             ],
         }
@@ -251,7 +261,7 @@ class EdfproBrowser(LoginBrowser):
         if self.is_premium:
             download_page = self.premium_download_page
 
-        self.go_aura(document._message, 'historique-factures')
+        self.go_aura(document._message, "historique-factures")
         id = self.page.get_id_for_download()
         if id:
             # because id seems to be always None
@@ -262,25 +272,25 @@ class EdfproBrowser(LoginBrowser):
     @need_login
     def get_profile(self):
         message = {
-            'actions': [
+            "actions": [
                 {
-                    'id': '894;a',
-                    'descriptor': 'apex://CNICE_VFC172_DisplayUserProfil/ACTION$getContactInfo',
-                    'callingDescriptor': 'markup://c:CNICE_LC265_DisplayUserProfil',
-                    'params': {},
+                    "id": "894;a",
+                    "descriptor": "apex://CNICE_VFC172_DisplayUserProfil/ACTION$getContactInfo",
+                    "callingDescriptor": "markup://c:CNICE_LC265_DisplayUserProfil",
+                    "params": {},
                 },
             ],
         }
         # Get a first json with user information
-        self.go_aura(message, 'historique-factures')
+        self.go_aura(message, "historique-factures")
         profile = self.page.get_profile()
         message = {
-            'actions': [
+            "actions": [
                 {
-                    'id': '557;a',
-                    'descriptor': 'apex://CNICE_VFC151_CompteurListe/ACTION$getCarouselInfos',
-                    'callingDescriptor': 'markup://c:CNICE_LC218_CompteurListe',
-                    'params': {},
+                    "id": "557;a",
+                    "descriptor": "apex://CNICE_VFC151_CompteurListe/ACTION$getCarouselInfos",
+                    "callingDescriptor": "markup://c:CNICE_LC218_CompteurListe",
+                    "params": {},
                 },
             ],
         }

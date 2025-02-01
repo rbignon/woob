@@ -22,7 +22,7 @@ from woob_modules.creditdunord.browser import CreditDuNordBrowser
 
 
 class TarneaudBrowser(CreditDuNordBrowser):
-    BASEURL = 'https://www.tarneaud.fr/'
+    BASEURL = "https://www.tarneaud.fr/"
 
     def do_login(self):
         raise BrowserUnavailable()

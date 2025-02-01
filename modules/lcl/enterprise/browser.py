@@ -27,31 +27,29 @@ from woob.capabilities.bank.base import Account
 from woob.exceptions import BrowserIncorrectPassword
 
 from .pages import (
-    CardsMovementsPage, CardsPage, LoginPage, MovementsPage, PassExpiredPage, ProfilePage, TooManySessionsPage,
+    CardsMovementsPage,
+    CardsPage,
+    LoginPage,
+    MovementsPage,
+    PassExpiredPage,
+    ProfilePage,
+    TooManySessionsPage,
 )
 
 
 class LCLEnterpriseBrowser(LoginBrowser):
-    BASEURL = 'https://entreprises.secure.lcl.fr'
+    BASEURL = "https://entreprises.secure.lcl.fr"
 
-    pass_expired = URL('/outil/IQEN/Authentication/forcerChangePassword', PassExpiredPage)
-    login = URL(
-        '/outil/IQEN/Authentication/indexRedirect',
-        '/outil/IQEN/Authentication/(?P<page>.*)',
-        LoginPage
-    )
+    pass_expired = URL("/outil/IQEN/Authentication/forcerChangePassword", PassExpiredPage)
+    login = URL("/outil/IQEN/Authentication/indexRedirect", "/outil/IQEN/Authentication/(?P<page>.*)", LoginPage)
 
     # we can be redirected here during login if a session is already active.
-    too_many_sessions = URL('/outil/IQEN/Authentication/dejaConnecte', TooManySessionsPage)
+    too_many_sessions = URL("/outil/IQEN/Authentication/dejaConnecte", TooManySessionsPage)
 
-    cards = URL('/outil/IQRC/Accueil', CardsPage)
-    cards_movements = URL(r'/outil/IQRC/Detail/detailCB\?index=(?P<index>.*)', CardsMovementsPage)
-    movements = URL(
-        '/outil/IQMT/mvt.Synthese/syntheseMouvementPerso',
-        '/outil/IQMT/mvt.Synthese',
-        MovementsPage
-    )
-    profile = URL('/outil/IQGA/FicheUtilisateur/maFicheUtilisateur', ProfilePage)
+    cards = URL("/outil/IQRC/Accueil", CardsPage)
+    cards_movements = URL(r"/outil/IQRC/Detail/detailCB\?index=(?P<index>.*)", CardsMovementsPage)
+    movements = URL("/outil/IQMT/mvt.Synthese/syntheseMouvementPerso", "/outil/IQMT/mvt.Synthese", MovementsPage)
+    profile = URL("/outil/IQGA/FicheUtilisateur/maFicheUtilisateur", ProfilePage)
 
     def __init__(self, config, *args, **kwargs):
         super(LCLEnterpriseBrowser, self).__init__(*args, **kwargs)
@@ -90,8 +88,8 @@ class LCLEnterpriseBrowser(LoginBrowser):
         m = re.search(r"'(\d+).*'(\d+)", link)
         if m:
             return {
-                'CBParentData': m.group(1),
-                'CBEnfantData': m.group(2),
+                "CBParentData": m.group(1),
+                "CBEnfantData": m.group(2),
             }
         return None
 
@@ -130,7 +128,7 @@ class LCLEnterpriseBrowser(LoginBrowser):
             self.page.go_to_card_company_page(self.get_form_data(account._company_link))
         if account._num_page:
             # Go to the right page
-            self.location('/outil/IQRC/Accueil/paginerListeCB', data={'numPage': account._num_page})
+            self.location("/outil/IQRC/Accueil/paginerListeCB", data={"numPage": account._num_page})
 
         self.cards_movements.go(index=account._index)
         return self.page.iter_coming()
@@ -141,4 +139,4 @@ class LCLEnterpriseBrowser(LoginBrowser):
 
 
 class LCLEspaceProBrowser(LCLEnterpriseBrowser):
-    BASEURL = 'https://espacepro.secure.lcl.fr'
+    BASEURL = "https://espacepro.secure.lcl.fr"

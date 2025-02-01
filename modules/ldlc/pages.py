@@ -29,7 +29,7 @@ from woob_modules.materielnet.pages import LoginPage as MaterielNetLoginPage
 class HiddenFieldPage(HTMLPage):
     def get_ctl00_actScriptManager_HiddenField(self):
         return QueryValue(
-            Attr('//script[contains(@src, "js/CombineScriptsHandler.ashx?")]', 'src'),
+            Attr('//script[contains(@src, "js/CombineScriptsHandler.ashx?")]', "src"),
             "_TSM_CombinedScripts_",
         )(self.doc)
 
@@ -43,37 +43,37 @@ class ProHomePage(LoggedPage, HTMLPage):
             klass = Subscription
 
             obj_subscriber = CleanText('.//div[@id="divlblTitleFirstNameLastName"]//span')
-            obj_id = CleanText('.//span[2]')
+            obj_id = CleanText(".//span[2]")
             obj_label = CleanText('.//div[@id="divlblTitleFirstNameLastName"]//span')
 
 
 class ParLoginPage(MaterielNetLoginPage, HTMLPage):
     def login(self, username, password, captcha_response=None):
         form = self.get_form()
-        form['Email'] = username
-        form['Password'] = password
+        form["Email"] = username
+        form["Password"] = password
 
         # removing this otherwise the login could fail.
-        del form['VerificationToken']
+        del form["VerificationToken"]
         if captcha_response:
-            form['g-recaptcha-response'] = captcha_response
+            form["g-recaptcha-response"] = captcha_response
 
         form.submit()
 
 
 class ProLoginPage(MaterielNetLoginPage, HiddenFieldPage):
     def login(self, username, password, captcha_response=None):
-        form = self.get_form(id='aspnetForm', submit='.//input[@id="ctl00_cphMainContent_butConnexion"]')
-        form['ctl00_actScriptManager_HiddenField'] = self.get_ctl00_actScriptManager_HiddenField()
-        form['ctl00$cphMainContent$txbMail'] = username
-        form['ctl00$cphMainContent$txbPassword'] = password
+        form = self.get_form(id="aspnetForm", submit='.//input[@id="ctl00_cphMainContent_butConnexion"]')
+        form["ctl00_actScriptManager_HiddenField"] = self.get_ctl00_actScriptManager_HiddenField()
+        form["ctl00$cphMainContent$txbMail"] = username
+        form["ctl00$cphMainContent$txbPassword"] = password
 
         # remove this, else the login will fail on first try :
-        del form['ctl00$SaveCookiesChoices']
-        del form['ctl00$btnCookiesNotAccept']
-        del form['ctl00$lbCookiesAllAccept']
+        del form["ctl00$SaveCookiesChoices"]
+        del form["ctl00$btnCookiesNotAccept"]
+        del form["ctl00$lbCookiesAllAccept"]
         if captcha_response:
-            form['g-recaptcha-response'] = captcha_response
+            form["g-recaptcha-response"] = captcha_response
 
         form.submit()
 
@@ -82,8 +82,8 @@ class SubscriptionElement(ItemElement):
     klass = Subscription
 
     obj_subscriber = CleanText('//div[@class="hello"]/p/em')
-    obj_id = Regexp(CleanText('//span[@class="nclient"]'), r'Nº client : (.*)')
-    obj_label = Field('id')
+    obj_id = Regexp(CleanText('//span[@class="nclient"]'), r"Nº client : (.*)")
+    obj_label = Field("id")
 
 
 class ProfilePage(LoggedPage, HTMLPage):
@@ -104,13 +104,13 @@ class DocumentElement(ItemElement):
     klass = Bill
 
     obj__detail_url = Link('.//a[contains(text(), "Détails")]')
-    obj_id = Regexp(CleanText('./div[contains(@class, "cell-nb-order")]'), r'N. (.*)')
+    obj_id = Regexp(CleanText('./div[contains(@class, "cell-nb-order")]'), r"N. (.*)")
     obj_date = Date(CleanText('./div[contains(@class, "cell-date")]'), dayfirst=True)
-    obj_format = 'pdf'
-    obj_label = Format('Commande N°%s', Field('id'))
+    obj_format = "pdf"
+    obj_label = Format("Commande N°%s", Field("id"))
     obj_type = DocumentTypes.BILL
     # cents in price will be be separated with € like : 1 234€56
-    obj_total_price = CleanDecimal(CleanText('./div[contains(@class, "cell-value")]'), replace_dots=(' ', '€'))
+    obj_total_price = CleanDecimal(CleanText('./div[contains(@class, "cell-value")]'), replace_dots=(" ", "€"))
     obj_currency = Currency('./div[contains(@class, "cell-value")]')
 
 

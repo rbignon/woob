@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import DPDBrowser
 
 
-__all__ = ['DPDModule']
+__all__ = ["DPDModule"]
 
 
 class DPDModule(Module, CapParcel):
-    NAME = 'dpd'
-    DESCRIPTION = u'DPD website'
-    MAINTAINER = u'Matthieu Weber'
-    EMAIL = 'mweber+weboob@free.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "dpd"
+    DESCRIPTION = "DPD website"
+    MAINTAINER = "Matthieu Weber"
+    EMAIL = "mweber+weboob@free.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = DPDBrowser
 

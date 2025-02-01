@@ -23,7 +23,7 @@ from woob.tools.test import BackendTest
 
 
 class FreeteknomusicTest(BackendTest):
-    MODULE = 'freeteknomusic'
+    MODULE = "freeteknomusic"
 
     def test_ls(self):
         colls = list(self.backend.iter_resources([BaseAudio], []))

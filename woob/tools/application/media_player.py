@@ -27,30 +27,34 @@ import requests
 from woob.tools.log import getLogger
 
 
-__all__ = ['InvalidMediaPlayer', 'MediaPlayer', 'MediaPlayerNotFound']
+__all__ = ["InvalidMediaPlayer", "MediaPlayer", "MediaPlayerNotFound"]
 
 
 PLAYERS = (
-    ('mpv',      '-'),
-    ('mplayer2', '-'),
-    ('mplayer',  '-'),
-    ('vlc',      '-'),
-    ('parole',   'fd://0'),
-    ('totem',    'fd://0'),
-    ('xine',     'stdin:/'),
+    ("mpv", "-"),
+    ("mplayer2", "-"),
+    ("mplayer", "-"),
+    ("vlc", "-"),
+    ("parole", "fd://0"),
+    ("totem", "fd://0"),
+    ("xine", "stdin:/"),
 )
 
 
 class MediaPlayerNotFound(Exception):
     def __init__(self):
-        super(MediaPlayerNotFound, self).__init__('No media player found on this system. Please install one of them: %s.' %
-                                                  ', '.join(player[0] for player in PLAYERS))
+        super(MediaPlayerNotFound, self).__init__(
+            "No media player found on this system. Please install one of them: %s."
+            % ", ".join(player[0] for player in PLAYERS)
+        )
 
 
 class InvalidMediaPlayer(Exception):
     def __init__(self, player_name):
-        super(InvalidMediaPlayer, self).__init__('Invalid media player: %s. Valid media players: %s.' % (
-            player_name, ', '.join(player[0] for player in PLAYERS)))
+        super(InvalidMediaPlayer, self).__init__(
+            "Invalid media player: %s. Valid media players: %s."
+            % (player_name, ", ".join(player[0] for player in PLAYERS))
+        )
 
 
 class MediaPlayer:
@@ -83,12 +87,11 @@ class MediaPlayer:
         """
         player_names = [player[0] for player in PLAYERS]
         if not player_name:
-            self.logger.debug('No media player given. Using the first available from: %s.' %
-                              ', '.join(player_names))
+            self.logger.debug("No media player given. Using the first available from: %s." % ", ".join(player_names))
             player_name = self.guess_player_name()
             if player_name is None:
                 raise MediaPlayerNotFound()
-        if media.url.startswith('rtmp'):
+        if media.url.startswith("rtmp"):
             self._play_rtmp(media, player_name, args=player_args)
         else:
             self._play_default(media, player_name, args=player_args)
@@ -98,7 +101,7 @@ class MediaPlayer:
         Play media.url with the media player.
         """
         # if flag play_proxy...
-        if hasattr(media, '_play_proxy') and media._play_proxy is True:
+        if hasattr(media, "_play_proxy") and media._play_proxy is True:
             # use requests to handle redirect and cookies
             self._play_proxy(media, player_name, args)
             return None
@@ -106,7 +109,7 @@ class MediaPlayer:
         args = shlex.split(player_name)
         args.append(media.url)
 
-        print('Invoking "%s".' % (' '.join(args)))
+        print('Invoking "%s".' % (" ".join(args)))
         subprocess.call(args)
 
     def _play_proxy(self, media, player_name, args):
@@ -118,15 +121,15 @@ class MediaPlayer:
         non-API compliant '_play_proxy' attribute of the 'media' object is defined and is True.
         """
         if args is None:
-            for (binary, stdin_args) in PLAYERS:
+            for binary, stdin_args in PLAYERS:
                 if binary == player_name:
                     args = stdin_args
 
         assert args is not None
 
-        print(':: Play_proxy streaming from %s' % media.url)
-        print(':: to %s %s' % (player_name, args))
-        print(player_name + ' ' + args)
+        print(":: Play_proxy streaming from %s" % media.url)
+        print(":: to %s %s" % (player_name, args))
+        print(player_name + " " + args)
         cmd = shlex.split(player_name) + shlex.split(args)
         proc = Popen(cmd, stdin=PIPE)
 
@@ -151,25 +154,27 @@ class MediaPlayer:
         from the server. The last one is retrieved from the non-standard
         non-API compliant 'swf_player' attribute of the 'media' object.
         """
-        if which('rtmpdump') is None:
+        if which("rtmpdump") is None:
             self.logger.warning('"rtmpdump" binary not found')
             return self._play_default(media, player_name)
         media_url = media.url
         try:
             player_url = media.swf_player
             if media.swf_player:
-                rtmp = 'rtmpdump -r %s --swfVfy %s' % (media_url, player_url)
+                rtmp = "rtmpdump -r %s --swfVfy %s" % (media_url, player_url)
             else:
-                rtmp = 'rtmpdump -r %s' % media_url
+                rtmp = "rtmpdump -r %s" % media_url
         except AttributeError:
-            self.logger.warning('Your media object does not have a "swf_player" attribute. SWF verification will be '
-                                'disabled and may prevent correct media playback.')
+            self.logger.warning(
+                'Your media object does not have a "swf_player" attribute. SWF verification will be '
+                "disabled and may prevent correct media playback."
+            )
             return self._play_default(media, player_name)
 
-        rtmp += ' --quiet'
+        rtmp += " --quiet"
 
         if args is None:
-            for (binary, stdin_args) in PLAYERS:
+            for binary, stdin_args in PLAYERS:
                 if binary == player_name:
                     args = stdin_args
 
@@ -178,8 +183,8 @@ class MediaPlayer:
         player_name = shlex.split(player_name)
         args = shlex.split(args)
 
-        print(':: Streaming from %s' % media_url)
-        print(':: to %s %s' % (player_name, args))
-        print(':: %s' % rtmp)
+        print(":: Streaming from %s" % media_url)
+        print(":: to %s %s" % (player_name, args))
+        print(":: %s" % rtmp)
         p1 = Popen(shlex.split(rtmp), stdout=PIPE)
         Popen(player_name + args, stdin=p1.stdout, stderr=PIPE)

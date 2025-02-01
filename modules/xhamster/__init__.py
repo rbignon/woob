@@ -21,4 +21,4 @@
 from .module import XHamsterModule
 
 
-__all__ = ['XHamsterModule']
+__all__ = ["XHamsterModule"]

@@ -6,8 +6,8 @@ import tokenize
 from pathlib import Path
 
 
-mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))
-Checker = mod['Checker']
+mod = runpy.run_path(str(Path(__file__).with_name("checkerlib.py")))
+Checker = mod["Checker"]
 
 
 class LineLengthChecker(Checker):
@@ -35,19 +35,13 @@ class LineLengthChecker(Checker):
         for token in self.tokens:
             if token.type == tokenize.STRING:
                 if token.start[1] + 1 >= args.line_length:
-                    self.add_error(
-                        "string starts after max line length",
-                        line=token.start[0]
-                    )
+                    self.add_error("string starts after max line length", line=token.start[0])
                 elif token.end[1] >= args.line_length:
                     crossing = True
 
             elif token.type == tokenize.COMMENT:
                 if token.start[1] + 1 >= args.line_length:
-                    self.add_error(
-                        "comment starts after max line length",
-                        line=token.start[0]
-                    )
+                    self.add_error("comment starts after max line length", line=token.start[0])
                 elif token.end[1] >= args.line_length:
                     crossing = True
 
@@ -56,10 +50,7 @@ class LineLengthChecker(Checker):
                     if not offending_token:
                         offending_token = token
 
-                    self.add_error(
-                        "line too long not due to a string",
-                        line=offending_token.start[0]
-                    )
+                    self.add_error("line too long not due to a string", line=offending_token.start[0])
                 crossing = False
                 offending_token = None
 
@@ -71,12 +62,12 @@ class LineLengthChecker(Checker):
         return self.ok
 
 
-parser = mod['parser']
-parser.add_argument('-l', '--line-length', type=int, default=80)
+parser = mod["parser"]
+parser.add_argument("-l", "--line-length", type=int, default=80)
 args = parser.parse_args()
 
 exit_code = 0
-for file in mod['files_to_check'](args):
+for file in mod["files_to_check"](args):
     checker = LineLengthChecker(file)
     checker.parse_noqa()
     if not checker.check_lines():

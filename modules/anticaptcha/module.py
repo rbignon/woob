@@ -20,8 +20,15 @@
 # flake8: compatible
 
 from woob.capabilities.captcha import (
-    CapCaptchaSolver, FuncaptchaJob, GeetestV4Job, HcaptchaJob, ImageCaptchaJob, RecaptchaJob, RecaptchaV2Job,
-    RecaptchaV3Job, TurnstileJob,
+    CapCaptchaSolver,
+    FuncaptchaJob,
+    GeetestV4Job,
+    HcaptchaJob,
+    ImageCaptchaJob,
+    RecaptchaJob,
+    RecaptchaV2Job,
+    RecaptchaV3Job,
+    TurnstileJob,
 )
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword
@@ -29,26 +36,26 @@ from woob.tools.value import ValueBackendPassword
 from .browser import AnticaptchaBrowser
 
 
-__all__ = ['AnticaptchaModule']
+__all__ = ["AnticaptchaModule"]
 
 
 class AnticaptchaModule(Module, CapCaptchaSolver):
-    NAME = 'anticaptcha'
-    DESCRIPTION = 'Anti-Captcha website'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "anticaptcha"
+    DESCRIPTION = "Anti-Captcha website"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('api_key', label='API key', regexp='^[0-9a-f]+$'),
+        ValueBackendPassword("api_key", label="API key", regexp="^[0-9a-f]+$"),
         # TODO support proxy option
     )
 
     BROWSER = AnticaptchaBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['api_key'].get(), None)
+        return self.create_browser(self.config["api_key"].get(), None)
 
     def create_job(self, job):
         if isinstance(job, ImageCaptchaJob):

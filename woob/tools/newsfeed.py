@@ -21,15 +21,15 @@ import datetime
 try:
     import feedparser
 except ImportError:
-    raise ImportError('Please install python3-feedparser')
+    raise ImportError("Please install python3-feedparser")
 
 
-__all__ = ['Entry', 'Newsfeed']
+__all__ = ["Entry", "Newsfeed"]
 
 
 class Entry:
     def __init__(self, entry, rssid_func=None):
-        if hasattr(entry, 'id'):
+        if hasattr(entry, "id"):
             self.id = entry.id
         else:
             self.id = None
@@ -52,9 +52,9 @@ class Entry:
             self.author = None
 
         if "updated_parsed" in entry:
-            self.datetime = datetime.datetime(*entry['updated_parsed'][:7])
+            self.datetime = datetime.datetime(*entry["updated_parsed"][:7])
         elif "published_parsed" in entry:
-            self.datetime = datetime.datetime(*entry['published_parsed'][:7])
+            self.datetime = datetime.datetime(*entry["published_parsed"][:7])
         else:
             self.datetime = None
 
@@ -85,7 +85,7 @@ class Newsfeed:
         self.rssid_func = rssid_func
 
     def iter_entries(self):
-        for entry in self.feed['entries']:
+        for entry in self.feed["entries"]:
             yield Entry(entry, self.rssid_func)
 
     def get_entry(self, id):

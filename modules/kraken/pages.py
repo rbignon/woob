@@ -28,20 +28,20 @@ from woob.tools.capabilities.bank.transactions import sorted_transactions
 
 class ResponsePage(JsonPage):
     def get_error(self):
-        error = self.doc.get('error', [])
+        error = self.doc.get("error", [])
         if len(error):
             return error[0]
 
 
 class BalancePage(LoggedPage, ResponsePage):
     def iter_accounts(self):
-        for currency, value in self.doc['result'].items():
+        for currency, value in self.doc["result"].items():
             account = Account()
             account.id = currency
             account.type = Account.TYPE_CHECKING
             # Remove first symbol of the currency ('Z' or 'X')
             # except for 'DASH' & 'ATOM'
-            if len(currency) == 4 and currency not in ('DASH', 'ATOM'):
+            if len(currency) == 4 and currency not in ("DASH", "ATOM"):
                 account.currency = account.label = currency[1:]
             else:
                 account.currency = account.label = currency
@@ -52,36 +52,36 @@ class BalancePage(LoggedPage, ResponsePage):
 class HistoryPage(LoggedPage, ResponsePage):
     def get_tradehistory(self, currency):
         transactions_list = []
-        all_transactions = (x for x in self.doc['result']['ledger'].values() if currency in x['asset'])
+        all_transactions = (x for x in self.doc["result"]["ledger"].values() if currency in x["asset"])
         for item in all_transactions:
             transaction = Transaction()
             transaction.type = Transaction.TYPE_TRANSFER
-            transaction.id = item['refid']
-            transaction.amount = Decimal(item['amount'])
-            transaction.date = datetime.fromtimestamp(item['time'])
-            transaction.raw = item['type']
-            transaction.commission = Decimal(item['fee'])
+            transaction.id = item["refid"]
+            transaction.amount = Decimal(item["amount"])
+            transaction.date = datetime.fromtimestamp(item["time"])
+            transaction.raw = item["type"]
+            transaction.commission = Decimal(item["fee"])
             transactions_list.append(transaction)
 
-        return(sorted_transactions(transactions_list))
+        return sorted_transactions(transactions_list)
 
 
 class AssetsPage(LoggedPage, ResponsePage):
     def iter_currencies(self):
-        assets = self.doc['result']
+        assets = self.doc["result"]
         for asset in assets:
             currency = Currency()
-            currency.id = self.doc['result'][asset]['altname']
+            currency.id = self.doc["result"][asset]["altname"]
             yield currency
 
 
 class AssetPairsPage(LoggedPage, ResponsePage):
     def get_asset_pairs(self):
-        r = self.doc['result']
+        r = self.doc["result"]
         pair_list = []
         for item in r:
             # cut parasite characters where it's necessary
-            if item.endswith('.d'):
+            if item.endswith(".d"):
                 item = item[:-2]
             pair_list.append(item)
         return pair_list
@@ -91,10 +91,10 @@ class TickerPage(LoggedPage, ResponsePage):
     def get_rate(self):
         rate = Rate()
         rate.datetime = datetime.now()
-        rate.value = Decimal(str(list(self.doc['result'].values())[0]['c'][0]))
+        rate.value = Decimal(str(list(self.doc["result"].values())[0]["c"][0]))
         return rate
 
 
 class TradePage(LoggedPage, JsonPage):
     def get_error(self):
-        return self.doc['error']
+        return self.doc["error"]

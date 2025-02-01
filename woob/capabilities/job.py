@@ -19,38 +19,39 @@ from .base import BaseObject, Capability, StringField
 from .date import DateField
 
 
-__all__ = ['BaseJobAdvert', 'CapJob']
+__all__ = ["BaseJobAdvert", "CapJob"]
 
 
 class BaseJobAdvert(BaseObject):
     """
     Represents a job announce.
     """
-    publication_date = DateField('Date when the announce has been published')
-    society_name =     StringField('Name of the society taht published the announce')
-    place =            StringField('Place where the job take place')
-    job_name =         StringField('Name of the job')
-    title =            StringField('Title of the announce')
-    contract_type =    StringField('Type of the contrat : CDI, CDD')
-    pay =              StringField('Amount of the salary')
-    description =      StringField('Description of the job')
-    formation =        StringField('Required formation')
-    experience =       StringField('Required experience')
+
+    publication_date = DateField("Date when the announce has been published")
+    society_name = StringField("Name of the society taht published the announce")
+    place = StringField("Place where the job take place")
+    job_name = StringField("Name of the job")
+    title = StringField("Title of the announce")
+    contract_type = StringField("Type of the contrat : CDI, CDD")
+    pay = StringField("Amount of the salary")
+    description = StringField("Description of the job")
+    formation = StringField("Required formation")
+    experience = StringField("Required experience")
 
     def __str__(self):
-        message = '\r\n-- Advert --\r\n'
-        message += 'id : %s\r\n' % self.id
-        message += 'url : %s\r\n' % self.url
-        message += 'publication_date : %s\r\n' % self.publication_date
-        message += 'society_name : %s\r\n' % self.society_name
-        message += 'place : %s\r\n' % self.place
-        message += 'job_name : %s\r\n' % self.job_name
-        message += 'title : %s\r\n' % self.title
-        message += 'contract_type : %s\r\n' % self.contract_type
-        message += 'pay : %s\r\n' % self.pay
-        message += 'description : %s\r\n' % self.description
-        message += 'formation : %s\r\n' % self.formation
-        message += 'experience : %s\r\n' % self.experience
+        message = "\r\n-- Advert --\r\n"
+        message += "id : %s\r\n" % self.id
+        message += "url : %s\r\n" % self.url
+        message += "publication_date : %s\r\n" % self.publication_date
+        message += "society_name : %s\r\n" % self.society_name
+        message += "place : %s\r\n" % self.place
+        message += "job_name : %s\r\n" % self.job_name
+        message += "title : %s\r\n" % self.title
+        message += "contract_type : %s\r\n" % self.contract_type
+        message += "pay : %s\r\n" % self.pay
+        message += "description : %s\r\n" % self.description
+        message += "formation : %s\r\n" % self.formation
+        message += "experience : %s\r\n" % self.experience
         return message
 
     @classmethod

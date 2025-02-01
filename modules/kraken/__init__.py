@@ -21,4 +21,4 @@
 from .module import KrakenModule
 
 
-__all__ = ['KrakenModule']
+__all__ = ["KrakenModule"]

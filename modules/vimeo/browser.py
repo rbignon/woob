@@ -24,14 +24,14 @@ from woob.capabilities.file import SearchSort
 from .pages import APIPage, ListPage
 
 
-__all__ = ['VimeoBrowser']
+__all__ = ["VimeoBrowser"]
 
 
 SORT_NAME = {
-    SearchSort.RELEVANCE: 'relevance',
-    SearchSort.RATING: 'popularity',
-    SearchSort.VIEWS: 'popularity',
-    SearchSort.DATE: 'latest',
+    SearchSort.RELEVANCE: "relevance",
+    SearchSort.RATING: "popularity",
+    SearchSort.VIEWS: "popularity",
+    SearchSort.DATE: "latest",
 }
 
 NSFW_FLAGS = {
@@ -41,28 +41,28 @@ NSFW_FLAGS = {
 
 
 class VimeoBrowser(PagesBrowser):
-    BASEURL = 'https://vimeo.com'
+    BASEURL = "https://vimeo.com"
 
-    api_page = URL(r'https://api.vimeo.com/search', APIPage)
-    html_search = URL(r'https://vimeo.com/search/page:(?P<page>\d+)/sort:(?P<sort>\w+)', ListPage)
+    api_page = URL(r"https://api.vimeo.com/search", APIPage)
+    html_search = URL(r"https://vimeo.com/search/page:(?P<page>\d+)/sort:(?P<sort>\w+)", ListPage)
 
     def search_videos(self, pattern, sortby, nsfw):
         sortby = SORT_NAME[sortby]
         nsfw = NSFW_FLAGS[nsfw]
 
-        self.html_search.go(page=1, sort=sortby, params={'q': pattern})
+        self.html_search.go(page=1, sort=sortby, params={"q": pattern})
         jwt = self.page.get_token()
 
         params = {
-            'query': pattern,
-            'filter_type': 'clip',
-            'per_page': 18,
-            'page': 1,
-            'sort': sortby,
-            'fields': 'search_web,mature_hidden_count',
-            'container_fields': 'parameters,effects,search_id,stream_id,mature_hidden_count',
-            'direction': 'desc',
-            'filter_mature': nsfw,
+            "query": pattern,
+            "filter_type": "clip",
+            "per_page": 18,
+            "page": 1,
+            "sort": sortby,
+            "fields": "search_web,mature_hidden_count",
+            "container_fields": "parameters,effects,search_id,stream_id,mature_hidden_count",
+            "direction": "desc",
+            "filter_mature": nsfw,
         }
-        self.api_page.go(params=params, headers={'Authorization': 'jwt %s' % jwt})
+        self.api_page.go(params=params, headers={"Authorization": "jwt %s" % jwt})
         return self.page.iter_videos()

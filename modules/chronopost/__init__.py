@@ -21,4 +21,4 @@
 from .module import ChronopostModule
 
 
-__all__ = ['ChronopostModule']
+__all__ = ["ChronopostModule"]

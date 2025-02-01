@@ -33,17 +33,15 @@ class TorrentsPage(HTMLPage):
         class item(ItemElement):
             klass = Torrent
 
-            obj_id = Regexp(CleanText('./td[2]/div/a[@class="detLink"]/@href'),
-                            r'^/torrent/(\d+)/', '\\1')
-            obj_name = Regexp(CleanText('./td[2]/div/a[@class="detLink"]/@title'),
-                              r'Details for (.*)$', '\\1')
+            obj_id = Regexp(CleanText('./td[2]/div/a[@class="detLink"]/@href'), r"^/torrent/(\d+)/", "\\1")
+            obj_name = Regexp(CleanText('./td[2]/div/a[@class="detLink"]/@title'), r"Details for (.*)$", "\\1")
             obj_magnet = CleanText('./td[2]/a[title="Download this torrent using magnet"]/@href')
-            obj_date = Date(Regexp(CleanText('./td[2]/font'), r'Uploaded ([^,]+),', '\\1'), fuzzy=True)
-            obj_seeders = Type(CleanText('./td[3]'), type=int)
-            obj_leechers = Type(CleanText('./td[4]'), type=int)
+            obj_date = Date(Regexp(CleanText("./td[2]/font"), r"Uploaded ([^,]+),", "\\1"), fuzzy=True)
+            obj_seeders = Type(CleanText("./td[3]"), type=int)
+            obj_leechers = Type(CleanText("./td[4]"), type=int)
 
             def obj_size(self):
-                value, unit = Regexp(CleanText('./td[2]/font'), r'Size ([\d\.]+ [^,]+),', '\\1')(self).split(' ')
+                value, unit = Regexp(CleanText("./td[2]/font"), r"Size ([\d\.]+ [^,]+),", "\\1")(self).split(" ")
                 return get_bytes_size(float(value), unit)
 
 
@@ -53,7 +51,7 @@ class TorrentPage(HTMLPage):
         klass = Torrent
 
         def obj_id(self):
-            return self.page.url.split('/')[-1]
+            return self.page.url.split("/")[-1]
 
         def obj_url(self):
             return NotAvailable
@@ -61,8 +59,12 @@ class TorrentPage(HTMLPage):
         obj_name = CleanText('//div[@id="title"]')
         obj_magnet = CleanText('//div[@class="download"]/a[starts-with(@href, "magnet:")]/@href')
         obj_date = Date(CleanText('//div[@id="details"]//dt[.="Uploaded:"]/following-sibling::dd[1]'))
-        obj_size = Type(Regexp(CleanText('//div[@id="details"]//dt[.="Size:"]/following-sibling::dd[1]'),
-                        r'\((\d+) Bytes\)', '\\1'), type=float)
+        obj_size = Type(
+            Regexp(
+                CleanText('//div[@id="details"]//dt[.="Size:"]/following-sibling::dd[1]'), r"\((\d+) Bytes\)", "\\1"
+            ),
+            type=float,
+        )
         obj_seeders = Type(CleanText('//div[@id="details"]//dt[.="Seeders:"]/following-sibling::dd[1]'), type=int)
         obj_leechers = Type(CleanText('//div[@id="details"]//dt[.="Leechers:"]/following-sibling::dd[1]'), type=int)
         obj_description = RawText('//div[@class="nfo"]/pre', children=True)
@@ -70,5 +72,4 @@ class TorrentPage(HTMLPage):
 
 class FilesPage(HTMLPage):
     def get_files(self):
-        return [" ".join([td.text for td in tr.xpath('./td')])
-                for tr in self.doc.xpath('//table/tr')]
+        return [" ".join([td.text for td in tr.xpath("./td")]) for tr in self.doc.xpath("//table/tr")]

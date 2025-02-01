@@ -27,17 +27,17 @@ from woob.tools.value import Value
 from .browser import TumblrBrowser
 
 
-__all__ = ['TumblrModule']
+__all__ = ["TumblrModule"]
 
 
 class TumblrModule(Module, CapGallery):
-    NAME = 'tumblr'
-    DESCRIPTION = 'images in tumblr blogs'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
-    CONFIG = BackendConfig(Value('url', label='URL of the tumblr', regexp='https?://.+'))
+    NAME = "tumblr"
+    DESCRIPTION = "images in tumblr blogs"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
+    CONFIG = BackendConfig(Value("url", label="URL of the tumblr", regexp="https?://.+"))
 
     BROWSER = TumblrBrowser
 
@@ -45,7 +45,7 @@ class TumblrModule(Module, CapGallery):
         return self.create_browser(self.url())
 
     def url(self):
-        return self.config['url'].get()
+        return self.config["url"].get()
 
     def get_gallery(self, _id):
         title, icon = self.browser.get_title_icon()
@@ -64,13 +64,13 @@ class TumblrModule(Module, CapGallery):
             yield img
 
     def fill_img(self, img, fields):
-        if 'data' in fields:
+        if "data" in fields:
             try:
                 img.data = self.browser.open_img(img.url).content
             except (ClientError, HTTPNotFound):
-                img.data = b''
-        if 'thumbnail' in fields and img.thumbnail:
-            self.fill_img(img.thumbnail, ('data',))
+                img.data = b""
+        if "thumbnail" in fields and img.thumbnail:
+            self.fill_img(img.thumbnail, ("data",))
 
     OBJECTS = {
         BaseImage: fill_img,

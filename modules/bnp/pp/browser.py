@@ -31,8 +31,15 @@ from woob.capabilities.bank import Account, AddRecipientBankError, AddRecipientS
 from woob.capabilities.bill import Document, DocumentTypes, Subscription
 from woob.capabilities.profile import ProfileMissing
 from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidation, AppValidationExpired, BrowserIncorrectPassword, BrowserPasswordExpired,
-    BrowserUnavailable, BrowserUserBanned, NeedInteractiveFor2FA,
+    ActionNeeded,
+    ActionType,
+    AppValidation,
+    AppValidationExpired,
+    BrowserIncorrectPassword,
+    BrowserPasswordExpired,
+    BrowserUnavailable,
+    BrowserUserBanned,
+    NeedInteractiveFor2FA,
 )
 from woob.tools.capabilities.bank.bank_transfer import sorted_transfers
 from woob.tools.capabilities.bank.investments import create_french_liquidity
@@ -42,130 +49,145 @@ from woob.tools.value import Value
 
 from .document_pages import DocumentsPage, RIBPage, TitulairePage
 from .pages import (
-    AccountsIBANPage, AccountsPage, ActivateRecipPage, AddRecipPage, AdvisorPage, BNPKeyboard, CapitalisationPage,
-    ConnectionThresholdPage, FinalizeLoginPage, HistoryPage, InfoClientPage, InitLoginPage, LifeInsurancesDetailPage,
-    LifeInsurancesHistoryPage, LifeInsurancesPage, ListDetailCardPage, ListErrorPage, LoanDetailsPage, LoginPage,
-    MarketHistoryPage, MarketListPage, MarketOrdersPage, MarketPage, MarketSynPage, NatioVieProPage, OTPPage,
-    ProfilePage, RecipientsPage, RegisterTransferPage, StatusPage, TransferAssertionError, TransferInitPage,
-    TransfersPage, UnavailablePage, UselessPage, ValidateTransferPage,
+    AccountsIBANPage,
+    AccountsPage,
+    ActivateRecipPage,
+    AddRecipPage,
+    AdvisorPage,
+    BNPKeyboard,
+    CapitalisationPage,
+    ConnectionThresholdPage,
+    FinalizeLoginPage,
+    HistoryPage,
+    InfoClientPage,
+    InitLoginPage,
+    LifeInsurancesDetailPage,
+    LifeInsurancesHistoryPage,
+    LifeInsurancesPage,
+    ListDetailCardPage,
+    ListErrorPage,
+    LoanDetailsPage,
+    LoginPage,
+    MarketHistoryPage,
+    MarketListPage,
+    MarketOrdersPage,
+    MarketPage,
+    MarketSynPage,
+    NatioVieProPage,
+    OTPPage,
+    ProfilePage,
+    RecipientsPage,
+    RegisterTransferPage,
+    StatusPage,
+    TransferAssertionError,
+    TransferInitPage,
+    TransfersPage,
+    UnavailablePage,
+    UselessPage,
+    ValidateTransferPage,
 )
 
 
-__all__ = ['BNPPartPro', 'HelloBank']
+__all__ = ["BNPPartPro", "HelloBank"]
 
 
 class BNPParibasBrowser(LoginBrowser, StatesMixin):
     TIMEOUT = 30.0
 
-    init_login = URL(r'/auth/login', InitLoginPage)
+    init_login = URL(r"/auth/login", InitLoginPage)
 
-    auth_status = URL(r'/auth/status', StatusPage)
+    auth_status = URL(r"/auth/status", StatusPage)
 
-    info_client = URL(
-        r'/serviceinfosclient-wspl/rpc/InfosClient\?modeAppel=0',
-        InfoClientPage
-    )
+    info_client = URL(r"/serviceinfosclient-wspl/rpc/InfosClient\?modeAppel=0", InfoClientPage)
 
-    login = URL(
-        r'https://connexion-mabanque.bnpparibas/login',
-        LoginPage
-    )
+    login = URL(r"https://connexion-mabanque.bnpparibas/login", LoginPage)
 
-    finalize_login = URL(
-        r'SEEA-pa01/devServer/seeaserver',
-        FinalizeLoginPage
-    )
+    finalize_login = URL(r"SEEA-pa01/devServer/seeaserver", FinalizeLoginPage)
 
     errors_list = URL(
-        r'/rsc/contrib/identification/src/zonespubliables/mabanque-part/fr/identification-fr-part-CAS.json',
-        ListErrorPage
+        r"/rsc/contrib/identification/src/zonespubliables/mabanque-part/fr/identification-fr-part-CAS.json",
+        ListErrorPage,
     )
 
     list_error_page = URL(
-        r'https://mabanque.bnpparibas/rsc/contrib/document/properties/identification-fr-part-V1.json', ListErrorPage
+        r"https://mabanque.bnpparibas/rsc/contrib/document/properties/identification-fr-part-V1.json", ListErrorPage
     )
 
-    useless_page = URL(
-        r'https://.*/fr/secure/comptes-et-contrats',
-        UselessPage
-    )
+    useless_page = URL(r"https://.*/fr/secure/comptes-et-contrats", UselessPage)
 
     otp = URL(
-        r'/fr/espace-prive/authentification-forte-anr',
-        r'https://.*/fr/secure/authentification-forte',  # We can be redirected on other baseurl
-        OTPPage
+        r"/fr/espace-prive/authentification-forte-anr",
+        r"https://.*/fr/secure/authentification-forte",  # We can be redirected on other baseurl
+        OTPPage,
     )
 
     con_threshold = URL(
-        r'https://.*/100-connexion',
-        r'/fr/connexion/mot-de-passe-expire',
-        r'/fr/secure/mot-de-passe-expire',
-        r'/fr/espace-pro/changer-son-mot-de-passe',
-        r'/fr/espace-prive/mot-de-passe-expire',
-        r'/fr/client/mdp-expire',
-        ConnectionThresholdPage
+        r"https://.*/100-connexion",
+        r"/fr/connexion/mot-de-passe-expire",
+        r"/fr/secure/mot-de-passe-expire",
+        r"/fr/espace-pro/changer-son-mot-de-passe",
+        r"/fr/espace-prive/mot-de-passe-expire",
+        r"/fr/client/mdp-expire",
+        ConnectionThresholdPage,
     )
-    unavailable_page = URL(
-        r'/fr/systeme/page-indisponible',
-        UnavailablePage
-    )
-    accounts = URL(r'udc-wspl/rest/getlstcpt', AccountsPage)
-    loan_details = URL(r'caraccomptes-wspl/rpc/(?P<loan_type>.*)', LoanDetailsPage)
-    ibans = URL(r'rib-wspl/rpc/comptes', AccountsIBANPage)
-    history = URL(r'rop2-wspl/rest/releveOp', HistoryPage)
-    history_old = URL(r'rop-wspl/rest/releveOp', HistoryPage)
-    transfer_init = URL(r'virement-wspl/rest/initialisationVirement', TransferInitPage)
-    transfer_history = URL(r'virement-wspl/rest/historiqueVirementIP', TransfersPage)
+    unavailable_page = URL(r"/fr/systeme/page-indisponible", UnavailablePage)
+    accounts = URL(r"udc-wspl/rest/getlstcpt", AccountsPage)
+    loan_details = URL(r"caraccomptes-wspl/rpc/(?P<loan_type>.*)", LoanDetailsPage)
+    ibans = URL(r"rib-wspl/rpc/comptes", AccountsIBANPage)
+    history = URL(r"rop2-wspl/rest/releveOp", HistoryPage)
+    history_old = URL(r"rop-wspl/rest/releveOp", HistoryPage)
+    transfer_init = URL(r"virement-wspl/rest/initialisationVirement", TransferInitPage)
+    transfer_history = URL(r"virement-wspl/rest/historiqueVirementIP", TransfersPage)
 
-    lifeinsurances = URL(r'mefav-wspl/rest/infosContrat', LifeInsurancesPage)
-    lifeinsurances_history = URL(r'mefav-wspl/rest/listMouvements', LifeInsurancesHistoryPage)
-    lifeinsurances_detail = URL(r'mefav-wspl/rest/detailMouvement', LifeInsurancesDetailPage)
+    lifeinsurances = URL(r"mefav-wspl/rest/infosContrat", LifeInsurancesPage)
+    lifeinsurances_history = URL(r"mefav-wspl/rest/listMouvements", LifeInsurancesHistoryPage)
+    lifeinsurances_detail = URL(r"mefav-wspl/rest/detailMouvement", LifeInsurancesDetailPage)
 
-    natio_vie_pro = URL(r'/mefav-wspl/rest/natioViePro', NatioVieProPage)
+    natio_vie_pro = URL(r"/mefav-wspl/rest/natioViePro", NatioVieProPage)
     capitalisation_page = URL(
-        r'https://www.clients.assurance-vie.fr/servlets/helios.cinrj.htmlnav.runtime.FrontServlet',
+        r"https://www.clients.assurance-vie.fr/servlets/helios.cinrj.htmlnav.runtime.FrontServlet",
         CapitalisationPage,
     )
 
-    market_list = URL(r'pe-war/rpc/SAVaccountDetails/get', MarketListPage)
-    market_syn = URL(r'pe-war/rpc/synthesis/get', MarketSynPage)
-    market = URL(r'pe-war/rpc/portfolioDetails/get', MarketPage)
-    market_history = URL(r'/pe-war/rpc/turnOverHistory/get', MarketHistoryPage)
-    market_orders = URL(r'/pe-war/rpc/orderDetailList/get', MarketOrdersPage)
+    market_list = URL(r"pe-war/rpc/SAVaccountDetails/get", MarketListPage)
+    market_syn = URL(r"pe-war/rpc/synthesis/get", MarketSynPage)
+    market = URL(r"pe-war/rpc/portfolioDetails/get", MarketPage)
+    market_history = URL(r"/pe-war/rpc/turnOverHistory/get", MarketHistoryPage)
+    market_orders = URL(r"/pe-war/rpc/orderDetailList/get", MarketOrdersPage)
 
-    recipients = URL(r'/virement-wspl/rest/listerBeneficiaire', RecipientsPage)
-    add_recip = URL(r'/virement-wspl/rest/ajouterBeneficiaire', AddRecipPage)
-    activate_recip_sms = URL(r'/virement-wspl/rest/activerBeneficiaire', ActivateRecipPage)
-    activate_recip_digital_key = URL(r'/virement-wspl/rest/verifierAuthentForte', ActivateRecipPage)
-    request_recip_activation = URL(r'/virement-wspl/rest/demanderCodeActivation', AddRecipPage)
-    validate_transfer = URL(r'/virement-wspl/rest/validationVirementIP', ValidateTransferPage)
-    register_transfer = URL(r'/virement-wspl/rest/enregistrerVirement', RegisterTransferPage)
+    recipients = URL(r"/virement-wspl/rest/listerBeneficiaire", RecipientsPage)
+    add_recip = URL(r"/virement-wspl/rest/ajouterBeneficiaire", AddRecipPage)
+    activate_recip_sms = URL(r"/virement-wspl/rest/activerBeneficiaire", ActivateRecipPage)
+    activate_recip_digital_key = URL(r"/virement-wspl/rest/verifierAuthentForte", ActivateRecipPage)
+    request_recip_activation = URL(r"/virement-wspl/rest/demanderCodeActivation", AddRecipPage)
+    validate_transfer = URL(r"/virement-wspl/rest/validationVirementIP", ValidateTransferPage)
+    register_transfer = URL(r"/virement-wspl/rest/enregistrerVirement", RegisterTransferPage)
 
-    advisor = URL(r'/conseiller-wspl/rest/monConseiller', AdvisorPage)
+    advisor = URL(r"/conseiller-wspl/rest/monConseiller", AdvisorPage)
 
-    titulaire = URL(r'/demat-wspl/rest/listerTitulairesDemat', TitulairePage)
-    document = URL(r'/demat-wspl/rest/listerDocuments', DocumentsPage)
-    document_research = URL(r'/demat-wspl/rest/modificationTitulaireConsultationDemat', DocumentsPage)
-    rib_page = URL(r'/rib-wspl/rpc/restituerRIB', RIBPage)
+    titulaire = URL(r"/demat-wspl/rest/listerTitulairesDemat", TitulairePage)
+    document = URL(r"/demat-wspl/rest/listerDocuments", DocumentsPage)
+    document_research = URL(r"/demat-wspl/rest/modificationTitulaireConsultationDemat", DocumentsPage)
+    rib_page = URL(r"/rib-wspl/rpc/restituerRIB", RIBPage)
 
-    profile = URL(r'/kyc-wspl/rest/informationsClient', ProfilePage)
-    list_detail_card = URL(r'/udcarte-wspl/rest/listeDetailCartes', ListDetailCardPage)
+    profile = URL(r"/kyc-wspl/rest/informationsClient", ProfilePage)
+    list_detail_card = URL(r"/udcarte-wspl/rest/listeDetailCartes", ListDetailCardPage)
 
     DIST_ID = None
 
     STATE_DURATION = 10
 
-    __states__ = ('rcpt_transfer_id',)
+    __states__ = ("rcpt_transfer_id",)
 
     def __init__(self, config, *args, **kwargs):
-        super(BNPParibasBrowser, self).__init__(config['login'].get(), config['password'].get(), *args, **kwargs)
+        super(BNPParibasBrowser, self).__init__(config["login"].get(), config["password"].get(), *args, **kwargs)
         self.accounts_list = None
         self.card_to_transaction_type = {}
-        self.rotating_password = config['rotating_password'].get()
-        self.digital_key = config['digital_key'].get()
+        self.rotating_password = config["rotating_password"].get()
+        self.digital_key = config["digital_key"].get()
         self.rcpt_transfer_id = None
         self.config = config
-        self.is_interactive = bool(config.get('request_information', Value()).get())
+        self.is_interactive = bool(config.get("request_information", Value()).get())
 
     @retry(ConnectionError, tries=3)
     def open(self, *args, **kwargs):
@@ -175,7 +197,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         # We must check each request one by one to check if an otp will be sent after the redirections
         # We can have 14 redirections in a row from what we saw, so we set the range to 20 just in case.
         for _ in range(20):  # To avoid infinite redirections
-            next_location = self.response.headers.get('location')
+            next_location = self.response.headers.get("location")
             if not next_location:
                 break
 
@@ -183,9 +205,8 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             # to open the URL stored in next_location while we're not in
             # interactive to avoid sending him any second factor notification
             if (
-                ('authentification-forte' in next_location or 'authentForte' in next_location)
-                and not self.is_interactive
-            ):
+                "authentification-forte" in next_location or "authentForte" in next_location
+            ) and not self.is_interactive:
                 raise NeedInteractiveFor2FA()
 
             # This is temporary while we handle the new change pass
@@ -195,21 +216,20 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             self.location(next_location, allow_redirects=False)
             if self.otp.is_here():
                 raise ActionNeeded(
-                    locale="fr-FR", message="Veuillez réaliser l'authentification forte depuis votre navigateur.",
+                    locale="fr-FR",
+                    message="Veuillez réaliser l'authentification forte depuis votre navigateur.",
                     action_type=ActionType.PERFORM_MFA,
                 )
 
             # For some errors, bnp doesn't return a 403 but redirect to the login page with an error message
             # Instead of following the redirection, we parse the errorCode and raise exception with accurate error message
-            error_code = QueryValue(None, 'errorCode', default=None).filter(
-                self.response.headers.get('location', '')
-            )
+            error_code = QueryValue(None, "errorCode", default=None).filter(self.response.headers.get("location", ""))
             if error_code:
                 self.list_error_page.go()
                 error_message = self.page.get_error_message(error_code)
                 raise BrowserUnavailable(error_message)
         else:
-            raise AssertionError('Unknown redirection behavior')
+            raise AssertionError("Unknown redirection behavior")
 
     def do_login(self):
         if not (self.username.isdigit() and self.password.isdigit()):
@@ -243,30 +263,30 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
         map_exception_to_messages = {
             BrowserIncorrectPassword: {
-                'authenticationFailure.ClientNotFoundException201',
-                'authenticationFailure.SecretErrorException201',
-                'authenticationFailure.CompletedS1ErrorSecretException18',
-                'authenticationFailure.CompletedS2ErrorSecretException19',
-                'authenticationFailure.FailedLoginException',
-                'authenticationFailure.ZosConnectGetIKPIException',
-                'authenticationFailure.CasInvalidCredentialSecurityAttributeException',
+                "authenticationFailure.ClientNotFoundException201",
+                "authenticationFailure.SecretErrorException201",
+                "authenticationFailure.CompletedS1ErrorSecretException18",
+                "authenticationFailure.CompletedS2ErrorSecretException19",
+                "authenticationFailure.FailedLoginException",
+                "authenticationFailure.ZosConnectGetIKPIException",
+                "authenticationFailure.CasInvalidCredentialSecurityAttributeException",
             },
             BrowserUserBanned: {
-                'authenticationFailure.CurrentS1DelayException3',
-                'authenticationFailure.CurrentS2DelayException4',
-                'authenticationFailure.LockedAccountException202',
+                "authenticationFailure.CurrentS1DelayException3",
+                "authenticationFailure.CurrentS2DelayException4",
+                "authenticationFailure.LockedAccountException202",
             },
             BrowserUnavailable: {
-                'authenticationFailure.TechnicalException900',
-                'authenticationFailure.TechnicalException917',
-                'authenticationFailure.TechnicalException901',
-                'authenticationFailure.TechnicalException902',
-                'authenticationFailure.TechnicalException903',
-                'authenticationFailure.TechnicalException904',
-                'authenticationFailure.TechnicalException905',
+                "authenticationFailure.TechnicalException900",
+                "authenticationFailure.TechnicalException917",
+                "authenticationFailure.TechnicalException901",
+                "authenticationFailure.TechnicalException902",
+                "authenticationFailure.TechnicalException903",
+                "authenticationFailure.TechnicalException904",
+                "authenticationFailure.TechnicalException905",
             },
             BrowserPasswordExpired: {
-                'authenticationFailure.ExpiredTmpPwdException50',
+                "authenticationFailure.ExpiredTmpPwdException50",
             },
         }
 
@@ -274,32 +294,34 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             if message in messages:
                 return exception(error_message)
         else:
-            return AssertionError('Unhandled error at login: %s: %s' % (message, error_message))
+            return AssertionError("Unhandled error at login: %s: %s" % (message, error_message))
 
     def load_state(self, state):
         # reload state only for new recipient feature
-        if state.get('rcpt_transfer_id'):
-            state.pop('url', None)
+        if state.get("rcpt_transfer_id"):
+            state.pop("url", None)
             super(BNPParibasBrowser, self).load_state(state)
 
     def change_pass(self, oldpass, newpass):
-        res = self.open('/mcs-wspl/rpc/grille?accessible=false')
-        url = '/mcs-wspl/rpc/grille/%s' % res.json()['data']['idGrille']
+        res = self.open("/mcs-wspl/rpc/grille?accessible=false")
+        url = "/mcs-wspl/rpc/grille/%s" % res.json()["data"]["idGrille"]
         keyboard = self.open(url)
         vk = BNPKeyboard(self, keyboard)
         data = {}
-        data['codeAppli'] = 'PORTAIL'
-        data['idGrille'] = res.json()['data']['idGrille']
-        data['typeGrille'] = res.json()['data']['typeGrille']
-        data['confirmNouveauPassword'] = vk.get_string_code(newpass)
-        data['nouveauPassword'] = vk.get_string_code(newpass)
-        data['passwordActuel'] = vk.get_string_code(oldpass)
-        response = self.location('/mcs-wspl/rpc/modifiercodesecret', data=data)
-        statut = response.json().get('statut')
-        self.logger.warning('Password change response : statut="%s" - message="%s"', statut, response.json().get('messageIden'))
-        if statut != '1':
+        data["codeAppli"] = "PORTAIL"
+        data["idGrille"] = res.json()["data"]["idGrille"]
+        data["typeGrille"] = res.json()["data"]["typeGrille"]
+        data["confirmNouveauPassword"] = vk.get_string_code(newpass)
+        data["nouveauPassword"] = vk.get_string_code(newpass)
+        data["passwordActuel"] = vk.get_string_code(oldpass)
+        response = self.location("/mcs-wspl/rpc/modifiercodesecret", data=data)
+        statut = response.json().get("statut")
+        self.logger.warning(
+            'Password change response : statut="%s" - message="%s"', statut, response.json().get("messageIden")
+        )
+        if statut != "1":
             return False
-        self.location('/mcs-wspl/rpc/validercodesecret')
+        self.location("/mcs-wspl/rpc/validercodesecret")
         return True
 
     @need_login
@@ -312,7 +334,10 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     def is_loan(self, account):
         return account.type in (
-            Account.TYPE_LOAN, Account.TYPE_MORTGAGE, Account.TYPE_CONSUMER_CREDIT, Account.TYPE_REVOLVING_CREDIT,
+            Account.TYPE_LOAN,
+            Account.TYPE_MORTGAGE,
+            Account.TYPE_CONSUMER_CREDIT,
+            Account.TYPE_REVOLVING_CREDIT,
         )
 
     @need_login
@@ -320,20 +345,15 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         if self.accounts_list is None:
             self.accounts_list = []
             # In case of password renewal, we need to go on ibans twice.
-            self.location(
-                self.ibans.build(),
-                allow_redirects=False
-            )
+            self.location(self.ibans.build(), allow_redirects=False)
             if not self.ibans.is_here():
-                self.self.location(
-                    self.ibans.build(),
-                    allow_redirects=False
-                )
+                self.self.location(self.ibans.build(), allow_redirects=False)
 
             self.check_redirections()
             if self.otp.is_here():
                 raise ActionNeeded(
-                    locale="fr-FR", message="Veuillez réaliser l'authentification forte depuis votre navigateur.",
+                    locale="fr-FR",
+                    message="Veuillez réaliser l'authentification forte depuis votre navigateur.",
                     action_type=ActionType.PERFORM_MFA,
                 )
 
@@ -341,17 +361,19 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             is_pro = {}
             # This page might be unavailable.
             try:
-                self.transfer_init.go(json={'modeBeneficiaire': '0'})
-                ibans.update(self.page.get_ibans_dict('Crediteur'))
-                is_pro = self.page.get_pro_accounts('Crediteur')
+                self.transfer_init.go(json={"modeBeneficiaire": "0"})
+                ibans.update(self.page.get_ibans_dict("Crediteur"))
+                is_pro = self.page.get_pro_accounts("Crediteur")
             except (TransferAssertionError, AttributeError):
                 pass
 
             self.accounts.go()
-            accounts = list(self.page.iter_accounts(
-                ibans=ibans,
-                is_pro=is_pro,
-            ))
+            accounts = list(
+                self.page.iter_accounts(
+                    ibans=ibans,
+                    is_pro=is_pro,
+                )
+            )
 
             # 'Comptes Titres' retrieval is broken
             try:
@@ -366,31 +388,33 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 if self.is_loan(account):
                     account = Loan.from_dict(account.to_dict())
                     if account.type in (Account.TYPE_MORTGAGE, Account.TYPE_CONSUMER_CREDIT):
-                        self.loan_details.go(data={'iban': account.id}, loan_type='creditPret')
+                        self.loan_details.go(data={"iban": account.id}, loan_type="creditPret")
                         self.page.fill_loan_details(obj=account)
 
                     elif account.type == Account.TYPE_REVOLVING_CREDIT:
-                        self.loan_details.go(data={'iban': account.id}, loan_type='creditConsoProvisio')
+                        self.loan_details.go(data={"iban": account.id}, loan_type="creditConsoProvisio")
                         self.page.fill_revolving_details(obj=account)
 
                     elif account.type == Account.TYPE_LOAN:
-                        self.loan_details.go(data={'iban': account.id}, loan_type='creditPretPersoPro')
+                        self.loan_details.go(data={"iban": account.id}, loan_type="creditPretPersoPro")
                         self.page.fill_loan_details(obj=account)
 
                 for market_acc in market_accounts:
-                    if all((
-                        market_acc['securityAccountNumber'].endswith(account.number[-4:]),
-                        account.type in (Account.TYPE_MARKET, Account.TYPE_PEA),
-                        account.label == market_acc['securityAccountName'],
-                        not account.iban,
-                    )):
+                    if all(
+                        (
+                            market_acc["securityAccountNumber"].endswith(account.number[-4:]),
+                            account.type in (Account.TYPE_MARKET, Account.TYPE_PEA),
+                            account.label == market_acc["securityAccountName"],
+                            not account.iban,
+                        )
+                    ):
                         if account.id in checked_accounts:
                             # in this case, we have identified two accounts for the same CompteTitre
                             raise DataError('we have two market accounts mapped to a same "CompteTitre" dictionary')
 
                         checked_accounts.add(account.id)
-                        account.balance = market_acc.get('valorisation', account.balance)
-                        account.valuation_diff = market_acc['profitLoss']
+                        account.balance = market_acc.get("valorisation", account.balance)
+                        account.valuation_diff = market_acc["profitLoss"]
                         break
                 self.accounts_list.append(account)
 
@@ -400,7 +424,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
             # It seems that natio_vie_pro can return an error message and from that we are not able to make
             # requests on the natio insurance life space.
-            if message != 'OK':
+            if message != "OK":
                 # "Probleme lors du cryptage des DAT" is the main error returned
                 # To keep under watch if there is changes about this spaces
                 self.logger.warning("Natio life insurance space is unavailable : " + message)
@@ -415,7 +439,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 except (ServerError, ConnectionError):
                     self.logger.warning("An Internal Server Error occurred")
                 except HTTPNotFound:
-                    self.logger.warning('capitalisation_page not found')
+                    self.logger.warning("capitalisation_page not found")
                     pass
                 else:
                     if self.capitalisation_page.is_here() and self.page.has_contracts():
@@ -433,9 +457,9 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     @need_login
     def iter_history(self, account, coming=False):
         # The accounts from the "Assurances Vie" space have no available history:
-        if hasattr(account, '_details'):
+        if hasattr(account, "_details"):
             return []
-        if account.type == Account.TYPE_PEA and account.label.endswith('Espèces'):
+        if account.type == Account.TYPE_PEA and account.label.endswith("Espèces"):
             return []
         if account.type == Account.TYPE_LIFE_INSURANCE:
             return self.iter_lifeinsurance_history(account, coming)
@@ -448,10 +472,10 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 self.logger.warning("An Internal Server Error occurred")
                 return []
             for market_acc in self.page.get_list():
-                if account.number[-4:] == market_acc['securityAccountNumber'][-4:]:
+                if account.number[-4:] == market_acc["securityAccountNumber"][-4:]:
                     self.page = self.market_history.go(
                         json={
-                            "securityAccountNumber": market_acc['securityAccountNumber'],
+                            "securityAccountNumber": market_acc["securityAccountNumber"],
                         }
                     )
                     return self.page.iter_history()
@@ -464,15 +488,15 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 "ibanCrypte": account.id,
                 "pastOrPending": 1,
                 "triAV": 0,
-                "startDate": (datetime.now() - relativedelta(years=1)).strftime('%d%m%Y'),
-                "endDate": datetime.now().strftime('%d%m%Y'),
+                "startDate": (datetime.now() - relativedelta(years=1)).strftime("%d%m%Y"),
+                "endDate": datetime.now().strftime("%d%m%Y"),
             }
             try:
                 self.history.go(json=data)
             except BrowserUnavailable:
                 # old url is still used for certain connections bu we don't know which one is,
                 # so the same HistoryPage is attained by the old url in another URL object
-                data['startDate'] = (datetime.now() - relativedelta(years=3)).strftime('%d%m%Y')
+                data["startDate"] = (datetime.now() - relativedelta(years=3)).strftime("%d%m%Y")
                 # old url authorizes up to 3 years of history
                 self.history_old.go(data=data)
 
@@ -483,17 +507,19 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_lifeinsurance_history(self, account, coming=False):
-        self.lifeinsurances_history.go(json={
-            "ibanCrypte": account.id,
-        })
+        self.lifeinsurances_history.go(
+            json={
+                "ibanCrypte": account.id,
+            }
+        )
 
         for tr in self.page.iter_history(coming):
             page = self.lifeinsurances_detail.go(
                 json={
                     "ibanCrypte": account.id,
-                    "idMouvement": tr._op.get('idMouvement'),
-                    "ordreMouvement": tr._op.get('ordreMouvement'),
-                    "codeTypeMouvement": tr._op.get('codeTypeMouvement'),
+                    "idMouvement": tr._op.get("idMouvement"),
+                    "ordreMouvement": tr._op.get("ordreMouvement"),
+                    "codeTypeMouvement": tr._op.get("codeTypeMouvement"),
                 }
             )
             tr.investments = list(page.iter_investments())
@@ -505,7 +531,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_investment(self, account):
-        if account.type == Account.TYPE_PEA and 'espèces' in account.label.lower():
+        if account.type == Account.TYPE_PEA and "espèces" in account.label.lower():
             return [create_french_liquidity(account.balance)]
 
         # Life insurances and PERP may be scraped from the API or from the "Assurance Vie" space,
@@ -516,7 +542,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             account.TYPE_CAPITALISATION,
             account.TYPE_PER,
         ):
-            if hasattr(account, '_details'):
+            if hasattr(account, "_details"):
                 # Going to the "Assurances Vie" page
                 natiovie_params = self.natio_vie_pro.go().get_params()
                 self.capitalisation_page.go(params=natiovie_params)
@@ -527,9 +553,11 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             else:
                 # No capitalisation contract has yet been found in the API:
                 assert account.type != account.TYPE_CAPITALISATION
-                self.lifeinsurances.go(json={
-                    "ibanCrypte": account.id,
-                })
+                self.lifeinsurances.go(
+                    json={
+                        "ibanCrypte": account.id,
+                    }
+                )
                 return self.page.iter_investments()
 
         elif account.type in (account.TYPE_MARKET, account.TYPE_PEA):
@@ -539,12 +567,14 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 self.logger.warning("An Internal Server Error occurred")
                 return []
             for market_acc in self.page.get_list():
-                if account.number[-4:] == market_acc['securityAccountNumber'][-4:] and not account.iban:
+                if account.number[-4:] == market_acc["securityAccountNumber"][-4:] and not account.iban:
                     try:
                         # Sometimes generates an Internal Server Error ...
-                        self.market.go(json={
-                            "securityAccountNumber": market_acc['securityAccountNumber'],
-                        })
+                        self.market.go(
+                            json={
+                                "securityAccountNumber": market_acc["securityAccountNumber"],
+                            }
+                        )
                     except ServerError:
                         self.logger.warning("An Internal Server Error occurred")
                         break
@@ -554,31 +584,28 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_market_orders(self, account):
-        if (
-            account.type not in (Account.TYPE_MARKET, account.TYPE_PEA)
-            or 'espèces' in account.label.lower()
-        ):
+        if account.type not in (Account.TYPE_MARKET, account.TYPE_PEA) or "espèces" in account.label.lower():
             return []
 
         try:
             self.market_list.go(json={})
         except ServerError:
-            self.logger.warning('An Internal Server Error occurred')
+            self.logger.warning("An Internal Server Error occurred")
             return []
 
         for market_acc in self.page.get_list():
-            if account.number[-4:] == market_acc['securityAccountNumber'][-4:] and not account.iban:
+            if account.number[-4:] == market_acc["securityAccountNumber"][-4:] and not account.iban:
                 json = {
-                    'securityAccountNumber': market_acc['securityAccountNumber'],
-                    'filterCriteria': [],
-                    'sortColumn': 'orderDateTransmission',
-                    'sortType': 'desc',
+                    "securityAccountNumber": market_acc["securityAccountNumber"],
+                    "filterCriteria": [],
+                    "sortColumn": "orderDateTransmission",
+                    "sortType": "desc",
                 }
                 try:
                     # Sometimes generates an Internal Server Error ...
                     self.market_orders.go(json=json)
                 except ServerError:
-                    self.logger.warning('An Internal Server Error occurred')
+                    self.logger.warning("An Internal Server Error occurred")
                     break
                 return self.page.iter_market_orders()
 
@@ -588,11 +615,11 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     @need_login
     def iter_recipients(self, origin_account_id):
         try:
-            if (
-                origin_account_id not in self.transfer_init.go(json={
-                    'modeBeneficiaire': '0',
-                }).get_ibans_dict('Debiteur')
-            ):
+            if origin_account_id not in self.transfer_init.go(
+                json={
+                    "modeBeneficiaire": "0",
+                }
+            ).get_ibans_dict("Debiteur"):
                 raise NotImplementedError()
         except TransferAssertionError:
             return
@@ -605,28 +632,28 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 yield recipient
 
         if self.page.can_transfer_to_recipients(origin_account_id):
-            for recipient in self.recipients.go(json={'type': 'TOUS'}).iter_recipients():
+            for recipient in self.recipients.go(json={"type": "TOUS"}).iter_recipients():
                 if recipient.iban not in seen:
                     seen.add(recipient.iban)
                     yield recipient
 
     @need_login
     def new_recipient(self, recipient, **params):
-        if 'code' in params:
+        if "code" in params:
             # for sms authentication
             return self.send_code(recipient, **params)
 
         # prepare commun data for all authentication method
         data = {
-            'adresseBeneficiaire': '',
-            'iban': recipient.iban,
-            'libelleBeneficiaire': recipient.label,
-            'notification': True,
-            'typeBeneficiaire': '',
+            "adresseBeneficiaire": "",
+            "iban": recipient.iban,
+            "libelleBeneficiaire": recipient.label,
+            "notification": True,
+            "typeBeneficiaire": "",
         }
 
         # provisional
-        if self.digital_key and 'resume' in params:
+        if self.digital_key and "resume" in params:
             return self.new_recipient_digital_key(recipient, data)
 
         # Reset any existing rcpt_transfer_id when adding a new recipient
@@ -635,18 +662,18 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         # need to be on recipient page send sms or mobile notification
         # needed to get the phone number, enabling the possibility to send sms.
         # all users with validated phone number can receive sms code
-        self.recipients.go(json={'type': 'TOUS'})
+        self.recipients.go(json={"type": "TOUS"})
 
-        assert self.recipients.is_here(), 'Not on the expected recipient page'
+        assert self.recipients.is_here(), "Not on the expected recipient page"
 
         # check type of recipient activation
-        type_activation = 'sms'
+        type_activation = "sms"
 
         # provisional
         if self.digital_key:
             if self.page.has_digital_key():
                 # force users with digital key activated to use digital key authentication
-                type_activation = 'digital_key'
+                type_activation = "digital_key"
 
         existing_rcpt = None
         for rcpt in self.page.iter_recipients():
@@ -656,7 +683,7 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
         if existing_rcpt:
             # There was already an existing recipient with this iban
-            if existing_rcpt._web_state != 'En attente':
+            if existing_rcpt._web_state != "En attente":
                 raise AddRecipientBankError(message="Un bénéficiaire avec le même iban est déjà présent")
 
             if existing_rcpt.label != recipient.label:
@@ -665,32 +692,32 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
                 )
 
             activation_data = {
-                'typeEnvoi': 'SMS',
-                'notification': True,
-                'idBeneficiaire': existing_rcpt._raw_id,
+                "typeEnvoi": "SMS",
+                "notification": True,
+                "idBeneficiaire": existing_rcpt._raw_id,
             }
 
-        if type_activation == 'sms':
+        if type_activation == "sms":
             if existing_rcpt:
                 # Send activation request for an existing recipient
                 self.request_recip_activation.go(json=activation_data)
             else:
                 # post recipient data sending sms with same request
-                data['typeEnvoi'] = 'SMS'
+                data["typeEnvoi"] = "SMS"
                 self.add_recip.go(json=data)
             recipient = self.page.get_recipient(recipient)
             self.rcpt_transfer_id = recipient._raw_id
 
-            raise AddRecipientStep(recipient, Value('code', label='Saisissez le code reçu par SMS.'))
+            raise AddRecipientStep(recipient, Value("code", label="Saisissez le code reçu par SMS."))
 
-        if type_activation == 'digital_key':
+        if type_activation == "digital_key":
             # recipient validated with digital key are immediatly available
             recipient.enabled_at = datetime.today()
             if existing_rcpt:
                 self.rcpt_transfer_id = existing_rcpt._raw_id
             raise AppValidation(
                 resource=recipient,
-                message='Veuillez valider le bénéficiaire sur votre application mobile bancaire.',
+                message="Veuillez valider le bénéficiaire sur votre application mobile bancaire.",
             )
 
         raise AssertionError('Unhandled activation type: "%s"' % type_activation)
@@ -702,9 +729,9 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
             raise AddRecipientBankError(message="Aucun code SMS n'est attendu. Le code est peut être expiré.")
 
         data = {
-            'idBeneficiaire': self.rcpt_transfer_id,
-            'typeActivation': 1,
-            'codeActivation': params['code'],
+            "idBeneficiaire": self.rcpt_transfer_id,
+            "typeActivation": 1,
+            "codeActivation": params["code"],
         }
         self.activate_recip_sms.go(json=data)
         # Clear the rcpt_transfer_id only if the activation was successful
@@ -717,23 +744,23 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
         if self.rcpt_transfer_id:
             # Activate an already existing recipient:
             activation_data = {
-                'typeEnvoi': 'AF',
-                'notification': True,
-                'idBeneficiaire': self.rcpt_transfer_id,
+                "typeEnvoi": "AF",
+                "notification": True,
+                "idBeneficiaire": self.rcpt_transfer_id,
             }
             self.request_recip_activation.go(json=activation_data)
         else:
             # Post recipient data, sending app notification with same request
-            data['typeEnvoi'] = 'AF'
+            data["typeEnvoi"] = "AF"
             self.add_recip.go(json=data)
         recipient = self.page.get_recipient(recipient)
 
         # prepare data for polling
         assert recipient._id_transaction
         polling_data = {
-            'idBeneficiaire': recipient._raw_id,
-            'typeActivation': 2,
-            'idTransaction': recipient._id_transaction,
+            "idBeneficiaire": recipient._raw_id,
+            "typeActivation": 2,
+            "idTransaction": recipient._id_transaction,
         }
 
         # float(second), 5 min like bnp website
@@ -755,36 +782,36 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
     @need_login
     def prepare_transfer(self, account, recipient, amount, reason, exec_date):
         data = {}
-        data['devise'] = account.currency
-        data['motif'] = reason
-        data['dateExecution'] = exec_date.strftime('%d-%m-%Y')
-        data['compteDebiteur'] = account.id
-        data['montant'] = str(amount)
-        data['typeVirement'] = 'SEPA'
-        if recipient.category == u'Externe':
-            data['idBeneficiaire'] = recipient._raw_id
+        data["devise"] = account.currency
+        data["motif"] = reason
+        data["dateExecution"] = exec_date.strftime("%d-%m-%Y")
+        data["compteDebiteur"] = account.id
+        data["montant"] = str(amount)
+        data["typeVirement"] = "SEPA"
+        if recipient.category == "Externe":
+            data["idBeneficiaire"] = recipient._raw_id
         else:
-            data['compteCrediteur'] = recipient.id
+            data["compteCrediteur"] = recipient.id
         return data
 
     @need_login
     def prepare_transfer_execution(self, transfer):
-        assert hasattr(transfer, '_type_operation'), 'Transfer obj attribute _type_operation is missing'
-        assert hasattr(transfer, '_repartition_frais'), 'Transfer obj attribute _repartition_frais is missing'
+        assert hasattr(transfer, "_type_operation"), "Transfer obj attribute _type_operation is missing"
+        assert hasattr(transfer, "_repartition_frais"), "Transfer obj attribute _repartition_frais is missing"
 
         data = {
-            'emailBeneficiaire': '',
-            'mode': '2',
-            'notification': True,
-            'referenceVirement': transfer.id,
-            'typeOperation': transfer._type_operation,
-            'typeRepartitionFrais': transfer._repartition_frais,
+            "emailBeneficiaire": "",
+            "mode": "2",
+            "notification": True,
+            "referenceVirement": transfer.id,
+            "typeOperation": transfer._type_operation,
+            "typeRepartitionFrais": transfer._repartition_frais,
         }
         return data
 
     @need_login
     def init_transfer(self, account, recipient, amount, reason, exec_date):
-        if recipient._web_state == 'En attente':
+        if recipient._web_state == "En attente":
             raise TransferInvalidRecipient(message="Le bénéficiaire sélectionné n'est pas activé")
 
         data = self.prepare_transfer(account, recipient, amount, reason, exec_date)
@@ -830,12 +857,12 @@ class BNPParibasBrowser(LoginBrowser, StatesMixin):
 
     @need_login
     def iter_emitters(self):
-        self.transfer_init.go(json={'modeBeneficiaire': '0'})
+        self.transfer_init.go(json={"modeBeneficiaire": "0"})
         return self.page.iter_emitters()
 
     @need_login
     def iter_transfers(self, account):
-        self.transfer_history.go(method='POST')
+        self.transfer_history.go(method="POST")
         for tr in sorted_transfers(self.page.iter_transfers()):
             if not account or account.iban == tr.account_iban:
                 yield tr
@@ -845,19 +872,19 @@ class DocumentsBNPParibasBrowser(BNPParibasBrowser):
     def _fetch_rib_document(self, subscription):
         self.rib_page.go(
             params={
-                'contractId': subscription.id,
-                'i18nSiteType': 'part',  # site type value doesn't seem to matter as long as it's present
-                'i18nLang': 'fr',
-                'i18nVersion': 'V1',
+                "contractId": subscription.id,
+                "i18nSiteType": "part",  # site type value doesn't seem to matter as long as it's present
+                "i18nLang": "fr",
+                "i18nVersion": "V1",
             },
         )
         if self.rib_page.is_here() and self.page.is_rib_available():
             d = Document()
-            d.id = subscription.id + '_RIB'
+            d.id = subscription.id + "_RIB"
             d.url = self.page.url
             d.type = DocumentTypes.RIB
-            d.format = 'pdf'
-            d.label = 'RIB'
+            d.format = "pdf"
+            d.label = "RIB"
             return d
 
     @need_login
@@ -879,7 +906,7 @@ class DocumentsBNPParibasBrowser(BNPParibasBrowser):
             raise BrowserUnavailable()
 
         data = {
-            'numCompte': subscription._number,
+            "numCompte": subscription._number,
         }
         self.document_research.go(json=data)
         if self.page.has_error():
@@ -887,9 +914,7 @@ class DocumentsBNPParibasBrowser(BNPParibasBrowser):
 
         iter_documents_functions = [self.page.iter_documents_pro, self.page.iter_documents]
         for iter_documents in iter_documents_functions:
-            for doc in iter_documents(
-                sub_id=subscription.id, sub_number=subscription._number, baseurl=self.BASEURL
-            ):
+            for doc in iter_documents(sub_id=subscription.id, sub_number=subscription._number, baseurl=self.BASEURL):
                 if doc.id not in id_docs:
                     docs.append(doc)
                     id_docs.append(doc.id)
@@ -901,11 +926,11 @@ class DocumentsBNPParibasBrowser(BNPParibasBrowser):
 
 
 class BNPPartPro(DocumentsBNPParibasBrowser):
-    BASEURL_TEMPLATE = r'https://%s.bnpparibas/'
-    BASEURL = BASEURL_TEMPLATE % 'mabanque'
+    BASEURL_TEMPLATE = r"https://%s.bnpparibas/"
+    BASEURL = BASEURL_TEMPLATE % "mabanque"
     # BNPNetEntrepros is supposed to be for pro accounts, but it seems that BNPNetParticulier
     # works for pros as well, on the other side BNPNetEntrepros doesn't work for part
-    DIST_ID = 'BNPNetParticulier'
+    DIST_ID = "BNPNetParticulier"
 
     def __init__(self, config=None, *args, **kwargs):
         self.config = config
@@ -916,18 +941,12 @@ class BNPPartPro(DocumentsBNPParibasBrowser):
 
 
 class HelloBank(DocumentsBNPParibasBrowser):
-    BASEURL = 'https://www.hellobank.fr/'
-    DIST_ID = 'HelloBank'
+    BASEURL = "https://www.hellobank.fr/"
+    DIST_ID = "HelloBank"
 
-    init_login = URL(
-        r'/auth/login',
-        InitLoginPage
-    )
-    login = URL(
-        r'https://espace-client.hellobank.fr/login',
-        LoginPage
-    )
+    init_login = URL(r"/auth/login", InitLoginPage)
+    login = URL(r"https://espace-client.hellobank.fr/login", LoginPage)
     errors_list = URL(
-        r'/rsc/contrib/identification/src/zonespubliables/hellobank/fr/identification-fr-hellobank-CAS.json',
-        ListErrorPage
+        r"/rsc/contrib/identification/src/zonespubliables/hellobank/fr/identification-fr-hellobank-CAS.json",
+        ListErrorPage,
     )

@@ -19,4 +19,4 @@
 from .weather import AppWeather
 
 
-__all__ = ['AppWeather']
+__all__ = ["AppWeather"]

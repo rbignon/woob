@@ -32,21 +32,21 @@ class VideoPage(HTMLPage):
     class get_video(ItemElement):
         klass = BaseVideo
 
-        obj_id = Env('id')
-        obj_title = CleanText('//title')
+        obj_id = Env("id")
+        obj_title = CleanText("//title")
         obj_nsfw = True
-        obj_ext = u'flv'
+        obj_ext = "flv"
 
         def obj_url(self):
-            real_id = int(self.env['id'].split('-')[-1])
-            response = self.page.browser.open('https://www.youjizz.com/videos/embed/%s' % real_id)
+            real_id = int(self.env["id"].split("-")[-1])
+            response = self.page.browser.open("https://www.youjizz.com/videos/embed/%s" % real_id)
             data = response.text
 
-            video_file_urls = re.findall(r'"((?:https?:)?//[^",]+\.(?:flv|mp4)(?:\?[^"]*)?)"', data.replace('\\', ''))
+            video_file_urls = re.findall(r'"((?:https?:)?//[^",]+\.(?:flv|mp4)(?:\?[^"]*)?)"', data.replace("\\", ""))
             if len(video_file_urls) == 0:
-                raise ValueError('Video URL not found')
+                raise ValueError("Video URL not found")
 
             url = to_unicode(video_file_urls[-1])
-            if url.startswith('//'):
-                url = u'https:' + url
+            if url.startswith("//"):
+                url = "https:" + url
             return url

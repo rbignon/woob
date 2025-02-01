@@ -23,10 +23,10 @@ from woob.tools.test import BackendTest
 
 
 class ImgurTest(BackendTest):
-    MODULE = 'imgur'
+    MODULE = "imgur"
 
     # small gif file
-    DATA = 'R0lGODdhAQABAPAAAP///wAAACwAAAAAAQABAAACAkQBADs=\n'
+    DATA = "R0lGODdhAQABAPAAAP///wAAACwAAAAAAQABAAACAkQBADs=\n"
 
     def test_post(self):
         assert self.backend.can_post(self.DATA, max_age=0)
@@ -42,10 +42,10 @@ class ImgurTest(BackendTest):
         assert b64decode(got.contents) == b64decode(self.DATA)
 
     def test_search(self):
-        it = iter(self.backend.search_image('lol'))
+        it = iter(self.backend.search_image("lol"))
         img = next(it)
         assert img
 
-        it = iter(self.backend.search_galleries('lol'))
+        it = iter(self.backend.search_galleries("lol"))
         gall = next(it)
         assert gall

@@ -19,16 +19,17 @@
 from .base import BaseObject, Capability, StringField
 
 
-__all__ = ['SongLyrics', 'CapLyrics']
+__all__ = ["SongLyrics", "CapLyrics"]
 
 
 class SongLyrics(BaseObject):
     """
     Song lyrics object.
     """
-    title = StringField('Title of the song')
-    artist = StringField('Artist of the song')
-    content = StringField('Lyrics of the song')
+
+    title = StringField("Title of the song")
+    artist = StringField("Artist of the song")
+    content = StringField("Lyrics of the song")
 
 
 class CapLyrics(Capability):

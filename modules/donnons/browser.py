@@ -26,12 +26,12 @@ from .pages import AdsThreadsPage, LoginPage, ThreadNextPage, ThreadPage, Thread
 
 
 class DonnonsBrowser(LoginBrowser):
-    BASEURL = 'https://donnons.org/'
+    BASEURL = "https://donnons.org/"
 
-    login = URL(r'/connexion', LoginPage)
-    ads_threads_list = URL(r'/messagerie/annonces$', AdsThreadsPage)
-    threads_list = URL(r'/messagerie/annonces/(?P<ad>\d+)\?order=default&page=1', ThreadsPage)
-    thread = URL(r'/messagerie/annonces/(?P<ad>\d+)/(?P<thread>\d+)\?order=default&page=1', ThreadPage)
+    login = URL(r"/connexion", LoginPage)
+    ads_threads_list = URL(r"/messagerie/annonces$", AdsThreadsPage)
+    threads_list = URL(r"/messagerie/annonces/(?P<ad>\d+)\?order=default&page=1", ThreadsPage)
+    thread = URL(r"/messagerie/annonces/(?P<ad>\d+)/(?P<thread>\d+)\?order=default&page=1", ThreadPage)
     thread_next = URL(r"/messagerie/ajaxLoadMessages", ThreadNextPage)
 
     def __init__(self, *args, **kwargs):
@@ -74,7 +74,7 @@ class DonnonsBrowser(LoginBrowser):
                     "conv_id": thread_id,
                     "page": page_no,
                 },
-                headers={"X-Requested-With": "XMLHttpRequest"}
+                headers={"X-Requested-With": "XMLHttpRequest"},
             )
 
             new_messages = list(self.page.iter_messages())

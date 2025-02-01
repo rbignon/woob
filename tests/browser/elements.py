@@ -28,28 +28,27 @@ from woob.tools.json import json
 class TestElements(TestCase):
     def test_iterate_over_dict_elements(self):
         class MyObject(BaseObject):
-            label = StringField('Label of the object')
+            label = StringField("Label of the object")
 
         class MyResponse:
             pass
 
         response = MyResponse()
-        response.url = 'https://example.org/objects'
+        response.url = "https://example.org/objects"
         response.headers = {
-            'content-type': 'application/json; charset=utf-8',
+            "content-type": "application/json; charset=utf-8",
         }
-        response.text = json.dumps({
-            'objects': {
-                '1': {
-                    'id': '1',
-                    'label': 'hello'
+        response.text = json.dumps(
+            {
+                "objects": {
+                    "1": {"id": "1", "label": "hello"},
+                    "2": {
+                        "id": "2",
+                        "label": "world",
+                    },
                 },
-                '2': {
-                    'id': '2',
-                    'label': 'world',
-                },
-            },
-        })
+            }
+        )
 
         class MyBrowser:
             pass
@@ -60,54 +59,57 @@ class TestElements(TestCase):
         class MyPage(JsonPage):
             @method
             class iter_objects(DictElement):
-                item_xpath = 'objects'
+                item_xpath = "objects"
 
                 class item(ItemElement):
                     klass = MyObject
 
-                    obj_id = Dict('id')
-                    obj_label = CleanText(Dict('label'))
+                    obj_id = Dict("id")
+                    obj_label = CleanText(Dict("label"))
 
         page = MyPage(browser, response)
         objects = list(page.iter_objects())
         assert len(objects) == 2
-        assert objects[0].id == '1'
-        assert objects[0].label == 'hello'
-        assert objects[1].id == '2'
-        assert objects[1].label == 'world'
+        assert objects[0].id == "1"
+        assert objects[0].label == "hello"
+        assert objects[1].id == "2"
+        assert objects[1].label == "world"
 
     def test_use_filter_as_item_condition(self):
         """Use a filter as the 'condition' property of list and item elements."""
+
         class MyObject(BaseObject):
-            label = StringField('Label of the object')
+            label = StringField("Label of the object")
 
         class MyResponse:
             pass
 
         response = MyResponse()
-        response.url = 'https://example.org/objects'
+        response.url = "https://example.org/objects"
         response.headers = {
-            'content-type': 'application/json; charset=utf-8',
+            "content-type": "application/json; charset=utf-8",
         }
-        response.text = json.dumps({
-            'objects': {
-                '1': {
-                    'id': '1',
-                    'label': 'hello',
-                    'should_be_even': 2,
+        response.text = json.dumps(
+            {
+                "objects": {
+                    "1": {
+                        "id": "1",
+                        "label": "hello",
+                        "should_be_even": 2,
+                    },
+                    "2": {
+                        "id": "2",
+                        "label": "world",
+                        "should_be_even": 3,
+                    },
+                    "3": {
+                        "id": "3",
+                        "label": "universe",
+                        "should_be_even": 4,
+                    },
                 },
-                '2': {
-                    'id': '2',
-                    'label': 'world',
-                    'should_be_even': 3,
-                },
-                '3': {
-                    'id': '3',
-                    'label': 'universe',
-                    'should_be_even': 4,
-                },
-            },
-        })
+            }
+        )
 
         class MyBrowser:
             pass
@@ -120,36 +122,36 @@ class TestElements(TestCase):
 
             condition = Eval(
                 lambda x: x % 2 == 0,
-                Dict('should_be_even'),
+                Dict("should_be_even"),
             )
 
-            obj_id = Dict('id')
-            obj_label = CleanText(Dict('label'))
+            obj_id = Dict("id")
+            obj_label = CleanText(Dict("label"))
 
         class MyPage(JsonPage):
             @method
             class iter_objects(DictElement):
-                item_xpath = 'objects'
+                item_xpath = "objects"
 
-                condition = Dict('objects', default=None)
+                condition = Dict("objects", default=None)
 
                 item = MyItemElement
 
             @method
             class iter_other_objects(DictElement):
-                item_xpath = 'other_objects'
+                item_xpath = "other_objects"
 
-                condition = Dict('other_objects', default=None)
+                condition = Dict("other_objects", default=None)
 
                 item = MyItemElement
 
         page = MyPage(browser, response)
         objects = list(page.iter_objects())
         assert len(objects) == 2
-        assert objects[0].id == '1'
-        assert objects[0].label == 'hello'
-        assert objects[1].id == '3'
-        assert objects[1].label == 'universe'
+        assert objects[0].id == "1"
+        assert objects[0].label == "hello"
+        assert objects[1].id == "3"
+        assert objects[1].label == "universe"
 
         objects = list(page.iter_other_objects())
         assert len(objects) == 0

@@ -25,14 +25,14 @@ from packaging.requirements import InvalidRequirement, Requirement
 from packaging.specifiers import SpecifierSet
 
 
-__all__ = ['parse_requirements']
+__all__ = ["parse_requirements"]
 
 
 def parse_requirements(path: str | Path) -> dict[str, SpecifierSet]:
     requirements = OrderedDict()
 
     try:
-        with open(path, 'r', encoding='utf-8') as fp:
+        with open(path, "r", encoding="utf-8") as fp:
             for line in fp.readlines():
                 try:
                     r = Requirement(line.strip())

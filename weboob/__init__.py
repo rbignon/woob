@@ -38,6 +38,7 @@ __copyright__ = woob.__copyright__
 # another one.
 # Trick found at https://stackoverflow.com/a/56872393
 
+
 class AliasLoader(Loader):
     def module_repr(self, module):
         return repr(module)

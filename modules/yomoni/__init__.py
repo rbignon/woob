@@ -21,4 +21,4 @@
 from .module import YomoniModule
 
 
-__all__ = ['YomoniModule']
+__all__ = ["YomoniModule"]

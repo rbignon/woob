@@ -20,7 +20,12 @@
 
 from woob.capabilities.base import NotAvailable, find_object
 from woob.capabilities.bill import (
-    CapDocument, Document, DocumentCategory, DocumentNotFound, DocumentTypes, Subscription,
+    CapDocument,
+    Document,
+    DocumentCategory,
+    DocumentNotFound,
+    DocumentTypes,
+    Subscription,
 )
 from woob.tools.backend import BackendConfig, Module
 from woob.tools.value import ValueBackendPassword, ValueTransient
@@ -28,20 +33,20 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import CityscootBrowser
 
 
-__all__ = ['CityscootModule']
+__all__ = ["CityscootModule"]
 
 
 class CityscootModule(Module, CapDocument):
-    NAME = 'cityscoot'
-    DESCRIPTION = 'Le scooter électrique en libre-service, sans bornes.'
-    MAINTAINER = 'P4ncake'
-    EMAIL = 'me@p4ncake.fr'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "cityscoot"
+    DESCRIPTION = "Le scooter électrique en libre-service, sans bornes."
+    MAINTAINER = "P4ncake"
+    EMAIL = "me@p4ncake.fr"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Adresse email', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('captcha_response', label='Captcha Response')
+        ValueBackendPassword("login", label="Adresse email", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("captcha_response", label="Captcha Response"),
     )
 
     BROWSER = CityscootBrowser
@@ -56,7 +61,7 @@ class CityscootModule(Module, CapDocument):
         return self.browser.get_subscription_list()
 
     def get_document(self, _id):
-        subid = _id.rsplit('_', 1)[0]
+        subid = _id.rsplit("_", 1)[0]
         subscription = self.get_subscription(subid)
 
         return find_object(self.iter_documents(subscription), id=_id, error=DocumentNotFound)

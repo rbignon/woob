@@ -9,8 +9,8 @@ from pathlib import Path
 from asttokens import ASTTokens
 
 
-mod = runpy.run_path(str(Path(__file__).with_name('checkerlib.py')))
-Checker = mod['Checker']
+mod = runpy.run_path(str(Path(__file__).with_name("checkerlib.py")))
+Checker = mod["Checker"]
 
 
 bit_ops = (ast.BitOr, ast.BitAnd, ast.BitXor, ast.LShift, ast.RShift)
@@ -67,22 +67,16 @@ class OpPrioVerifier(Checker, ast.NodeVisitor):
                     # before "a and b" but it's not related to "a and b".
                     # Instead, look for a closing paren between "a and b" and the `node`
                     # bool operator "or".
-                    if not self.has_paren(self.tokens[child.last_token.index + 1:], ')'):
+                    if not self.has_paren(self.tokens[child.last_token.index + 1 :], ")"):
                         op_token = self.search_boolop_token(child)
-                        self.add_error(
-                            "ambiguous precedence between 'or' and 'and'",
-                            line=op_token.start[0]
-                        )
+                        self.add_error("ambiguous precedence between 'or' and 'and'", line=op_token.start[0])
                 else:
                     # Conversely, there must be a `node` bool operator before `child`'s
                     # tokens. Look for an open paren before `child`.
                     # node.op (COMMENT? NL)* "(" (COMMENT? NL)* child (COMMENT? NL)* ")"
-                    if not self.has_paren(self.tokens[child.first_token.index - 1::-1], '('):
+                    if not self.has_paren(self.tokens[child.first_token.index - 1 :: -1], "("):
                         op_token = self.search_boolop_token(child)
-                        self.add_error(
-                            "ambiguous precedence between 'or' and 'and'",
-                            line=op_token.start[0]
-                        )
+                        self.add_error("ambiguous precedence between 'or' and 'and'", line=op_token.start[0])
 
             first = False
 
@@ -92,12 +86,12 @@ class OpPrioVerifier(Checker, ast.NodeVisitor):
         # search for the first and/or operator token
         assert isinstance(node, ast.BoolOp)
         first_operand = node.values[0].last_token
-        for token in self.tokens[first_operand.index + 1:]:
+        for token in self.tokens[first_operand.index + 1 :]:
             if token.type in (tokenize.NL, tokenize.COMMENT):
                 continue
             else:
                 assert token.type == tokenize.NAME, "expected an operator after left node"
-                assert token.string in ('and', 'or')
+                assert token.string in ("and", "or")
                 return token
         raise AssertionError("expected an operator after left node")
 
@@ -105,23 +99,23 @@ class OpPrioVerifier(Checker, ast.NodeVisitor):
         if isinstance(node.left, ast.BinOp):
             if not self.check_binop(node, node.left):
                 # same as for BoolOp, look for a closing paren after first operand
-                if not self.has_paren(self.tokens[node.left.last_token.index + 1:], ')'):
+                if not self.has_paren(self.tokens[node.left.last_token.index + 1 :], ")"):
                     op_token = self.search_binop_token(node.left)
                     parent_token = self.search_binop_token(node)
                     self.add_error(
                         f"ambiguous precedence between {parent_token.string!r} and {op_token.string!r}",
-                        line=op_token.start[0]
+                        line=op_token.start[0],
                     )
 
         if isinstance(node.right, ast.BinOp):
             if not self.check_binop(node, node.right):
                 # same as for BoolOp, look for an opening paren before second operand
-                if not self.has_paren(self.tokens[node.right.first_token.index - 1::-1], '('):
+                if not self.has_paren(self.tokens[node.right.first_token.index - 1 :: -1], "("):
                     op_token = self.search_binop_token(node.right)
                     parent_token = self.search_binop_token(node)
                     self.add_error(
                         f"ambiguous precedence between {parent_token.string!r} and {op_token.string!r}",
-                        line=op_token.start[0]
+                        line=op_token.start[0],
                     )
 
         self.generic_visit(node)
@@ -129,7 +123,7 @@ class OpPrioVerifier(Checker, ast.NodeVisitor):
     def search_binop_token(self, node):
         # search for the operator token
         assert isinstance(node, ast.BinOp)
-        for token in self.tokens[node.left.last_token.index + 1:]:
+        for token in self.tokens[node.left.last_token.index + 1 :]:
             if token.type in (tokenize.NL, tokenize.COMMENT):
                 continue
             else:
@@ -146,9 +140,8 @@ class OpPrioVerifier(Checker, ast.NodeVisitor):
                 return False
 
         for dub1, dub2 in dubious_ops_groups:
-            if (
-                (isinstance(parent.op, dub1) and isinstance(child.op, dub2))
-                or (isinstance(parent.op, dub2) and isinstance(child.op, dub1))
+            if (isinstance(parent.op, dub1) and isinstance(child.op, dub2)) or (
+                isinstance(parent.op, dub2) and isinstance(child.op, dub1)
             ):
                 return False
 
@@ -159,10 +152,10 @@ class OpPrioVerifier(Checker, ast.NodeVisitor):
         return self.ok
 
 
-args = mod['parser'].parse_args()
+args = mod["parser"].parse_args()
 
 exit_code = 0
-for file in mod['files_to_check'](args):
+for file in mod["files_to_check"](args):
     verifier = OpPrioVerifier(file)
     if not verifier.check():
         exit_code = 1

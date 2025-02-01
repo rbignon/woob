@@ -22,4 +22,4 @@ from woob.tools.test import BackendTest
 
 
 class NefTest(BankStandardTest, BackendTest):
-    MODULE = 'nef'
+    MODULE = "nef"

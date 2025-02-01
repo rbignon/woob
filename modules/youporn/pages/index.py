@@ -18,7 +18,6 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 
-
 from woob.browser.elements import ItemElement, ListElement, method
 from woob.browser.filters.html import Attr
 from woob.browser.filters.standard import CleanText, Duration, Regexp, Type
@@ -38,14 +37,16 @@ class IndexPage(HTMLPage):
             klass = YoupornVideo
 
             def obj_thumbnail(self):
-                thumbnail_url = Attr('.//img', 'data-original')(self)
+                thumbnail_url = Attr(".//img", "data-original")(self)
                 thumbnail = Thumbnail(thumbnail_url)
                 thumbnail.url = thumbnail.id
                 return thumbnail
 
             obj_author = NotAvailable
             obj_duration = CleanText('.//div[has-class("video-duration")]') & Duration()
-            obj_id = Attr('.', 'data-video-id')
-            obj_rating = CleanText('.//span[has-class("video-box-percentage")]') & Regexp(pattern=r'(\d+)%') & Type(type=int)
+            obj_id = Attr(".", "data-video-id")
+            obj_rating = (
+                CleanText('.//span[has-class("video-box-percentage")]') & Regexp(pattern=r"(\d+)%") & Type(type=int)
+            )
             obj_rating_max = 100
             obj_title = CleanText('.//div[has-class("video-box-title")]')

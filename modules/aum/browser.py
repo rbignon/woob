@@ -33,20 +33,21 @@ from woob.exceptions import BrowserHTTPNotFound, BrowserIncorrectPassword, Brows
 from woob.tools.date import local2utc
 
 
-__all__ = ['AuMBrowser']
+__all__ = ["AuMBrowser"]
 
 
 class WebsiteBrowser(LoginBrowser):
-    BASEURL = 'https://www.adopteunmec.com'
+    BASEURL = "https://www.adopteunmec.com"
     VERIFY = False
     TIMEOUT = 3.0
 
     def do_login(self):
-        data = {'username': self.username,
-                'password': self.password,
-                'remember': 'on',
-               }
-        self.open('/auth/login', data=data)
+        data = {
+            "username": self.username,
+            "password": self.password,
+            "remember": "on",
+        }
+        self.open("/auth/login", data=data)
 
     def get_profile(self, id):
         profile = {}
@@ -55,14 +56,14 @@ class WebsiteBrowser(LoginBrowser):
 
         r = None
         try:
-            r = self.open('https://www.adopteunmec.com/profile/%s' % id)
+            r = self.open("https://www.adopteunmec.com/profile/%s" % id)
         except BrowserUnavailable:
             pass
 
-        if r is None or not re.match(r'https://www.adopteunmec.com/profile/\d+', r.url):
+        if r is None or not re.match(r"https://www.adopteunmec.com/profile/\d+", r.url):
             self.do_login()
             try:
-                r = self.open('https://www.adopteunmec.com/profile/%s' % id)
+                r = self.open("https://www.adopteunmec.com/profile/%s" % id)
             except BrowserUnavailable:
                 r = None
 
@@ -71,55 +72,55 @@ class WebsiteBrowser(LoginBrowser):
 
         page = HTMLPage(self, r)
         doc = page.doc
-        profile['popu'] = {}
+        profile["popu"] = {}
         for tr in doc.xpath('//div[@id="popularity"]//tr'):
-            cols = tr.findall('td')
+            cols = tr.findall("td")
             if not cols[0].text:
                 continue
-            key = CleanText('./th')(tr).strip().lower()
-            value = int(re.sub(u'[^0-9]+', u'', cols[0].text).strip())
-            profile['popu'][key] = value
+            key = CleanText("./th")(tr).strip().lower()
+            value = int(re.sub("[^0-9]+", "", cols[0].text).strip())
+            profile["popu"][key] = value
 
-        for script in doc.xpath('//script'):
+        for script in doc.xpath("//script"):
             text = script.text
             if text is None:
                 continue
             m = re.search(r"'memberLat'\s*:\s*([\-\d\.]+),", text, re.IGNORECASE)
             if m:
-                profile['lat'] = float(m.group(1))
+                profile["lat"] = float(m.group(1))
             m = re.search(r"'memberLng'\s*:\s*([\-\d\.]+),", text, re.IGNORECASE)
             if m:
-                profile['lng'] = float(m.group(1))
+                profile["lng"] = float(m.group(1))
 
         return profile
 
 
 def url2id(func):
     def inner(self, id, *args, **kwargs):
-        m = re.match(r'^https?://.*adopteunmec.com.*/(\d+)$', str(id))
+        m = re.match(r"^https?://.*adopteunmec.com.*/(\d+)$", str(id))
         if m:
             id = int(m.group(1))
         else:
-            m = re.match(r'^https?://.*adopteunmec.com/(index.php/)?profile/(\d+).*', str(id))
+            m = re.match(r"^https?://.*adopteunmec.com/(index.php/)?profile/(\d+).*", str(id))
             if m:
                 id = int(m.group(2))
         return func(self, id, *args, **kwargs)
+
     return inner
 
 
-
 class AuMBrowser(DomainBrowser):
-    BASEURL = 'https://www.adopteunmec.com/api/'
-    APIKEY = 'fb0123456789abcd'
-    APITOKEN = 'DCh7Se53v8ejS8466dQe63'
-    APIVERSION = '2.2.5'
+    BASEURL = "https://www.adopteunmec.com/api/"
+    APIKEY = "fb0123456789abcd"
+    APITOKEN = "DCh7Se53v8ejS8466dQe63"
+    APIVERSION = "2.2.5"
     GIRL_PROXY = None
 
     consts = None
     my_sex = 0
     my_id = 0
-    my_name = u''
-    my_coords = (0,0)
+    my_name = ""
+    my_coords = (0, 0)
 
     def __init__(self, username, password, search_query, *args, **kwargs):
         self.username = username
@@ -135,10 +136,10 @@ class AuMBrowser(DomainBrowser):
         self.home()
 
     def id2url(self, id):
-        return u'https://www.adopteunmec.com/profile/%s' % id
+        return "https://www.adopteunmec.com/profile/%s" % id
 
     def login(self):
-        self.request('applications/android')
+        self.request("applications/android")
 
     def request(self, *args, **kwargs):
         try:
@@ -150,28 +151,30 @@ class AuMBrowser(DomainBrowser):
                 raise
 
     def build_request(self, url, *args, **kwargs):
-        headers = kwargs.setdefault('headers', {})
-        if 'applications' not in url:
-            today = local2utc(datetime.now()).strftime('%Y-%m-%d')
-            token = sha256((self.username + self.APITOKEN + today).encode('utf-8')).hexdigest()
+        headers = kwargs.setdefault("headers", {})
+        if "applications" not in url:
+            today = local2utc(datetime.now()).strftime("%Y-%m-%d")
+            token = sha256((self.username + self.APITOKEN + today).encode("utf-8")).hexdigest()
 
-            headers['Authorization'] = 'Basic %s' % (b64encode(b'%s:%s' % (self.username.encode('utf-8'), self.password.encode('utf-8')))).decode('utf-8')
-            headers['X-Platform'] = 'android'
-            headers['X-Client-Version'] = self.APIVERSION
-            headers['X-AUM-Token'] = token
+            headers["Authorization"] = "Basic %s" % (
+                b64encode(b"%s:%s" % (self.username.encode("utf-8"), self.password.encode("utf-8")))
+            ).decode("utf-8")
+            headers["X-Platform"] = "android"
+            headers["X-Client-Version"] = self.APIVERSION
+            headers["X-AUM-Token"] = token
 
         return super(AuMBrowser, self).build_request(url, *args, **kwargs)
 
     def home(self):
-        r = self.request('home/')
-        self.my_sex = r['user']['sex']
-        self.my_id = int(r['user']['id'])
-        self.my_name = r['user']['pseudo']
+        r = self.request("home/")
+        self.my_sex = r["user"]["sex"]
+        self.my_id = int(r["user"]["id"])
+        self.my_name = r["user"]["pseudo"]
 
-        if self.my_coords == (0,0):
+        if self.my_coords == (0, 0):
             profile = self.get_full_profile(self.my_id)
-            if 'lat' in profile and 'lng' in profile:
-                self.my_coords = [profile['lat'], profile['lng']]
+            if "lat" in profile and "lng" in profile:
+                self.my_coords = [profile["lat"], profile["lng"]]
 
         return r
 
@@ -180,18 +183,18 @@ class AuMBrowser(DomainBrowser):
             return self.consts
 
         self.consts = [{}, {}]
-        for key, sexes in self.request('values').items():
+        for key, sexes in self.request("values").items():
             for sex, values in sexes.items():
-                if sex in ('boy', 'both'):
+                if sex in ("boy", "both"):
                     self.consts[0][key] = values
-                if sex in ('girl', 'both'):
+                if sex in ("girl", "both"):
                     self.consts[1][key] = values
 
         return self.consts
 
     def score(self):
         r = self.home()
-        return int(r['user']['points'])
+        return int(r["user"]["points"])
 
     def get_my_name(self):
         return self.my_name
@@ -201,59 +204,59 @@ class AuMBrowser(DomainBrowser):
 
     def nb_new_mails(self):
         r = self.home()
-        return r['counters']['new_mails']
+        return r["counters"]["new_mails"]
 
     def nb_new_baskets(self):
         r = self.home()
-        return r['counters']['new_baskets']
+        return r["counters"]["new_baskets"]
 
     def nb_new_visites(self):
         r = self.home()
-        return r['counters']['new_visits']
+        return r["counters"]["new_visits"]
 
     def nb_available_charms(self):
         r = self.home()
-        return r['subscription']['flashes_stock']
+        return r["subscription"]["flashes_stock"]
 
     def get_baskets(self):
-        r = self.request('basket', params={'count': 30, 'offset': 0})
-        return r['results']
+        r = self.request("basket", params={"count": 30, "offset": 0})
+        return r["results"]
 
     def get_flashs(self):
-        r = self.request('charms/', params={'count': 30, 'offset': 0})
-        return r['results']
+        r = self.request("charms/", params={"count": 30, "offset": 0})
+        return r["results"]
 
     def get_visits(self):
-        r = self.request('visits', params={'count': 30, 'offset': 0})
-        return r['results']
+        r = self.request("visits", params={"count": 30, "offset": 0})
+        return r["results"]
 
     def get_threads_list(self, count=30):
-        r = self.request('threads', params={'count': count, 'offset': 0})
-        return r['results']
+        r = self.request("threads", params={"count": count, "offset": 0})
+        return r["results"]
 
     @url2id
     def get_thread_mails(self, id, count=30):
-        r = self.request('threads/%s' % id, params={'count': count, 'offset': 0})
+        r = self.request("threads/%s" % id, params={"count": count, "offset": 0})
         return r
 
     @url2id
     def post_mail(self, id, content):
-        content = content.replace('\n', '\r\n')
+        content = content.replace("\n", "\r\n")
 
         try:
-            self.request('threads/%s' % id, data=content)
+            self.request("threads/%s" % id, data=content)
         except BrowserHTTPNotFound:
-            raise CantSendMessage('Unable to send message.')
+            raise CantSendMessage("Unable to send message.")
 
     @url2id
     def delete_thread(self, id):
-        r = self.request('message/delete', json={'id_user': id})
-        self.logger.debug('Thread deleted: %r' % r)
+        r = self.request("message/delete", json={"id_user": id})
+        self.logger.debug("Thread deleted: %r" % r)
 
     @url2id
     def send_charm(self, id):
         try:
-            self.request('users/%s/charms' % id, data='')
+            self.request("users/%s/charms" % id, data="")
         except BrowserHTTPNotFound:
             return False
         else:
@@ -262,7 +265,7 @@ class AuMBrowser(DomainBrowser):
     @url2id
     def add_basket(self, id):
         try:
-            self.request('basket/%s' % id, data='')
+            self.request("basket/%s" % id, data="")
         except BrowserHTTPNotFound:
             return False
         else:
@@ -273,16 +276,18 @@ class AuMBrowser(DomainBrowser):
             # retrieve query
             self.login()
 
-        r = self.request('users?count=100&offset=0&%s' % (self.search_query % {'lat': self.my_coords[0], 'lng': self.my_coords[1]}))
-        ids = [s['id'] for s in r['results']]
+        r = self.request(
+            "users?count=100&offset=0&%s" % (self.search_query % {"lat": self.my_coords[0], "lng": self.my_coords[1]})
+        )
+        ids = [s["id"] for s in r["results"]]
         return set(ids)
 
     @url2id
     def get_full_profile(self, id):
         if self.GIRL_PROXY is not None:
             profile = self.open(self.GIRL_PROXY % id).json()
-            if 'lat' in profile and 'lng' in profile:
-                profile['dist'] = self.get_dist(profile['lat'], profile['lng'])
+            if "lat" in profile and "lng" in profile:
+                profile["dist"] = self.get_dist(profile["lat"], profile["lng"])
         else:
             profile = self.get_profile(id)
 
@@ -298,8 +303,8 @@ class AuMBrowser(DomainBrowser):
         lon2 = math.radians(coords[1])
         dLat = lat2 - lat1
         dLong = lon2 - lon1
-        a= pow(math.sin(dLat/2), 2) + math.cos(lat1) * math.cos(lat2) * pow(math.sin(dLong/2), 2)
-        c= 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        a = pow(math.sin(dLat / 2), 2) + math.cos(lat1) * math.cos(lat2) * pow(math.sin(dLong / 2), 2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
         return R * c
 
@@ -307,12 +312,12 @@ class AuMBrowser(DomainBrowser):
     def get_profile(self, id):
         profile = {}
 
-        profile.update(self.request('users/%s' % id))
+        profile.update(self.request("users/%s" % id))
         profile.update(self.website.get_profile(id))
 
         # Calculate distance in km.
-        profile['dist'] = 0.0
-        if 'lat' in profile and 'lng' in profile:
-            profile['dist'] = self.get_dist(profile['lat'], profile['lng'])
+        profile["dist"] = 0.0
+        if "lat" in profile and "lng" in profile:
+            profile["dist"] = self.get_dist(profile["lat"], profile["lng"])
 
         return profile

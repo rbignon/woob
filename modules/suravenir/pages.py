@@ -27,9 +27,9 @@ from woob.capabilities.bank import Account, Investment, Transaction
 
 class LoginPage(HTMLPage):
     def login(self, login, passwd):
-        form = self.get_form(id='_58_fm')
-        form['_58_login'] = login
-        form['_58_password'] = passwd
+        form = self.get_form(id="_58_fm")
+        form["_58_login"] = login
+        form["_58_password"] = passwd
         form.submit()
 
 
@@ -42,7 +42,7 @@ class AccountsList(LoggedPage, HTMLPage):
             klass = Account
 
             obj_label = CleanText('./td[contains(@class, "col-1")]/a')
-            obj_id = CleanText('./td[contains(@class, "col-2")]/a', replace=[(' ', '')])
+            obj_id = CleanText('./td[contains(@class, "col-2")]/a', replace=[(" ", "")])
             obj_balance = CleanDecimal('./td[contains(@class, "col-3")]', replace_dots=True)
             obj__detail_link = AbsoluteLink('./td[contains(@class, "col-2")]/a')
             obj_type = Account.TYPE_LIFE_INSURANCE
@@ -54,14 +54,14 @@ class InvestmentList(LoggedPage, HTMLPage):
         head_xpath = '//thead[@class="table-columns"]/tr/th/text()'
         item_xpath = '//tbody[@class="table-data"]/tr[contains(@class, "results-row")]'
 
-        col_ISIN = u"Code ISIN"
-        col_fund = u"Libellé support"
-        col_qty =  u"Nb parts"
-        col_date = u"Date VL*"
-        col_unitvalue =  u"VL*"
-        col_unitprice =  u"Prix de revient"
-        col_perf = u"Perf."
-        col_valuation = u"Solde"
+        col_ISIN = "Code ISIN"
+        col_fund = "Libellé support"
+        col_qty = "Nb parts"
+        col_date = "Date VL*"
+        col_unitvalue = "VL*"
+        col_unitprice = "Prix de revient"
+        col_perf = "Perf."
+        col_valuation = "Solde"
 
         class item(ItemElement):
             klass = Investment
@@ -81,13 +81,15 @@ class AccountHistory(LoggedPage, HTMLPage):
     @pagination
     @method
     class iter_history(TableElement):
-        next_page = Link('(//ul[contains(@class, "lfr-pagination-buttons")])[2]/li[@class=" next"]/a[contains(text(), "Suivant")]')
+        next_page = Link(
+            '(//ul[contains(@class, "lfr-pagination-buttons")])[2]/li[@class=" next"]/a[contains(text(), "Suivant")]'
+        )
         head_xpath = '//thead[@class="table-columns"]/tr/th/div/a/text()[1]'
         item_xpath = '//tbody[@class="table-data"]/tr[contains(@class, "results-row")]'
 
-        col_date   = u"Date de l'opération"
-        col_label  = u"Libellé de l'opération"
-        col_amount = u"Montant"
+        col_date = "Date de l'opération"
+        col_label = "Libellé de l'opération"
+        col_amount = "Montant"
 
         class item(ItemElement):
             klass = Transaction
@@ -97,4 +99,4 @@ class AccountHistory(LoggedPage, HTMLPage):
             obj_amount = CleanDecimal(TableCell("amount"), replace_dots=True, default=NotAvailable)
 
             def obj__transaction_detail(self):
-                return AbsoluteLink((TableCell("label")(self)[0]).xpath('.//a'))
+                return AbsoluteLink((TableCell("label")(self)[0]).xpath(".//a"))

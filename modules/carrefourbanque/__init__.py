@@ -21,4 +21,4 @@
 from .module import CarrefourBanqueModule
 
 
-__all__ = ['CarrefourBanqueModule']
+__all__ = ["CarrefourBanqueModule"]

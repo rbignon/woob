@@ -20,4 +20,4 @@
 from .module import BtmonModule
 
 
-__all__ = ['BtmonModule']
+__all__ = ["BtmonModule"]

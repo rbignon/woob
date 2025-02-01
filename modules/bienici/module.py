@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import BieniciBrowser
 
 
-__all__ = ['BieniciModule']
+__all__ = ["BieniciModule"]
 
 
 class BieniciModule(Module, CapHousing):
-    NAME = 'bienici'
-    DESCRIPTION = 'bienici website'
-    MAINTAINER = 'Antoine BOSSY'
-    EMAIL = 'mail+github@abossy.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "bienici"
+    DESCRIPTION = "bienici website"
+    MAINTAINER = "Antoine BOSSY"
+    EMAIL = "mail+github@abossy.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = BieniciBrowser
 
@@ -71,7 +71,7 @@ class BieniciModule(Module, CapHousing):
         """
         Fills the photo.
         """
-        if 'data' in fields and photo.url and not photo.data:
+        if "data" in fields and photo.url and not photo.data:
             photo.data = self.browser.open(photo.url).content
         return photo
 
@@ -79,9 +79,9 @@ class BieniciModule(Module, CapHousing):
         """
         Fills the housing.
         """
-        if 'phone' in fields:
+        if "phone" in fields:
             housing = self.get_housing(housing.id, housing)
-        if 'station' in fields and housing._id_polygone:
+        if "station" in fields and housing._id_polygone:
             housing.station = self.browser.get_stations(housing._id_polygone)
         return housing
 

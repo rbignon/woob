@@ -24,26 +24,26 @@ from woob.tools.test import BackendTest
 
 
 class TransilienTest(BackendTest):
-    MODULE = 'transilien'
+    MODULE = "transilien"
 
     def test_stations(self):
-        stations = list(self.backend.iter_station_search('aul'))
+        stations = list(self.backend.iter_station_search("aul"))
         self.assertTrue(len(stations) > 0)
 
     def test_departures(self):
-        stations = list(self.backend.iter_station_search('paris'))
+        stations = list(self.backend.iter_station_search("paris"))
         self.assertTrue(len(stations) > 0)
         list(self.backend.iter_station_departures(stations[0].id))
 
     def test_roadmap(self):
         filters = RoadmapFilters()
-        roadmap = list(self.backend.iter_roadmap('aul', u'aub', filters))
+        roadmap = list(self.backend.iter_roadmap("aul", "aub", filters))
         self.assertTrue(len(roadmap) > 0)
 
         filters.arrival_time = datetime.datetime.now() + datetime.timedelta(days=1)
-        roadmap = list(self.backend.iter_roadmap('aul', u'bag', filters))
+        roadmap = list(self.backend.iter_roadmap("aul", "bag", filters))
         self.assertTrue(len(roadmap) > 0)
 
         filters.departure_time = datetime.datetime.now() + datetime.timedelta(days=1)
-        roadmap = list(self.backend.iter_roadmap('gare du nord', u'stade de boulogne', filters))
+        roadmap = list(self.backend.iter_roadmap("gare du nord", "stade de boulogne", filters))
         self.assertTrue(len(roadmap) > 0)

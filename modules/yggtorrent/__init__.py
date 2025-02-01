@@ -1,4 +1,4 @@
 from .module import YggtorrentModule
 
 
-__all__ = ['YggtorrentModule']
+__all__ = ["YggtorrentModule"]

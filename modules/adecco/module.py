@@ -26,188 +26,217 @@ from woob.tools.value import Value
 from .browser import AdeccoBrowser
 
 
-__all__ = ['AdeccoModule']
+__all__ = ["AdeccoModule"]
 
 
 class AdeccoModule(Module, CapJob):
-    NAME = 'adecco'
-    DESCRIPTION = u'adecco website'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    VERSION = '3.7'
-    LICENSE = 'AGPLv3+'
+    NAME = "adecco"
+    DESCRIPTION = "adecco website"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    VERSION = "3.7"
+    LICENSE = "AGPLv3+"
 
     BROWSER = AdeccoBrowser
 
-    publicationDate_choices = OrderedDict([(k, u'%s' % (v)) for k, v in sorted({
-        '000000': u'-- Indifferent --',
-        '2': u'Moins de 48 heures',
-        '7': u'Moins de 1 semaine',
-        '14': u'Moins de 2 semaines',
-    }.items())])
+    publicationDate_choices = OrderedDict(
+        [
+            (k, "%s" % (v))
+            for k, v in sorted(
+                {
+                    "000000": "-- Indifferent --",
+                    "2": "Moins de 48 heures",
+                    "7": "Moins de 1 semaine",
+                    "14": "Moins de 2 semaines",
+                }.items()
+            )
+        ]
+    )
 
-    type_contract_choices = OrderedDict([(k, u'%s' % (v)) for k, v in sorted({
-        '': u'-- Indifferent --',
-        'ADCFREMP005': u'CDD',
-        'ADCFREMP004': u'CDI',
-        'ADCFREMP003': u'Intérim',
-        'ADCFREMP009': u'Autres',
-        'ADCFREMP010': u'Libéral',
-    }.items())])
+    type_contract_choices = OrderedDict(
+        [
+            (k, "%s" % (v))
+            for k, v in sorted(
+                {
+                    "": "-- Indifferent --",
+                    "ADCFREMP005": "CDD",
+                    "ADCFREMP004": "CDI",
+                    "ADCFREMP003": "Intérim",
+                    "ADCFREMP009": "Autres",
+                    "ADCFREMP010": "Libéral",
+                }.items()
+            )
+        ]
+    )
 
-    places_choices = OrderedDict([(k, u'%s' % (v)) for k, v in sorted({
-        '': u'-- Indifferent --',
-        'AIN': u'Ain',
-        'AISNE': u'Aisne',
-        'ALLIER': u'Allier',
-        'ALPES-DE-HAUTE-PROVENCE': u'Alpes-De-Haute-Provence',
-        'ALPES-MARITIMES': u'Alpes-Maritimes',
-        'ARDECHE': u'Ardeche',
-        'ARDENNES': u'Ardennes',
-        'ARIEGE': u'Ariege',
-        'AUBE': u'Aube',
-        'AUDE': u'Aude',
-        'AVEYRON': u'Aveyron',
-        'BAS-RHIN': u'Bas-Rhin',
-        'BOUCHES-DU-RHONE': u'Bouches-Du-Rhone',
-        'CALVADOS': u'Calvados',
-        'CANTAL': u'Cantal',
-        'CHARENTE': u'Charente',
-        'CHARENTE-MARITIME': u'Charente-Maritime',
-        'CHER': u'Cher',
-        'CORREZE': u'Correze',
-        'CORSE-DU-SUD': u'Corse du Sud',
-        'COTE-D%27OR': u'Cote D\'Or',
-        'COTES-D%27ARMOR': u'Cotes D\'Armor',
-        'CREUSE': u'Creuse',
-        'DEUX-SEVRES': u'Deux-Sevres',
-        'DORDOGNE': u'Dordogne',
-        'DOUBS': u'Doubs',
-        'DROME': u'Drome',
-        'ESSONNE': u'Essonne',
-        'EURE': u'Eure',
-        'EURE-ET-LOIR': u'Eure-Et-Loir',
-        'FINISTERE': u'Finistere',
-        'GARD': u'Gard',
-        'GERS': u'Gers',
-        'GIRONDE': u'Gironde',
-        'GUADELOUPE': u'Guadeloupe',
-        'GUYANE': u'Guyane',
-        'HAUT-RHIN': u'Haut-Rhin',
-        'HAUTE-CORSE': u'Haute-Corse',
-        'HAUTE-GARONNE': u'Haute-Garonne',
-        'HAUTE-LOIRE': u'Haute-Loire',
-        'HAUTE-MARNE': u'Haute-Marne',
-        'HAUTE-SAONE': u'Haute-Saone',
-        'HAUTE-SAVOIE': u'Haute-Savoie',
-        'HAUTE-VIENNE': u'Haute-Vienne',
-        'HAUTES-ALPES': u'Hautes-Alpes',
-        'HAUTES-PYRENEES': u'Hautes-Pyrenees',
-        'HAUTS-DE-SEINE': u'Hauts-De-Seine',
-        'HERAULT': u'Herault',
-        'ILLE-ET-VILAINE': u'Ille-Et-Vilaine',
-        'INDRE': u'Indre',
-        'INDRE-ET-LOIRE': u'Indre-Et-Loire',
-        'ISERE': u'Isere',
-        'JURA': u'Jura',
-        'LA+REUNION': u'La Reunion',
-        'LANDES': u'Landes',
-        'LOIR-ET-CHER': u'Loir-Et-Cher',
-        'LOIRE': u'Loire',
-        'LOIRE-ATLANTIQUE': u'Loire-Atlantique',
-        'LOIRET': u'Loiret',
-        'LOT': u'Lot',
-        'LOT-ET-GARONNE': u'Lot-Et-Garonne',
-        'LOZERE': u'Lozere',
-        'MAINE-ET-LOIRE': u'Maine-Et-Loire',
-        'MANCHE': u'Manche',
-        'MARNE': u'Marne',
-        'MARTINIQUE': u'Martinique',
-        'MAYENNE': u'Mayenne',
-        'MAYOTTE': u'Mayotte',
-        'MEURTHE-ET-MOSELLE': u'Meurthe et Moselle',
-        'MEUSE': u'Meuse',
-        'MONACO': u'Monaco',
-        'MORBIHAN': u'Morbihan',
-        'MOSELLE': u'Moselle',
-        'NIEVRE': u'Nievre',
-        'NORD': u'Nord',
-        'OISE': u'Oise',
-        'ORNE': u'Orne',
-        'PARIS': u'Paris',
-        'PAS-DE-CALAIS': u'Pas-de-Calais',
-        'PUY-DE-DOME': u'Puy-de-Dome',
-        'PYRENEES-ATLANTIQUES': u'Pyrenees-Atlantiques',
-        'PYRENEES-ORIENTALES': u'Pyrenees-Orientales',
-        'RHONE': u'Rhone',
-        'SAONE-ET-LOIRE': u'Saone-et-Loire',
-        'SARTHE': u'Sarthe',
-        'SAVOIE': u'Savoie',
-        'SEINE-ET-MARNE': u'Seine-et-Marne',
-        'SEINE-MARITIME': u'Seine-Maritime',
-        'SEINE-SAINT-DENIS': u'Seine-Saint-Denis',
-        'SOMME': u'Somme',
-        'ST+PIERRE+ET+MIQUELON': u'St Pierre et Miquelon',
-        'SUISSE': u'Suisse',
-        'TARN': u'Tarn',
-        'TARN-ET-GARONNE': u'Tarn-et-Garonne',
-        'TERRITOIRE+DE+BELFORT': u'Territoire de Belfort',
-        'VAL-D%27OISE': u'Val-D\'Oise',
-        'VAL-DE-MARNE': u'Val-De-Marne',
-        'VAR': u'Var',
-        'VAUCLUSE': u'Vaucluse',
-        'VENDEE': u'Vendee',
-        'VIENNE': u'Vienne',
-        'VOSGES': u'Vosges',
-        'YONNE': u'Yonne',
-        'YVELINES': u'Yvelines',
-    }.items())])
+    places_choices = OrderedDict(
+        [
+            (k, "%s" % (v))
+            for k, v in sorted(
+                {
+                    "": "-- Indifferent --",
+                    "AIN": "Ain",
+                    "AISNE": "Aisne",
+                    "ALLIER": "Allier",
+                    "ALPES-DE-HAUTE-PROVENCE": "Alpes-De-Haute-Provence",
+                    "ALPES-MARITIMES": "Alpes-Maritimes",
+                    "ARDECHE": "Ardeche",
+                    "ARDENNES": "Ardennes",
+                    "ARIEGE": "Ariege",
+                    "AUBE": "Aube",
+                    "AUDE": "Aude",
+                    "AVEYRON": "Aveyron",
+                    "BAS-RHIN": "Bas-Rhin",
+                    "BOUCHES-DU-RHONE": "Bouches-Du-Rhone",
+                    "CALVADOS": "Calvados",
+                    "CANTAL": "Cantal",
+                    "CHARENTE": "Charente",
+                    "CHARENTE-MARITIME": "Charente-Maritime",
+                    "CHER": "Cher",
+                    "CORREZE": "Correze",
+                    "CORSE-DU-SUD": "Corse du Sud",
+                    "COTE-D%27OR": "Cote D'Or",
+                    "COTES-D%27ARMOR": "Cotes D'Armor",
+                    "CREUSE": "Creuse",
+                    "DEUX-SEVRES": "Deux-Sevres",
+                    "DORDOGNE": "Dordogne",
+                    "DOUBS": "Doubs",
+                    "DROME": "Drome",
+                    "ESSONNE": "Essonne",
+                    "EURE": "Eure",
+                    "EURE-ET-LOIR": "Eure-Et-Loir",
+                    "FINISTERE": "Finistere",
+                    "GARD": "Gard",
+                    "GERS": "Gers",
+                    "GIRONDE": "Gironde",
+                    "GUADELOUPE": "Guadeloupe",
+                    "GUYANE": "Guyane",
+                    "HAUT-RHIN": "Haut-Rhin",
+                    "HAUTE-CORSE": "Haute-Corse",
+                    "HAUTE-GARONNE": "Haute-Garonne",
+                    "HAUTE-LOIRE": "Haute-Loire",
+                    "HAUTE-MARNE": "Haute-Marne",
+                    "HAUTE-SAONE": "Haute-Saone",
+                    "HAUTE-SAVOIE": "Haute-Savoie",
+                    "HAUTE-VIENNE": "Haute-Vienne",
+                    "HAUTES-ALPES": "Hautes-Alpes",
+                    "HAUTES-PYRENEES": "Hautes-Pyrenees",
+                    "HAUTS-DE-SEINE": "Hauts-De-Seine",
+                    "HERAULT": "Herault",
+                    "ILLE-ET-VILAINE": "Ille-Et-Vilaine",
+                    "INDRE": "Indre",
+                    "INDRE-ET-LOIRE": "Indre-Et-Loire",
+                    "ISERE": "Isere",
+                    "JURA": "Jura",
+                    "LA+REUNION": "La Reunion",
+                    "LANDES": "Landes",
+                    "LOIR-ET-CHER": "Loir-Et-Cher",
+                    "LOIRE": "Loire",
+                    "LOIRE-ATLANTIQUE": "Loire-Atlantique",
+                    "LOIRET": "Loiret",
+                    "LOT": "Lot",
+                    "LOT-ET-GARONNE": "Lot-Et-Garonne",
+                    "LOZERE": "Lozere",
+                    "MAINE-ET-LOIRE": "Maine-Et-Loire",
+                    "MANCHE": "Manche",
+                    "MARNE": "Marne",
+                    "MARTINIQUE": "Martinique",
+                    "MAYENNE": "Mayenne",
+                    "MAYOTTE": "Mayotte",
+                    "MEURTHE-ET-MOSELLE": "Meurthe et Moselle",
+                    "MEUSE": "Meuse",
+                    "MONACO": "Monaco",
+                    "MORBIHAN": "Morbihan",
+                    "MOSELLE": "Moselle",
+                    "NIEVRE": "Nievre",
+                    "NORD": "Nord",
+                    "OISE": "Oise",
+                    "ORNE": "Orne",
+                    "PARIS": "Paris",
+                    "PAS-DE-CALAIS": "Pas-de-Calais",
+                    "PUY-DE-DOME": "Puy-de-Dome",
+                    "PYRENEES-ATLANTIQUES": "Pyrenees-Atlantiques",
+                    "PYRENEES-ORIENTALES": "Pyrenees-Orientales",
+                    "RHONE": "Rhone",
+                    "SAONE-ET-LOIRE": "Saone-et-Loire",
+                    "SARTHE": "Sarthe",
+                    "SAVOIE": "Savoie",
+                    "SEINE-ET-MARNE": "Seine-et-Marne",
+                    "SEINE-MARITIME": "Seine-Maritime",
+                    "SEINE-SAINT-DENIS": "Seine-Saint-Denis",
+                    "SOMME": "Somme",
+                    "ST+PIERRE+ET+MIQUELON": "St Pierre et Miquelon",
+                    "SUISSE": "Suisse",
+                    "TARN": "Tarn",
+                    "TARN-ET-GARONNE": "Tarn-et-Garonne",
+                    "TERRITOIRE+DE+BELFORT": "Territoire de Belfort",
+                    "VAL-D%27OISE": "Val-D'Oise",
+                    "VAL-DE-MARNE": "Val-De-Marne",
+                    "VAR": "Var",
+                    "VAUCLUSE": "Vaucluse",
+                    "VENDEE": "Vendee",
+                    "VIENNE": "Vienne",
+                    "VOSGES": "Vosges",
+                    "YONNE": "Yonne",
+                    "YVELINES": "Yvelines",
+                }.items()
+            )
+        ]
+    )
 
-    activityDomain_choices = OrderedDict([(k, u'%s' % (v)) for k, v in sorted({
-        'Z': '-- Indifferent --',
-        'A': u'Accueil - Secrétariat - Fonctions Administratives',
-        'B': u'Achats - Juridique - Qualité - RH - Direction',
-        'C': u'Agriculture - Viticulture - Pêche - Espaces Verts',
-        'D': u'Automobile',
-        'E': u'Banque - Finance - Gestion Comptabilité - Assurance',
-        'F': u'Bâtiment - Travaux Publics - Architecture - Immobilier',
-        'G': u'Bureaux d\'Etudes - Méthodes',
-        'H': u'Commerce - Vente - Grande Distribution',
-        'I': u'Environnement - Nettoyage - Sécurité',
-        'J': u'Hôtellerie - Restauration - Métiers de Bouche',
-        'K': u'Industrie',
-        'L': u'Informatique - Technologie de l\'Information',
-        'M': u'Logistique - Manutention - Transport',
-        'N': u'Marketing - Communication - Imprimerie - Edition',
-        'O': u'Médical - Paramédical - Esthétique',
-        'P': u'Pharmacie (Industrie, Officine) - Recherche clinique',
-        'Q': u'Télémarketing - Téléservices',
-        'R': u'Tourisme - Loisirs - Spectacle - Audiovisuel',
-    }.items())])
+    activityDomain_choices = OrderedDict(
+        [
+            (k, "%s" % (v))
+            for k, v in sorted(
+                {
+                    "Z": "-- Indifferent --",
+                    "A": "Accueil - Secrétariat - Fonctions Administratives",
+                    "B": "Achats - Juridique - Qualité - RH - Direction",
+                    "C": "Agriculture - Viticulture - Pêche - Espaces Verts",
+                    "D": "Automobile",
+                    "E": "Banque - Finance - Gestion Comptabilité - Assurance",
+                    "F": "Bâtiment - Travaux Publics - Architecture - Immobilier",
+                    "G": "Bureaux d'Etudes - Méthodes",
+                    "H": "Commerce - Vente - Grande Distribution",
+                    "I": "Environnement - Nettoyage - Sécurité",
+                    "J": "Hôtellerie - Restauration - Métiers de Bouche",
+                    "K": "Industrie",
+                    "L": "Informatique - Technologie de l'Information",
+                    "M": "Logistique - Manutention - Transport",
+                    "N": "Marketing - Communication - Imprimerie - Edition",
+                    "O": "Médical - Paramédical - Esthétique",
+                    "P": "Pharmacie (Industrie, Officine) - Recherche clinique",
+                    "Q": "Télémarketing - Téléservices",
+                    "R": "Tourisme - Loisirs - Spectacle - Audiovisuel",
+                }.items()
+            )
+        ]
+    )
 
-    CONFIG = BackendConfig(Value('job', label='Job name', masked=False, default=''),
-                           Value('town', label='Town name', masked=False, default=''),
-                           Value('place', label=u'County', choices=places_choices),
-                           Value('publication_date', label=u'Publication Date', choices=publicationDate_choices),
-                           Value('contract', labe=u'Contract type', choices=type_contract_choices),
-                           Value('activity_domain', label=u'Activity Domain', choices=activityDomain_choices,
-                                 default=''),
-                           )
+    CONFIG = BackendConfig(
+        Value("job", label="Job name", masked=False, default=""),
+        Value("town", label="Town name", masked=False, default=""),
+        Value("place", label="County", choices=places_choices),
+        Value("publication_date", label="Publication Date", choices=publicationDate_choices),
+        Value("contract", labe="Contract type", choices=type_contract_choices),
+        Value("activity_domain", label="Activity Domain", choices=activityDomain_choices, default=""),
+    )
 
     def search_job(self, pattern=None):
         for advert in self.browser.search_job(pattern):
             yield advert
 
     def advanced_search_job(self):
-        activity_domain = self.config['activity_domain'].get() if self.config['activity_domain'].get() != u'Z' else None
+        activity_domain = self.config["activity_domain"].get() if self.config["activity_domain"].get() != "Z" else None
 
-        for advert in self.browser.advanced_search_job(publication_date=int(self.config['publication_date'].get()),
-                                                       contract_type=self.config['contract'].get(),
-                                                       conty=self.config['place'].get(),
-                                                       activity_domain=activity_domain,
-                                                       job=self.config['job'].get(),
-                                                       town=self.config['town'].get()
-                                                       ):
+        for advert in self.browser.advanced_search_job(
+            publication_date=int(self.config["publication_date"].get()),
+            contract_type=self.config["contract"].get(),
+            conty=self.config["place"].get(),
+            activity_domain=activity_domain,
+            job=self.config["job"].get(),
+            town=self.config["town"].get(),
+        ):
             yield advert
 
     def get_job_advert(self, _id, advert=None):

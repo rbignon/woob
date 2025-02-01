@@ -23,16 +23,16 @@ from woob.tools.backend import Module
 from .browser import PuzzleMadnessBrowser
 
 
-__all__ = ['PuzzleMadnessModule']
+__all__ = ["PuzzleMadnessModule"]
 
 
 class PuzzleMadnessModule(Module, CapPicross):
-    NAME = 'puzzlemadness'
+    NAME = "puzzlemadness"
     DESCRIPTION = "Puzzle Madness"
-    MAINTAINER = 'Thomas Touhey'
-    EMAIL = 'thomas@touhey.fr'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    MAINTAINER = "Thomas Touhey"
+    EMAIL = "thomas@touhey.fr"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = PuzzleMadnessBrowser
 

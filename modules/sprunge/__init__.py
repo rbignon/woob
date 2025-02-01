@@ -20,4 +20,4 @@
 from .module import SprungeModule
 
 
-__all__ = ['SprungeModule']
+__all__ = ["SprungeModule"]

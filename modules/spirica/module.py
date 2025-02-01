@@ -26,25 +26,25 @@ from woob.tools.value import ValueBackendPassword
 from .browser import SpiricaBrowser
 
 
-__all__ = ['SpiricaModule']
+__all__ = ["SpiricaModule"]
 
 
 class SpiricaModule(Module, CapBankWealth):
-    NAME = 'spirica'
-    DESCRIPTION = u'Spirica'
-    MAINTAINER = u'Edouard Lambert'
-    EMAIL = 'elambert@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "spirica"
+    DESCRIPTION = "Spirica"
+    MAINTAINER = "Edouard Lambert"
+    EMAIL = "elambert@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe')
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
     )
 
     BROWSER = SpiricaBrowser
 
     def create_default_browser(self):
-        return self.create_browser("https://www.sylvea.fr", self.config['login'].get(), self.config['password'].get())
+        return self.create_browser("https://www.sylvea.fr", self.config["login"].get(), self.config["password"].get())
 
     def iter_accounts(self):
         return self.browser.iter_accounts()

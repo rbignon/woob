@@ -19,13 +19,13 @@ from ..en.browser import AmazonEnBrowser
 
 
 class AmazonUkBrowser(AmazonEnBrowser):
-    BASEURL = 'https://www.amazon.co.uk'
-    CURRENCY = '£'
-    LANGUAGE = 'en-GB'
+    BASEURL = "https://www.amazon.co.uk"
+    CURRENCY = "£"
+    LANGUAGE = "en-GB"
 
     WRONGPASS_MESSAGES = [
-        'Your password is incorrect',
-        'We cannot find an account with that e-mail address',
-        'We cannot find an account with that mobile number',
+        "Your password is incorrect",
+        "We cannot find an account with that e-mail address",
+        "We cannot find an account with that mobile number",
     ]
     WRONG_CAPTCHA_RESPONSE = "Enter the characters as they are shown in the image."

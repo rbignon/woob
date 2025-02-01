@@ -24,15 +24,15 @@ from woob_modules.creditdunord.module import CreditDuNordModule
 from .browser import LaydernierBrowser
 
 
-__all__ = ['LaydernierModule']
+__all__ = ["LaydernierModule"]
 
 
 class LaydernierModule(CreditDuNordModule, CapBankWealth, CapProfile):
-    NAME = 'laydernier'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DEPENDENCIES = ('creditdunord',)
-    DESCRIPTION = 'Banque Laydernier'
-    LICENSE = 'LGPLv3+'
+    NAME = "laydernier"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DEPENDENCIES = ("creditdunord",)
+    DESCRIPTION = "Banque Laydernier"
+    LICENSE = "LGPLv3+"
     BROWSER = LaydernierBrowser

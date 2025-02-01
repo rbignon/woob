@@ -26,36 +26,37 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import OpenEDXBrowser
 
 
-__all__ = ['OpenEDXModule']
+__all__ = ["OpenEDXModule"]
+
 
 class OpenEDXModule(Module, CapMessages):
-    NAME = 'openedx'
-    DESCRIPTION = 'Discussions on OpenEDX-powered coursewares'
-    MAINTAINER = 'Simon Lipp'
-    EMAIL = 'laiquo@hwold.net'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "openedx"
+    DESCRIPTION = "Discussions on OpenEDX-powered coursewares"
+    MAINTAINER = "Simon Lipp"
+    EMAIL = "laiquo@hwold.net"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('username',label='Username', default=''),
-        ValueBackendPassword('password', label='Password', default=''),
-        Value('url', label='Site URL', default='https://courses.edx.org/'),
-        Value('course', label='Course ID', default='edX/DemoX.1/2014'),
+        ValueBackendPassword("username", label="Username", default=""),
+        ValueBackendPassword("password", label="Password", default=""),
+        Value("url", label="Site URL", default="https://courses.edx.org/"),
+        Value("course", label="Course ID", default="edX/DemoX.1/2014"),
     )
 
     BROWSER = OpenEDXBrowser
 
-    STORAGE = {'seen': {}}
+    STORAGE = {"seen": {}}
 
     def __init__(self, *args, **kwargs):
         Module.__init__(self, *args, **kwargs)
 
         def pandoc_formatter(text):
-            return Popen(  # nosec
-                ["pandoc", "-f", "markdown", "-t", "html", "--mathml", "-"],
-                stdin=PIPE,
-                stdout=PIPE
-            ).communicate(text.encode('utf-8'))[0].decode('utf-8')
+            return (
+                Popen(["pandoc", "-f", "markdown", "-t", "html", "--mathml", "-"], stdin=PIPE, stdout=PIPE)  # nosec
+                .communicate(text.encode("utf-8"))[0]
+                .decode("utf-8")
+            )
 
         try:
             from markdown import Markdown
@@ -64,22 +65,22 @@ class OpenEDXModule(Module, CapMessages):
 
         self.default_flags = Message.IS_HTML
         try:
-            Popen(  # nosec
-                ["pandoc", "-v"],
-                stdout=PIPE,
-                stderr=PIPE
-            ).communicate()
+            Popen(["pandoc", "-v"], stdout=PIPE, stderr=PIPE).communicate()  # nosec
             self.formatter = pandoc_formatter
         except OSError:
             if Markdown:
                 self.formatter = Markdown().convert
             else:
-                self.formatter = (lambda text: text)
+                self.formatter = lambda text: text
                 self.default_flags = 0
 
     def create_default_browser(self):
-        return self.create_browser(self.config['url'].get(), self.config['course'].get(),
-                self.config['username'].get(), self.config['password'].get())
+        return self.create_browser(
+            self.config["url"].get(),
+            self.config["course"].get(),
+            self.config["username"].get(),
+            self.config["password"].get(),
+        )
 
     def _build_thread(self, data):
         thread = Thread("%s.%s" % (data["commentable_id"], data["id"]))
@@ -90,35 +91,39 @@ class OpenEDXModule(Module, CapMessages):
         thread._messages_count = data["comments_count"] + 1
         return thread
 
-    def _build_message(self, data, thread, parent = None):
+    def _build_message(self, data, thread, parent=None):
         flags = self.default_flags
         if data["id"] not in self.storage.get("seen", thread.id, default=[]):
             flags |= Message.IS_UNREAD
 
-        message = Message(thread = thread,
-                id = data["id"],
-                title = (parent and "Re: %s" or "%s") % thread.title,
-                sender = data.get("username"),
-                receivers = None,
-                date = dateutil.parser.parse(data["created_at"]),
-                content = self.formatter(data["body"]),
-                flags = flags,
-                parent = parent,
-                url = thread.url)
+        message = Message(
+            thread=thread,
+            id=data["id"],
+            title=(parent and "Re: %s" or "%s") % thread.title,
+            sender=data.get("username"),
+            receivers=None,
+            date=dateutil.parser.parse(data["created_at"]),
+            content=self.formatter(data["body"]),
+            flags=flags,
+            parent=parent,
+            url=thread.url,
+        )
         self._append_children(data, message, thread)
         return message
 
     def _append_children(self, data, message, thread):
         if "endorsed_responses" in data or "children" in data or "non_endorsed_responses" in data:
             message.children = []
-            for child in data.get("endorsed_responses", []) + data.get("children", []) + data.get('non_endorsed_responses', []):
+            for child in (
+                data.get("endorsed_responses", []) + data.get("children", []) + data.get("non_endorsed_responses", [])
+            ):
                 message.children.append(self._build_message(child, thread, message))
 
     def fill_message(self, message, fields):
         # The only unfilled messages are the root messages of threads returned
         # by iter_threads(). Only `children` in unfilled.
 
-        if 'children' in fields and message.thread.root.id == message.id:
+        if "children" in fields and message.thread.root.id == message.id:
             message.children = self.get_thread(message.id).root.children
 
         return message
@@ -156,16 +161,16 @@ class OpenEDXModule(Module, CapMessages):
 
     def iter_unread_messages(self):
         for thread in self.iter_threads():
-            if thread._messages_count > len(self.storage.get('seen', thread.id, default=[])):
+            if thread._messages_count > len(self.storage.get("seen", thread.id, default=[])):
                 thread = self.get_thread(thread.id)
                 for m in thread.iter_all_messages():
                     if m.flags & m.IS_UNREAD:
                         yield m
 
     def set_message_read(self, message):
-        thread_seen = self.storage.get('seen', message.thread.id, default=[])
+        thread_seen = self.storage.get("seen", message.thread.id, default=[])
         thread_seen.append(message.id)
-        self.storage.set('seen', message.thread.id, thread_seen)
+        self.storage.set("seen", message.thread.id, thread_seen)
         self.storage.save()
 
     OBJECTS = {Message: fill_message}

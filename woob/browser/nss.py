@@ -55,17 +55,17 @@ try:
     import nss.nss
     import nss.ssl
 except ImportError:
-    raise ImportError('Please install python3-nss')
+    raise ImportError("Please install python3-nss")
 import requests  # for AIA
 from requests.packages.urllib3.util.ssl_ import ssl_wrap_socket as old_ssl_wrap_socket
 
 from woob.tools.log import getLogger
 
 
-warnings.warn('Use of NSS is deprecated, it will be removed in woob 4.0', DeprecationWarning, stacklevel=2)
+warnings.warn("Use of NSS is deprecated, it will be removed in woob 4.0", DeprecationWarning, stacklevel=2)
 
 
-__all__ = ['init_nss', 'inject_in_urllib3', 'certificate_db_filename']
+__all__ = ["init_nss", "inject_in_urllib3", "certificate_db_filename"]
 
 
 CTX = None
@@ -76,16 +76,16 @@ LOGGER = getLogger(__name__)
 
 def nss_version():
     version_str = nss.nss.nss_get_version()
-    version_str = re.match(r'\d+\.\d+', version_str).group(0)  # can be "3.21.3 Extended ECC"
-    return tuple(int(x) for x in version_str.split('.'))
+    version_str = re.match(r"\d+\.\d+", version_str).group(0)  # can be "3.21.3 Extended ECC"
+    return tuple(int(x) for x in version_str.split("."))
     # see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/NSS_3.35_release_notes
 
 
 def certificate_db_filename():
     version = nss_version()
     if version < (3, 35):
-        return 'cert8.db'
-    return 'cert9.db'
+        return "cert8.db"
+    return "cert9.db"
 
 
 def path_for_version(path):
@@ -94,7 +94,7 @@ def path_for_version(path):
     # also, some builds <3.35 will fail to enforce sql format when using "sql:"
     if nss_version() < (3, 35):
         return path
-    return 'sql:%s' % path
+    return "sql:%s" % path
 
 
 def cert_to_dict(cert):
@@ -102,8 +102,8 @@ def cert_to_dict(cert):
     # and https://github.com/kennethreitz/requests/blob/master/requests/packages/urllib3/contrib/pyopenssl.py
 
     mappings = {
-        nss.nss.certDNSName: 'DNS',
-        nss.nss.certIPAddress: 'IP Address',
+        nss.nss.certDNSName: "DNS",
+        nss.nss.certIPAddress: "IP Address",
         # TODO support more types
     }
 
@@ -118,22 +118,22 @@ def cert_to_dict(cert):
             altnames.append((key, entry.name))
 
     ret = {
-        'subject': [
-            [('commonName', cert.subject.common_name)],
-            [('localityName', cert.subject.locality_name)],
-            [('organizationName', cert.subject.org_name)],
-            [('organizationalUnitName', cert.subject.org_unit_name)],
-            [('emailAddress', cert.subject.email_address)],
+        "subject": [
+            [("commonName", cert.subject.common_name)],
+            [("localityName", cert.subject.locality_name)],
+            [("organizationName", cert.subject.org_name)],
+            [("organizationalUnitName", cert.subject.org_unit_name)],
+            [("emailAddress", cert.subject.email_address)],
         ],
-        'subjectAltName': altnames,
-        'issuer': [
-            [('countryName', cert.issuer.country_name)],
-            [('organizationName', cert.issuer.org_name)],
-            [('organizationalUnitName', cert.issuer.org_unit_name)],
-            [('commonName', cert.issuer.common_name)],
+        "subjectAltName": altnames,
+        "issuer": [
+            [("countryName", cert.issuer.country_name)],
+            [("organizationName", cert.issuer.org_name)],
+            [("organizationalUnitName", cert.issuer.org_unit_name)],
+            [("commonName", cert.issuer.common_name)],
         ],
         # TODO serialNumber, notBefore, notAfter
-        'version': cert.version,
+        "version": cert.version,
     }
 
     return ret
@@ -150,6 +150,7 @@ def wrap_callable(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         return exc_wrap(func, *args, **kwargs)
+
     return wrapper
 
 
@@ -157,7 +158,7 @@ def exc_wrap(func, *args, **kwargs):
     try:
         return func(*args, **kwargs)
     except nss.error.NSPRError as e:
-        if e.error_desc.startswith('(SEC_ERROR_') or e.error_desc.startswith('(SSL_ERROR_'):
+        if e.error_desc.startswith("(SEC_ERROR_") or e.error_desc.startswith("(SSL_ERROR_"):
             raise basessl.SSLError(0, e.error_message or e.error_desc, e)
 
         for k in ERROR_MAP:
@@ -185,7 +186,7 @@ class NSSFile(RawIOBase):
         amount = len(buf)
         chunk = self.obj.recv(amount)
         # TODO handle timeout by returning None?
-        buf[:len(chunk)] = chunk
+        buf[: len(chunk)] = chunk
         return len(chunk)
 
     def write(self, buf):
@@ -245,7 +246,7 @@ def auth_cert_pinning(sock, check_sig, is_server, path):
     cert = sock.get_peer_certificate()
 
     expected = nss.nss.Certificate(nss.nss.read_der_from_file(path, True))
-    return (expected.signed_data.data == cert.signed_data.data)
+    return expected.signed_data.data == cert.signed_data.data
 
 
 AIA_CACHE = {}
@@ -280,14 +281,14 @@ def auth_cert_aia_only(sock, check_sig, is_server):
     # the parent is indicated in the TLS extension called "AIA"
 
     for ext in cert.extensions:
-        if ext.name == 'Authority Information Access':
+        if ext.name == "Authority Information Access":
             aia_text = ext.format()
-            aia_text = re.sub(r'\s+', ' ', aia_text)
+            aia_text = re.sub(r"\s+", " ", aia_text)
             break
     else:
         return False
     # yes, the parent TLS cert is behind an HTTP URL
-    parent_url = re.search(r'Method: PKIX CA issuers access method Location: URI: (http:\S+)', aia_text).group(1)
+    parent_url = re.search(r"Method: PKIX CA issuers access method Location: URI: (http:\S+)", aia_text).group(1)
 
     with AIA_LOCK:
         parent_der = AIA_CACHE.get(parent_url)
@@ -335,8 +336,8 @@ def auth_cert_with_aia(sock, check_sig, is_server):
 
 
 DEFAULT_CA_CERTIFICATES = (
-    '/etc/ssl/certs/ca-certificates.crt',
-    '/etc/pki/tls/certs/ca-bundle.crt',
+    "/etc/ssl/certs/ca-certificates.crt",
+    "/etc/pki/tls/certs/ca-bundle.crt",
 )
 
 try:
@@ -348,23 +349,23 @@ else:
 
 
 def ssl_wrap_socket(sock, *args, **kwargs):
-    if kwargs.get('certfile'):
-        LOGGER.debug('a client certificate is used, falling back to OpenSSL')
+    if kwargs.get("certfile"):
+        LOGGER.debug("a client certificate is used, falling back to OpenSSL")
         # TODO implement NSS client certificate support
         return old_ssl_wrap_socket(sock, *args, **kwargs)
 
     reinit_if_needed()
 
     # TODO handle more options?
-    hostname = kwargs.get('server_hostname')
-    ossl_ctx = kwargs.get('ssl_context')
+    hostname = kwargs.get("server_hostname")
+    ossl_ctx = kwargs.get("ssl_context")
 
     # the python Socket and the NSS SSLSocket are agnostic of each other's state
     # so the Socket could close the fd, then a file could be opened,
     # obtaining the same file descriptor, then NSS would use the file, thinking
     # it's a network file descriptor... dup the fd to make it independant
     fileno = sock.fileno()
-    if hasattr(sock, 'detach'):
+    if hasattr(sock, "detach"):
         # socket.detach only exists in py3.
         sock.detach()
     else:
@@ -378,14 +379,14 @@ def ssl_wrap_socket(sock, *args, **kwargs):
         nsssock.set_hostname(hostname)
     if ossl_ctx and not ossl_ctx.verify_mode:
         nsssock.set_auth_certificate_callback(lambda *args: True)
-    elif kwargs.get('ca_certs') and kwargs['ca_certs'] not in DEFAULT_CA_CERTIFICATES:
-        nsssock.set_auth_certificate_callback(auth_cert_pinning, kwargs['ca_certs'])
+    elif kwargs.get("ca_certs") and kwargs["ca_certs"] not in DEFAULT_CA_CERTIFICATES:
+        nsssock.set_auth_certificate_callback(auth_cert_pinning, kwargs["ca_certs"])
     else:
         nsssock.set_auth_certificate_callback(auth_cert_with_aia)
 
     nsssock.reset_handshake(False)  # marks handshake as not-done
     try:
-        wrapper.send(b'')  # performs handshake
+        wrapper.send(b"")  # performs handshake
     except nss.error.NSPRError as e:
         if e.error_code == nss.error.PR_END_OF_FILE_ERROR:
             # the corresponding openssl error isn't exactly socket.timeout()
@@ -441,11 +442,11 @@ def init_nss(path, rw=False):
 def add_nss_cert(dbpath, certpath, nickname):
     # Even if you use a different nickname, NSS will not add a cert that is
     # already in db, without signaling it.
-    subprocess.check_call(['certutil', '-A', '-d', dbpath, '-i', certpath, '-n', nickname, '-t', 'TC,C,T'])
+    subprocess.check_call(["certutil", "-A", "-d", dbpath, "-i", certpath, "-n", nickname, "-t", "TC,C,T"])
 
 
 def del_nss_cert(dbpath, nickname):
-    subprocess.check_call(['certutil', '-D', '-d', dbpath, '-n', nickname])
+    subprocess.check_call(["certutil", "-D", "-d", dbpath, "-n", nickname])
 
 
 def create_cert_db(path):
@@ -456,9 +457,9 @@ def create_cert_db(path):
 
 def iter_db_certs(path):
     # TODO check existing db
-    output = subprocess.check_output(['certutil', '-L', '-d', path]).decode('utf-8').rstrip()
-    for line in output.split('\n'):
-        if line.startswith(' ') or ',' not in line:
+    output = subprocess.check_output(["certutil", "-L", "-d", path]).decode("utf-8").rstrip()
+    for line in output.split("\n"):
+        if line.startswith(" ") or "," not in line:
             # NSS prints a useless header.
             # The lines we want have format:
             #   {cert nickname}{space based alignment}{nss trust flags}
@@ -472,9 +473,9 @@ def create_empty_db(path):
     path = path_for_version(path)
 
     try:
-        subprocess.check_call(['certutil', '-N', '--empty-password', '-d', path])
+        subprocess.check_call(["certutil", "-N", "--empty-password", "-d", path])
     except OSError:
-        raise ImportError('Please install libnss3-tools')
+        raise ImportError("Please install libnss3-tools")
 
 
 def update_cert_db(dbpath):
@@ -505,22 +506,22 @@ def update_cert_db(dbpath):
     # nicknames...
     # If we clean them before, we aren't blocked from adding hash nicknames.
     for nick in db_certs:
-        if '/' in nick:
+        if "/" in nick:
             del_nss_cert(dbpath, nick)
             obsolete_certs.discard(nick)
 
-    cert_dir = '/etc/ssl/certs'
+    cert_dir = "/etc/ssl/certs"
     for cert_file in os.listdir(cert_dir):
         cert_file = os.path.join(cert_dir, cert_file)
-        if os.path.isdir(cert_file) or '.' not in cert_file:
+        if os.path.isdir(cert_file) or "." not in cert_file:
             continue
 
         with open(cert_file) as fd:
             content = fd.read()
 
         separators = [
-            '-----END CERTIFICATE-----',
-            '-----END TRUSTED CERTIFICATE-----',
+            "-----END CERTIFICATE-----",
+            "-----END TRUSTED CERTIFICATE-----",
         ]
         for sep in separators:
             if sep in content:
@@ -532,7 +533,7 @@ def update_cert_db(dbpath):
         nb_certs = content.count(separator)
         try:
             if nb_certs == 1:
-                nick = hashlib.sha1(content.strip().encode('utf-8')).hexdigest()
+                nick = hashlib.sha1(content.strip().encode("utf-8")).hexdigest()
                 if nick in db_certs:  # no need to import it
                     obsolete_certs.discard(nick)  # don't remove it at the end
                     continue
@@ -544,19 +545,19 @@ def update_cert_db(dbpath):
                 for subcert in content.split(separator)[:-1]:
                     subcert += separator
 
-                    nick = hashlib.sha1(subcert.strip().encode('utf-8')).hexdigest()
+                    nick = hashlib.sha1(subcert.strip().encode("utf-8")).hexdigest()
                     if nick in db_certs:
                         obsolete_certs.discard(nick)
                         continue
 
-                    with NamedTemporaryFile('w') as fd:
+                    with NamedTemporaryFile("w") as fd:
                         fd.write(subcert)
                         fd.flush()
                         add_nss_cert(dbpath, fd.name, nick)
                         db_certs.add(nick)
 
         except subprocess.CalledProcessError:
-            LOGGER.warning('Unable to handle ca file {}'.format(cert_file))
+            LOGGER.warning("Unable to handle ca file {}".format(cert_file))
 
     for nick in obsolete_certs:
         # Those certs were imported in a previous session, but they don't seem
@@ -570,6 +571,6 @@ def reinit_if_needed():
     # so we should reinit NSS
 
     if INIT_PID and INIT_PID != os.getpid():
-        LOGGER.debug('nss inited in %s but now in %s', INIT_PID, os.getpid())
+        LOGGER.debug("nss inited in %s but now in %s", INIT_PID, os.getpid())
         assert INIT_ARGS
         init_nss(*INIT_ARGS)

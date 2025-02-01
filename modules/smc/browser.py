@@ -21,4 +21,4 @@ from woob_modules.creditdunord.browser import CreditDuNordBrowser
 
 
 class SmcBrowser(CreditDuNordBrowser):
-    BASEURL = 'https://www.smc.fr'
+    BASEURL = "https://www.smc.fr"

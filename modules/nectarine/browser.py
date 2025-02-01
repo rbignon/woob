@@ -22,27 +22,27 @@ from woob.browser import URL, PagesBrowser
 from .pages import LivePage, StreamsPage
 
 
-__all__ = ['NectarineBrowser']
+__all__ = ["NectarineBrowser"]
 
 
 class NectarineBrowser(PagesBrowser):
-    BASEURL = 'https://www.scenemusic.net'
+    BASEURL = "https://www.scenemusic.net"
 
-    streams = URL(r'/demovibes/xml/streams/', StreamsPage)
-    live = URL(r'/demovibes/xml/queue/', LivePage)
+    streams = URL(r"/demovibes/xml/streams/", StreamsPage)
+    live = URL(r"/demovibes/xml/queue/", LivePage)
 
     def home(self):
-        self.location('/demovibes/xml/streams/')
+        self.location("/demovibes/xml/streams/")
 
         assert self.streams.is_here()
 
     def iter_radios_list(self):
-        self.location('/demovibes/xml/streams/')
+        self.location("/demovibes/xml/streams/")
 
         assert self.streams.is_here()
         return self.page.iter_radios_list()
 
     def get_current_emission(self):
-        self.location('/demovibes/xml/queue/')
+        self.location("/demovibes/xml/queue/")
         assert self.live.is_here()
         return self.page.get_current_emission()

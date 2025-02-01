@@ -25,18 +25,18 @@ from .pages import EventDatesPage, EventPage, ResultsPage, SearchPage
 
 
 class BilletreducBrowser(PagesBrowser):
-    BASEURL = 'https://www.billetreduc.com'
+    BASEURL = "https://www.billetreduc.com"
 
-    search = URL(r'/recherche.htm', SearchPage)
-    results = URL(r'/search.htm', ResultsPage)
-    event = URL(r'/(?P<id>\d+)/evt.htm', EventPage)
-    event_dates = URL(r'/(?P<id>\d+)/evtbook.htm',
-                      r'https://www.billetreduc.com/(?P<id>\d+)/evtbook.htm',
-                      EventDatesPage)
-    book = URL(r'/evtBook.htm\?idevt=(?P<id>\d+)&dh=(?P<ymd>\d+-\d+-\d+)\+(?P<hm>\d+:\d+)')
+    search = URL(r"/recherche.htm", SearchPage)
+    results = URL(r"/search.htm", ResultsPage)
+    event = URL(r"/(?P<id>\d+)/evt.htm", EventPage)
+    event_dates = URL(
+        r"/(?P<id>\d+)/evtbook.htm", r"https://www.billetreduc.com/(?P<id>\d+)/evtbook.htm", EventDatesPage
+    )
+    book = URL(r"/evtBook.htm\?idevt=(?P<id>\d+)&dh=(?P<ymd>\d+-\d+-\d+)\+(?P<hm>\d+:\d+)")
 
     def set_id_end(self, event):
-        event.id = '%s.%s' % (event.siteid, event.start_date.strftime('%Y-%m-%d.%H:%M'))
+        event.id = "%s.%s" % (event.siteid, event.start_date.strftime("%Y-%m-%d.%H:%M"))
         event.end_date = event.start_date + timedelta(seconds=3600)
 
     def search_events(self, q):
@@ -69,7 +69,7 @@ class BilletreducBrowser(PagesBrowser):
 
     def get_event(self, _id):
         try:
-            eid, ymd, hm = _id.split('.')
+            eid, ymd, hm = _id.split(".")
         except ValueError:
             return self.get_event_first(_id)
         else:
@@ -87,8 +87,8 @@ class BilletreducBrowser(PagesBrowser):
     def get_event_by_date(self, eid, ymd, hm):
         self.event.go(id=eid)
         event = self.page.get_event()
-        s = '%sT%s' % (ymd, hm)
-        event.start_date = datetime.strptime(s, '%Y-%m-%dT%H:%M')
+        s = "%sT%s" % (ymd, hm)
+        event.start_date = datetime.strptime(s, "%Y-%m-%dT%H:%M")
         event.end_date = event.start_date + timedelta(seconds=3600)
 
         self.event_dates.go(id=eid)

@@ -24,29 +24,31 @@ from woob.exceptions import BrowserIncorrectPassword
 from .pages import AccountHistory, AccountsList, InvestmentList, LoginPage
 
 
-__all__ = ['Suravenir']
+__all__ = ["Suravenir"]
 
 
 class Suravenir(LoginBrowser):
-    BASEURL = 'https://www.previ-direct.com/'
-    broker_to_instance = {'assurancevie.com' : 'Q4n1',
-                          'linxea'           : 'S9o6',
-                          'mes-placements.fr': '5yKs',
-                          'epargnissimo'     : 'FtA1'}
+    BASEURL = "https://www.previ-direct.com/"
+    broker_to_instance = {
+        "assurancevie.com": "Q4n1",
+        "linxea": "S9o6",
+        "mes-placements.fr": "5yKs",
+        "epargnissimo": "FtA1",
+    }
 
-    login_page = URL('/web/eclient-(?P<broker>.*)', LoginPage)
-    accounts_page = URL('/group/eclient-(?P<broker>.*)/home$', AccountsList)
-    summary_page = URL('/group/eclient.*tabulateur.tabulation.resume', None)
-    investments_page = URL('/group/eclient.*tabulateur.tabulation.supports', InvestmentList)
-    history_page = URL('/group/eclient.*tabulateur.tabulation.operations', AccountHistory)
+    login_page = URL("/web/eclient-(?P<broker>.*)", LoginPage)
+    accounts_page = URL("/group/eclient-(?P<broker>.*)/home$", AccountsList)
+    summary_page = URL("/group/eclient.*tabulateur.tabulation.resume", None)
+    investments_page = URL("/group/eclient.*tabulateur.tabulation.supports", InvestmentList)
+    history_page = URL("/group/eclient.*tabulateur.tabulation.operations", AccountHistory)
 
-#        detail_link does not contain the type of page. the suffix for the pages are:
-#        résumé
-#        _portletespaceClientmonCompte_WAR_portletespaceclient_INSTANCE_Q4n1_tabName=detailsContrat.tabulateur.tabulation.resume
-#        mes supports
-#        _portletespaceClientmonCompte_WAR_portletespaceclient_INSTANCE_Q4n1_tabName=detailsContrat.tabulateur.tabulation.supports
-#        mes opérations
-#        _portletespaceClientmonCompte_WAR_portletespaceclient_INSTANCE_Q4n1_tabName=detailsContrat.tabulateur.tabulation.operations
+    #        detail_link does not contain the type of page. the suffix for the pages are:
+    #        résumé
+    #        _portletespaceClientmonCompte_WAR_portletespaceclient_INSTANCE_Q4n1_tabName=detailsContrat.tabulateur.tabulation.resume
+    #        mes supports
+    #        _portletespaceClientmonCompte_WAR_portletespaceclient_INSTANCE_Q4n1_tabName=detailsContrat.tabulateur.tabulation.supports
+    #        mes opérations
+    #        _portletespaceClientmonCompte_WAR_portletespaceclient_INSTANCE_Q4n1_tabName=detailsContrat.tabulateur.tabulation.operations
 
     def __init__(self, broker, *args, **kwargs):
         self.broker = broker
@@ -64,14 +66,17 @@ class Suravenir(LoginBrowser):
         return self.page.get_contracts()
 
     def get_URI_for_account(self, account):
-        return '%s&_portletespaceClientmonCompte_WAR_portletespaceclient_INSTANCE_%s_tabName=detailsContrat.tabulateur.tabulation' % (account._detail_link, self.broker_to_instance[self.broker])
+        return (
+            "%s&_portletespaceClientmonCompte_WAR_portletespaceclient_INSTANCE_%s_tabName=detailsContrat.tabulateur.tabulation"
+            % (account._detail_link, self.broker_to_instance[self.broker])
+        )
 
     @need_login
     def iter_investments(self, account):
-        self.location(self.get_URI_for_account(account) + '.supports')
+        self.location(self.get_URI_for_account(account) + ".supports")
         return self.page.iter_investments()
 
     @need_login
     def iter_history(self, account):
-        self.location(self.get_URI_for_account(account) + '.operations')
+        self.location(self.get_URI_for_account(account) + ".operations")
         return self.page.iter_history()

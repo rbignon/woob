@@ -25,23 +25,23 @@ from woob.tools.value import ValueBackendPassword, ValueDate, ValueTransient
 from .browser import BforbankBrowser
 
 
-__all__ = ['BforbankModule']
+__all__ = ["BforbankModule"]
 
 
 class BforbankModule(Module, CapBankWealth, CapProfile):
-    NAME = 'bforbank'
-    DESCRIPTION = 'BforBank'
-    MAINTAINER = 'Baptiste Delpey'
-    EMAIL = 'b.delpey@hotmail.fr'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('lcl', 'spirica')
+    NAME = "bforbank"
+    DESCRIPTION = "BforBank"
+    MAINTAINER = "Baptiste Delpey"
+    EMAIL = "b.delpey@hotmail.fr"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("lcl", "spirica")
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code personnel', regexp=r'\d+$'),
-        ValueDate('birthdate', label='Date de naissance', formats=('%d/%m/%Y',)),
-        ValueTransient('code', regexp=r'\d{6}'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Code personnel", regexp=r"\d+$"),
+        ValueDate("birthdate", label="Date de naissance", formats=("%d/%m/%Y",)),
+        ValueTransient("code", regexp=r"\d{6}"),
+        ValueTransient("request_information"),
     )
 
     BROWSER = BforbankBrowser

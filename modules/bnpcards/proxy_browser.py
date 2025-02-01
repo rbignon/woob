@@ -27,7 +27,7 @@ from .phenix.browser import BnpcartesentreprisePhenixBrowser
 
 class ProxyBrowser(SwitchingBrowser):
     BROWSERS = {
-        'main': BnpcartesentrepriseBrowser,
-        'corporate': BnpcartesentrepriseCorporateBrowser,
-        'phenix': BnpcartesentreprisePhenixBrowser,
+        "main": BnpcartesentrepriseBrowser,
+        "corporate": BnpcartesentrepriseCorporateBrowser,
+        "phenix": BnpcartesentreprisePhenixBrowser,
     }

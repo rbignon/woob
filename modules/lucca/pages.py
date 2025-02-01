@@ -32,8 +32,8 @@ from woob.tools.date import new_date, parse_date
 class LoginPage(HTMLPage):
     def do_login(self, username, password):
         form = self.get_form(xpath='//form[@action="/identity/login"]')
-        form['UserName'] = username
-        form['Password'] = password
+        form["UserName"] = username
+        form["Password"] = password
         form.submit()
 
     def check_error(self):
@@ -55,16 +55,16 @@ class User(object):
 
 class UsersPage(LoggedPage, JsonPage):
     def iter_users(self):
-        for dpt in self.doc['data']:
-            for d in dpt['users']:
+        for dpt in self.doc["data"]:
+            for d in dpt["users"]:
                 u = User()
-                u.id = d['id']
-                u.name = d['displayName']
+                u.id = d["id"]
+                u.name = d["displayName"]
 
-                v = d['dtContractStart']
+                v = d["dtContractStart"]
                 if v:
                     u.start = parse_date(v)
-                v = d['dtContractEnd']
+                v = d["dtContractEnd"]
                 if v:
                     u.end = parse_date(v)
 
@@ -78,24 +78,24 @@ class CalendarPage(LoggedPage, JsonPage):
         # key: (userId, date)
         events = {}
 
-        for d in self.doc['data']['items']:
-            if not d['leavePeriod']['isConfirmed']:
+        for d in self.doc["data"]["items"]:
+            if not d["leavePeriod"]["isConfirmed"]:
                 # not validated by manager
                 continue
 
-            if d['isRemoteWork']:
+            if d["isRemoteWork"]:
                 continue
 
-            user_id = d['leavePeriod']['ownerId']
+            user_id = d["leavePeriod"]["ownerId"]
             user = users[user_id]
 
             ev = BaseCalendarEvent()
-            ev.timezone = 'Europe/Paris'
+            ev.timezone = "Europe/Paris"
             ev.summary = user.name
             ev.status = STATUS.CONFIRMED
 
-            ev.start_date = DateTime().filter(d['date'])
-            if not d['isAM']:
+            ev.start_date = DateTime().filter(d["date"])
+            if not d["isAM"]:
                 ev.start_date = ev.start_date + timedelta(hours=12)
                 ev.end_date = ev.start_date + timedelta(hours=12)
             else:
@@ -119,35 +119,35 @@ class SubscriptionPage(LoggedPage, JsonPage):
     class get_subscription(ItemElement):
         klass = Subscription
 
-        obj_id = CleanText(Dict('data/employeeNumber'))
-        obj_label = Field('id')
-        obj_subscriber = CleanText(Dict('header/principal'))
-        obj__owner_id = Dict('data/id')
+        obj_id = CleanText(Dict("data/employeeNumber"))
+        obj_label = Field("id")
+        obj_subscriber = CleanText(Dict("header/principal"))
+        obj__owner_id = Dict("data/id")
 
     def get_id_card_document(self):
         iddoc = Document()
-        els = self.doc['data']['extendedData']['e_iddocuments']
+        els = self.doc["data"]["extendedData"]["e_iddocuments"]
         for el in els:
-            value = el['value']['e_iddocuments_document']['value']
+            value = el["value"]["e_iddocuments_document"]["value"]
             # CNI: Carte national d'identité
-            if 'CNI' in value['name']:
-                iddoc.id = value['id']
-                iddoc.label, iddoc.format = value['name'].rsplit('.', 1)
-                iddoc.url = value['href']
+            if "CNI" in value["name"]:
+                iddoc.id = value["id"]
+                iddoc.label, iddoc.format = value["name"].rsplit(".", 1)
+                iddoc.url = value["href"]
                 return iddoc
 
 
 class DocumentsPage(LoggedPage, JsonPage):
     @method
     class iter_documents(DictElement):
-        item_xpath = 'data/items'
+        item_xpath = "data/items"
 
         class item(ItemElement):
             klass = Document
 
-            obj_id = CleanText(Dict('id'))
-            obj_label = Format('Fiche de paie %s', CleanText(Dict('import/name')))
-            obj_date = Date(CleanText(Dict('import/endDate')))
-            obj_url = BrowserURL('download_document', document_id=Field('id'))
+            obj_id = CleanText(Dict("id"))
+            obj_label = Format("Fiche de paie %s", CleanText(Dict("import/name")))
+            obj_date = Date(CleanText(Dict("import/endDate")))
+            obj_url = BrowserURL("download_document", document_id=Field("id"))
             obj_type = DocumentTypes.PAYSLIP
-            obj_format = 'pdf'
+            obj_format = "pdf"

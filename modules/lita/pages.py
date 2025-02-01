@@ -29,8 +29,8 @@ from woob.capabilities.profile import Person
 class LoginPage(HTMLPage):
     def do_login(self, username, password):
         form = self.get_form(id="new_user")
-        form['user[email]'] = username
-        form['user[password]'] = password
+        form["user[email]"] = username
+        form["user[password]"] = password
         form.submit()
 
     def get_error_msg(self):
@@ -75,9 +75,11 @@ class ProfilePage(LoggedPage, HTMLPage):
 
 class InvestmentsListPage(LoggedPage, HTMLPage):
     def iter_investments(self):
-        for block in self.doc.xpath('//div[contains(@class, "my-investment-table")]//div[contains(@class, "card-white")]'):
+        for block in self.doc.xpath(
+            '//div[contains(@class, "my-investment-table")]//div[contains(@class, "card-white")]'
+        ):
             label = CleanText('.//span[contains(@class, "purple")]')(block)
-            _id = Regexp(CleanText('.//a[contains(@href, "shares")]/@href'), r'(?P<id>\d+)')(block)
+            _id = Regexp(CleanText('.//a[contains(@href, "shares")]/@href'), r"(?P<id>\d+)")(block)
             yield _id, label
 
 
@@ -86,19 +88,19 @@ class InvestmentsDetailsPage(LoggedPage, HTMLPage):
     class get_investments_details(ItemElement):
         klass = Investment
 
-        obj_id = Env('id')
+        obj_id = Env("id")
         obj_quantity = CleanDecimal.French(CleanText('//span[contains(text(), "part")]'))
         obj_valuation = CleanDecimal.French(CleanText('//span[contains(text(), "valorisation")]'))
         obj__init_valuation = CleanDecimal.French(CleanText('//i[contains(text(), "Valeur initiale")]'))
 
         def obj_unitprice(self):
-            return Field('_init_valuation')(self) / Field('quantity')(self)
+            return Field("_init_valuation")(self) / Field("quantity")(self)
 
         def obj_unitvalue(self):
-            return Field('valuation')(self) / Field('quantity')(self)
+            return Field("valuation")(self) / Field("quantity")(self)
 
         def obj_diff(self):
-            return Field('_init_valuation')(self) - Field('valuation')(self)
+            return Field("_init_valuation")(self) - Field("valuation")(self)
 
         def obj_diff_ratio(self):
-            return Field('valuation')(self) / Field('_init_valuation')(self)
+            return Field("valuation")(self) / Field("_init_valuation")(self)

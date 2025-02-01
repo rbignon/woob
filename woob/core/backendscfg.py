@@ -28,7 +28,7 @@ from subprocess import CalledProcessError, check_output
 from typing import Iterator, Tuple
 
 
-__all__ = ['BackendsConfig', 'BackendAlreadyExists']
+__all__ = ["BackendsConfig", "BackendAlreadyExists"]
 
 
 class BackendAlreadyExists(Exception):
@@ -44,13 +44,13 @@ class DictWithCommands(MutableMapping):
 
     def __getitem__(self, key):
         value = self._raw[key]
-        if value.startswith('`') and value.endswith('`'):
+        if value.startswith("`") and value.endswith("`"):
             try:
                 value = check_output(value[1:-1], shell=True)  # nosec: this is intended
             except CalledProcessError as e:
-                raise ValueError(f'The call to the external tool failed: {e}') from e
+                raise ValueError(f"The call to the external tool failed: {e}") from e
 
-            value = value.decode('utf-8').partition('\n')[0].strip('\r\n\t')
+            value = value.decode("utf-8").partition("\n")[0].strip("\r\n\t")
 
         return value
 
@@ -90,32 +90,32 @@ class BackendsConfig:
         except OSError:
             if not os.path.isdir(os.path.dirname(confpath)):
                 os.makedirs(os.path.dirname(confpath))
-            if sys.platform == 'win32':
-                fptr = open(confpath, 'w', encoding='utf-8')
+            if sys.platform == "win32":
+                fptr = open(confpath, "w", encoding="utf-8")
                 fptr.close()
             else:
                 try:
                     fd = os.open(confpath, os.O_WRONLY | os.O_CREAT, 0o600)
                     os.close(fd)
                 except OSError:
-                    fptr = open(confpath, 'w', encoding='utf-8')
+                    fptr = open(confpath, "w", encoding="utf-8")
                     fptr.close()
                     os.chmod(confpath, 0o600)
         else:
-            if sys.platform != 'win32':
+            if sys.platform != "win32":
                 if mode & stat.S_IRGRP or mode & stat.S_IROTH:
                     raise self.WrongPermissions(
-                        f'Woob will not start as long as config file {confpath} is readable by group or other users.'
+                        f"Woob will not start as long as config file {confpath} is readable by group or other users."
                     )
 
     def _read_config(self):
         config = RawConfigParser()
-        with codecs.open(self.confpath, 'r', encoding='utf-8') as fd:
+        with codecs.open(self.confpath, "r", encoding="utf-8") as fd:
             config.read_file(fd, self.confpath)
         return config
 
     def _write_config(self, config):
-        f = codecs.open(self.confpath, 'wb', encoding='utf-8')
+        f = codecs.open(self.confpath, "wb", encoding="utf-8")
         with f:
             config.write(f)
 
@@ -130,7 +130,7 @@ class BackendsConfig:
         for backend_name in config.sections():
             params = DictWithCommands(config.items(backend_name))
             try:
-                module_name = params.pop('_module')
+                module_name = params.pop("_module")
             except KeyError:
                 warning('Missing field "_module" for configured backend "%s"', backend_name)
                 continue
@@ -158,14 +158,14 @@ class BackendsConfig:
         :type params: dict
         """
         if not backend_name:
-            raise ValueError('Please give a name to the configured backend.')
+            raise ValueError("Please give a name to the configured backend.")
         config = self._read_config()
         try:
             config.add_section(backend_name)
         except DuplicateSectionError as exc:
             raise BackendAlreadyExists(backend_name) from exc
 
-        config.set(backend_name, '_module', module_name)
+        config.set(backend_name, "_module", module_name)
         for key, value in params.items():
             config.set(backend_name, key, value)
 
@@ -204,7 +204,7 @@ class BackendsConfig:
         items = dict(config.items(backend_name))
 
         try:
-            module_name = items.pop('_module')
+            module_name = items.pop("_module")
         except KeyError:
             warning('Missing field "_module" for configured backend "%s"', backend_name)
             raise KeyError(f'Configured backend "{backend_name}" not found')

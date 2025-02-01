@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest
 
 
 class AmazonfrTest(BackendTest):
-    MODULE = 'amazonfr'
+    MODULE = "amazonfr"
 
     def test_document(self):
         subscriptions = list(self.backend.iter_subscription())

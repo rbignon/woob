@@ -18,4 +18,4 @@
 from .recipes import AppRecipes
 
 
-__all__ = ['AppRecipes']
+__all__ = ["AppRecipes"]

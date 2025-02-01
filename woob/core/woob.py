@@ -39,7 +39,7 @@ from woob.tools.misc import classproperty
 from woob.tools.storage import IStorage
 
 
-__all__ = ['WoobBase', 'Woob']
+__all__ = ["WoobBase", "Woob"]
 
 
 class VersionsMismatchError(ConfigError):
@@ -70,14 +70,13 @@ class WoobBase:
 
     @classproperty
     def VERSION(self):
-        warnings.warn('Use woob.__version__ instead.', DeprecationWarning, stacklevel=2)
+        warnings.warn("Use woob.__version__ instead.", DeprecationWarning, stacklevel=2)
         return __version__
 
-    def __init__(self,
-                 modules_path: str | None = None,
-                 storage: IStorage | None = None,
-                 scheduler: IScheduler | None = None):
-        self.logger = getLogger('woob')
+    def __init__(
+        self, modules_path: str | None = None, storage: IStorage | None = None, scheduler: IScheduler | None = None
+    ):
+        self.logger = getLogger("woob")
         self.backend_instances: Dict[str, Module] = {}
         self.requests = RequestsManager()
 
@@ -111,13 +110,15 @@ class WoobBase:
         """
         return ModulesLoader(self.modules_path, __version__)
 
-    def build_backend(self,
-                      module_name: str,
-                      params: Dict[str, str] | None = None,
-                      storage: IStorage | None = None,
-                      name: str | None = None,
-                      nofail: bool = False,
-                      logger: logging.Logger | None = None) -> Module:
+    def build_backend(
+        self,
+        module_name: str,
+        params: Dict[str, str] | None = None,
+        storage: IStorage | None = None,
+        name: str | None = None,
+        nofail: bool = False,
+        logger: logging.Logger | None = None,
+    ) -> Module:
         """
         Create a backend.
 
@@ -139,7 +140,9 @@ class WoobBase:
         """
         module = self.modules_loader.get_or_load_module(module_name)
 
-        backend_instance = module.create_instance(self, name or module_name, params or {}, storage, nofail, logger=logger or self.logger)
+        backend_instance = module.create_instance(
+            self, name or module_name, params or {}, storage, nofail, logger=logger or self.logger
+        )
         return backend_instance
 
     class LoadError(Exception):
@@ -154,12 +157,14 @@ class WoobBase:
             super().__init__(message)
             self.backend_name = backend_name
 
-    def load_backend(self,
-                     module_name: str,
-                     name: str,
-                     params: dict | None = None,
-                     storage: IStorage | None = None,
-                     nofail: bool = False):
+    def load_backend(
+        self,
+        module_name: str,
+        name: str,
+        params: dict | None = None,
+        storage: IStorage | None = None,
+        nofail: bool = False,
+    ):
         """
         Load a backend.
 
@@ -225,8 +230,8 @@ class WoobBase:
         try:
             return self.backend_instances[name]
         except KeyError:
-            if 'default' in kwargs:
-                return kwargs['default']
+            if "default" in kwargs:
+                return kwargs["default"]
             else:
                 raise
 
@@ -236,11 +241,7 @@ class WoobBase:
         """
         return len(self.backend_instances)
 
-    def iter_backends(
-        self,
-        caps: List[Capability] | None = None,
-        module: str | None = None
-    ) -> Iterator[Module]:
+    def iter_backends(self, caps: List[Capability] | None = None, module: str | None = None) -> Iterator[Module]:
         """
         Iter on each backends.
 
@@ -253,14 +254,14 @@ class WoobBase:
         :rtype: iter[:class:`woob.tools.backend.Module`]
         """
         for _, backend in sorted(self.backend_instances.items()):
-            if (caps is None or backend.has_caps(caps)) and \
-               (module is None or backend.NAME == module):
+            if (caps is None or backend.has_caps(caps)) and (module is None or backend.NAME == module):
                 with backend:
                     yield backend
 
     def __getattr__(self, name: str) -> Callable[..., BackendsCall]:
         def caller(*args, **kwargs):
             return self.do(name, *args, **kwargs)
+
         return caller
 
     def do(self, function: Callable | str, *args, **kwargs) -> BackendsCall:
@@ -285,7 +286,7 @@ class WoobBase:
         :rtype: A :class:`woob.core.bcall.BackendsCall` object (iterable)
         """
         backends = list(self.backend_instances.values())
-        _backends = kwargs.pop('backends', None)
+        _backends = kwargs.pop("backends", None)
         if _backends is not None:
             if isinstance(_backends, Module):
                 backends = [_backends]
@@ -308,8 +309,8 @@ class WoobBase:
             else:
                 self.logger.warning('The "backends" value isn\'t supported: %r', _backends)
 
-        if 'caps' in kwargs:
-            caps = kwargs.pop('caps')
+        if "caps" in kwargs:
+            caps = kwargs.pop("caps")
             backends = [backend for backend in backends if backend.has_caps(caps)]
 
         # The return value MUST BE the BackendsCall instance. Please never iterate
@@ -365,7 +366,7 @@ class WoobBase:
         return self.scheduler.run()
 
     def load_or_install_module(self, module_name: str) -> Module:
-        """ Load a backend, but can't install it """
+        """Load a backend, but can't install it"""
         return self.modules_loader.get_or_load_module(module_name)
 
 
@@ -384,7 +385,8 @@ class Woob(WoobBase):
     :param storage: provide a storage where backends can save data
     :type storage: :class:`woob.tools.storage.IStorage`
     """
-    BACKENDS_FILENAME = 'backends'
+
+    BACKENDS_FILENAME = "backends"
 
     def __init__(
         self,
@@ -392,7 +394,7 @@ class Woob(WoobBase):
         datadir: str | None = None,
         backends_filename: str | None = None,
         scheduler: IScheduler | None = None,
-        storage: IStorage | None = None
+        storage: IStorage | None = None,
     ):
         # Create WORKDIR
         xdg_config = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
@@ -425,11 +427,11 @@ class Woob(WoobBase):
         # Backend instances config
         if not backends_filename:
             backends_filename = (
-                os.environ.get('WOOB_BACKENDS')
-                or os.environ.get('WEBOOB_BACKENDS')
+                os.environ.get("WOOB_BACKENDS")
+                or os.environ.get("WEBOOB_BACKENDS")
                 or os.path.join(self.workdir, self.BACKENDS_FILENAME)
             )
-        elif not backends_filename.startswith('/'):
+        elif not backends_filename.startswith("/"):
             backends_filename = os.path.join(self.workdir, backends_filename)
         self.backends_config: BackendsConfig = BackendsConfig(backends_filename)
 
@@ -471,13 +473,15 @@ class Woob(WoobBase):
             if minfo and not minfo.is_installed():
                 self.repositories.install(minfo, progress)
 
-    def build_backend(self,
-                      module_name: str,
-                      params: Dict[str, str] | None = None,
-                      storage: IStorage | None = None,
-                      name: str | None = None,
-                      nofail: bool = False,
-                      logger: logging.Logger | None = None) -> Module:
+    def build_backend(
+        self,
+        module_name: str,
+        params: Dict[str, str] | None = None,
+        storage: IStorage | None = None,
+        name: str | None = None,
+        nofail: bool = False,
+        logger: logging.Logger | None = None,
+    ) -> Module:
         """
         Create a single backend which is not listed in configuration.
 
@@ -495,20 +499,22 @@ class Woob(WoobBase):
         """
         minfo = self.repositories.get_module_info(module_name)
         if minfo is None:
-            raise ModuleLoadError(module_name, 'Module does not exist.')
+            raise ModuleLoadError(module_name, "Module does not exist.")
 
         if not minfo.is_installed():
             self.repositories.install(minfo)
 
         return super().build_backend(module_name, params, storage, name, nofail, logger)
 
-    def load_backends(self,
-                      caps: List[Capability | str] | None = None,
-                      names: List[str] | None = None,
-                      modules: List[str] | None = None,
-                      exclude: List[str] | None = None,
-                      storage: IStorage | None = None,
-                      errors: List['Woob.LoadError'] | None = None) -> Dict[str, Module]:
+    def load_backends(
+        self,
+        caps: List[Capability | str] | None = None,
+        names: List[str] | None = None,
+        modules: List[str] | None = None,
+        exclude: List[str] | None = None,
+        storage: IStorage | None = None,
+        errors: List["Woob.LoadError"] | None = None,
+    ) -> Dict[str, Module]:
         """
         Load backends listed in config file.
 
@@ -532,20 +538,30 @@ class Woob(WoobBase):
             storage = self.storage
 
         if not self.repositories.check_repositories():
-            self.logger.error('Repositories are not consistent with the sources.list')
+            self.logger.error("Repositories are not consistent with the sources.list")
             raise VersionsMismatchError('Versions mismatch, please run "woob config update"')
 
         for backend_name, module_name, params in self.backends_config.iter_backends():
-            if '_enabled' in params and not params['_enabled'].lower() in ('1', 'y', 'true', 'on', 'yes') or \
-               names is not None and backend_name not in names or \
-               modules is not None and module_name not in modules or \
-               exclude is not None and backend_name in exclude:
+            if (
+                "_enabled" in params
+                and not params["_enabled"].lower() in ("1", "y", "true", "on", "yes")
+                or names is not None
+                and backend_name not in names
+                or modules is not None
+                and module_name not in modules
+                or exclude is not None
+                and backend_name in exclude
+            ):
                 continue
 
             minfo = self.repositories.get_module_info(module_name)
             if minfo is None:
-                self.logger.warning('Backend "%s" is referenced in %s but was not found. '
-                                    'Perhaps a missing repository or a removed module?', module_name, self.backends_config.confpath)
+                self.logger.warning(
+                    'Backend "%s" is referenced in %s but was not found. '
+                    "Perhaps a missing repository or a removed module?",
+                    module_name,
+                    self.backends_config.confpath,
+                )
                 continue
 
             if caps is not None and not minfo.has_caps(caps):
@@ -562,7 +578,9 @@ class Woob(WoobBase):
                 continue
 
             if backend_name in self.backend_instances:
-                self.logger.warning('Oops, the backend "%s" is already loaded. Unload it before reloading...', backend_name)
+                self.logger.warning(
+                    'Oops, the backend "%s" is already loaded. Unload it before reloading...', backend_name
+                )
                 self.unload_backends(backend_name)
 
             try:
@@ -575,7 +593,7 @@ class Woob(WoobBase):
         return loaded
 
     def load_or_install_module(self, module_name: str) -> Module:
-        """ Load a backend, and install it if not done before """
+        """Load a backend, and install it if not done before"""
         try:
             return self.modules_loader.get_or_load_module(module_name)
         except ModuleLoadError:

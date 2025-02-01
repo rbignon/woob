@@ -26,109 +26,109 @@ from woob.tools.test import BackendTest
 
 
 class AllocineTest(BackendTest):
-    MODULE = 'allocine'
+    MODULE = "allocine"
 
     def test_search_movie(self):
-        movies = list(self.backend.iter_movies('usual suspects'))
+        movies = list(self.backend.iter_movies("usual suspects"))
         assert len(movies) > 0
         for movie in movies:
             assert movie.id
 
     def test_get_movie(self):
-        movie = self.backend.get_movie('5032')
+        movie = self.backend.get_movie("5032")
         assert movie
         assert movie.id
         assert movie.original_title
 
     def test_search_person(self):
-        persons = list(self.backend.iter_persons('patrick dewaere'))
+        persons = list(self.backend.iter_persons("patrick dewaere"))
         assert len(persons) > 0
         for person in persons:
             assert person.id
 
     def test_get_person(self):
-        person = self.backend.get_person('1115')
+        person = self.backend.get_person("1115")
         assert person
         assert person.id
         assert person.name
         assert person.birth_date
 
     def test_movie_persons(self):
-        persons = list(self.backend.iter_movie_persons('5032'))
+        persons = list(self.backend.iter_movie_persons("5032"))
         assert len(persons) > 0
         for person in persons:
             assert person.id
             assert person.name
 
     def test_person_movies(self):
-        movies = list(self.backend.iter_person_movies('1115'))
+        movies = list(self.backend.iter_person_movies("1115"))
         assert len(movies) > 0
         for movie in movies:
             assert movie.id
             assert movie.original_title
 
     def test_get_person_biography(self):
-        bio = self.backend.get_person_biography('1115')
-        assert bio != ''
+        bio = self.backend.get_person_biography("1115")
+        assert bio != ""
         assert bio is not None
-        assert re.match(r'^Patrick Dewaere, fils.*', bio)
+        assert re.match(r"^Patrick Dewaere, fils.*", bio)
 
     def test_get_movie_releases(self):
-        rel = self.backend.get_movie_releases('5032', 'fr')
-        assert rel != ''
+        rel = self.backend.get_movie_releases("5032", "fr")
+        assert rel != ""
         assert rel is not None
 
     def test_iter_person_movies_ids(self):
-        movies_ids = list(self.backend.iter_person_movies_ids('1115'))
+        movies_ids = list(self.backend.iter_person_movies_ids("1115"))
         assert len(movies_ids) > 0
         for movie_id in movies_ids:
             assert movie_id
 
     def test_iter_movie_persons_ids(self):
-        persons_ids = list(self.backend.iter_movie_persons_ids('5032'))
+        persons_ids = list(self.backend.iter_movie_persons_ids("5032"))
         assert len(persons_ids) > 0
         for person_id in persons_ids:
             assert person_id
 
     def test_emissions(self):
-        l = list(self.backend.iter_resources([BaseVideo], [u'acshow']))
+        l = list(self.backend.iter_resources([BaseVideo], ["acshow"]))
         assert len(l)
         l1 = list(self.backend.iter_resources([BaseVideo], l[0].split_path))
         assert len(l1)
         v = l1[0]
-        self.backend.fillobj(v, 'url')
+        self.backend.fillobj(v, "url")
         self.assertTrue(v.url, 'URL for video "%s" not found' % (v.id))
 
     def test_interview(self):
-        l = list(self.backend.iter_resources([BaseVideo], [u'interview']))
+        l = list(self.backend.iter_resources([BaseVideo], ["interview"]))
         assert len(l)
         v = l[0]
-        self.backend.fillobj(v, 'url')
+        self.backend.fillobj(v, "url")
         self.assertTrue(v.url, 'URL for video "%s" not found' % (v.id))
 
     def test_comingsoon(self):
-        l = list(self.backend.iter_resources([BaseVideo], [u'comingsoon']))
+        l = list(self.backend.iter_resources([BaseVideo], ["comingsoon"]))
         assert len(l)
         v = l[0]
-        self.backend.fillobj(v, 'url')
+        self.backend.fillobj(v, "url")
         self.assertTrue(v.url, 'URL for video "%s" not found' % (v.id))
 
     def test_nowshowing(self):
-        l = list(self.backend.iter_resources([BaseVideo], [u'nowshowing']))
+        l = list(self.backend.iter_resources([BaseVideo], ["nowshowing"]))
         assert len(l)
         v = l[0]
-        self.backend.fillobj(v, 'url')
+        self.backend.fillobj(v, "url")
         self.assertTrue(v.url, 'URL for video "%s" not found' % (v.id))
 
     def test_showtimelist(self):
         query = Query()
-        query.city = u'59000'
+        query.city = "59000"
         query.categories = [CATEGORIES.CINE]
         query.start_date = datetime.now()
         l = self.backend.search_events(query)
         assert len(l)
         e = l[0]
-        self.backend.fillobj(e, 'description')
+        self.backend.fillobj(e, "description")
         self.assertTrue(e.description, 'Description of "%s" not found' % (e.id))
         e = self.backend.get_event(e.id)
         self.assertTrue(e.description, 'Description of "%s" not found' % (e.id))

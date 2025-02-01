@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class SpiricaTest(BackendTest):
-    MODULE = 'spirica'
+    MODULE = "spirica"
 
     def test_spirica(self):
         raise NotImplementedError()

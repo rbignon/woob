@@ -22,7 +22,11 @@
 from woob.browser import URL, LoginBrowser, need_login
 from woob.capabilities.bank import Account
 from woob.exceptions import (
-    ActionNeeded, ActionType, BrowserIncorrectPassword, BrowserPasswordExpired, BrowserUnavailable,
+    ActionNeeded,
+    ActionType,
+    BrowserIncorrectPassword,
+    BrowserPasswordExpired,
+    BrowserUnavailable,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
 from woob.tools.capabilities.bank.transactions import sorted_transactions
@@ -30,48 +34,51 @@ from woob.tools.decorators import retry
 from woob.tools.json import json
 
 from .pages import (
-    AccountsPage, BypassAlertPage, ErrorPage, HistoryPage, IbanPage, IndexPage, InvestmentsPage, LoginConfirmPage,
-    LoginPage, ProfilePage, RgpdPage,
+    AccountsPage,
+    BypassAlertPage,
+    ErrorPage,
+    HistoryPage,
+    IbanPage,
+    IndexPage,
+    InvestmentsPage,
+    LoginConfirmPage,
+    LoginPage,
+    ProfilePage,
+    RgpdPage,
 )
 
 
 class CreditDuNordBrowser(LoginBrowser):
-    ENCODING = 'UTF-8'
+    ENCODING = "UTF-8"
     BASEURL = "https://www.credit-du-nord.fr/"
 
-    index = URL(
-        '/icd/zdb/index.html',
-        IndexPage
-    )
+    index = URL("/icd/zdb/index.html", IndexPage)
     login = URL(
-        r'$',
-        r'/.*\?.*_pageLabel=page_erreur_connexion',
-        r'/.*\?.*_pageLabel=reinitialisation_mot_de_passe',
-        LoginPage
+        r"$", r"/.*\?.*_pageLabel=page_erreur_connexion", r"/.*\?.*_pageLabel=reinitialisation_mot_de_passe", LoginPage
     )
-    logout = URL(r'/pkmslogout')
-    login_confirm = URL(r'/sec/vk/authent.json', LoginConfirmPage)
+    logout = URL(r"/pkmslogout")
+    login_confirm = URL(r"/sec/vk/authent.json", LoginConfirmPage)
 
-    bypass_rgpd = URL(r'/icd/zcd/data/gdpr-get-out-zs-client.json', RgpdPage)
-    bypass_alert = URL(r'/icd/zcm_alerting/data/pull-events/zcm-alerting-get-out-zs-client.json', BypassAlertPage)
+    bypass_rgpd = URL(r"/icd/zcd/data/gdpr-get-out-zs-client.json", RgpdPage)
+    bypass_alert = URL(r"/icd/zcm_alerting/data/pull-events/zcm-alerting-get-out-zs-client.json", BypassAlertPage)
 
-    error_page = URL(r'/icd/static/acces-simplifie.html', ErrorPage)
+    error_page = URL(r"/icd/static/acces-simplifie.html", ErrorPage)
 
-    profile = URL(r'/icd/zco/data/public-user.json', ProfilePage)
-    accounts = URL(r'/icd/fdo/data/comptesExternes.json', AccountsPage)
-    history = URL(r'/icd/fdo/data/detailDunCompte.json', HistoryPage)
-    investments = URL(r'/icd/fdo/data/getAccountWithAsset.json', InvestmentsPage)
+    profile = URL(r"/icd/zco/data/public-user.json", ProfilePage)
+    accounts = URL(r"/icd/fdo/data/comptesExternes.json", AccountsPage)
+    history = URL(r"/icd/fdo/data/detailDunCompte.json", HistoryPage)
+    investments = URL(r"/icd/fdo/data/getAccountWithAsset.json", InvestmentsPage)
 
-    iban = URL(r'/icd/zvo/data/saisieVirement/saisieVirement.json', IbanPage)
+    iban = URL(r"/icd/zvo/data/saisieVirement/saisieVirement.json", IbanPage)
 
     def do_login(self):
         self.login.go()
 
         if self.error_page.is_here():
             msg = self.page.get_error_msg()
-            if 'Suite à une erreur technique' in msg:
+            if "Suite à une erreur technique" in msg:
                 raise BrowserUnavailable(msg)
-            raise AssertionError('Unhandled error message: %s' % msg)
+            raise AssertionError("Unhandled error message: %s" % msg)
 
         website_unavailable = self.page.get_website_unavailable_message()
         if website_unavailable:
@@ -79,57 +86,58 @@ class CreditDuNordBrowser(LoginBrowser):
 
         # Some users are still using their old password, that leads to a virtual keyboard crash.
         if not self.password.isdigit() or len(self.password) != 6:
-            raise BrowserIncorrectPassword('Veuillez utiliser le nouveau code confidentiel fourni par votre banque.')
+            raise BrowserIncorrectPassword("Veuillez utiliser le nouveau code confidentiel fourni par votre banque.")
 
         self.page.login(self.username, self.password)
 
-        assert self.login_confirm.is_here(), 'Should be on login confirmation page'
+        assert self.login_confirm.is_here(), "Should be on login confirmation page"
 
         reason = self.page.get_reason()
         status = self.page.get_status()
 
-        if reason == 'echec_authent':
+        if reason == "echec_authent":
             raise BrowserIncorrectPassword()
-        elif reason == 'chgt_mdp_oblig':
+        elif reason == "chgt_mdp_oblig":
             # There is no message in the json return. There is just the code.
-            raise BrowserPasswordExpired('Changement de mot de passe requis.')
-        elif reason == 'SCA':
+            raise BrowserPasswordExpired("Changement de mot de passe requis.")
+        elif reason == "SCA":
             raise ActionNeeded(
-                locale="fr-FR", message="Vous devez réaliser la double authentification sur le portail internet",
+                locale="fr-FR",
+                message="Vous devez réaliser la double authentification sur le portail internet",
                 action_type=ActionType.PERFORM_MFA,
             )
-        elif reason == 'SCAW':
+        elif reason == "SCAW":
             # SCAW reason was used to asked to the user to activate his 2FA, but now creditdunord also use it
             # to propose to the user to redo earlier the expiring 2FA. A later check is done (in AccountsPage)
             # in case SCAW reason is sent back for the purpose of asking 2FA to be activated.
             self.index.go()
             # This cookie is mandatory, otherwise we could encounter the "redo 2fa earlier proposal" later on the website
             # It is set through JS on CDN website
-            self.session.cookies.set('SCAW', 'true', domain='www.credit-du-nord.fr')
+            self.session.cookies.set("SCAW", "true", domain="www.credit-du-nord.fr")
             self.page.skip_redo_2fa()
             self.logger.warning("Skipping redo 2FA earlier proposal")
-        elif reason == 'acces_bloq':
+        elif reason == "acces_bloq":
             if self.page.is_pro_space():
                 raise BrowserPasswordExpired(
-                    locale='fr-FR',
-                    message='Suite à une erreur de saisie, vos accès aux services Mobile et Internet ont été bloqués.'
+                    locale="fr-FR",
+                    message="Suite à une erreur de saisie, vos accès aux services Mobile et Internet ont été bloqués."
                     + " Veuillez contacter votre conseiller ou l'assistance téléphonique de Crédit du Nord.",
                 )
             raise BrowserPasswordExpired(
-                locale='fr-FR',
-                message='Suite à une erreur de saisie, vos accès aux services Mobile et Internet ont été bloqués.'
-                + ' Veuillez réinitialiser votre mot de passe sur votre espace.',
+                locale="fr-FR",
+                message="Suite à une erreur de saisie, vos accès aux services Mobile et Internet ont été bloqués."
+                + " Veuillez réinitialiser votre mot de passe sur votre espace.",
             )
-        elif reason == 'mauvais_contrat':
+        elif reason == "mauvais_contrat":
             # Website returns only "Nous n'avons pas pu vous authentifier".
             # We don't what 'mauvais_contrat' means and why it occurs.
             # This error is systematic for a given connection.
             raise ActionNeeded(
                 message="Nous n'avons pas pu vous authentifier. Veuillez contacter le support de votre banque.",
-                locale='fr-FR',
+                locale="fr-FR",
                 action_type=ActionType.CONTACT,
             )
-        elif status != 'OK' and reason:
+        elif status != "OK" and reason:
             raise AssertionError(f"Unhandled reason at login: {reason}")
 
     def do_logout(self):
@@ -163,13 +171,13 @@ class CreditDuNordBrowser(LoginBrowser):
                 # When retrieving labels page,
                 # If GDPR was accepted partially the website throws a page that we treat
                 # as an ActionNeeded. Sometime we can by-pass it. Hence this fix
-                if reason == 'GDPR':
+                if reason == "GDPR":
                     self.bypass_rgpd.go()
 
                 # This error code can represent an alert asking the user to fill-in their e-mail,
                 # which we can bypass. It can however also appear for other reasons that we cannot
                 # bypass, in which case an ActionNeeded will be raised on the next iteration of the loop.
-                elif reason == 'Mise à jour de votre dossier':
+                elif reason == "Mise à jour de votre dossier":
                     self.bypass_alert.go()
 
                 # If the reason is not one that can be bypassed, we can immediately raise
@@ -183,24 +191,27 @@ class CreditDuNordBrowser(LoginBrowser):
         accounts = list(self.page.iter_accounts(current_bank=current_bank))
         accounts.extend(self.page.iter_loans(current_bank=current_bank))
 
-        self.iban.go(data={
-            'virementType': 'INDIVIDUEL',
-            'hashFromCookieMultibanque': '',
-        })
+        self.iban.go(
+            data={
+                "virementType": "INDIVIDUEL",
+                "hashFromCookieMultibanque": "",
+            }
+        )
 
         for account in accounts:
             if account.type == Account.TYPE_CARD:
                 # Match the card with its checking account using the account number
                 account.parent = next(
-                    (account_ for account_ in accounts if (
-                        account_.type == Account.TYPE_CHECKING
-                        and account_.number[:-5] == account.number[:-5]
-                    )),
+                    (
+                        account_
+                        for account_ in accounts
+                        if (account_.type == Account.TYPE_CHECKING and account_.number[:-5] == account.number[:-5])
+                    ),
                     None,
                 )
             if (
                 account.type in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS)
-                and self.page.get_status() == 'OK'  # IbanPage is not available if transfers are not authorized
+                and self.page.get_status() == "OK"  # IbanPage is not available if transfers are not authorized
             ):
                 account.iban = self.page.get_iban_from_account_number(account.number)
 
@@ -212,10 +223,12 @@ class CreditDuNordBrowser(LoginBrowser):
         which will make the module crash. Retrying once
         seems to do the job.
         """
-        self.history.go(data={
-            'an200_idCompte': account_id,
-            'an200_pageCourante': current_page,
-        })
+        self.history.go(
+            data={
+                "an200_idCompte": account_id,
+                "an200_pageCourante": current_page,
+            }
+        )
 
     @need_login
     def iter_history(self, account, coming=False):
@@ -242,7 +255,7 @@ class CreditDuNordBrowser(LoginBrowser):
     @need_login
     def iter_investment(self, account):
         if account._has_investments:
-            self.investments.go(data={'an200_bankAccountId': account._custom_id})
+            self.investments.go(data={"an200_bankAccountId": account._custom_id})
             if self.page.has_investments():
                 for investment in self.page.iter_investment():
                     yield investment

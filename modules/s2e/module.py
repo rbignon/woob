@@ -26,12 +26,12 @@ from woob.tools.backend import Module
 
 
 class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
-    NAME = 's2e'
-    DESCRIPTION = 'Épargne Salariale'
-    MAINTAINER = 'Edouard Lambert'
-    EMAIL = 'elambert@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "s2e"
+    DESCRIPTION = "Épargne Salariale"
+    MAINTAINER = "Edouard Lambert"
+    EMAIL = "elambert@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     accepted_document_types = (DocumentTypes.STATEMENT, DocumentTypes.REPORT)
 
@@ -53,8 +53,8 @@ class S2eModule(Module, CapBankWealth, CapDocument, CapProfile):
     def iter_subscription(self):
         """Fake subscription - documents are attached to a subscription."""
         sub = Subscription()
-        sub.id = 'statements'
-        sub.label = u'Relevés électroniques / e-statements'
+        sub.id = "statements"
+        sub.label = "Relevés électroniques / e-statements"
         yield sub
 
     def iter_documents(self, subscription):

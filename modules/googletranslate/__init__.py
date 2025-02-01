@@ -21,4 +21,4 @@
 from .module import GoogleTranslateModule
 
 
-__all__ = ['GoogleTranslateModule']
+__all__ = ["GoogleTranslateModule"]

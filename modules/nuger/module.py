@@ -26,19 +26,19 @@ from woob_modules.creditdunord.module import CreditDuNordModule
 from .browser import NugerBrowser
 
 
-__all__ = ['NugerModule']
+__all__ = ["NugerModule"]
 
 
 class NugerModule(CreditDuNordModule, CapBankWealth, CapProfile):
-    NAME = 'nuger'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DEPENDENCIES = ('creditdunord',)
-    DESCRIPTION = 'Banque Nuger'
-    LICENSE = 'LGPLv3+'
+    NAME = "nuger"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DEPENDENCIES = ("creditdunord",)
+    DESCRIPTION = "Banque Nuger"
+    LICENSE = "LGPLv3+"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code confidentiel', regexp=r'\d{6}'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Code confidentiel", regexp=r"\d{6}"),
     )
     BROWSER = NugerBrowser

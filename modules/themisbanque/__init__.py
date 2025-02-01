@@ -21,4 +21,4 @@
 from .module import ThemisModule
 
 
-__all__ = ['ThemisModule']
+__all__ = ["ThemisModule"]

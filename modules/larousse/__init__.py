@@ -21,4 +21,4 @@
 from .module import LarousseModule
 
 
-__all__ = ['LarousseModule']
+__all__ = ["LarousseModule"]

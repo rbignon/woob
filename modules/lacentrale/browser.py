@@ -22,18 +22,17 @@ from woob.browser import URL, PagesBrowser
 from .pages import AdvertPage, ListingAutoPage
 
 
-__all__ = ['LaCentraleBrowser']
+__all__ = ["LaCentraleBrowser"]
 
 
 class LaCentraleBrowser(PagesBrowser):
-    BASEURL = 'http://www.lacentrale.fr'
+    BASEURL = "http://www.lacentrale.fr"
 
-    list_page = URL(r'/listing_auto\.php\?(?P<_request>.*)',
-                    ListingAutoPage)
-    advert_page = URL(r'/auto-occasion-annonce-(?P<_id>.*).html', AdvertPage)
+    list_page = URL(r"/listing_auto\.php\?(?P<_request>.*)", ListingAutoPage)
+    advert_page = URL(r"/auto-occasion-annonce-(?P<_id>.*).html", AdvertPage)
 
     def iter_prices(self, product):
-        _request = '&'.join(['%s=%s' % (key, item) for key, item in product._criteria.items()])
+        _request = "&".join(["%s=%s" % (key, item) for key, item in product._criteria.items()])
         return self.list_page.go(_request=_request).iter_prices()
 
     def get_price(self, _id, obj):

@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class CreditDuNordTest(BackendTest):
-    MODULE = 'tarneaud'
+    MODULE = "tarneaud"
 
     def test_creditdunord(self):
         l = list(self.backend.iter_accounts())

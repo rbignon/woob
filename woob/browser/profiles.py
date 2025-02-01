@@ -22,7 +22,7 @@ from collections import OrderedDict
 from urllib3.util.request import ACCEPT_ENCODING
 
 
-ENCODINGS = [e.strip() for e in ACCEPT_ENCODING.split(',')]
+ENCODINGS = [e.strip() for e in ACCEPT_ENCODING.split(",")]
 
 from woob import __version__
 
@@ -54,13 +54,13 @@ class Weboob(Profile):
 
     def __init__(self, version=None):
         warnings.warn(
-            'This profile is deprecated and will be removed in woob 4.0. Use the Woob profile instead',
-            DeprecationWarning
+            "This profile is deprecated and will be removed in woob 4.0. Use the Woob profile instead",
+            DeprecationWarning,
         )
         self.version = version or __version__
 
     def setup_session(self, session):
-        session.headers['User-Agent'] = 'weboob/%s' % self.version
+        session.headers["User-Agent"] = "weboob/%s" % self.version
 
 
 class Woob(Profile):
@@ -73,7 +73,7 @@ class Woob(Profile):
         self.version = version or __version__
 
     def setup_session(self, session):
-        session.headers['User-Agent'] = 'woob/%s' % self.version
+        session.headers["User-Agent"] = "woob/%s" % self.version
 
 
 class Firefox(Profile):
@@ -94,17 +94,19 @@ class Firefox(Profile):
         # Replace all base requests headers
         # https://developer.mozilla.org/en/Gecko_user_agent_string_reference
         # https://bugzilla.mozilla.org/show_bug.cgi?id=572650
-        session.headers = OrderedDict([
-            ('Accept-Language', 'en-US,en;q=0.5'),
-            ('Accept-Encoding', 'gzip, deflate'),
-            ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
-            ('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'),
-            ('Upgrade-Insecure-Requests', '1'),
-            ('DNT', '1'),
-        ])
+        session.headers = OrderedDict(
+            [
+                ("Accept-Language", "en-US,en;q=0.5"),
+                ("Accept-Encoding", "gzip, deflate"),
+                ("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
+                ("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0"),
+                ("Upgrade-Insecure-Requests", "1"),
+                ("DNT", "1"),
+            ]
+        )
 
-        if 'br' in ENCODINGS:
-            session.headers['Accept-Encoding'] += ', br'
+        if "br" in ENCODINGS:
+            session.headers["Accept-Encoding"] += ", br"
 
 
 class GoogleBot(Profile):
@@ -128,10 +130,11 @@ class GoogleBot(Profile):
         #  http://request.urih.com/
         #  http://xhaus.com/headers
         session.headers = {
-            'Accept-Encoding': 'gzip,deflate',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'From': 'googlebot(at)googlebot.com',
-            'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}
+            "Accept-Encoding": "gzip,deflate",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "From": "googlebot(at)googlebot.com",
+            "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+        }
 
 
 class Wget(Profile):
@@ -141,15 +144,13 @@ class Wget(Profile):
     Some others could ban you (after all, wget is not a real browser).
     """
 
-    def __init__(self, version='1.11.4'):
+    def __init__(self, version="1.11.4"):
         self.version = version
 
     def setup_session(self, session):
         # Don't remove base headers, if websites want to block fake browsers,
         # they will probably block any wget user agent anyway.
-        session.headers.update({
-            'Accept': '*/*',
-            'User-Agent': 'Wget/%s' % self.version})
+        session.headers.update({"Accept": "*/*", "User-Agent": "Wget/%s" % self.version})
 
 
 class Android(Profile):
@@ -161,10 +162,12 @@ class Android(Profile):
         """
         Set up user agent.
         """
-        session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Linux; U; Android 4.0.3; fr-fr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30',
-            'Upgrade-Insecure-Requests': '1',
-        })
+        session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (Linux; U; Android 4.0.3; fr-fr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30",
+                "Upgrade-Insecure-Requests": "1",
+            }
+        )
 
 
 class IPhone(Profile):
@@ -180,4 +183,4 @@ class IPhone(Profile):
         session.headers["Accept"] = "*/*"
         session.headers["User-Agent"] = "%s (iPhone; iOS 7.1; Scale/2.00)" % self.application
         session.headers["Accept-Encoding"] = "gzip, deflate"
-        session.headers["Upgrade-Insecure-Requests"] = '1'
+        session.headers["Upgrade-Insecure-Requests"] = "1"

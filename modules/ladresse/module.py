@@ -26,16 +26,16 @@ from woob.tools.value import Value, ValueBackendPassword
 from .gercop import GercopBrowser
 
 
-__all__ = ['LAdresseModule']
+__all__ = ["LAdresseModule"]
 
 
 class LAdresseModule(Module, CapDocument, CapProfile):
-    NAME = 'ladresse'
+    NAME = "ladresse"
     DESCRIPTION = "L'Adresse"
-    MAINTAINER = 'Thomas Touhey'
-    EMAIL = 'thomas@touhey.fr'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    MAINTAINER = "Thomas Touhey"
+    EMAIL = "thomas@touhey.fr"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     # All L'Adresse agencies are franchisees who choose the platform
     # on which they wish to make documents available to their tenants
@@ -45,43 +45,45 @@ class LAdresseModule(Module, CapDocument, CapProfile):
     #       add the browser if it doesn't already exist in a submodule,
     #       like for Gercop.
     WEBSITES = {
-        'ladresse-bsgestion.gercop-extranet.com': GercopBrowser,
-        'adresseavenir.gercop-extranet.com': GercopBrowser,
-        'ladresse-valerie-immobilier.mygercop.com': GercopBrowser,
-        'ladresse.logique-extranet.com': GercopBrowser,
-        'gambettaimmobilier.logique-extranet.com': GercopBrowser,
-        'cersoyetgirard.logique-extranet.com': GercopBrowser,
+        "ladresse-bsgestion.gercop-extranet.com": GercopBrowser,
+        "adresseavenir.gercop-extranet.com": GercopBrowser,
+        "ladresse-valerie-immobilier.mygercop.com": GercopBrowser,
+        "ladresse.logique-extranet.com": GercopBrowser,
+        "gambettaimmobilier.logique-extranet.com": GercopBrowser,
+        "cersoyetgirard.logique-extranet.com": GercopBrowser,
     }
 
     CONFIG = BackendConfig(
         ValueBackendPassword(
-            'login',
-            label='Identifiant',
-            regexp=r'[A-Z]\d{6}',
+            "login",
+            label="Identifiant",
+            regexp=r"[A-Z]\d{6}",
             required=True,
             masked=False,
         ),
         ValueBackendPassword(
-            'password',
-            label='Mot de passe',
+            "password",
+            label="Mot de passe",
             required=True,
         ),
         Value(
-            'website',
-            label='Extranet',
+            "website",
+            label="Extranet",
             choices={key: key for key in WEBSITES.keys()},
             required=True,
         ),
     )
 
-    document_categories = {DocumentCategory.REAL_ESTATE, }
+    document_categories = {
+        DocumentCategory.REAL_ESTATE,
+    }
 
     def create_default_browser(self):
-        website = self.config['website'].get()
+        website = self.config["website"].get()
         return self.create_browser(
-            f'https://{website}/',
-            self.config['login'].get(),
-            self.config['password'].get(),
+            f"https://{website}/",
+            self.config["login"].get(),
+            self.config["password"].get(),
             klass=self.WEBSITES[website],
         )
 
@@ -89,7 +91,7 @@ class LAdresseModule(Module, CapDocument, CapProfile):
         profile = self.get_profile()
 
         subscription = Subscription()
-        subscription.id = 'ladresse'
+        subscription.id = "ladresse"
         subscription.label = profile.name
         yield subscription
 

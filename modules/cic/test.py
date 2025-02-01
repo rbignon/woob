@@ -20,7 +20,7 @@ from woob.tools.test import BackendTest
 
 
 class CICTest(BackendTest):
-    MODULE = 'cic'
+    MODULE = "cic"
 
     def test_cic(self):
         l = list(self.backend.iter_accounts())

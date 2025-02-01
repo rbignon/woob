@@ -19,8 +19,19 @@ from .base import BaseObject, Capability, Enum, Field, IntField, StringField, Us
 from .date import DateField, DeltaField
 
 
-__all__ = ['IssueError', 'Project', 'User', 'Version', 'Status', 'Attachment',
-           'Change', 'Update', 'Issue', 'Query', 'CapBugTracker']
+__all__ = [
+    "IssueError",
+    "Project",
+    "User",
+    "Version",
+    "Status",
+    "Attachment",
+    "Change",
+    "Update",
+    "Issue",
+    "Query",
+    "CapBugTracker",
+]
 
 
 class IssueError(UserError):
@@ -33,22 +44,23 @@ class Project(BaseObject):
     """
     Represents a project.
     """
-    name =          StringField('Name of the project')
-    members =       Field('Members of projects', list)
-    versions =      Field('List of versions available for this project', list)
-    trackers =      Field('All trackers', list)
-    categories =    Field('All categories', list)
-    statuses =      Field('Available statuses for issues', list)
-    priorities =    Field('Available priorities for issues', list)
-    tags =          Field('All tags', tuple, list)
-    fields =        Field('Custom fields names', list)
+
+    name = StringField("Name of the project")
+    members = Field("Members of projects", list)
+    versions = Field("List of versions available for this project", list)
+    trackers = Field("All trackers", list)
+    categories = Field("All categories", list)
+    statuses = Field("Available statuses for issues", list)
+    priorities = Field("Available priorities for issues", list)
+    tags = Field("All tags", tuple, list)
+    fields = Field("Custom fields names", list)
 
     def __init__(self, id, name, url=None):
         super(Project, self).__init__(id, url)
         self.name = str(name)
 
     def __repr__(self):
-        return '<Project %r>' % self.name
+        return "<Project %r>" % self.name
 
     def find_user(self, id, name):
         """
@@ -108,32 +120,34 @@ class User(BaseObject):
     """
     User.
     """
-    name =      StringField('Name of user')
+
+    name = StringField("Name of user")
 
     def __init__(self, id, name, url=None):
         super(User, self).__init__(id, url)
         self.name = str(name)
 
     def __repr__(self):
-        return '<User %r>' % self.name
+        return "<User %r>" % self.name
 
 
 class Version(BaseObject):
     """
     Version of a project.
     """
-    name =      StringField('Name of version')
+
+    name = StringField("Name of version")
 
     def __init__(self, id, name, url=None):
         super(Version, self).__init__(id, url)
         self.name = str(name)
 
     def __repr__(self):
-        return '<Version %r>' % self.name
+        return "<Version %r>" % self.name
 
 
 class StatusType(Enum):
-    NEW      = 0
+    NEW = 0
     PROGRESS = 1
     RESOLVED = 2
     REJECTED = 3
@@ -146,13 +160,14 @@ class Status(BaseObject):
     **VALUE_** constants are the primary status
     types.
     """
+
     VALUE_NEW = StatusType.NEW
     VALUE_PROGRESS = StatusType.PROGRESS
     VALUE_RESOLVED = StatusType.RESOLVED
     VALUE_REJECTED = StatusType.REJECTED
 
-    name =      StringField('Name of status')
-    value =     IntField('Value of status (constants VALUE_*)')
+    name = StringField("Name of status")
+    value = IntField("Value of status (constants VALUE_*)")
 
     def __init__(self, id, name, value, url=None):
         super(Status, self).__init__(id, url)
@@ -160,86 +175,91 @@ class Status(BaseObject):
         self.value = value
 
     def __repr__(self):
-        return '<Status %r>' % self.name
+        return "<Status %r>" % self.name
 
 
 class Attachment(BaseObject):
     """
     Attachment of an issue.
     """
-    filename =      StringField('Filename')
+
+    filename = StringField("Filename")
 
     def __repr__(self):
-        return '<Attachment %r>' % self.filename
+        return "<Attachment %r>" % self.filename
 
 
 class Change(BaseObject):
     """
     A change of an update.
     """
-    field =         StringField('What field has been changed')
-    last =          StringField('Last value of field')
-    new =           StringField('New value of field')
+
+    field = StringField("What field has been changed")
+    last = StringField("Last value of field")
+    new = StringField("New value of field")
 
     def __repr__(self):
-        return '<%s %r: %r (old: %r)>' % (type(self).__name__, self.field, self.new, self.last)
+        return "<%s %r: %r (old: %r)>" % (type(self).__name__, self.field, self.new, self.last)
 
 
 class Update(BaseObject):
     """
     Represents an update of an issue.
     """
-    author =        Field('Author of update', User)
-    date =          DateField('Date of update')
-    hours =         DeltaField('Time activity')
-    message =       StringField('Log message')
-    attachments =   Field('Files attached to update', list, tuple)
-    changes =       Field('List of changes', list, tuple)
+
+    author = Field("Author of update", User)
+    date = DateField("Date of update")
+    hours = DeltaField("Time activity")
+    message = StringField("Log message")
+    attachments = Field("Files attached to update", list, tuple)
+    changes = Field("List of changes", list, tuple)
 
     def __repr__(self):
-        return '<Update %r>' % self.id
+        return "<Update %r>" % self.id
 
 
 class Issue(BaseObject):
     """
     Represents an issue.
     """
-    project =       Field('Project of this issue', Project)
-    title =         StringField('Title of issue')
-    body =          StringField('Text of issue')
-    creation =      DateField('Date when this issue has been created')
-    updated =       DateField('Date when this issue has been updated for the last time')
-    start =         DateField('Date when this issue starts')
-    due =           DateField('Date when this issue is due for')
-    attachments =   Field('List of attached files', list, tuple)
-    history =       Field('History of updates', list, tuple)
-    author =        Field('Author of this issue', User)
-    assignee =      Field('User assigned to this issue', User)
-    tracker =       StringField('Name of the tracker')
-    category =      StringField('Name of the category')
-    version =       Field('Target version of this issue', Version)
-    status =        Field('Status of this issue', Status)
-    fields =        Field('Custom fields (key,value)', dict)
-    priority =      StringField('Priority of the issue')  # XXX
-    tags =          Field('Categories/Tags of the issue', tuple, list)
-    related_issues = Field('Related issues', list)
+
+    project = Field("Project of this issue", Project)
+    title = StringField("Title of issue")
+    body = StringField("Text of issue")
+    creation = DateField("Date when this issue has been created")
+    updated = DateField("Date when this issue has been updated for the last time")
+    start = DateField("Date when this issue starts")
+    due = DateField("Date when this issue is due for")
+    attachments = Field("List of attached files", list, tuple)
+    history = Field("History of updates", list, tuple)
+    author = Field("Author of this issue", User)
+    assignee = Field("User assigned to this issue", User)
+    tracker = StringField("Name of the tracker")
+    category = StringField("Name of the category")
+    version = Field("Target version of this issue", Version)
+    status = Field("Status of this issue", Status)
+    fields = Field("Custom fields (key,value)", dict)
+    priority = StringField("Priority of the issue")  # XXX
+    tags = Field("Categories/Tags of the issue", tuple, list)
+    related_issues = Field("Related issues", list)
 
 
 class Query(BaseObject):
     """
     Query to find an issue.
     """
-    project =       Field('Filter on projects', str, str, Project)
-    title =         StringField('Filter on titles')
-    author =        Field('Filter on authors', str, User)
-    assignee =      Field('Filter on assignees', str, User)
-    version =       Field('Filter on versions', str, Version)
-    category =      StringField('Filter on categories')
-    status =        Field('Filter on statuses', str, Status)
-    tags =          Field('Filter on tags', tuple, list)
-    fields =        Field('Filter on custom fields', dict)
 
-    def __init__(self, id='', url=None):
+    project = Field("Filter on projects", str, str, Project)
+    title = StringField("Filter on titles")
+    author = Field("Filter on authors", str, User)
+    assignee = Field("Filter on assignees", str, User)
+    version = Field("Filter on versions", str, Version)
+    category = StringField("Filter on categories")
+    status = Field("Filter on statuses", str, Status)
+    tags = Field("Filter on tags", tuple, list)
+    fields = Field("Filter on custom fields", dict)
+
+    def __init__(self, id="", url=None):
         super(Query, self).__init__(id, url)
 
 
@@ -248,10 +268,7 @@ class CapBugTracker(Capability):
     Bug trackers websites.
     """
 
-    (SORT_RELEVANCE,
-     SORT_RATING,
-     SORT_PRIORITY,
-     SORT_DATE) = range(4)
+    (SORT_RELEVANCE, SORT_RATING, SORT_PRIORITY, SORT_DATE) = range(4)
 
     def iter_issues(self, query, sortby=SORT_RELEVANCE, ascending=False):
         """

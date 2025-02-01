@@ -26,12 +26,12 @@ from .pages import DocumentsPage, LoginPage, ProfilePage
 
 
 class OnlinenetBrowser(LoginBrowser):
-    BASEURL = 'https://console.online.net/en/'
+    BASEURL = "https://console.online.net/en/"
     TIMEOUT = 60
 
-    login = URL('login', LoginPage)
-    profile = URL('account/edit', ProfilePage)
-    documents = URL('bill/list', DocumentsPage)
+    login = URL("login", LoginPage)
+    profile = URL("account/edit", ProfilePage)
+    documents = URL("bill/list", DocumentsPage)
 
     def do_login(self):
         self.login.go()

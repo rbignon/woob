@@ -35,46 +35,45 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import CreditDuNordBrowser
 
 
-__all__ = ['CreditDuNordModule']
+__all__ = ["CreditDuNordModule"]
 
 
 class CreditDuNordModule(Module, CapBankWealth, CapProfile, CapBankMatching):
-    NAME = 'creditdunord'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = u'Crédit du Nord, Banque Courtois, Kolb, Nuger, Laydernier, Tarneaud, Société Marseillaise de Crédit'
-    LICENSE = 'LGPLv3+'
+    NAME = "creditdunord"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "Crédit du Nord, Banque Courtois, Kolb, Nuger, Laydernier, Tarneaud, Société Marseillaise de Crédit"
+    LICENSE = "LGPLv3+"
 
     websites = {
-        'www.credit-du-nord.fr': 'Crédit du Nord',
-        'www.banque-courtois.fr': 'Banque Courtois',
-        'www.banque-kolb.fr': 'Banque Kolb',
-        'www.banque-laydernier.fr': 'Banque Laydernier',
-        'www.banque-nuger.fr': 'Banque Nuger',
-        'www.banque-rhone-alpes.fr': 'Banque Rhône-Alpes',
-        'www.tarneaud.fr': 'Tarneaud',
-        'www.smc.fr': 'Société Marseillaise de Crédit',
+        "www.credit-du-nord.fr": "Crédit du Nord",
+        "www.banque-courtois.fr": "Banque Courtois",
+        "www.banque-kolb.fr": "Banque Kolb",
+        "www.banque-laydernier.fr": "Banque Laydernier",
+        "www.banque-nuger.fr": "Banque Nuger",
+        "www.banque-rhone-alpes.fr": "Banque Rhône-Alpes",
+        "www.tarneaud.fr": "Tarneaud",
+        "www.smc.fr": "Société Marseillaise de Crédit",
     }
-    website_choices = OrderedDict([
-        (k, u'%s (%s)' % (v, k))
-        for k, v in sorted(websites.items(), key=lambda k_v: (k_v[1], k_v[0]))
-    ])
+    website_choices = OrderedDict(
+        [(k, "%s (%s)" % (v, k)) for k, v in sorted(websites.items(), key=lambda k_v: (k_v[1], k_v[0]))]
+    )
     CONFIG = BackendConfig(
-        Value('website', label='Banque', choices=website_choices, default='www.credit-du-nord.fr'),
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code confidentiel')
+        Value("website", label="Banque", choices=website_choices, default="www.credit-du-nord.fr"),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Code confidentiel"),
     )
     BROWSER = CreditDuNordBrowser
 
     def create_default_browser(self):
         browser = self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
-        browser.BASEURL = 'https://%s' % self.config['website'].get()
-        if browser.BASEURL != 'https://www.credit-du-nord.fr':
-            self.logger.warning('Please use the dedicated module instead of creditdunord')
+        browser.BASEURL = "https://%s" % self.config["website"].get()
+        if browser.BASEURL != "https://www.credit-du-nord.fr":
+            self.logger.warning("Please use the dedicated module instead of creditdunord")
         return browser
 
     def iter_accounts(self):
@@ -101,19 +100,16 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile, CapBankMatching):
         # try first matching on number and type
         match = find_object(old_accounts, number=account.number, type=account.type)
 
-        matching_label = re.match(r'(.+) - .+', account.label)
+        matching_label = re.match(r"(.+) - .+", account.label)
         if matching_label:
             matching_label = unidecode(matching_label.group(1).upper())  # accents in the new labels
 
         # second, on label for market accounts
-        if not match and matching_label and 'TITRES' in account.label.upper():
+        if not match and matching_label and "TITRES" in account.label.upper():
             # those were wrongly typed as market in previous module version
             # but we can match on part of the label
             # ex: 'PEA Estimation Titres - Toto Tata' --> 'PEA ESTIMATION TITRES' in old website
-            markets = [
-                acc for acc in old_accounts
-                if acc.type == Account.TYPE_MARKET and matching_label in acc.label
-            ]
+            markets = [acc for acc in old_accounts if acc.type == Account.TYPE_MARKET and matching_label in acc.label]
             if len(markets) == 1:
                 match = markets[0]
 
@@ -127,7 +123,7 @@ class CreditDuNordModule(Module, CapBankWealth, CapProfile, CapBankMatching):
         if match:
             return match
 
-        self.logger.warning('Did not match this account to any previously known account: %s.', account.label)
+        self.logger.warning("Did not match this account to any previously known account: %s.", account.label)
         return None  # This account is then added as a new one when it is not matched with a pre-existing one
 
     def iter_history(self, account):

@@ -18,4 +18,4 @@
 from .module import BanquePopulaireModule
 
 
-__all__ = ['BanquePopulaireModule']
+__all__ = ["BanquePopulaireModule"]

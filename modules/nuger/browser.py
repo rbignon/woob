@@ -22,7 +22,7 @@ from woob_modules.creditdunord.browser import CreditDuNordBrowser
 
 
 class NugerBrowser(CreditDuNordBrowser):
-    BASEURL = 'https://www.banque-nuger.fr'
+    BASEURL = "https://www.banque-nuger.fr"
 
     def do_login(self):
         raise BrowserUnavailable()

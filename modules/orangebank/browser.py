@@ -30,11 +30,19 @@ from woob.browser.exceptions import ClientError
 from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bank import Account
 from woob.capabilities.bank.transfer import (
-    AddRecipientBankError, AddRecipientStep, TransferBankError, TransferDateType, TransferNotFound,
+    AddRecipientBankError,
+    AddRecipientStep,
+    TransferBankError,
+    TransferDateType,
+    TransferNotFound,
 )
 from woob.capabilities.base import empty
 from woob.exceptions import (
-    AppValidationExpired, BrowserIncorrectPassword, DecoupledMedium, DecoupledValidation, RecaptchaV2Question,
+    AppValidationExpired,
+    BrowserIncorrectPassword,
+    DecoupledMedium,
+    DecoupledValidation,
+    RecaptchaV2Question,
     WrongCaptchaResponse,
 )
 from woob.tools.date import now_as_utc
@@ -43,102 +51,119 @@ from woob.tools.misc import polling_loop
 from woob.tools.value import ValueBool
 
 from .pages import (
-    AccountsPage, AuthenticateCheckPage, AuthenticatePage, AuthenticateStatusPage, CreateRecipientPage, ErrorPage,
-    HomePage, LoginPage, OperationsPage, ProfilePage, PublicPropertiesPage, RecipientsPage, TransferDebitAccountsPage,
-    TransferExecutePage, TransferHistoryPage, TransferOngoingPage, TransferPage, TransferValidateCumulativePage,
-    TransferValidatePage, TransferValidateUnitPage, VerifyRecipientCreatedPage,
+    AccountsPage,
+    AuthenticateCheckPage,
+    AuthenticatePage,
+    AuthenticateStatusPage,
+    CreateRecipientPage,
+    ErrorPage,
+    HomePage,
+    LoginPage,
+    OperationsPage,
+    ProfilePage,
+    PublicPropertiesPage,
+    RecipientsPage,
+    TransferDebitAccountsPage,
+    TransferExecutePage,
+    TransferHistoryPage,
+    TransferOngoingPage,
+    TransferPage,
+    TransferValidateCumulativePage,
+    TransferValidatePage,
+    TransferValidateUnitPage,
+    VerifyRecipientCreatedPage,
 )
 
 
 class OrangeBankBrowser(TwoFactorBrowser):
-    BASEURL = 'https://www.orangebank.fr/'
+    BASEURL = "https://www.orangebank.fr/"
 
-    login = URL(r'espace-client/authentication/', LoginPage)
-    home = URL(r'espace-client/home/', HomePage)
+    login = URL(r"espace-client/authentication/", LoginPage)
+    home = URL(r"espace-client/home/", HomePage)
 
     authenticate = URL(
-        r'portalserver/services/oslo-authentication/authenticate/public/customer/authenticate-login-context',
+        r"portalserver/services/oslo-authentication/authenticate/public/customer/authenticate-login-context",
         AuthenticatePage,
     )
     authenticate_status = URL(
-        r'portalserver/services/oslo-authentication/authenticate/public/customer/authentication-status',
+        r"portalserver/services/oslo-authentication/authenticate/public/customer/authentication-status",
         AuthenticateStatusPage,
     )
 
     customer = URL(
-        r'portalserver/services/oslo-services/customer$',
+        r"portalserver/services/oslo-services/customer$",
         ProfilePage,
     )
     accounts = URL(
-        r'portalserver/services/oslo-services/customer/accounts$',
+        r"portalserver/services/oslo-services/customer/accounts$",
         AccountsPage,
     )
     operations = URL(
-        r'portalserver/services/oslo-services/customer/accounts/v2/(?P<equipmentId>.*)/operations/all',
+        r"portalserver/services/oslo-services/customer/accounts/v2/(?P<equipmentId>.*)/operations/all",
         OperationsPage,
     )
     create_recipient = URL(
-        r'portalserver/services/oslo-services/customer/beneficiaries/creation-request/v2',
+        r"portalserver/services/oslo-services/customer/beneficiaries/creation-request/v2",
         CreateRecipientPage,
     )
     verify_recipient_created = URL(
-        r'portalserver/services/oslo-services/customer/beneficiaries/iban/completed/v2',
+        r"portalserver/services/oslo-services/customer/beneficiaries/iban/completed/v2",
         VerifyRecipientCreatedPage,
     )
     authenticate_check = URL(
-        r'portalserver/services/oslo-services/customer/customization/check-status',
+        r"portalserver/services/oslo-services/customer/customization/check-status",
         AuthenticateCheckPage,
     )
     recipients = URL(
-        r'portalserver/services/oslo-services/customer/transfers/resources/v2',
+        r"portalserver/services/oslo-services/customer/transfers/resources/v2",
         RecipientsPage,
     )
     transfer_debit_accounts = URL(
-        r'portalserver/services/oslo-services/customer/transfers/find-debit-accounts-for-transfer/v2',
+        r"portalserver/services/oslo-services/customer/transfers/find-debit-accounts-for-transfer/v2",
         TransferDebitAccountsPage,
     )
     transfer_validate = URL(
-        r'portalserver/services/oslo-services/customer/transfers/verify/v2',
+        r"portalserver/services/oslo-services/customer/transfers/verify/v2",
         TransferValidatePage,
     )
     transfer_validate_unit = URL(
-        r'portalserver/services/oslo-services/customer/transfers/verify/amount/unit/beneficiary/(?P<beneficiary_id>[^/]{6,})/v2',
+        r"portalserver/services/oslo-services/customer/transfers/verify/amount/unit/beneficiary/(?P<beneficiary_id>[^/]{6,})/v2",
         TransferValidateUnitPage,
     )
     transfer_validate_cumulative = URL(
-        r'portalserver/services/oslo-services/customer/transfers/verify/amount/cumulative/beneficiary/(?P<beneficiary_id>[^/]{6,})/v2',
+        r"portalserver/services/oslo-services/customer/transfers/verify/amount/cumulative/beneficiary/(?P<beneficiary_id>[^/]{6,})/v2",
         TransferValidateCumulativePage,
     )
     transfer_execute = URL(
-        r'portalserver/services/oslo-services/customer/transfers/execute/v2',
+        r"portalserver/services/oslo-services/customer/transfers/execute/v2",
         TransferExecutePage,
     )
     transfer_ongoing = URL(
-        r'portalserver/services/oslo-services/customer/transfers/ongoing/v2',
+        r"portalserver/services/oslo-services/customer/transfers/ongoing/v2",
         TransferOngoingPage,
     )
     transfer_history = URL(
-        r'portalserver/services/oslo-services/customer/transfers/history/v2',
+        r"portalserver/services/oslo-services/customer/transfers/history/v2",
         TransferHistoryPage,
     )
     transfer = URL(
-        r'portalserver/services/oslo-services/customer/transfers/(?P<transfer_id>[^/]{10,})/v2',
+        r"portalserver/services/oslo-services/customer/transfers/(?P<transfer_id>[^/]{10,})/v2",
         TransferPage,
     )
     public_properties = URL(
-        r'portalserver/services/oslo-services/public/public-properties',
+        r"portalserver/services/oslo-services/public/public-properties",
         PublicPropertiesPage,
     )
 
     def __init__(self, config, *args, **kwargs):
-        super().__init__(config, config['login'].get(), None, *args, **kwargs)
+        super().__init__(config, config["login"].get(), None, *args, **kwargs)
 
         self.AUTHENTICATION_METHODS = {
-            'captcha_response': self.handle_captcha,
-            'resume': self.handle_polling,
+            "captcha_response": self.handle_captcha,
+            "resume": self.handle_polling,
         }
 
-        self.__states__ += ('polling_id', 'inwebo_session_id')
+        self.__states__ += ("polling_id", "inwebo_session_id")
         self.polling_id = None
         self.inwebo_session_id = None  # For beneficiaries.
 
@@ -146,9 +171,9 @@ class OrangeBankBrowser(TwoFactorBrowser):
         request = super().build_request(*args, **kwargs)
 
         # Add CSRF protection to be sent as a header.
-        bbxsrf_token = self.session.cookies.get('BBXSRF')
+        bbxsrf_token = self.session.cookies.get("BBXSRF")
         if bbxsrf_token:
-            request.headers['x-bbxsrf'] = bbxsrf_token
+            request.headers["x-bbxsrf"] = bbxsrf_token
 
         return request
 
@@ -182,39 +207,38 @@ class OrangeBankBrowser(TwoFactorBrowser):
 
     def handle_captcha(self):
         try:
-            page = self.authenticate.open(json={
-                'additionalParameter': 'WEB',
-                'captchaView': {'token': self.captcha_response},
-                'login': self.username,
-            })
+            page = self.authenticate.open(
+                json={
+                    "additionalParameter": "WEB",
+                    "captchaView": {"token": self.captcha_response},
+                    "login": self.username,
+                }
+            )
         except ClientError as exc:
             try:
                 error_page = ErrorPage(self, exc.response)
                 error = error_page.get_error()
-                message = error_page.get_error_message() or '.'
+                message = error_page.get_error_message() or "."
             except KeyError:
                 pass
             else:
-                if error == 'CUSTOMER_NOT_FOUND':
+                if error == "CUSTOMER_NOT_FOUND":
                     raise BrowserIncorrectPassword(
-                        'Cet identifiant est inconnu dans notre système.',
+                        "Cet identifiant est inconnu dans notre système.",
                     )
-                elif error == 'CAPTCHA_TOKEN_ERROR':
+                elif error == "CAPTCHA_TOKEN_ERROR":
                     raise WrongCaptchaResponse()
 
-                if message != '.':
-                    message = ': ' + message
+                if message != ".":
+                    message = ": " + message
 
-                raise AssertionError(f'Unknown error {error}{message}')
+                raise AssertionError(f"Unknown error {error}{message}")
 
         # Decoupled validation is systematically raised.
         self.polling_id = page.get_polling_id()
 
         raise DecoupledValidation(
-            message=(
-                'Nous vous invitons à autoriser la connexion depuis '
-                + 'votre mobile.'
-            ),
+            message=("Nous vous invitons à autoriser la connexion depuis " + "votre mobile."),
             medium_type=DecoupledMedium.MOBILE_APP,
             expires_at=now_as_utc() + timedelta(minutes=1),
         )
@@ -224,19 +248,19 @@ class OrangeBankBrowser(TwoFactorBrowser):
         # AppValidationError exceptions, so we want to clear the 'resume'
         # config key here so that if the polling fails, init_login is
         # called again.
-        value = copy(self.config['resume'])
+        value = copy(self.config["resume"])
         value.set(value.default)
-        self.config['resume'] = value
+        self.config["resume"] = value
 
         for _ in polling_loop(count=40, delay=5):
             data = {
-                'login': self.username,
-                'additionalParameter': self.polling_id,
+                "login": self.username,
+                "additionalParameter": self.polling_id,
             }
 
             try:
                 page = self.authenticate_status.open(
-                    headers={'bodyParameters': json.dumps(data)},
+                    headers={"bodyParameters": json.dumps(data)},
                     json=data,
                 )
             except ClientError as exc:
@@ -254,9 +278,9 @@ class OrangeBankBrowser(TwoFactorBrowser):
                 # For HTTP 2xx statuses, we expect a polling status!
                 status = page.get_polling_status()
 
-            if status == 'WAITING_AUTHENTICATION':
+            if status == "WAITING_AUTHENTICATION":
                 continue
-            elif status in ('AUTHENTICATION_TIMEOUT', 'AUTHENTICATION_FAIL'):
+            elif status in ("AUTHENTICATION_TIMEOUT", "AUTHENTICATION_FAIL"):
                 # AUTHENTICATION_TIMEOUT is raised directly, whereas
                 # AUTHENTICATION_FAIL is raised in the same scenario if
                 # the endpoint is queried later (e.g. if polling with the
@@ -272,28 +296,25 @@ class OrangeBankBrowser(TwoFactorBrowser):
                 # "Désolé ! Nous n'avons pas pu vous authentifier."
                 # We want to be more explicit.
                 raise AppValidationExpired(
-                    "Vous n'avez pas validé l'accès sur l'application "
-                    + "mobile dans les temps.",
+                    "Vous n'avez pas validé l'accès sur l'application " + "mobile dans les temps.",
                 )
-            elif status == 'AUTHENTICATED':
+            elif status == "AUTHENTICATED":
                 break
 
-            raise AssertionError(f'Unhandled polling status {status!r}.')
+            raise AssertionError(f"Unhandled polling status {status!r}.")
         else:
             self.logger.warning(
-                'Still waiting authentication after 40 attempts; '
-                + 'did the decoupled validity duration get longer?',
+                "Still waiting authentication after 40 attempts; " + "did the decoupled validity duration get longer?",
             )
             raise AppValidationExpired(
-                "Vous n'avez pas validé l'accès sur l'application "
-                + "mobile dans les temps.",
+                "Vous n'avez pas validé l'accès sur l'application " + "mobile dans les temps.",
             )
 
         page = self.authenticate_check.open()
         next_step = page.get_next_step()
 
-        if next_step != 'ALL_DONE':
-            raise AssertionError(f'Unknown nextStep {next_step!r}.')
+        if next_step != "ALL_DONE":
+            raise AssertionError(f"Unknown nextStep {next_step!r}.")
 
         # Go to a logged page.
         self.home.go()
@@ -325,20 +346,14 @@ class OrangeBankBrowser(TwoFactorBrowser):
     @need_login
     def init_transfer(self, transfer, **params):
         if empty(transfer.currency):
-            transfer.currency = 'EUR'
-        elif transfer.currency != 'EUR':
-            raise TransferBankError('Transfer currency must be EUR.')
+            transfer.currency = "EUR"
+        elif transfer.currency != "EUR":
+            raise TransferBankError("Transfer currency must be EUR.")
 
         # Get the transfer date.
         transfer_date = transfer.exec_date or datetime.utcnow()
-        if (
-            isinstance(transfer_date, date)
-            and not isinstance(transfer_date, datetime)
-        ):
-            if (
-                empty(transfer.date_type)
-                or transfer.date_type == TransferDateType.FIRST_OPEN_DAY
-            ):
+        if isinstance(transfer_date, date) and not isinstance(transfer_date, datetime):
+            if empty(transfer.date_type) or transfer.date_type == TransferDateType.FIRST_OPEN_DAY:
                 # We need a current UTC datetime here, we'll take the
                 # current time.
                 transfer_date = datetime.utcnow()
@@ -346,9 +361,7 @@ class OrangeBankBrowser(TwoFactorBrowser):
                 transfer_date = datetime.combine(transfer_date, time(0, 0, 0))
         elif transfer_date.tzinfo:
             # We need to have a UTC datetime here.
-            transfer_date = (
-                transfer_date.astimezone(tzutc()).replace(tzinfo=None)
-            )
+            transfer_date = transfer_date.astimezone(tzutc()).replace(tzinfo=None)
 
         # Find the recipient account.
         page = self.recipients.open()
@@ -357,7 +370,7 @@ class OrangeBankBrowser(TwoFactorBrowser):
         )
 
         if transfer._beneficiaryId is None:
-            raise AssertionError('Could not find recipient for IBAN.')
+            raise AssertionError("Could not find recipient for IBAN.")
 
         transfer.exec_date = transfer_date
 
@@ -367,7 +380,7 @@ class OrangeBankBrowser(TwoFactorBrowser):
                 self.transfer_validate_unit.build(
                     beneficiary_id=transfer._beneficiaryId,
                 ),
-                json={'amount': transfer.amount},
+                json={"amount": transfer.amount},
             )
         except ClientError as exc:
             error_page = ErrorPage(self, exc.response)
@@ -376,45 +389,47 @@ class OrangeBankBrowser(TwoFactorBrowser):
 
             # This error is returned with an HTTP 412 status code.
             # It does not block the transfer, so we only emit a warning here.
-            if error == 'EXTERNAL_UNIT_AMOUNT_EXCEEDED':
+            if error == "EXTERNAL_UNIT_AMOUNT_EXCEEDED":
                 self.logger.warning(message)
             else:
                 raise
         else:
             if response.status_code != 204:
                 raise AssertionError(
-                    'Expected an HTTP 204 on transfer validate unit.',
+                    "Expected an HTTP 204 on transfer validate unit.",
                 )
 
         # We need to get the equipment identifier for the source account.
-        page = self.transfer_debit_accounts.open(params={
-            'amount': transfer.amount,
-            'type': 'IMMEDIATE',
-        })
+        page = self.transfer_debit_accounts.open(
+            params={
+                "amount": transfer.amount,
+                "type": "IMMEDIATE",
+            }
+        )
 
         transfer._sourceEquipmentId = page.get_account_id(transfer.account_id)
         if not transfer._sourceEquipmentId:
             raise AssertionError(
-                'No source equipment identifier for the given account.',
+                "No source equipment identifier for the given account.",
             )
 
         # Validate the transfer as a whole.
-        transfer_date = (
-            transfer.exec_date.isoformat(timespec='milliseconds') + 'Z'
+        transfer_date = transfer.exec_date.isoformat(timespec="milliseconds") + "Z"
+
+        page = self.transfer_validate.open(
+            json={
+                "amount": transfer.amount,
+                "deadlineDate": transfer_date,
+                "sourceAccountEquipmentId": transfer._sourceEquipmentId,
+                "transferBeneficiaryId": transfer._beneficiaryId,
+                "transferType": "IMMEDIATE",
+            }
         )
 
-        page = self.transfer_validate.open(json={
-            'amount': transfer.amount,
-            'deadlineDate': transfer_date,
-            'sourceAccountEquipmentId': transfer._sourceEquipmentId,
-            'transferBeneficiaryId': transfer._beneficiaryId,
-            'transferType': 'IMMEDIATE',
-        })
-
         status = page.get_transfer_status()
-        if status != 'VALIDATED':
+        if status != "VALIDATED":
             raise AssertionError(
-                f'Unknown transfer validation status {status!r}.',
+                f"Unknown transfer validation status {status!r}.",
             )
 
         # Validate the transferred amounts cumulatively.
@@ -423,34 +438,32 @@ class OrangeBankBrowser(TwoFactorBrowser):
                 beneficiary_id=transfer._beneficiaryId,
             ),
             json={
-                'amount': transfer.amount,
-                'deadLineDate': transfer_date,
-                'sourceAccountId': transfer._sourceEquipmentId,
+                "amount": transfer.amount,
+                "deadLineDate": transfer_date,
+                "sourceAccountId": transfer._sourceEquipmentId,
             },
         )
 
         if response.status_code != 204:
             raise AssertionError(
-                'Expected a 204 on transfer validate cumulative.',
+                "Expected a 204 on transfer validate cumulative.",
             )
 
         return transfer
 
     @need_login
     def execute_transfer(self, transfer, **params):
-        transfer_date = (
-            transfer.exec_date.isoformat(timespec='milliseconds') + 'Z'
-        )
+        transfer_date = transfer.exec_date.isoformat(timespec="milliseconds") + "Z"
 
         transfer_data = {
-            'amount': transfer.amount,
-            'sourceAccountEquipmentId': transfer._sourceEquipmentId,
+            "amount": transfer.amount,
+            "sourceAccountEquipmentId": transfer._sourceEquipmentId,
             # 'periodicity': None,
-            'deadlineDate': transfer_date,
+            "deadlineDate": transfer_date,
             # 'endDate': None,
-            'motive': transfer.label or '',
-            'transferType': 'IMMEDIATE',
-            'transferBeneficiaryId': transfer._beneficiaryId,
+            "motive": transfer.label or "",
+            "transferType": "IMMEDIATE",
+            "transferBeneficiaryId": transfer._beneficiaryId,
         }
 
         # The boundary must be set here with a specific format, and not to a
@@ -458,30 +471,28 @@ class OrangeBankBrowser(TwoFactorBrowser):
         # an HTTP 403 with no error message.
         data, content_type = encode_multipart_formdata(
             fields={
-                'typedTransferDataView': (
-                    'blob',
+                "typedTransferDataView": (
+                    "blob",
                     json.dumps(
                         transfer_data,
                         cls=WoobEncoder,
-                        separators=(',', ':'),
-                    ).encode('utf-8'),
-                    'application/json',
+                        separators=(",", ":"),
+                    ).encode("utf-8"),
+                    "application/json",
                 ),
             },
-            boundary='-' * 27 + ''.join(
-                random.choice('0123456789') for _ in range(29)
-            ),
+            boundary="-" * 27 + "".join(random.choice("0123456789") for _ in range(29)),
         )
 
         page = self.transfer_execute.open(
-            headers={'Content-Type': content_type},
+            headers={"Content-Type": content_type},
             data=data,
         )
 
         status = page.get_transfer_status()
-        if status != 'ACCEPTED':
+        if status != "ACCEPTED":
             raise AssertionError(
-                f'Unknown transfer execution status {status!r}.',
+                f"Unknown transfer execution status {status!r}.",
             )
 
         # We actually need to go all the way into the historic views to find
@@ -504,10 +515,7 @@ class OrangeBankBrowser(TwoFactorBrowser):
                 if isinstance(other_date, datetime):
                     other_date = other_date.date()
 
-                if (
-                    not empty(other_date)
-                    and other_date != datetime.utcnow().date()
-                ):
+                if not empty(other_date) and other_date != datetime.utcnow().date():
                     continue
 
                 # We should have the right transfer.
@@ -515,7 +523,7 @@ class OrangeBankBrowser(TwoFactorBrowser):
                 return page.get_transfer(obj=other_transfer)
 
         raise AssertionError(
-            'We could not find the executed transfer in the available lists.',
+            "We could not find the executed transfer in the available lists.",
         )
 
     @need_login
@@ -533,17 +541,19 @@ class OrangeBankBrowser(TwoFactorBrowser):
 
     @need_login
     def new_recipient(self, recipient, **params):
-        if self.inwebo_session_id and params.get('resume', False):
+        if self.inwebo_session_id and params.get("resume", False):
             return self.new_recipient_handle_polling(recipient)
 
         try:
-            page = self.create_recipient.open(json={
-                'holderName': recipient.label,
-                'name': recipient.label,
-                'nickName': recipient.label,
-                'iban': recipient.iban,
-                'myAccount': False,
-            })
+            page = self.create_recipient.open(
+                json={
+                    "holderName": recipient.label,
+                    "name": recipient.label,
+                    "nickName": recipient.label,
+                    "iban": recipient.iban,
+                    "myAccount": False,
+                }
+            )
         except ClientError as exc:
             page = ErrorPage(self, exc.response)
             raise AddRecipientBankError(page.get_error_message())
@@ -555,7 +565,7 @@ class OrangeBankBrowser(TwoFactorBrowser):
         #       in this case.
         raise AddRecipientStep(
             recipient,
-            ValueBool('resume', label="Veuillez valider dans l'application."),
+            ValueBool("resume", label="Veuillez valider dans l'application."),
         )
 
     def new_recipient_handle_polling(self, recipient):
@@ -563,15 +573,17 @@ class OrangeBankBrowser(TwoFactorBrowser):
         # validation.
         for _ in polling_loop(count=40, delay=5):
             try:
-                self.verify_recipient_created.open(json={
-                    'inweboSessionId': self.inwebo_session_id,
-                    'transferBeneficiaryId': recipient.id,
-                })
+                self.verify_recipient_created.open(
+                    json={
+                        "inweboSessionId": self.inwebo_session_id,
+                        "transferBeneficiaryId": recipient.id,
+                    }
+                )
             except ClientError as exc:
                 page = ErrorPage(self, exc.response)
                 error = page.get_error()
 
-                if error == 'TRANSFER_BENEFICIARY_WAITING_FOR_INWEBO_AUTHENTICATION':
+                if error == "TRANSFER_BENEFICIARY_WAITING_FOR_INWEBO_AUTHENTICATION":
                     continue
 
                 # TODO: Find out what errors are done by denying the request
@@ -583,13 +595,12 @@ class OrangeBankBrowser(TwoFactorBrowser):
             break
         else:
             self.logger.warning(
-                'Still waiting authentication for creating a recipient '
-                + 'after 40 attempts; did the decoupled validity duration '
-                + 'get longer?',
+                "Still waiting authentication for creating a recipient "
+                + "after 40 attempts; did the decoupled validity duration "
+                + "get longer?",
             )
             raise AddRecipientBankError(
-                "Vous n'avez pas validé la création du bénéficiaire sur "
-                + "l'application mobile dans les temps.",
+                "Vous n'avez pas validé la création du bénéficiaire sur " + "l'application mobile dans les temps.",
             )
 
         # We do not need to get the beneficiary status from here as it will

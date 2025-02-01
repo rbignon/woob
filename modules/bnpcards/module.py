@@ -25,52 +25,50 @@ from woob.tools.value import Value, ValueBackendPassword
 from .proxy_browser import ProxyBrowser
 
 
-__all__ = ['BnpcartesentrepriseModule']
+__all__ = ["BnpcartesentrepriseModule"]
 
 
 class BnpcartesentrepriseModule(Module, CapBank):
-    NAME = 'bnpcards'
-    DESCRIPTION = 'BNP Cartes Entreprises'
-    MAINTAINER = 'Baptiste Delpey'
-    EMAIL = 'bdelpey@budget-insight.fr'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "bnpcards"
+    DESCRIPTION = "BNP Cartes Entreprises"
+    MAINTAINER = "Baptiste Delpey"
+    EMAIL = "bdelpey@budget-insight.fr"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code personnel'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Code personnel"),
         Value(
-            'type',
-            label='Profil de connexion',
-            default='1',
+            "type",
+            label="Profil de connexion",
+            default="1",
             choices={
-                '1': 'Titulaire',
-                '2': 'Gestionnaire',
-            }
-        )
+                "1": "Titulaire",
+                "2": "Gestionnaire",
+            },
+        ),
     )
 
     BROWSER = ProxyBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['type'].get(),
-                                   self.config['login'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(self.config["type"].get(), self.config["login"].get(), self.config["password"].get())
 
     def get_account(self, _id):
         return find_object(self.browser.iter_accounts(), id=_id, error=AccountNotFound)
 
     def iter_accounts(self):
         for acc in self.browser.iter_accounts():
-            acc._bisoftcap = {'all': {'softcap_day':5,'day_for_softcap':100}}
+            acc._bisoftcap = {"all": {"softcap_day": 5, "day_for_softcap": 100}}
             yield acc
         # If this browser exists we have corporate cards, that we also need to fetch
         if self.browser.corporate_browser:
             for acc in self.browser.corporate_browser.iter_accounts():
-                acc._bisoftcap = {'all': {'softcap_day': 5, 'day_for_softcap': 100}}
+                acc._bisoftcap = {"all": {"softcap_day": 5, "day_for_softcap": 100}}
                 yield acc
 
     def iter_history(self, account):
-        if getattr(account, '_is_corporate', False):
+        if getattr(account, "_is_corporate", False):
             get_transactions = self.browser.corporate_browser.get_transactions
         else:
             get_transactions = self.browser.get_transactions
@@ -80,7 +78,7 @@ class BnpcartesentrepriseModule(Module, CapBank):
                 yield tr
 
     def iter_coming(self, account):
-        if getattr(account, '_is_corporate', False):
+        if getattr(account, "_is_corporate", False):
             get_transactions = self.browser.corporate_browser.get_transactions
         else:
             get_transactions = self.browser.get_transactions

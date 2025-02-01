@@ -43,4 +43,4 @@ class ArticlePage(GenericNewsPage):
             self.try_remove(element_body, "p > a.highlight")
             self.try_remove(element_body, "script")
             self.try_remove(element_body, "blockquote")
-            return CleanText('.')(element_body)
+            return CleanText(".")(element_body)

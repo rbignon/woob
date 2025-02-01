@@ -25,50 +25,50 @@ from woob.tools.application.formatters.iformatter import IFormatter
 from woob.tools.application.repl import ReplApplication
 
 
-__all__ = ['AppConfig']
+__all__ = ["AppConfig"]
 
 
 class ModuleInfoFormatter(IFormatter):
     def format_dict(self, minfo):
-        result = '.------------------------------------------------------------------------------.\n'
-        result += '| Module %-69s |\n' % minfo['name']
+        result = ".------------------------------------------------------------------------------.\n"
+        result += "| Module %-69s |\n" % minfo["name"]
         result += "+-----------------.------------------------------------------------------------'\n"
-        result += '| Version         | %s\n' % minfo['version']
-        result += '| Maintainer      | %s\n' % minfo['maintainer']
-        result += '| License         | %s\n' % minfo['license']
-        result += '| Description     | %s\n' % minfo['description']
-        result += '| Capabilities    | %s\n' % ', '.join(minfo['capabilities'])
-        result += '| Installed       | %s\n' % minfo['installed']
-        result += '| Location        | %s\n' % minfo['location']
-        if 'config' in minfo:
+        result += "| Version         | %s\n" % minfo["version"]
+        result += "| Maintainer      | %s\n" % minfo["maintainer"]
+        result += "| License         | %s\n" % minfo["license"]
+        result += "| Description     | %s\n" % minfo["description"]
+        result += "| Capabilities    | %s\n" % ", ".join(minfo["capabilities"])
+        result += "| Installed       | %s\n" % minfo["installed"]
+        result += "| Location        | %s\n" % minfo["location"]
+        if "config" in minfo:
             first = True
-            for key, field in minfo['config'].items():
-                label = field['label']
-                if field['default'] is not None:
-                    label += ' (default: %s)' % field['default']
+            for key, field in minfo["config"].items():
+                label = field["label"]
+                if field["default"] is not None:
+                    label += " (default: %s)" % field["default"]
 
                 if first:
-                    result += '|                 | \n'
-                    result += '| Configuration   | %s: %s\n' % (key, label)
+                    result += "|                 | \n"
+                    result += "| Configuration   | %s: %s\n" % (key, label)
                     first = False
                 else:
-                    result += '|                 | %s: %s\n' % (key, label)
+                    result += "|                 | %s: %s\n" % (key, label)
         result += "'-----------------'\n"
         return result
 
 
 class AppConfig(ReplApplication):
-    APPNAME = 'config'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz, Romain Bignon'
-    DESCRIPTION = "Console application to add/edit/remove backends, " \
-                  "and to register new website accounts."
+    APPNAME = "config"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2010-YEAR Christophe Benz, Romain Bignon"
+    DESCRIPTION = "Console application to add/edit/remove backends, " "and to register new website accounts."
     SHORT_DESCRIPTION = "manage backends or register new accounts"
-    EXTRA_FORMATTERS = {'info_formatter': ModuleInfoFormatter}
-    COMMANDS_FORMATTERS = {'modules':     'table',
-                           'list':        'table',
-                           'info':        'info_formatter',
-                           }
+    EXTRA_FORMATTERS = {"info_formatter": ModuleInfoFormatter}
+    COMMANDS_FORMATTERS = {
+        "modules": "table",
+        "list": "table",
+        "info": "info_formatter",
+    }
     DISABLE_REPL = True
 
     def load_default_backends(self):
@@ -89,7 +89,7 @@ class AppConfig(ReplApplication):
 
         module_name, options = self.parse_command_args(line, 2, 1)
         if options:
-            options = options.split(' ')
+            options = options.split(" ")
         else:
             options = ()
 
@@ -99,7 +99,7 @@ class AppConfig(ReplApplication):
         # set backend params from command-line arguments
         for option in options:
             try:
-                key, value = option.split('=', 1)
+                key, value = option.split("=", 1)
             except ValueError:
                 if backend_name is None:
                     backend_name = option
@@ -144,7 +144,7 @@ class AppConfig(ReplApplication):
 
         mail = self.acquire_input()
         if not backend.confirm_account(mail):
-            print('Error: Unable to confirm account creation', file=self.stderr)
+            print("Error: Unable to confirm account creation", file=self.stderr)
             return 1
         return 0
 
@@ -159,18 +159,24 @@ class AppConfig(ReplApplication):
             try:
                 module = self.woob.modules_loader.get_or_load_module(module_name)
             except ModuleLoadError as e:
-                self.logger.warning('Unable to load module %r: %s' % (module_name, e))
+                self.logger.warning("Unable to load module %r: %s" % (module_name, e))
                 continue
 
             if caps and not module.has_caps(*caps):
                 continue
-            row = OrderedDict([('Name', backend_name),
-                               ('Module', module_name),
-                               ('Configuration', ', '.join(
-                                   '%s=%s' % (key, ('*****' if key in module.config and module.config[key].masked
-                                                    else value))
-                                   for key, value in params.items())),
-                               ])
+            row = OrderedDict(
+                [
+                    ("Name", backend_name),
+                    ("Module", module_name),
+                    (
+                        "Configuration",
+                        ", ".join(
+                            "%s=%s" % (key, ("*****" if key in module.config and module.config[key].masked else value))
+                            for key, value in params.items()
+                        ),
+                    ),
+                ]
+            )
             self.format(row)
 
     def do_enable(self, backend_name):
@@ -180,7 +186,7 @@ class AppConfig(ReplApplication):
         Enable a backend.
         """
         try:
-            self.woob.backends_config.edit_backend(backend_name, {'_enabled': '1'})
+            self.woob.backends_config.edit_backend(backend_name, {"_enabled": "1"})
         except KeyError:
             print('Backend instance "%s" does not exist' % backend_name, file=self.stderr)
             return 1
@@ -192,7 +198,7 @@ class AppConfig(ReplApplication):
         Disable a backend.
         """
         try:
-            self.woob.backends_config.edit_backend(backend_name, {'_enabled': '0'})
+            self.woob.backends_config.edit_backend(backend_name, {"_enabled": "0"})
         except KeyError:
             print('Backend instance "%s" does not exist' % backend_name, file=self.stderr)
             return 1
@@ -227,11 +233,14 @@ class AppConfig(ReplApplication):
         """
         caps = line.split()
         for name, info in sorted(self.woob.repositories.get_all_modules_info(caps).items()):
-            row = OrderedDict([('Name', name),
-                               ('Capabilities', info.capabilities),
-                               ('Description', info.description),
-                               ('Installed', info.is_installed()),
-                               ])
+            row = OrderedDict(
+                [
+                    ("Name", name),
+                    ("Capabilities", info.capabilities),
+                    ("Description", info.description),
+                    ("Installed", info.is_installed()),
+                ]
+            )
             self.format(row)
 
     def do_info(self, line):
@@ -259,33 +268,35 @@ class AppConfig(ReplApplication):
 
     def create_minfo_dict(self, minfo, module):
         module_info = {}
-        module_info['name'] = minfo.name
-        module_info['version'] = minfo.version
-        module_info['maintainer'] = minfo.maintainer
-        module_info['license'] = minfo.license
-        module_info['description'] = minfo.description
-        module_info['capabilities'] = minfo.capabilities
+        module_info["name"] = minfo.name
+        module_info["version"] = minfo.version
+        module_info["maintainer"] = minfo.maintainer
+        module_info["license"] = minfo.license
+        module_info["description"] = minfo.description
+        module_info["capabilities"] = minfo.capabilities
         repo_ver = self.woob.repositories.versions.get(minfo.name)
-        module_info['installed'] = '%s%s' % (
-            'yes' if module else 'no',
-            ' (new version available)' if repo_ver and repo_ver > minfo.version else ''
+        module_info["installed"] = "%s%s" % (
+            "yes" if module else "no",
+            " (new version available)" if repo_ver and repo_ver > minfo.version else "",
         )
-        module_info['location'] = '%s' % (minfo.url or os.path.join(minfo.path, minfo.name))
+        module_info["location"] = "%s" % (minfo.url or os.path.join(minfo.path, minfo.name))
         if module:
-            module_info['config'] = {}
+            module_info["config"] = {}
             for key, field in module.config.items():
                 # transient fields are used only for non persistent information
                 # and are not provided in the module config.
                 if field.transient:
                     continue
 
-                module_info['config'][key] = {'label': field.label,
-                                              'default': field.default,
-                                              'description': field.description,
-                                              'regexp': field.regexp,
-                                              'choices': field.choices,
-                                              'masked': field.masked,
-                                              'required': field.required}
+                module_info["config"][key] = {
+                    "label": field.label,
+                    "default": field.default,
+                    "description": field.description,
+                    "regexp": field.regexp,
+                    "choices": field.choices,
+                    "masked": field.masked,
+                    "required": field.required,
+                }
         return module_info
 
     def do_update(self, line):
@@ -296,7 +307,7 @@ class AppConfig(ReplApplication):
         """
         self.woob.update(ConsoleProgress(self))
         if self.woob.repositories.errors:
-            print('Errors building modules: %s' % ', '.join(self.woob.repositories.errors.keys()), file=self.stderr)
+            print("Errors building modules: %s" % ", ".join(self.woob.repositories.errors.keys()), file=self.stderr)
             if not self.options.debug:
-                print('Use --debug to get more information.', file=self.stderr)
+                print("Use --debug to get more information.", file=self.stderr)
             return 1

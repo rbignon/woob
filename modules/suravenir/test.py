@@ -22,7 +22,8 @@ from woob.tools.test import BackendTest
 
 
 class SuravenirTest(BackendTest):
-    MODULE = 'suravenir'
+    MODULE = "suravenir"
+
     def test_suravenir(self):
         l = list(self.backend.iter_accounts())
         self.assertTrue(len(l) > 0)

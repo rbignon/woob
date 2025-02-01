@@ -6,16 +6,16 @@ from woob.tools.backend import Module
 from .browser import TorrentzBrowser
 
 
-__all__ = ['TorrentzModule']
+__all__ = ["TorrentzModule"]
 
 
 class TorrentzModule(Module, CapTorrent):
-    NAME = 'torrentz'
-    MAINTAINER = u'Matthieu Weber'
-    EMAIL = 'weboob@weber.fi.eu.org'
-    VERSION = '3.7'
-    DESCRIPTION = 'Torrentz Search Engine.'
-    LICENSE = 'AGPL'
+    NAME = "torrentz"
+    MAINTAINER = "Matthieu Weber"
+    EMAIL = "weboob@weber.fi.eu.org"
+    VERSION = "3.7"
+    DESCRIPTION = "Torrentz Search Engine."
+    LICENSE = "AGPL"
     BROWSER = TorrentzBrowser
 
     def create_default_browser(self):
@@ -28,4 +28,4 @@ class TorrentzModule(Module, CapTorrent):
         return self.browser.get_torrent_file(id)
 
     def iter_torrents(self, pattern):
-        return self.browser.iter_torrents(pattern.replace(' ', '+'))
+        return self.browser.iter_torrents(pattern.replace(" ", "+"))

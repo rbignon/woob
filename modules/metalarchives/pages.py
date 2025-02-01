@@ -29,33 +29,35 @@ class LoginPage(HTMLPage):
     """
     Login to your Metal Archives account.
     """
+
     @property
     def logged(self):
-        return self.doc['Success']
+        return self.doc["Success"]
 
 
 class SearchBandsPage(JsonPage):
     @method
     class iter_bands(DictElement):
-        item_xpath = 'aaData'
+        item_xpath = "aaData"
         ignore_duplicate = True
 
         class item(ItemElement):
             klass = BandSearch
-            obj_id = Regexp(Dict('0'), '/([0-9]+)\\"')
-            obj_name = Regexp(Dict('0'), '>([^<]+)')
-            obj_short_description = Format('Genre: %s - Country: %s', Dict('1'), Dict('2'))
+            obj_id = Regexp(Dict("0"), '/([0-9]+)\\"')
+            obj_name = Regexp(Dict("0"), ">([^<]+)")
+            obj_short_description = Format("Genre: %s - Country: %s", Dict("1"), Dict("2"))
 
 
 class BandPage(HTMLPage):
     """
     Displays information about a band.
     """
+
     @method
     class get_info(ItemElement):
         klass = BandInfo
 
-        obj_id = Env('band_id')
+        obj_id = Env("band_id")
         obj_name = CleanText('//h1[@class="band_name"]/a/text()')
         obj_genre = CleanText('//dl[@class="float_right"]/dd[1]/text()')
         obj_country = CleanText('//dl[@class="float_left"]/dd[1]/a/text()')
@@ -67,52 +69,57 @@ class AlbumPage(HTMLPage):
     """
     Displays a band's discography.
     """
+
     @method
     class iter_albums(ListElement):
-        item_xpath = '//tbody/tr'
+        item_xpath = "//tbody/tr"
         ignore_duplicate = True
 
         class item(ItemElement):
             klass = Albums
 
-            obj_id = Link('./td[1]/a')
-            obj_name = CleanText('./td[1]/a/text()')
-            obj_album_type = CleanText('./td[2]/text()')
-            obj_year = CleanText('./td[3]/text()')
-            obj_reviews = CleanText('./td[4]/a/text()')
+            obj_id = Link("./td[1]/a")
+            obj_name = CleanText("./td[1]/a/text()")
+            obj_album_type = CleanText("./td[2]/text()")
+            obj_year = CleanText("./td[3]/text()")
+            obj_reviews = CleanText("./td[4]/a/text()")
 
 
 class FavoritesPage(JsonPage):
     """
     Display a list of your favorite bands.
     """
+
     @method
     class iter_favorites(DictElement):
-        item_xpath = 'aaData'
+        item_xpath = "aaData"
         ignore_duplicate = True
 
         class item(ItemElement):
             klass = Favorite
 
-            obj_id = Regexp(Dict('0'), '/([0-9]+)\\"')
-            obj_name = Regexp(Dict('0'), '>([^<]+)')
-            obj_band_url = Regexp(Dict('0'), 'href=\"([^"]+)')
-            obj_short_description = Format('Genre: %s - Country: %s', Dict('2'), Dict('1'))
+            obj_id = Regexp(Dict("0"), '/([0-9]+)\\"')
+            obj_name = Regexp(Dict("0"), ">([^<]+)")
+            obj_band_url = Regexp(Dict("0"), 'href="([^"]+)')
+            obj_short_description = Format("Genre: %s - Country: %s", Dict("2"), Dict("1"))
 
 
 class SuggestionsPage(HTMLPage):
     """
     Displays band suggestions depending on your favorite bands.
     """
+
     @method
     class iter_suggestions(ListElement):
         # Takes all the <td> except the last one that is not a band
-        item_xpath = '//tbody/tr[position() < last()]'
+        item_xpath = "//tbody/tr[position() < last()]"
 
         class item(ItemElement):
             klass = Suggestion
 
-            obj_id = Regexp(Link('./td[2]/a'), '/([0-9]+)')
-            obj_name = CleanText('./td[2]/a/text()')
-            obj_description = Format('Genre: %s - Country: %s', CleanText('./td[3]/text()'), CleanText('./td[4]/text()'))
-            obj_url = Link('./td[2]/a')
+            obj_id = Regexp(Link("./td[2]/a"), "/([0-9]+)")
+            obj_name = CleanText("./td[2]/a/text()")
+            obj_description = Format(
+                "Genre: %s - Country: %s", CleanText("./td[3]/text()"), CleanText("./td[4]/text()")
+            )
+            obj_url = Link("./td[2]/a")

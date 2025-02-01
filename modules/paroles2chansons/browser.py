@@ -28,31 +28,27 @@ from woob.browser.url import URL
 from .pages import ArtistPage, HomePage, LyricsPage, SearchPage
 
 
-__all__ = ['Paroles2chansonsBrowser']
+__all__ = ["Paroles2chansonsBrowser"]
 
 
 class Paroles2chansonsBrowser(PagesBrowser):
     PROFILE = Firefox()
     TIMEOUT = 30
 
-    BASEURL = 'http://paroles2chansons.lemonde.fr/'
-    home = URL(r'$',
-                 HomePage)
-    search = URL('search',
-                 SearchPage)
-    artist = URL(r'paroles-(?P<artistid>[^/]*)$',
-                  ArtistPage)
-    lyrics = URL(r'paroles-(?P<artistid>[^/]*)/paroles-(?P<songid>[^/]*)\.html',
-                  LyricsPage)
+    BASEURL = "http://paroles2chansons.lemonde.fr/"
+    home = URL(r"$", HomePage)
+    search = URL("search", SearchPage)
+    artist = URL(r"paroles-(?P<artistid>[^/]*)$", ArtistPage)
+    lyrics = URL(r"paroles-(?P<artistid>[^/]*)/paroles-(?P<songid>[^/]*)\.html", LyricsPage)
 
     def iter_lyrics(self, criteria, pattern):
         self.home.stay_or_go()
         assert self.home.is_here()
         self.page.search_lyrics(pattern)
         assert self.search.is_here()
-        if criteria == 'song':
+        if criteria == "song":
             return self.page.iter_song_lyrics()
-        elif criteria == 'artist':
+        elif criteria == "artist":
             artist_ids = self.page.get_artist_ids()
             it = []
             # we just take the 3 first artists to avoid too many page loadings
@@ -61,7 +57,7 @@ class Paroles2chansonsBrowser(PagesBrowser):
             return it
 
     def get_lyrics(self, id):
-        ids = id.split('|')
+        ids = id.split("|")
         try:
             self.lyrics.go(artistid=ids[0], songid=ids[1])
             songlyrics = self.page.get_lyrics()

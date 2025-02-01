@@ -20,4 +20,4 @@
 from .module import NovaModule
 
 
-__all__ = ['NovaModule']
+__all__ = ["NovaModule"]

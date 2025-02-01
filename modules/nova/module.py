@@ -25,25 +25,25 @@ from woob.tools.backend import Module
 from woob.tools.capabilities.streaminfo import StreamInfo
 
 
-__all__ = ['NovaModule']
+__all__ = ["NovaModule"]
 
 
 class NovaModule(Module, CapRadio, CapCollection):
-    NAME = 'nova'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = u'Nova French radio'
-    LICENSE = 'AGPLv3+'
+    NAME = "nova"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "Nova French radio"
+    LICENSE = "AGPLv3+"
     BROWSER = APIBrowser
 
     RADIOS = {
-        '19577': 'Radio Nova',
-        '19578': 'Nova Bordeaux',
-        '23678': 'Nova Lyon',
-        '23929': 'Nova V.F.',
-        '23932': 'Nova la Nuit',
-        '23935': 'Nova Vintage',
+        "19577": "Radio Nova",
+        "19578": "Nova Bordeaux",
+        "23678": "Nova Lyon",
+        "23929": "Nova V.F.",
+        "23932": "Nova la Nuit",
+        "23935": "Nova Vintage",
     }
 
     def iter_resources(self, objs, split_path):
@@ -54,38 +54,38 @@ class NovaModule(Module, CapRadio, CapCollection):
                 yield self.get_radio(id)
 
     def iter_radios_search(self, pattern):
-        for radio in self.iter_resources((Radio, ), []):
+        for radio in self.iter_resources((Radio,), []):
             if pattern.lower() in radio.title.lower() or pattern.lower() in radio.description.lower():
                 yield radio
 
     def get_radio(self, radio):
         if not isinstance(radio, Radio):
-            if radio == 'nova': # old id
-                radio = '19577'
+            if radio == "nova":  # old id
+                radio = "19577"
             radio = Radio(radio)
 
         if radio.id not in self.RADIOS:
             return None
 
-        json = self.browser.open('http://www.nova.fr/radio/%s/player' % radio.id).json()
-        radio.title = radio.description = json['radio']['name']
+        json = self.browser.open("http://www.nova.fr/radio/%s/player" % radio.id).json()
+        radio.title = radio.description = json["radio"]["name"]
 
-        if 'currentTrack' in json:
+        if "currentTrack" in json:
             current = StreamInfo(0)
-            current.who = json['currentTrack']['artist']
-            current.what = json['currentTrack']['title']
+            current.who = json["currentTrack"]["artist"]
+            current.what = json["currentTrack"]["title"]
             radio.current = current
 
         stream = BaseAudioStream(0)
         stream.bitrate = 128
-        stream.format = 'mp3'
-        stream.title = '128kbits/s'
-        stream.url = json['radio']['high_def_stream_url']
+        stream.format = "mp3"
+        stream.title = "128kbits/s"
+        stream.url = json["radio"]["high_def_stream_url"]
         radio.streams = [stream]
         return radio
 
     def fill_radio(self, radio, fields):
-        if 'current' in fields:
+        if "current" in fields:
             radio.current = self.get_radio(radio.id).current
         return radio
 

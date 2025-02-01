@@ -32,12 +32,12 @@ from woob.tools.application.repl import ReplApplication, defaultcount
 from .image2xterm import get_term_size, image2xterm
 
 
-__all__ = ['AppVideo']
+__all__ = ["AppVideo"]
 
 
 class VideoListFormatter(PrettyFormatter):
-    MANDATORY_FIELDS = ('id', 'title', 'duration', 'date')
-    DISPLAYED_FIELDS = ('author', 'rating', 'thumbnail', 'rating_max')
+    MANDATORY_FIELDS = ("id", "title", "duration", "date")
+    DISPLAYED_FIELDS = ("author", "rating", "thumbnail", "rating_max")
 
     def get_title(self, obj):
         return obj.title
@@ -46,31 +46,31 @@ class VideoListFormatter(PrettyFormatter):
         if empty(obj.duration) and empty(obj.date):
             return None
 
-        result = '%s' % (obj.duration or obj.date)
-        if hasattr(obj, 'author') and not empty(obj.author):
-            result += ' - %s' % obj.author
-        if hasattr(obj, 'rating') and not empty(obj.rating):
-            result += ' (%s/%s)' % (obj.rating, obj.rating_max)
-        if hasattr(obj, 'thumbnail') and not empty(obj.thumbnail) and not empty(obj.thumbnail.data):
-            result += '\n'
+        result = "%s" % (obj.duration or obj.date)
+        if hasattr(obj, "author") and not empty(obj.author):
+            result += " - %s" % obj.author
+        if hasattr(obj, "rating") and not empty(obj.rating):
+            result += " (%s/%s)" % (obj.rating, obj.rating_max)
+        if hasattr(obj, "thumbnail") and not empty(obj.thumbnail) and not empty(obj.thumbnail.data):
+            result += "\n"
             result += image2xterm(BytesIO(obj.thumbnail.data), newsize=get_term_size())
 
         return result
 
 
 class AppVideo(ReplApplication):
-    APPNAME = 'video'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2010-YEAR Christophe Benz, Romain Bignon, John Obbele'
-    DESCRIPTION = "Console application allowing to search for videos on various websites, " \
-                  "play and download them and get information."
+    APPNAME = "video"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2010-YEAR Christophe Benz, Romain Bignon, John Obbele"
+    DESCRIPTION = (
+        "Console application allowing to search for videos on various websites, "
+        "play and download them and get information."
+    )
     SHORT_DESCRIPTION = "search and play videos"
     CAPS = CapVideo
-    EXTRA_FORMATTERS = {'video_list': VideoListFormatter}
-    COMMANDS_FORMATTERS = {'search': 'video_list',
-                           'ls': 'video_list',
-                           'playlist': 'video_list'}
-    COLLECTION_OBJECTS = (BaseVideo, )
+    EXTRA_FORMATTERS = {"video_list": VideoListFormatter}
+    COMMANDS_FORMATTERS = {"search": "video_list", "ls": "video_list", "playlist": "video_list"}
+    COLLECTION_OBJECTS = (BaseVideo,)
     PLAYLIST = []
     nsfw = True
 
@@ -84,7 +84,7 @@ class AppVideo(ReplApplication):
 
     def download(self, video, dest, default=None):
         if not video.url:
-            print('Error: the direct URL is not available.', file=self.stderr)
+            print("Error: the direct URL is not available.", file=self.stderr)
             return 4
 
         def check_exec(executable):
@@ -95,37 +95,44 @@ class AppVideo(ReplApplication):
 
         dest = self.obj_to_filename(video, dest, default)
 
-        if video.url.startswith('rtmp'):
-            if not check_exec('rtmpdump'):
+        if video.url.startswith("rtmp"):
+            if not check_exec("rtmpdump"):
                 return 1
-            args = ('rtmpdump', '-e', '-r', video.url, '-o', dest)
-        elif video.url.startswith('mms'):
-            if not check_exec('mimms'):
+            args = ("rtmpdump", "-e", "-r", video.url, "-o", dest)
+        elif video.url.startswith("mms"):
+            if not check_exec("mimms"):
                 return 1
-            args = ('mimms', '-r', video.url, dest)
-        elif 'm3u8' == video.ext:
+            args = ("mimms", "-r", video.url, dest)
+        elif "m3u8" == video.ext:
             _dest, _ = os.path.splitext(dest)
-            dest = '%s.%s' % (_dest, 'mp4')
+            dest = "%s.%s" % (_dest, "mp4")
             content = tuple()
             parsed_uri = urlparse(video.url)
-            baseurl = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
+            baseurl = "{uri.scheme}://{uri.netloc}".format(uri=parsed_uri)
             for line in self.read_url(video.url):
-                line = line.decode('utf-8')
-                if not line.startswith('#'):
-                    if not line.startswith('http'):
-                        line = '%s%s' % (baseurl, line)
+                line = line.decode("utf-8")
+                if not line.startswith("#"):
+                    if not line.startswith("http"):
+                        line = "%s%s" % (baseurl, line)
                     content += (line,)
 
-            args = ('wget', '-nv',) + content + ('-O', dest)
+            args = (
+                (
+                    "wget",
+                    "-nv",
+                )
+                + content
+                + ("-O", dest)
+            )
         else:
-            if check_exec('wget'):
-                args = ('wget', '-c', video.url, '-O', dest)
-            elif check_exec('curl'):
-                args = ('curl', '-C', '-', video.url, '-o', dest)
+            if check_exec("wget"):
+                args = ("wget", "-c", video.url, "-O", dest)
+            elif check_exec("curl"):
+                args = ("curl", "-C", "-", video.url, "-o", dest)
             else:
                 return 1
 
-        self.logger.debug(' '.join(args))
+        self.logger.debug(" ".join(args))
         subprocess.call(args)
 
     def read_url(self, url):
@@ -133,7 +140,7 @@ class AppVideo(ReplApplication):
         return r.iter_lines()
 
     def complete_download(self, text, line, *ignored):
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) == 2:
             return self._complete_object()
         elif len(args) >= 3:
@@ -151,15 +158,15 @@ class AppVideo(ReplApplication):
         Example: download KdRRge4XYIo@youtube '{title}.{ext}'
         """
         _id, dest = self.parse_command_args(line, 2, 1)
-        video = self.get_object(_id, 'get_video', ['url'])
+        video = self.get_object(_id, "get_video", ["url"])
         if not video:
-            print('Video not found: %s' % _id, file=self.stderr)
+            print("Video not found: %s" % _id, file=self.stderr)
             return 3
 
         return self.download(video, dest)
 
     def complete_play(self, text, line, *ignored):
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) >= 2:
             return self._complete_object()
 
@@ -170,12 +177,12 @@ class AppVideo(ReplApplication):
         Play a video with a found player.
         """
         if not line:
-            print('This command takes an argument: %s' % self.get_command_help('play', short=True), file=self.stderr)
+            print("This command takes an argument: %s" % self.get_command_help("play", short=True), file=self.stderr)
             return 2
 
         ret = 0
-        for _id in line.split(' '):
-            video = self.get_object(_id, 'get_video', ['url'])
+        for _id in line.split(" "):
+            video = self.get_object(_id, "get_video", ["url"])
             error = self.play(video, _id)
             if error is not None:
                 ret = error
@@ -184,23 +191,24 @@ class AppVideo(ReplApplication):
 
     def play(self, video, _id):
         if not video:
-            print('Video not found: %s' % _id, file=self.stderr)
+            print("Video not found: %s" % _id, file=self.stderr)
             return 3
         if not video.url:
-            print('Error: the direct URL is not available.', file=self.stderr)
+            print("Error: the direct URL is not available.", file=self.stderr)
             return 4
         try:
-            player_name = self.config.get('media_player')
-            media_player_args = self.config.get('media_player_args')
+            player_name = self.config.get("media_player")
+            media_player_args = self.config.get("media_player_args")
             if not player_name:
-                self.logger.info('You can set the media_player key to the player you prefer in the video '
-                                 'configuration file.')
+                self.logger.info(
+                    "You can set the media_player key to the player you prefer in the video " "configuration file."
+                )
             self.player.play(video, player_name=player_name, player_args=media_player_args)
         except (InvalidMediaPlayer, MediaPlayerNotFound) as e:
-            print('%s\nVideo URL: %s' % (e, video.url))
+            print("%s\nVideo URL: %s" % (e, video.url))
 
     def complete_info(self, text, line, *ignored):
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) >= 2:
             return self._complete_object()
 
@@ -211,26 +219,26 @@ class AppVideo(ReplApplication):
         Get information about a video.
         """
         if not line:
-            print('This command takes an argument: %s' % self.get_command_help('info', short=True), file=self.stderr)
+            print("This command takes an argument: %s" % self.get_command_help("info", short=True), file=self.stderr)
             return 2
 
         self.start_format()
-        for _id in line.split(' '):
-            video = self.get_object(_id, 'get_video')
+        for _id in line.split(" "):
+            video = self.get_object(_id, "get_video")
             if not video:
-                print('Video not found: %s' % _id, file=self.stderr)
+                print("Video not found: %s" % _id, file=self.stderr)
                 return 3
 
             self.format(video)
 
     def complete_playlist(self, text, line, *ignored):
-        args = line.split(' ')
+        args = line.split(" ")
         if len(args) == 2:
-            return ['play', 'add', 'remove', 'export', 'display', 'download']
+            return ["play", "add", "remove", "export", "display", "download"]
         if len(args) >= 3:
-            if args[1] in ('export', 'download'):
+            if args[1] in ("export", "download"):
                 return self.path_completer(args[2])
-            if args[1] in ('add', 'remove'):
+            if args[1] in ("add", "remove"):
                 return self._complete_object()
 
     def do_playlist(self, line):
@@ -246,39 +254,39 @@ class AppVideo(ReplApplication):
         """
 
         if not self.interactive:
-            print('This command can be used only in interactive mode.', file=self.stderr)
+            print("This command can be used only in interactive mode.", file=self.stderr)
             return 1
 
         if not line:
-            print('This command takes an argument: %s' % self.get_command_help('playlist'), file=self.stderr)
+            print("This command takes an argument: %s" % self.get_command_help("playlist"), file=self.stderr)
             return 2
 
         cmd, args = self.parse_command_args(line, 2, req_n=1)
         if cmd == "add":
-            _ids = args.strip().split(' ')
+            _ids = args.strip().split(" ")
             for _id in _ids:
-                video = self.get_object(_id, 'get_video')
+                video = self.get_object(_id, "get_video")
 
                 if not video:
-                    print('Video not found: %s' % _id, file=self.stderr)
+                    print("Video not found: %s" % _id, file=self.stderr)
                     return 3
 
                 if not video.url:
-                    print('Error: the direct URL is not available.', file=self.stderr)
+                    print("Error: the direct URL is not available.", file=self.stderr)
                     return 4
 
                 self.PLAYLIST.append(video)
         elif cmd == "remove":
-            _ids = args.strip().split(' ')
+            _ids = args.strip().split(" ")
             for _id in _ids:
-                video_to_remove = self.get_object(_id, 'get_video')
+                video_to_remove = self.get_object(_id, "get_video")
 
                 if not video_to_remove:
-                    print('Video not found: %s' % _id, file=self.stderr)
+                    print("Video not found: %s" % _id, file=self.stderr)
                     return 3
 
                 if not video_to_remove.url:
-                    print('Error: the direct URL is not available.', file=self.stderr)
+                    print("Error: the direct URL is not available.", file=self.stderr)
                     return 4
 
                 for video in self.PLAYLIST:
@@ -290,25 +298,28 @@ class AppVideo(ReplApplication):
             if args:
                 filename = args
 
-            file = open(filename, 'w')
+            file = open(filename, "w")
             for video in self.PLAYLIST:
-                file.write('%s\r\n' % video.url)
+                file.write("%s\r\n" % video.url)
             file.close()
         elif cmd == "display":
             for video in self.PLAYLIST:
                 self.cached_format(video)
         elif cmd == "download":
             for i, video in enumerate(self.PLAYLIST):
-                self.download(video, args, '%02d-{id}-{title}.{ext}' % (i+1))
+                self.download(video, args, "%02d-{id}-{title}.{ext}" % (i + 1))
         elif cmd == "play":
             for video in self.PLAYLIST:
                 self.play(video, video.id)
         else:
-            print('Playlist command only support "add", "remove", "display", "download" and "export" arguments.', file=self.stderr)
+            print(
+                'Playlist command only support "add", "remove", "display", "download" and "export" arguments.',
+                file=self.stderr,
+            )
             return 2
 
     def complete_nsfw(self, text, line, begidx, endidx):
-        return ['on', 'off']
+        return ["on", "off"]
 
     def do_nsfw(self, line):
         """
@@ -320,9 +331,9 @@ class AppVideo(ReplApplication):
         """
         line = line.strip()
         if line:
-            if line == 'on':
+            if line == "on":
                 self.nsfw = True
-            elif line == 'off':
+            elif line == "off":
                 self.nsfw = False
             else:
                 print('Invalid argument "%s".' % line)
@@ -338,10 +349,10 @@ class AppVideo(ReplApplication):
         Search for videos matching a PATTERN.
         """
         if not pattern:
-            print('This command takes an argument: %s' % self.get_command_help('search', short=True), file=self.stderr)
+            print("This command takes an argument: %s" % self.get_command_help("search", short=True), file=self.stderr)
             return 2
 
-        self.change_path(['search'])
+        self.change_path(["search"])
         self.start_format(pattern=pattern)
-        for video in self.do('search_videos', pattern=pattern, nsfw=self.nsfw):
+        for video in self.do("search_videos", pattern=pattern, nsfw=self.nsfw):
             self.cached_format(video)

@@ -31,14 +31,14 @@ class SubscriptionPage(LoggedPage, JsonPage):
     class get_subscription(ItemElement):
         klass = Subscription
 
-        obj_id = Dict('subscriber/personId/id')
-        obj_subscriber = Dict('subscriber/labelName')
+        obj_id = Dict("subscriber/personId/id")
+        obj_subscriber = Dict("subscriber/labelName")
 
 
 class MyForm(Form):
     def submit(self, **kwargs):
-        kwargs.setdefault('data_encoding', self.page.encoding)
-        self.headers = kwargs.pop('headers', None)
+        kwargs.setdefault("data_encoding", self.page.encoding)
+        self.headers = kwargs.pop("headers", None)
         # the only change here, is location() becomes open(),
         # because we don't want to change current page
         return self.page.browser.open(self.request, **kwargs)
@@ -50,8 +50,8 @@ class DocumentsPage(LoggedPage, HTMLPage):
     is_here = '//h3[@id="MM_CONSULTATION_RELEVES_COURRIERS_EDOCUMENTS_m_title"]'
 
     def download(self, document):
-        form = self.get_form(id='main')
-        form['__EVENTTARGET'] = document._event_target
+        form = self.get_form(id="main")
+        form["__EVENTTARGET"] = document._event_target
         return form.submit()
 
     @method
@@ -59,18 +59,18 @@ class DocumentsPage(LoggedPage, HTMLPage):
         head_xpath = '//div[@id="MM_CONSULTATION_RELEVES_COURRIERS_EDOCUMENTS_divRelevesCourriers"]/table/thead/tr/th'
         item_xpath = '//div[@id="MM_CONSULTATION_RELEVES_COURRIERS_EDOCUMENTS_divRelevesCourriers"]/table/tbody/tr'
 
-        col_date = 'Date'
-        col_type = 'Document'
+        col_date = "Date"
+        col_type = "Document"
 
         class item(ItemElement):
             klass = Document
 
             def condition(self):
-                return CleanText(TableCell('type'))(self) == 'Relevé de comptes'
+                return CleanText(TableCell("type"))(self) == "Relevé de comptes"
 
-            obj_id = Format('%s_%s', Env('subid'), Field('date'))
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)
-            obj_label = CleanText(TableCell('type'))
+            obj_id = Format("%s_%s", Env("subid"), Field("date"))
+            obj_date = Date(CleanText(TableCell("date")), dayfirst=True)
+            obj_label = CleanText(TableCell("type"))
             obj_type = DocumentTypes.STATEMENT
-            obj_format = 'pdf'
-            obj__event_target = Regexp(Link('./td[6]//a'), r'WebForm_PostBackOptions\("(.*?)",')
+            obj_format = "pdf"
+            obj__event_target = Regexp(Link("./td[6]//a"), r'WebForm_PostBackOptions\("(.*?)",')

@@ -25,21 +25,22 @@ from woob.browser import URL, PagesBrowser
 from .pages import IndexPage, VideoPage
 
 
-__all__ = ['DailymotionBrowser']
+__all__ = ["DailymotionBrowser"]
 
 
 class DailymotionBrowser(PagesBrowser):
-    BASEURL = 'http://www.dailymotion.com'
+    BASEURL = "http://www.dailymotion.com"
 
-    video_page = URL(r'http://[w\.]*dailymotion\.com/video/(?P<_id>.*)',
-                     VideoPage)
+    video_page = URL(r"http://[w\.]*dailymotion\.com/video/(?P<_id>.*)", VideoPage)
 
-    latest_page = URL(r'/1', IndexPage)
-    index_page = URL(r'http://[w\.]*dailymotion\.com/(?P<search>.*)',
-                     r'http://[w\.]*dailymotion\.com/1',
-                     r'http://[w\.]*dailymotion\.com/[a-z\-]{2,5}/1',
-                     r'http://[w\.]*dailymotion\.com/[a-z\-]{2,5}/(\w+/)?search/.*',
-                     IndexPage)
+    latest_page = URL(r"/1", IndexPage)
+    index_page = URL(
+        r"http://[w\.]*dailymotion\.com/(?P<search>.*)",
+        r"http://[w\.]*dailymotion\.com/1",
+        r"http://[w\.]*dailymotion\.com/[a-z\-]{2,5}/1",
+        r"http://[w\.]*dailymotion\.com/[a-z\-]{2,5}/(\w+/)?search/.*",
+        IndexPage,
+    )
 
     def __init__(self, resolution, format, *args, **kwargs):
         self.resolution = resolution
@@ -51,7 +52,7 @@ class DailymotionBrowser(PagesBrowser):
 
         if video._formats and self.format in video._formats:
             video.ext = self.format
-            if self.format == u'm3u8':
+            if self.format == "m3u8":
                 video.url = self.retrieve_m3u8_url(video._formats.get(self.format))
             elif self.resolution in video._formats.get(self.format):
                 video.url = video._formats.get(self.format).get(self.resolution)
@@ -67,14 +68,14 @@ class DailymotionBrowser(PagesBrowser):
         for resolution, url in urls.items():
             for item in self.read_url(url):
                 if return_next:
-                    return str(item.split('#')[0])
+                    return str(item.split("#")[0])
 
                 m = re.match('^#.*,NAME="%s"' % self.resolution, item)
                 if not m:
                     continue
 
                 return_next = True
-        return str(item.split('#')[0])
+        return str(item.split("#")[0])
 
     def read_url(self, url):
         r = self.open(url, stream=True)
@@ -82,11 +83,11 @@ class DailymotionBrowser(PagesBrowser):
         return buf
 
     def search_videos(self, pattern, sortby):
-        pattern = pattern.replace('/', '').encode('utf-8')
+        pattern = pattern.replace("/", "").encode("utf-8")
         if sortby is None:
-            url = 'en/search/%s/1' % quote_plus(pattern)
+            url = "en/search/%s/1" % quote_plus(pattern)
         else:
-            url = 'en/%s/search/%s/1' % (sortby, quote_plus(pattern))
+            url = "en/%s/search/%s/1" % (sortby, quote_plus(pattern))
 
         return self.index_page.go(search=url).iter_videos()
 

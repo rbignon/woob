@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import SeLogerBrowser
 
 
-__all__ = ['SeLogerModule']
+__all__ = ["SeLogerModule"]
 
 
 class SeLogerModule(Module, CapHousing):
-    NAME = 'seloger'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DESCRIPTION = 'French housing website'
-    LICENSE = 'AGPLv3+'
+    NAME = "seloger"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DESCRIPTION = "French housing website"
+    LICENSE = "AGPLv3+"
     BROWSER = SeLogerBrowser
 
     def search_housings(self, query):
@@ -41,11 +41,17 @@ class SeLogerModule(Module, CapHousing):
         if len(cities) == 0:
             return list([])
 
-        return self.browser.search_housings(query.type, cities, query.nb_rooms,
-                                            query.area_min, query.area_max,
-                                            query.cost_min, query.cost_max,
-                                            query.house_types,
-                                            query.advert_types)
+        return self.browser.search_housings(
+            query.type,
+            cities,
+            query.nb_rooms,
+            query.area_min,
+            query.area_max,
+            query.cost_min,
+            query.cost_max,
+            query.house_types,
+            query.advert_types,
+        )
 
     def get_housing(self, housing):
         if isinstance(housing, Housing):
@@ -60,7 +66,7 @@ class SeLogerModule(Module, CapHousing):
         return self.browser.search_geo(pattern)
 
     def fill_photo(self, photo, fields):
-        if 'data' in fields and photo.url and not photo.data:
+        if "data" in fields and photo.url and not photo.data:
             photo.data = self.browser.open(photo.url).content
         return photo
 

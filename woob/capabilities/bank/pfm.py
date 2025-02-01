@@ -19,13 +19,13 @@ from .base import CapBank
 
 
 __all__ = [
-    'CapBankMatching', 'AccountDiff',
+    "CapBankMatching",
+    "AccountDiff",
 ]
 
 
 class AccountDiff:
-    """Difference between 2 accounts lists
-    """
+    """Difference between 2 accounts lists"""
 
     def __init__(self):
         self.matching = []

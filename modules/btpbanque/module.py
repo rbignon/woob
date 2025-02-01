@@ -23,15 +23,15 @@ from woob_modules.caissedepargne.module import CaisseEpargneModule
 from .proxy_browser import ProxyBrowser
 
 
-__all__ = ['BtpbanqueModule']
+__all__ = ["BtpbanqueModule"]
 
 
 class BtpbanqueModule(CaisseEpargneModule, CapBank):
-    NAME = 'btpbanque'
-    DESCRIPTION = 'BTP Banque'
-    MAINTAINER = 'Edouard Lambert'
-    EMAIL = 'elambert@budget-insight.com'
-    DEPENDENCIES = ('caissedepargne',)
-    LICENSE = 'LGPLv3+'
+    NAME = "btpbanque"
+    DESCRIPTION = "BTP Banque"
+    MAINTAINER = "Edouard Lambert"
+    EMAIL = "elambert@budget-insight.com"
+    DEPENDENCIES = ("caissedepargne",)
+    LICENSE = "LGPLv3+"
 
     BROWSER = ProxyBrowser

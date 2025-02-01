@@ -27,23 +27,23 @@ from woob.tools.value import Value, ValueBackendPassword
 from .browser import LuccaBrowser
 
 
-__all__ = ['LuccaModule']
+__all__ = ["LuccaModule"]
 
 
 class LuccaModule(Module, CapDocument, CapCalendarEvent):
-    NAME = 'lucca'
-    DESCRIPTION = 'Lucca'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "lucca"
+    DESCRIPTION = "Lucca"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = LuccaBrowser
 
     CONFIG = BackendConfig(
-        Value('subdomain', label='Sous-domaine', regexp=r'[\w-]+'),
-        Value('login', label='Identifiant'),
-        ValueBackendPassword('password', label='Mot de passe'),
+        Value("subdomain", label="Sous-domaine", regexp=r"[\w-]+"),
+        Value("login", label="Identifiant"),
+        ValueBackendPassword("password", label="Mot de passe"),
     )
 
     accepted_document_types = (DocumentTypes.PAYSLIP,)
@@ -51,9 +51,7 @@ class LuccaModule(Module, CapDocument, CapCalendarEvent):
 
     def create_default_browser(self):
         return self.create_browser(
-            self.config['subdomain'].get(),
-            self.config['login'].get(),
-            self.config['password'].get()
+            self.config["subdomain"].get(), self.config["login"].get(), self.config["password"].get()
         )
 
     def get_event(self, _id):
@@ -87,7 +85,7 @@ class LuccaModule(Module, CapDocument, CapCalendarEvent):
         return self.browser.iter_documents(subscription)
 
     def get_document(self, id):
-        subid = id.split('_')[0]
+        subid = id.split("_")[0]
         return find_object(self.iter_documents(subid), id=id, error=DocumentNotFound)
 
     def download_document(self, document):

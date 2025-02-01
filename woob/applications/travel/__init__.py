@@ -19,4 +19,4 @@
 from .travel import AppTravel
 
 
-__all__ = ['AppTravel']
+__all__ = ["AppTravel"]

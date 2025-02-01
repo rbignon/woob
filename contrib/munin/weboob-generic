@@ -96,76 +96,75 @@ from woob.exceptions import BrowserIncorrectPassword
 
 class GenericMuninPlugin(object):
     def __init__(self):
-        if 'woob_path' in os.environ:
-            self.woob = Woob(os.environ['woob_path'])
+        if "woob_path" in os.environ:
+            self.woob = Woob(os.environ["woob_path"])
         else:
             self.woob = Woob()
-        self.cache_expire = long(os.environ.get('cache_expire', 3600))
-        self.cumulate = int(os.environ.get('cumulate', 1))
+        self.cache_expire = long(os.environ.get("cache_expire", 3600))
+        self.cumulate = int(os.environ.get("cumulate", 1))
         self.cache = None
         self.name = sys.argv[0]
         if "/" in self.name:
-            self.name = self.name.split('/')[-1]
+            self.name = self.name.split("/")[-1]
 
         # Capability to load
-        self.capa = os.environ['capa']
+        self.capa = os.environ["capa"]
         # Command to pass to Woob
-        self.do = os.environ['do'].split(',')
+        self.do = os.environ["do"].split(",")
         # Not easy to load modules automatically...
         self.mimport = os.environ["import"]
         exec(self.mimport)
         # We can monitore only some objects
         self.object_list = None
-        if 'get_object_list' in os.environ:
+        if "get_object_list" in os.environ:
             self.object_list = os.environ["get_object_list"]
         self.tomonitore = None
-        if 'id_monitored' in os.environ:
-            self.tomonitore = os.environ['id_monitored'].decode('utf-8').split(' ')
+        if "id_monitored" in os.environ:
+            self.tomonitore = os.environ["id_monitored"].decode("utf-8").split(" ")
         self.exclude = None
-        if 'exclude' in os.environ:
-            self.exclude = os.environ['exclude'].split(' ')
+        if "exclude" in os.environ:
+            self.exclude = os.environ["exclude"].split(" ")
         # Attribut of object to use as ID (default: id)
         self.attribid = "id"
-        if 'attribid' in os.environ:
-            self.attribid = os.environ['attribid']
-        self.attribvalue = os.environ['attribvalue']
-        self.title = ''
-        if 'title' in os.environ:
-            self.title = os.environ['title'].decode('utf-8')
+        if "attribid" in os.environ:
+            self.attribid = os.environ["attribid"]
+        self.attribvalue = os.environ["attribvalue"]
+        self.title = ""
+        if "title" in os.environ:
+            self.title = os.environ["title"].decode("utf-8")
         self.attriblabel = "label"
-        if 'label' in os.environ:
-            self.attriblabel = os.environ['label']
+        if "label" in os.environ:
+            self.attriblabel = os.environ["label"]
         self.vlabel = self.attribvalue
-        if 'vlabel' in os.environ:
-            self.vlabel = os.environ['vlabel'].decode('utf-8')
+        if "vlabel" in os.environ:
+            self.vlabel = os.environ["vlabel"].decode("utf-8")
         self.category = "woob"
-        if 'category' in os.environ:
-            self.category = os.environ['category'].decode('utf-8')
-
+        if "category" in os.environ:
+            self.category = os.environ["category"].decode("utf-8")
 
     def display_help(self):
-        print('generic-munin is a plugin for munin')
-        print('')
-        print('Copyright(C) 2013 Romain Bignon, Florent Fourcot')
-        print('')
-        print('To use it, create a symlink /etc/munin/plugins/nameyouwant to this script')
-        print('and add this section in /etc/munin/plugin-conf.d/munin-node:')
-        print('')
-        print('[nameyouwant]')
-        print('user romain')
-        print('group romain')
-        print('env.HOME /home/romain')
-        print('# The woob directory path.')
-        print('env.woob_path /home/romain/.config/woob/')
-        print('# Monitored objects. If this parameter is missing, all objects')
-        print('# will be displayed.')
-        print('env.id_monitored myid@backend1 otherid@backend2')
-        print('# To prevent mass connections to websites, results are cached.')
-        print('# You can set here the expiration delay (in seconds).')
-        print('env.cache_expire 7200')
-        print('# Cumulate values')
-        print('env.cumulate 1')
-        print('')
+        print("generic-munin is a plugin for munin")
+        print("")
+        print("Copyright(C) 2013 Romain Bignon, Florent Fourcot")
+        print("")
+        print("To use it, create a symlink /etc/munin/plugins/nameyouwant to this script")
+        print("and add this section in /etc/munin/plugin-conf.d/munin-node:")
+        print("")
+        print("[nameyouwant]")
+        print("user romain")
+        print("group romain")
+        print("env.HOME /home/romain")
+        print("# The woob directory path.")
+        print("env.woob_path /home/romain/.config/woob/")
+        print("# Monitored objects. If this parameter is missing, all objects")
+        print("# will be displayed.")
+        print("env.id_monitored myid@backend1 otherid@backend2")
+        print("# To prevent mass connections to websites, results are cached.")
+        print("# You can set here the expiration delay (in seconds).")
+        print("env.cache_expire 7200")
+        print("# Cumulate values")
+        print("env.cumulate 1")
+        print("")
 
     def cachepath(self, name):
         tmpdir = os.path.join(self.woob.workdir, "munin")
@@ -179,7 +178,7 @@ class GenericMuninPlugin(object):
 
     def print_cache(self, name, check=False):
         try:
-            f = open(self.cachepath(name), 'r')
+            f = open(self.cachepath(name), "r")
         except IOError:
             return False
 
@@ -197,16 +196,16 @@ class GenericMuninPlugin(object):
 
     def new_cache(self, name):
         os.umask(0o077)
-        new_name = '%s.new' % name
+        new_name = "%s.new" % name
         filename = self.cachepath(new_name)
         try:
-            f = open(filename, 'w')
+            f = open(filename, "w")
         except IOError as e:
-            print('Unable to create the cache file %s: %s' % (filename, e), file=sys.stderr)
+            print("Unable to create the cache file %s: %s" % (filename, e), file=sys.stderr)
             return
 
         self.cache = f
-        self.cache.write('%d\n' % time.time())
+        self.cache.write("%d\n" % time.time())
 
     def flush_cache(self):
         old_name = self.cache.name
@@ -215,9 +214,9 @@ class GenericMuninPlugin(object):
         os.rename(old_name, new_name)
 
     def write_output(self, line):
-        sys.stdout.write('%s\n' % line)
+        sys.stdout.write("%s\n" % line)
         if self.cache:
-            self.cache.write('%s\n' % line)
+            self.cache.write("%s\n" % line)
 
     def build_do(self):
         if self.object_list:
@@ -242,7 +241,7 @@ class GenericMuninPlugin(object):
                 yield i
 
     def get_value(self, result):
-        attribs = self.attribvalue.split('/')
+        attribs = self.attribvalue.split("/")
         for attrib in attribs:
             result = getattr(result, attrib)
             if type(result) is list:
@@ -256,30 +255,29 @@ class GenericMuninPlugin(object):
         return not self.tomonitore or id in self.tomonitore
 
     def result2woobid(self, result):
-        attribs = self.attribid.split('/')
-        id = '%s@%s' % (getattr(result, attribs[0]), result.backend)
+        attribs = self.attribid.split("/")
+        id = "%s@%s" % (getattr(result, attribs[0]), result.backend)
         return id
 
     def result2id(self, result):
-        attribs = self.attribid.split('/')
+        attribs = self.attribid.split("/")
         id = result
         for attrib in attribs:
             id = getattr(id, attrib)
-        return '%s_%s' % (result.backend, id)
-
+        return "%s_%s" % (result.backend, id)
 
     def config(self):
-        if self.check_cache('%s-config' % self.name):
+        if self.check_cache("%s-config" % self.name):
             return
 
-        self.new_cache('%s-config' % self.name)
+        self.new_cache("%s-config" % self.name)
         self.woob.load_backends(self.capa)
-        self.write_output('graph_title %s' % self.title.encode('iso-8859-15'))
-        self.write_output('graph_vlabel %s' % self.vlabel.encode('iso-8859-15'))
-        self.write_output('graph_category %s' % self.category)
-        self.write_output('graph_args --rigid')
+        self.write_output("graph_title %s" % self.title.encode("iso-8859-15"))
+        self.write_output("graph_vlabel %s" % self.vlabel.encode("iso-8859-15"))
+        self.write_output("graph_category %s" % self.category)
+        self.write_output("graph_args --rigid")
         if self.cumulate:
-            self.write_output('graph_total Total')
+            self.write_output("graph_total Total")
         try:
             objects = []
             if self.tomonitore or self.exclude:
@@ -303,24 +301,31 @@ class GenericMuninPlugin(object):
             first = True
             for result in objects:
                 id = self.result2id(result)
-                type = 'STACK'
+                type = "STACK"
                 if first:
-                    type = 'AREA'
+                    type = "AREA"
                     first = False
-                self.write_output('%s.label %s' % (id.encode('iso-8859-15'), getattr(result, self.attriblabel).encode('iso-8859-15')))
+                self.write_output(
+                    "%s.label %s" % (id.encode("iso-8859-15"), getattr(result, self.attriblabel).encode("iso-8859-15"))
+                )
                 if self.cumulate:
-                    self.write_output('%s.draw %s' % (id, type))
+                    self.write_output("%s.draw %s" % (id, type))
         except CallErrors as errors:
             self.print_errors(errors)
-            self.print_cache('%s-config' % self.name)
+            self.print_cache("%s-config" % self.name)
         else:
             self.flush_cache()
 
     def print_errors(self, errors):
         for backend, err, backtrace in errors:
-            print((u'%s(%s): %s' % (type(err).__name__, backend.name, err)).encode(sys.stdout.encoding or locale.getpreferredencoding(), 'replace'), file=sys.stderr)
+            print(
+                ("%s(%s): %s" % (type(err).__name__, backend.name, err)).encode(
+                    sys.stdout.encoding or locale.getpreferredencoding(), "replace"
+                ),
+                file=sys.stderr,
+            )
             if isinstance(err, BrowserIncorrectPassword):
-                self.woob.backends_config.edit_backend(backend.name, backend.NAME, {'_enabled': 'false'})
+                self.woob.backends_config.edit_backend(backend.name, backend.NAME, {"_enabled": "false"})
 
     def execute(self):
         if self.check_cache(self.name):
@@ -333,7 +338,7 @@ class GenericMuninPlugin(object):
                 if self.monitored(result):
                     value = self.get_value(result)
                     if value is not NotAvailable:
-                        self.write_output('%s.value %f' % (self.result2id(result).encode('iso-8859-15'), value))
+                        self.write_output("%s.value %f" % (self.result2id(result).encode("iso-8859-15"), value))
         except CallErrors as errors:
             self.print_errors(errors)
             self.print_cache(self.name)
@@ -342,16 +347,16 @@ class GenericMuninPlugin(object):
 
     def run(self):
         cmd = (len(sys.argv) > 1 and sys.argv[1]) or "execute"
-        if cmd == 'execute':
+        if cmd == "execute":
             self.execute()
-        elif cmd == 'config':
+        elif cmd == "config":
             self.config()
-        elif cmd == 'autoconf':
-            print('no')
+        elif cmd == "autoconf":
+            print("no")
             sys.exit(1)
-        elif cmd == 'suggest':
+        elif cmd == "suggest":
             sys.exit(1)
-        elif cmd == 'help' or cmd == '-h' or cmd == '--help':
+        elif cmd == "help" or cmd == "-h" or cmd == "--help":
             self.display_help()
 
         if self.cache:
@@ -359,83 +364,84 @@ class GenericMuninPlugin(object):
 
         sys.exit(0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     logging.basicConfig()
     GenericMuninPlugin().run()
 
 ### Examples ###
 ## Like boobank-munin does
 ## Only for the example, you should use boobank-munin instead
-#[bank]
-#user florent
-#group florent
-#env.cache_expire 7200
-#env.HOME /home/flo
-#env.capa CapBank
-#env.do iter_accounts
-#env.import from woob.capabilities.bank import CapBank
-#env.attribvalue balance
-#env.title Solde des comptes
+# [bank]
+# user florent
+# group florent
+# env.cache_expire 7200
+# env.HOME /home/flo
+# env.capa CapBank
+# env.do iter_accounts
+# env.import from woob.capabilities.bank import CapBank
+# env.attribvalue balance
+# env.title Solde des comptes
 #
 #
 ## Balance of your leclercmobile subscription
-#[leclercmobile]
-#user florent
-#group florent
-#env.cache_expire 16800
-#env.HOME /home/flo
-#env.capa CapBill
-#env.do get_balance,06XXXXXXXX,leclercmobile
-#env.import from woob.capabilities.bill import CapBill
-#env.attribvalue price
-#env.title Forfait leclercmobile
-#env.vlabel Solde
+# [leclercmobile]
+# user florent
+# group florent
+# env.cache_expire 16800
+# env.HOME /home/flo
+# env.capa CapBill
+# env.do get_balance,06XXXXXXXX,leclercmobile
+# env.import from woob.capabilities.bill import CapBill
+# env.attribvalue price
+# env.title Forfait leclercmobile
+# env.vlabel Solde
 #
-#Result: http://fourcot.fr/woob/leclercmobile-day.png
+# Result: http://fourcot.fr/woob/leclercmobile-day.png
 #
 ## Monitor water level in Dresden
-#[leveldresden]
-#user florent
-#group florent
-#env.cache_expire 7200
-#env.HOME /home/flo
-#env.capa CapGauge
-#env.do get_last_measure,501060-level
-#env.import from woob.capabilities.gauge import CapGauge
-#env.attribvalue level
-#env.title Niveau de l'elbe
-#env.label id
+# [leveldresden]
+# user florent
+# group florent
+# env.cache_expire 7200
+# env.HOME /home/flo
+# env.capa CapGauge
+# env.do get_last_measure,501060-level
+# env.import from woob.capabilities.gauge import CapGauge
+# env.attribvalue level
+# env.title Niveau de l'elbe
+# env.label id
 #
 #
 ## The level of the elbe in all Sachsen's cities
-#[levelelbesachsen]
-#user florent
-#env.cache_expire 800
-#env.HOME /home/flo
-#env.cumulate 0
-#env.capa CapGauge
-#env.do iter_gauges,Elbe,sachsen
-#env.import from woob.capabilities.gauge import CapGauge
-#env.attribvalue sensors/lastvalue/level
-#env.title Niveau de l'elbe en Saxe
-#env.label name
-#env.vlabel Hauteur du fleuve (cm)
-#env.exclude 550810@sachsen
+# [levelelbesachsen]
+# user florent
+# env.cache_expire 800
+# env.HOME /home/flo
+# env.cumulate 0
+# env.capa CapGauge
+# env.do iter_gauges,Elbe,sachsen
+# env.import from woob.capabilities.gauge import CapGauge
+# env.attribvalue sensors/lastvalue/level
+# env.title Niveau de l'elbe en Saxe
+# env.label name
+# env.vlabel Hauteur du fleuve (cm)
+# env.exclude 550810@sachsen
 #
-#Result: http://fourcot.fr/woob/elbesachsen-day.png
+# Result: http://fourcot.fr/woob/elbesachsen-day.png
 #
 ## Temperature in Rennes
-#[temprennes]
-#user florent
-#env.HOME /home/flo
-#env.cumulate 0
-#env.capa CapWeather
-#env.do get_current,619163,yahoo
-#env.import from woob.capabilities.weather import CapWeather
-#env.attribvalue temp/value
-#env.attribid temp/id
-#env.title Température à Rennes
-#env.vlabel Température
-#env.label id
+# [temprennes]
+# user florent
+# env.HOME /home/flo
+# env.cumulate 0
+# env.capa CapWeather
+# env.do get_current,619163,yahoo
+# env.import from woob.capabilities.weather import CapWeather
+# env.attribvalue temp/value
+# env.attribid temp/id
+# env.title Température à Rennes
+# env.vlabel Température
+# env.label id
 #
-#Result: http://fourcot.fr/weboob/temprennes-day.png
+# Result: http://fourcot.fr/weboob/temprennes-day.png

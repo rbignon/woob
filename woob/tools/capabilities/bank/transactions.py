@@ -32,9 +32,12 @@ from woob.tools.misc import classproperty
 
 
 __all__ = [
-    'FrenchTransaction', 'AmericanTransaction',
-    'sorted_transactions', 'merge_iterators', 'keep_only_card_transactions',
-    'omit_deferred_transactions',
+    "FrenchTransaction",
+    "AmericanTransaction",
+    "sorted_transactions",
+    "merge_iterators",
+    "keep_only_card_transactions",
+    "omit_deferred_transactions",
 ]
 
 
@@ -54,26 +57,26 @@ def parse_with_patterns(raw, obj, patterns):
                 return args.get(key, None) is not None
 
             obj.type = _type
-            labels = [args[name].strip() for name in ('text', 'text2') if inargs(name)]
+            labels = [args[name].strip() for name in ("text", "text2") if inargs(name)]
             if labels:
-                obj.label = ' '.join(labels)
+                obj.label = " ".join(labels)
 
-            if inargs('category'):
-                obj.category = args['category'].strip()
+            if inargs("category"):
+                obj.category = args["category"].strip()
 
             # Set date from information in raw label.
-            if inargs('dd') and inargs('mm'):
-                dd = int(args['dd']) if args['dd'] != '00' else 1
-                mm = int(args['mm'])
+            if inargs("dd") and inargs("mm"):
+                dd = int(args["dd"]) if args["dd"] != "00" else 1
+                mm = int(args["mm"])
 
-                if inargs('yy'):
-                    yy = int(args['yy'])
+                if inargs("yy"):
+                    yy = int(args["yy"])
                 else:
                     d = obj.date
                     try:
                         d = d.replace(month=mm, day=dd)
                     except ValueError:
-                        d = d.replace(year=d.year-1, month=mm, day=dd)
+                        d = d.replace(year=d.year - 1, month=mm, day=dd)
 
                     yy = d.year
                     if d > obj.date:
@@ -83,12 +86,12 @@ def parse_with_patterns(raw, obj, patterns):
                     yy += 2000
 
                 try:
-                    if inargs('HH') and inargs('MM'):
-                        obj.rdate = datetime.datetime(yy, mm, dd, int(args['HH']), int(args['MM']))
+                    if inargs("HH") and inargs("MM"):
+                        obj.rdate = datetime.datetime(yy, mm, dd, int(args["HH"]), int(args["MM"]))
                     else:
                         obj.rdate = datetime.date(yy, mm, dd)
                 except ValueError as e:
-                    raise ParseError('Unable to parse date in label %r: %s' % (raw, e))
+                    raise ParseError("Unable to parse date in label %r: %s" % (raw, e))
 
             break
 
@@ -97,21 +100,22 @@ class FrenchTransaction(Transaction):
     """
     Transaction with some helpers for french bank websites.
     """
+
     PATTERNS = []
 
-    def __init__(self, id='', *args, **kwargs):
+    def __init__(self, id="", *args, **kwargs):
         super(FrenchTransaction, self).__init__(id, *args, **kwargs)
-        self._logger = getLogger('%s.FrenchTransaction' % __name__)
+        self._logger = getLogger("%s.FrenchTransaction" % __name__)
 
     @classmethod
     def clean_amount(klass, text):
         """
         Clean a string containing an amount.
         """
-        text = text.replace('.', '').replace(',', '.')
-        return re.sub(r'[^\d\-\.]', '', text)
+        text = text.replace(".", "").replace(",", ".")
+        return re.sub(r"[^\d\-\.]", "", text)
 
-    def set_amount(self, credit='', debit=''):
+    def set_amount(self, credit="", debit=""):
         """
         Set an amount value from a string.
 
@@ -122,11 +126,11 @@ class FrenchTransaction(Transaction):
         debit = self.clean_amount(debit)
 
         if len(debit) > 0:
-            self.amount = - abs(Decimal(debit))
+            self.amount = -abs(Decimal(debit))
         elif len(credit) > 0:
             self.amount = Decimal(credit)
         else:
-            self.amount = Decimal('0')
+            self.amount = Decimal("0")
 
     def parse_date(self, date):
         if date is None:
@@ -135,10 +139,10 @@ class FrenchTransaction(Transaction):
         if not isinstance(date, (datetime.date, datetime.datetime)):
             if date.isdigit() and len(date) == 8:
                 date = datetime.date(int(date[4:8]), int(date[2:4]), int(date[0:2]))
-            elif '/' in date:
-                date = datetime.date(*reversed([int(x) for x in date.split('/')]))
+            elif "/" in date:
+                date = datetime.date(*reversed([int(x) for x in date.split("/")]))
         if not isinstance(date, (datetime.date, datetime.datetime)):
-            self._logger.warning('Unable to parse date %r' % date)
+            self._logger.warning("Unable to parse date %r" % date)
             date = NotAvailable
         elif date.year < 100:
             date = date.replace(year=2000 + date.year)
@@ -170,35 +174,36 @@ class FrenchTransaction(Transaction):
         self.date = self.parse_date(date)
         self.vdate = self.parse_date(vdate)
         self.rdate = self.date
-        self.raw = raw.replace('\n', ' ').strip()
+        self.raw = raw.replace("\n", " ").strip()
 
         try:
             parse_with_patterns(self.raw, self, self.PATTERNS)
         except ParseError as e:
-            self._logger.warning('Unable to date in label %r: %s' % (self.raw, e))
+            self._logger.warning("Unable to date in label %r: %s" % (self.raw, e))
 
     @classproperty
     def TransactionElement(k):
         class _TransactionElement(ItemElement):
             klass = k
 
-            obj_date = klass.Date(TableCell('date'))
-            obj_vdate = klass.Date(TableCell('vdate', 'date'))
-            obj_raw = klass.Raw(TableCell('raw'))
-            obj_amount = klass.Amount(TableCell('credit'), TableCell('debit', default=''))
+            obj_date = klass.Date(TableCell("date"))
+            obj_vdate = klass.Date(TableCell("vdate", "date"))
+            obj_raw = klass.Raw(TableCell("raw"))
+            obj_amount = klass.Amount(TableCell("credit"), TableCell("debit", default=""))
 
         return _TransactionElement
 
     @classproperty
     def TransactionsElement(klass):
         class _TransactionsElement(TableElement):
-            col_date =       ['Date']
-            col_vdate =      ['Valeur']
-            col_raw =        ['Opération', 'Libellé', 'Intitulé opération']
-            col_credit =     ['Crédit', 'Montant']
-            col_debit =      ['Débit']
+            col_date = ["Date"]
+            col_vdate = ["Valeur"]
+            col_raw = ["Opération", "Libellé", "Intitulé opération"]
+            col_credit = ["Crédit", "Montant"]
+            col_debit = ["Débit"]
 
             item = klass.TransactionElement
+
         return _TransactionsElement
 
     class Date(CleanText):
@@ -214,8 +219,8 @@ class FrenchTransaction(Transaction):
             if not isinstance(date, (datetime.date, datetime.datetime)):
                 if date.isdigit() and len(date) == 8:
                     date = datetime.date(int(date[4:8]), int(date[2:4]), int(date[0:2]))
-                elif '/' in date:
-                    date = datetime.date(*reversed([int(x) for x in date.split('/')]))
+                elif "/" in date:
+                    date = datetime.date(*reversed([int(x) for x in date.split("/")]))
             if not isinstance(date, (datetime.date, datetime.datetime)):
                 date = NotAvailable
             elif date.year < 100:
@@ -238,7 +243,8 @@ class FrenchTransaction(Transaction):
 
             def filter(self, text):
                 text = super(Filter, self).filter(text)
-                return text.replace('\n', ' ').strip()
+                return text.replace("\n", " ").strip()
+
         return Filter(*args, **kwargs)
 
     class Currency(CleanText):
@@ -255,7 +261,7 @@ class FrenchTransaction(Transaction):
         def __call__(self, item):
             if self.debit_selector:
                 try:
-                    return - abs(CleanDecimal(self.debit_selector, replace_dots=self.replace_dots)(item))
+                    return -abs(CleanDecimal(self.debit_selector, replace_dots=self.replace_dots)(item))
                 except InvalidOperation:
                     pass
 
@@ -265,21 +271,22 @@ class FrenchTransaction(Transaction):
                 except InvalidOperation:
                     pass
 
-            return Decimal('0')
+            return Decimal("0")
 
 
 class AmericanTransaction(Transaction):
     """
     Transaction with some helpers for american bank websites.
     """
+
     @classmethod
     def clean_amount(klass, text):
         """
         Clean a string containing an amount.
         """
         # Convert "American" UUU.CC format to "French" UUU,CC format
-        if re.search(r'\d\.\d\d(?: [A-Z]+)?$', text):
-            text = text.replace(',', ' ').replace('.', ',')
+        if re.search(r"\d\.\d\d(?: [A-Z]+)?$", text):
+            text = text.replace(",", " ").replace(".", ",")
         return FrenchTransaction.clean_amount(text)
 
     @classmethod
@@ -288,12 +295,14 @@ class AmericanTransaction(Transaction):
         Convert a string containing an amount to Decimal.
         """
         amnt = AmericanTransaction.clean_amount(text)
-        return Decimal(amnt) if amnt else Decimal('0')
+        return Decimal(amnt) if amnt else Decimal("0")
 
 
 def sorted_transactions(iterable):
     """Sort an iterable of transactions in reverse chronological order"""
-    return sorted(iterable, reverse=True, key=lambda tr: (tr.date, new_datetime(tr.rdate) if tr.rdate else datetime.datetime.min))
+    return sorted(
+        iterable, reverse=True, key=lambda tr: (tr.date, new_datetime(tr.rdate) if tr.rdate else datetime.datetime.min)
+    )
 
 
 def merge_iterators(*iterables):

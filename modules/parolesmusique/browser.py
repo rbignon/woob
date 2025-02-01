@@ -28,34 +28,28 @@ from woob.browser.url import URL
 from .pages import ArtistResultsPage, ArtistSongsPage, HomePage, SonglyricsPage, SongResultsPage
 
 
-__all__ = ['ParolesmusiqueBrowser']
+__all__ = ["ParolesmusiqueBrowser"]
 
 
 class ParolesmusiqueBrowser(PagesBrowser):
     PROFILE = Firefox()
     TIMEOUT = 30
 
-    BASEURL = 'http://www.paroles-musique.com/'
-    home = URL('$',
-                 HomePage)
-    songResults = URL('lyrics-paroles-0-.*,0.php',
-                 SongResultsPage)
-    artistResults = URL('lyrics-paroles-.*-0,0.php',
-                  ArtistResultsPage)
-    songLyrics = URL('paroles-(?P<songid>.*,p[0-9]*)',
-                  SonglyricsPage)
-    artistSongs = URL('paroles-(?P<artistid>.*,a[0-9]*)',
-                  ArtistSongsPage)
-
+    BASEURL = "http://www.paroles-musique.com/"
+    home = URL("$", HomePage)
+    songResults = URL("lyrics-paroles-0-.*,0.php", SongResultsPage)
+    artistResults = URL("lyrics-paroles-.*-0,0.php", ArtistResultsPage)
+    songLyrics = URL("paroles-(?P<songid>.*,p[0-9]*)", SonglyricsPage)
+    artistSongs = URL("paroles-(?P<artistid>.*,a[0-9]*)", ArtistSongsPage)
 
     def iter_lyrics(self, criteria, pattern):
         self.home.stay_or_go()
         assert self.home.is_here()
         self.page.search_lyrics(criteria, pattern)
-        if criteria == 'song':
+        if criteria == "song":
             assert self.songResults.is_here()
             return self.page.iter_lyrics()
-        elif criteria == 'artist':
+        elif criteria == "artist":
             assert self.artistResults.is_here()
             artist_ids = self.page.get_artist_ids()
             it = []
@@ -63,7 +57,6 @@ class ParolesmusiqueBrowser(PagesBrowser):
             for aid in artist_ids[:3]:
                 it = itertools.chain(it, self.artistSongs.go(artistid=aid).iter_lyrics())
             return it
-
 
     def get_lyrics(self, id):
         try:

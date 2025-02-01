@@ -23,7 +23,7 @@ from woob.tools.test import BackendTest
 
 
 class VicSecCardTest(BackendTest):
-    MODULE = 'vicseccard'
+    MODULE = "vicseccard"
 
     def test_history(self):
         """

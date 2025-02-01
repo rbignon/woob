@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import LameteoagricoleBrowser
 
 
-__all__ = ['LameteoagricoleModule']
+__all__ = ["LameteoagricoleModule"]
 
 
 class LameteoagricoleModule(Module, CapWeather):
-    NAME = 'lameteoagricole'
-    DESCRIPTION = u'lameteoagricole website'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "lameteoagricole"
+    DESCRIPTION = "lameteoagricole website"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = LameteoagricoleBrowser
 

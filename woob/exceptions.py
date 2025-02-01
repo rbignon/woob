@@ -27,42 +27,42 @@ from woob.tools.value import Value
 
 
 __all__ = [
-    'BrowserIncorrectPassword',
-    'BrowserForbidden',
-    'BrowserUserBanned',
-    'BrowserUnavailable',
-    'ScrapingBlocked',
-    'BrowserInteraction',
-    'BrowserQuestion',
-    'OTPQuestion',
-    'OTPSentType',
-    'SentOTPQuestion',
-    'OfflineOTPQuestion',
-    'DecoupledMedium',
-    'DecoupledValidation',
-    'AppValidation',
-    'AppValidationError',
-    'AppValidationCancelled',
-    'AppValidationExpired',
-    'BrowserRedirect',
-    'CaptchaQuestion',
-    'WrongCaptchaResponse',
-    'BrowserHTTPNotFound',
-    'BrowserHTTPError',
-    'BrowserHTTPSDowngrade',
-    'BrowserSSLError',
-    'ParseError',
-    'FormFieldConversionWarning',
-    'ModuleInstallError',
-    'ModuleLoadError',
-    'ActionType',
-    'ActionNeeded',
-    'AuthMethodNotImplemented',
-    'BrowserPasswordExpired',
-    'NeedInteractive',
-    'NeedInteractiveForRedirect',
-    'NeedInteractiveFor2FA',
-    'NotImplementedWebsite',
+    "BrowserIncorrectPassword",
+    "BrowserForbidden",
+    "BrowserUserBanned",
+    "BrowserUnavailable",
+    "ScrapingBlocked",
+    "BrowserInteraction",
+    "BrowserQuestion",
+    "OTPQuestion",
+    "OTPSentType",
+    "SentOTPQuestion",
+    "OfflineOTPQuestion",
+    "DecoupledMedium",
+    "DecoupledValidation",
+    "AppValidation",
+    "AppValidationError",
+    "AppValidationCancelled",
+    "AppValidationExpired",
+    "BrowserRedirect",
+    "CaptchaQuestion",
+    "WrongCaptchaResponse",
+    "BrowserHTTPNotFound",
+    "BrowserHTTPError",
+    "BrowserHTTPSDowngrade",
+    "BrowserSSLError",
+    "ParseError",
+    "FormFieldConversionWarning",
+    "ModuleInstallError",
+    "ModuleLoadError",
+    "ActionType",
+    "ActionNeeded",
+    "AuthMethodNotImplemented",
+    "BrowserPasswordExpired",
+    "NeedInteractive",
+    "NeedInteractiveForRedirect",
+    "NeedInteractiveFor2FA",
+    "NotImplementedWebsite",
 ]
 
 
@@ -113,9 +113,7 @@ class BrowserQuestion(BrowserInteraction):
         self.fields = fields
 
     def __str__(self) -> str:
-        return ", ".join("{}: {}".format(
-            field.id or field.label, field.description) for field in self.fields
-        )
+        return ", ".join("{}: {}".format(field.id or field.label, field.description) for field in self.fields)
 
 
 class OTPQuestion(BrowserQuestion):
@@ -126,12 +124,12 @@ class OTPQuestion(BrowserQuestion):
 
 
 class OTPSentType:
-    UNKNOWN = 'unknown'
-    SMS = 'sms'
-    PHONE_CALL = 'phone_call'
-    MOBILE_APP = 'mobile_app'
-    EMAIL = 'email'
-    DEVICE = 'device'
+    UNKNOWN = "unknown"
+    SMS = "sms"
+    PHONE_CALL = "phone_call"
+    MOBILE_APP = "mobile_app"
+    EMAIL = "email"
+    DEVICE = "device"
 
 
 class SentOTPQuestion(OTPQuestion):
@@ -197,10 +195,10 @@ class OfflineOTPQuestion(OTPQuestion):
 
 
 class DecoupledMedium:
-    UNKNOWN = 'unknown'
-    SMS = 'sms'
-    MOBILE_APP = 'mobile_app'
-    EMAIL = 'email'
+    UNKNOWN = "unknown"
+    SMS = "sms"
+    MOBILE_APP = "mobile_app"
+    EMAIL = "email"
 
 
 class DecoupledValidation(BrowserInteraction):
@@ -215,30 +213,26 @@ class DecoupledValidation(BrowserInteraction):
                          sent, e.g. the phone number in case of an app
     :param expires_at: date when the OTP expires and when replying is too late
     """
+
     def __init__(
         self,
-        message: str = '',
+        message: str = "",
         resource: Any = None,
         medium_type: str = DecoupledMedium.UNKNOWN,
         medium_label: str | None = None,
         expires_at: datetime | None = None,
         *values: Any,
     ) -> None:
-        """
-        """
+        """ """
         if values:
-            warnings.warn(
-                'Variable arguments will be removed in woob 4.',
-                DeprecationWarning,
-                stacklevel=2
-            )
+            warnings.warn("Variable arguments will be removed in woob 4.", DeprecationWarning, stacklevel=2)
         if resource:
             warnings.warn(
                 'The "resource" argument will be removed in woob 4. '
-                'Maybe you should inherit this exception class in a '
-                'capability to add specific metadata?',
+                "Maybe you should inherit this exception class in a "
+                "capability to add specific metadata?",
                 DeprecationWarning,
-                stacklevel=2
+                stacklevel=2,
             )
 
         super().__init__(*values)
@@ -265,7 +259,7 @@ class AppValidation(DecoupledValidation):
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        kwargs['medium_type'] = DecoupledMedium.MOBILE_APP
+        kwargs["medium_type"] = DecoupledMedium.MOBILE_APP
         super().__init__(*args, **kwargs)
 
 
@@ -308,16 +302,16 @@ class BrowserRedirect(BrowserInteraction):
         if resource:
             warnings.warn(
                 'The "resource" argument will be removed in woob 4. '
-                'Maybe you should inherit this exception class in a '
-                'capability to add specific metadata?',
+                "Maybe you should inherit this exception class in a "
+                "capability to add specific metadata?",
                 DeprecationWarning,
-                stacklevel=2
+                stacklevel=2,
             )
 
         self.resource = resource
 
     def __str__(self) -> str:
-        return 'Redirecting to %s' % self.url
+        return "Redirecting to %s" % self.url
 
 
 class CaptchaQuestion(Exception):
@@ -331,7 +325,7 @@ class CaptchaQuestion(Exception):
 
     # could be improved to pass the name of the backendconfig key
     def __init__(self, type: str | None = None, **kwargs: Any) -> None:
-        super().__init__('The site requires solving a captcha')
+        super().__init__("The site requires solving a captcha")
         self.type = type
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -437,11 +431,7 @@ class ActionNeeded(Exception):
         self.url = url
 
         if page:
-            warnings.warn(
-                'ActionNeeded.page is deprecated and will be removed',
-                DeprecationWarning,
-                stacklevel=2
-            )
+            warnings.warn("ActionNeeded.page is deprecated and will be removed", DeprecationWarning, stacklevel=2)
 
 
 class AuthMethodNotImplemented(ActionNeeded):
@@ -472,21 +462,19 @@ def implemented_websites(*cfg: list[str]) -> Callable[..., Any]:
     Decorator to raise NotImplementedWebsite for concerned website
     Will raise the exception for website not in arguments: ex ('ent', 'pro')
     """
-    warnings.warn(
-        'Do not use this decorator.',
-        DeprecationWarning,
-        stacklevel=2
-    )
+    warnings.warn("Do not use this decorator.", DeprecationWarning, stacklevel=2)
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(self: object, *args: Any, **kwargs: Any) -> Any:
             assert hasattr(self, "config") and "website" in self.config
-            if not self.config['website'].get() in cfg:
-                raise NotImplementedWebsite('This website is not yet implemented')
+            if not self.config["website"].get() in cfg:
+                raise NotImplementedWebsite("This website is not yet implemented")
 
             return func(self, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -494,25 +482,22 @@ class NotImplementedWebsite(NotImplementedError):
     """
     Exception for modules when a website is not yet available.
     """
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        warnings.warn(
-            'Do not use this exception.',
-            DeprecationWarning,
-            stacklevel=2
-        )
+        warnings.warn("Do not use this exception.", DeprecationWarning, stacklevel=2)
         super().__init__(*args, **kwargs)
 
 
 __deprecated__ = {
-    'ImageCaptchaQuestion': 'woob.capabilities.captcha.ImageCaptchaQuestion',
-    'RecaptchaV2Question': 'woob.capabilities.captcha.RecaptchaV2Question',
-    'RecaptchaQuestion': 'woob.capabilities.captcha.RecaptchaQuestion',
-    'GeetestV4Question': 'woob.capabilities.captcha.GeetestV4Question',
-    'RecaptchaV3Question': 'woob.capabilities.captcha.RecaptchaV3Question',
-    'FuncaptchaQuestion': 'woob.capabilities.captcha.FuncaptchaQuestion',
-    'HcaptchaQuestion': 'woob.capabilities.captcha.HcaptchaQuestion',
-    'TurnstileQuestion': 'woob.capabilities.captcha.TurnstileQuestion',
-    'NoAccountsException': 'woob.capabilities.bank.NoAccountsException',
+    "ImageCaptchaQuestion": "woob.capabilities.captcha.ImageCaptchaQuestion",
+    "RecaptchaV2Question": "woob.capabilities.captcha.RecaptchaV2Question",
+    "RecaptchaQuestion": "woob.capabilities.captcha.RecaptchaQuestion",
+    "GeetestV4Question": "woob.capabilities.captcha.GeetestV4Question",
+    "RecaptchaV3Question": "woob.capabilities.captcha.RecaptchaV3Question",
+    "FuncaptchaQuestion": "woob.capabilities.captcha.FuncaptchaQuestion",
+    "HcaptchaQuestion": "woob.capabilities.captcha.HcaptchaQuestion",
+    "TurnstileQuestion": "woob.capabilities.captcha.TurnstileQuestion",
+    "NoAccountsException": "woob.capabilities.bank.NoAccountsException",
 }
 
 

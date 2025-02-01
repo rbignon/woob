@@ -29,24 +29,24 @@ from woob.capabilities.cinema import Movie, Person
 from .pages import BiographyPage, MovieCrewPage, PersonPage, ReleasePage
 
 
-__all__ = ['ImdbBrowser']
+__all__ = ["ImdbBrowser"]
 
 
 class ImdbBrowser(PagesBrowser):
-    BASEURL = 'https://www.imdb.com'
+    BASEURL = "https://www.imdb.com"
     PROFILE = Wget()
 
-    movie_crew = URL(r'/title/(?P<id>tt[0-9]*)/fullcredits.*', MovieCrewPage)
-    release = URL(r'/title/(?P<id>tt[0-9]*)/releaseinfo.*', ReleasePage)
-    bio = URL(r'/name/(?P<id>nm[0-9]*)/bio.*', BiographyPage)
-    person = URL(r'/name/(?P<id>nm[0-9]*)/*', PersonPage)
+    movie_crew = URL(r"/title/(?P<id>tt[0-9]*)/fullcredits.*", MovieCrewPage)
+    release = URL(r"/title/(?P<id>tt[0-9]*)/releaseinfo.*", ReleasePage)
+    bio = URL(r"/name/(?P<id>nm[0-9]*)/bio.*", BiographyPage)
+    person = URL(r"/name/(?P<id>nm[0-9]*)/*", PersonPage)
 
     def iter_movies(self, pattern):
-        res = self.open(f'https://v2.sg.media-imdb.com/suggestion/titles/{pattern[0]}/{pattern}.json')
+        res = self.open(f"https://v2.sg.media-imdb.com/suggestion/titles/{pattern[0]}/{pattern}.json")
         jres = res.json()
 
-        for m in jres['d']:
-            movie = Movie(m['id'], m['l'])
+        for m in jres["d"]:
+            movie = Movie(m["id"], m["l"])
             movie.other_titles = NotLoaded
             movie.release_date = NotLoaded
             movie.duration = NotLoaded
@@ -56,15 +56,15 @@ class ImdbBrowser(PagesBrowser):
             movie.note = NotLoaded
             movie.roles = NotLoaded
             movie.all_release_dates = NotLoaded
-            movie.thumbnail_url = m['i']['imageUrl']
+            movie.thumbnail_url = m["i"]["imageUrl"]
             yield movie
 
     def iter_persons(self, pattern):
-        res = self.open(f'https://v2.sg.media-imdb.com/suggestion/names/{pattern[0]}/{pattern}.json')
+        res = self.open(f"https://v2.sg.media-imdb.com/suggestion/names/{pattern[0]}/{pattern}.json")
         jres = res.json()
 
-        for p in jres['d']:
-            person = Person(p['id'], p['l'])
+        for p in jres["d"]:
+            person = Person(p["id"], p["l"])
             person.real_name = NotLoaded
             person.birth_place = NotLoaded
             person.birth_date = NotLoaded
@@ -74,12 +74,12 @@ class ImdbBrowser(PagesBrowser):
             person.short_biography = NotLoaded
             person.short_description = NotLoaded
             person.roles = NotLoaded
-            if 'i' in p:
-                person.thumbnail_url = p['i']['imageUrl']
+            if "i" in p:
+                person.thumbnail_url = p["i"]["imageUrl"]
             yield person
 
     def get_movie(self, id):
-        res = self.open(f'https://www.omdbapi.com/?apikey=b7c56eb5&i={id}&plot=full')
+        res = self.open(f"https://www.omdbapi.com/?apikey=b7c56eb5&i={id}&plot=full")
         if res is not None:
             jres = res.json()
         else:
@@ -97,54 +97,54 @@ class ImdbBrowser(PagesBrowser):
         genres = []
         roles = {}
 
-        if 'Title' not in jres:
+        if "Title" not in jres:
             return
-        title = unescape(str(jres['Title'].strip()))
-        if 'Poster' in jres:
-            thumbnail_url = str(jres['Poster'])
-        if 'Director' in jres:
-            short_description = str(jres['Director'])
-        if 'Genre' in jres:
-            for g in jres['Genre'].split(', '):
+        title = unescape(str(jres["Title"].strip()))
+        if "Poster" in jres:
+            thumbnail_url = str(jres["Poster"])
+        if "Director" in jres:
+            short_description = str(jres["Director"])
+        if "Genre" in jres:
+            for g in jres["Genre"].split(", "):
                 genres.append(g)
-        if 'Runtime' in jres:
-            m = re.search(r'(\d+?) min', jres['Runtime'])
+        if "Runtime" in jres:
+            m = re.search(r"(\d+?) min", jres["Runtime"])
             if m:
                 duration = int(m.group(1))
-        if 'Released' in jres:
-            released_string = str(jres['Released'])
-            if released_string == 'N/A':
+        if "Released" in jres:
+            released_string = str(jres["Released"])
+            if released_string == "N/A":
                 release_date = NotAvailable
             else:
                 months = {
-                        'Jan':'01',
-                        'Feb':'02',
-                        'Mar':'03',
-                        'Apr':'04',
-                        'May':'05',
-                        'Jun':'06',
-                        'Jul':'07',
-                        'Aug':'08',
-                        'Sep':'09',
-                        'Oct':'10',
-                        'Nov':'11',
-                        'Dec':'12',
-                         }
+                    "Jan": "01",
+                    "Feb": "02",
+                    "Mar": "03",
+                    "Apr": "04",
+                    "May": "05",
+                    "Jun": "06",
+                    "Jul": "07",
+                    "Aug": "08",
+                    "Sep": "09",
+                    "Oct": "10",
+                    "Nov": "11",
+                    "Dec": "12",
+                }
                 for st in months:
-                    released_string = released_string.replace(st,months[st])
-                release_date = datetime.strptime(released_string, '%d %m %Y')
-        if 'Country' in jres:
-            country = u''
-            for c in jres['Country'].split(', '):
-                country += f'{c}, '
+                    released_string = released_string.replace(st, months[st])
+                release_date = datetime.strptime(released_string, "%d %m %Y")
+        if "Country" in jres:
+            country = ""
+            for c in jres["Country"].split(", "):
+                country += f"{c}, "
             country = country[:-2]
-        if 'Plot' in jres:
-            pitch = str(jres['Plot'])
-        if 'imdbRating' in jres and 'imdbVotes' in jres:
+        if "Plot" in jres:
+            pitch = str(jres["Plot"])
+        if "imdbRating" in jres and "imdbVotes" in jres:
             note = f'{jres["imdbRating"]}/10 ({jres["imdbVotes"]} votes)'
-        for r in ['Actors', 'Director', 'Writer']:
-            if f'{r}' in jres.keys():
-                roles[f'{r}'] = [('N/A',e) for e in jres[f'{r}'].split(', ')]
+        for r in ["Actors", "Director", "Writer"]:
+            if f"{r}" in jres.keys():
+                roles[f"{r}"] = [("N/A", e) for e in jres[f"{r}"].split(", ")]
 
         movie = Movie(id, title)
         movie.other_titles = other_titles

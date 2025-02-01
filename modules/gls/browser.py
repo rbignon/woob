@@ -26,9 +26,9 @@ from .pages import SearchPage
 
 
 class GLSBrowser(PagesBrowser):
-    BASEURL = 'https://gls-group.eu'
+    BASEURL = "https://gls-group.eu"
 
-    search_page = URL(r'/app/service/open/rest/EU/en/rstt001\?match=(?P<id>.+)', SearchPage)
+    search_page = URL(r"/app/service/open/rest/EU/en/rstt001\?match=(?P<id>.+)", SearchPage)
 
     def get_tracking_info(self, _id):
         try:

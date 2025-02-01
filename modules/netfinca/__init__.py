@@ -21,4 +21,4 @@
 from .module import NetfincaModule
 
 
-__all__ = ['NetfincaModule']
+__all__ = ["NetfincaModule"]

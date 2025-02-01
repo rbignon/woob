@@ -25,16 +25,16 @@ from woob.browser.url import URL
 from .pages import LocationPage
 
 
-__all__ = ['IpinfodbBrowser']
+__all__ = ["IpinfodbBrowser"]
 
 
 class IpinfodbBrowser(PagesBrowser):
     PROFILE = Firefox()
     TIMEOUT = 30
 
-    BASEURL = 'https://ipinfodb.com/'
-    home = URL('$', LocationPage)
+    BASEURL = "https://ipinfodb.com/"
+    home = URL("$", LocationPage)
 
     def get_location(self, ipaddr):
-        self.home.go(data={'ip': ipaddr})
+        self.home.go(data={"ip": ipaddr})
         return self.page.get_location()

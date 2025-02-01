@@ -28,7 +28,12 @@ from woob.browser.mfa import TwoFactorBrowser
 from woob.capabilities.bank import Account, AccountNotFound
 from woob.capabilities.base import empty
 from woob.exceptions import (
-    ActionNeeded, ActionType, AppValidationError, BrowserIncorrectPassword, BrowserQuestion, BrowserUnavailable,
+    ActionNeeded,
+    ActionType,
+    AppValidationError,
+    BrowserIncorrectPassword,
+    BrowserQuestion,
+    BrowserUnavailable,
     BrowserUserBanned,
 )
 from woob.tools.capabilities.bank.investments import create_french_liquidity
@@ -38,123 +43,129 @@ from woob.tools.value import Value
 from woob_modules.spirica.browser import SpiricaBrowser
 
 from .pages import (
-    AccountsPage, BfBKeyboard, BourseActionNeeded, BourseDisconnectPage, BoursePage, CardHistoryPage, CardPage,
-    ErrorPage, HistoryPage, LifeInsuranceIframe, LifeInsuranceList, LifeInsuranceRedir, LoanHistoryPage, LoginPage,
-    MaintenancePage, ProfilePage, RibPage, SendTwoFAPage, UserValidationPage,
+    AccountsPage,
+    BfBKeyboard,
+    BourseActionNeeded,
+    BourseDisconnectPage,
+    BoursePage,
+    CardHistoryPage,
+    CardPage,
+    ErrorPage,
+    HistoryPage,
+    LifeInsuranceIframe,
+    LifeInsuranceList,
+    LifeInsuranceRedir,
+    LoanHistoryPage,
+    LoginPage,
+    MaintenancePage,
+    ProfilePage,
+    RibPage,
+    SendTwoFAPage,
+    UserValidationPage,
 )
 
 
 class BforbankBrowser(TwoFactorBrowser):
-    BASEURL = 'https://client.bforbank.com'
+    BASEURL = "https://client.bforbank.com"
     HAS_CREDENTIALS_ONLY = True
     STATE_DURATION = 5
     TWOFA_DURATION = 60 * 24 * 90
 
     login = URL(
-        r'/connexion-client/service/login\?urlBack=%2Fespace-client',
-        r'/connexion-client/service/login\?urlBack=',
-        r'https://secure.bforbank.com/connexion-client/service/login\?urlBack=',
-        LoginPage
+        r"/connexion-client/service/login\?urlBack=%2Fespace-client",
+        r"/connexion-client/service/login\?urlBack=",
+        r"https://secure.bforbank.com/connexion-client/service/login\?urlBack=",
+        LoginPage,
     )
-    maintenance = URL(
-        r'/maintenance.html',
-        MaintenancePage
-    )
-    user_validation = URL(
-        r'/profil-client/',
-        r'/connaissance-client/',
-        UserValidationPage
-    )
-    home = URL('/espace-client/$', AccountsPage)
-    rib = URL(
-        '/espace-client/rib',
-        r'/espace-client/rib/(?P<id>[^/]+)$',
-        RibPage
-    )
-    loan_history = URL('/espace-client/livret/consultation.*', LoanHistoryPage)
-    history = URL('/espace-client/consultation/operations/.*', HistoryPage)
-    coming = URL(r'/espace-client/consultation/operationsAVenir/(?P<account>[^/]+)$', HistoryPage)
-    card_history = URL('espace-client/consultation/encoursCarte/.*', CardHistoryPage)
-    card_page = URL(r'/espace-client/carte/(?P<account>[^/]+)$', CardPage)
+    maintenance = URL(r"/maintenance.html", MaintenancePage)
+    user_validation = URL(r"/profil-client/", r"/connaissance-client/", UserValidationPage)
+    home = URL("/espace-client/$", AccountsPage)
+    rib = URL("/espace-client/rib", r"/espace-client/rib/(?P<id>[^/]+)$", RibPage)
+    loan_history = URL("/espace-client/livret/consultation.*", LoanHistoryPage)
+    history = URL("/espace-client/consultation/operations/.*", HistoryPage)
+    coming = URL(r"/espace-client/consultation/operationsAVenir/(?P<account>[^/]+)$", HistoryPage)
+    card_history = URL("espace-client/consultation/encoursCarte/.*", CardHistoryPage)
+    card_page = URL(r"/espace-client/carte/(?P<account>[^/]+)$", CardPage)
 
-    lifeinsurance = URL(r'/espace-client/assuranceVie/(?P<account_code>\d+)')
-    lifeinsurance_list = URL(r'/client/accounts/lifeInsurance/lifeInsuranceSummary.action', LifeInsuranceList)
+    lifeinsurance = URL(r"/espace-client/assuranceVie/(?P<account_code>\d+)")
+    lifeinsurance_list = URL(r"/client/accounts/lifeInsurance/lifeInsuranceSummary.action", LifeInsuranceList)
     lifeinsurance_iframe = URL(
-        r'https://(?:www|client).bforbank.com/client/accounts/lifeInsurance/consultationDetailSpirica.action',
-        LifeInsuranceIframe
+        r"https://(?:www|client).bforbank.com/client/accounts/lifeInsurance/consultationDetailSpirica.action",
+        LifeInsuranceIframe,
     )
-    lifeinsurance_redir = URL(r'https://assurance-vie.bforbank.com/sylvea/welcomeSSO.xhtml', LifeInsuranceRedir)
+    lifeinsurance_redir = URL(r"https://assurance-vie.bforbank.com/sylvea/welcomeSSO.xhtml", LifeInsuranceRedir)
     lifeinsurance_error = URL(
-        r'/client/accounts/lifeInsurance/lifeInsuranceError.action\?errorCode=.*&errorMsg=.*',
-        r'https://client.bforbank.com/client/accounts/lifeInsurance/lifeInsuranceError.action\?errorCode=.*&errorMsg=.*',
-        ErrorPage
+        r"/client/accounts/lifeInsurance/lifeInsuranceError.action\?errorCode=.*&errorMsg=.*",
+        r"https://client.bforbank.com/client/accounts/lifeInsurance/lifeInsuranceError.action\?errorCode=.*&errorMsg=.*",
+        ErrorPage,
     )
 
-    bourse_login = URL(r'/espace-client/titres/debranchementCaTitre/(?P<id>\d+)')
-    bourse_action_needed = URL('https://bourse.bforbank.com/netfinca-titres/*', BourseActionNeeded)
+    bourse_login = URL(r"/espace-client/titres/debranchementCaTitre/(?P<id>\d+)")
+    bourse_action_needed = URL("https://bourse.bforbank.com/netfinca-titres/*", BourseActionNeeded)
     bourse = URL(
-        'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis',
-        'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.account.*',
-        BoursePage
+        "https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.synthesis.HomeSynthesis",
+        "https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.account.*",
+        BoursePage,
     )
     # to get logout link
     bourse_titre = URL(
-        r'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.navigation.Titre',
-        BoursePage
+        r"https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.navigation.Titre", BoursePage
     )
     bourse_disco = URL(
-        r'https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.login.Logout',
-        BourseDisconnectPage
+        r"https://bourse.bforbank.com/netfinca-titres/servlet/com.netfinca.frontcr.login.Logout", BourseDisconnectPage
     )
-    profile = URL(r'/espace-client/profil/informations', ProfilePage)
-    send_twofa_page = URL(r'/connexion-client/service/resendCode/(?P<client_id>\d+)', SendTwoFAPage)
+    profile = URL(r"/espace-client/profil/informations", ProfilePage)
+    send_twofa_page = URL(r"/connexion-client/service/resendCode/(?P<client_id>\d+)", SendTwoFAPage)
 
-    __states__ = ('tokenDto', 'anrtoken', 'refresh_token',)
+    __states__ = (
+        "tokenDto",
+        "anrtoken",
+        "refresh_token",
+    )
 
     ERROR_MAPPING = {
-        'error.compte.bloque': BrowserUserBanned(
-            'Suite à trois tentatives erronées, votre compte a été bloqué. Votre compte sera de nouveau disponible au bout de 24h.'
+        "error.compte.bloque": BrowserUserBanned(
+            "Suite à trois tentatives erronées, votre compte a été bloqué. Votre compte sera de nouveau disponible au bout de 24h."
         ),
-        'error.alreadySend': AppValidationError(
-            'Merci de patienter 3 minutes avant de demander un nouveau code de sécurité.'
+        "error.alreadySend": AppValidationError(
+            "Merci de patienter 3 minutes avant de demander un nouveau code de sécurité."
         ),
-        'alreadySent': AppValidationError(
-            'Merci de patienter 3 minutes avant de demander un nouveau code de sécurité.'
+        "alreadySent": AppValidationError(
+            "Merci de patienter 3 minutes avant de demander un nouveau code de sécurité."
         ),
-        'error.authentification': BrowserIncorrectPassword(
-            'Les informations saisies sont incorrectes, merci de vous authentifier à nouveau. Au bout de trois tentatives erronées, votre compte sera bloqué.'
+        "error.authentification": BrowserIncorrectPassword(
+            "Les informations saisies sont incorrectes, merci de vous authentifier à nouveau. Au bout de trois tentatives erronées, votre compte sera bloqué."
         ),
-        'codeNotMatch': BrowserIncorrectPassword(
-            message='Le code de sécurité saisi ne correspond pas à celui qui vous a été envoyé. Au bout de trois tentatives erronées, votre compte sera bloqué.',
-            bad_fields=['code'],
+        "codeNotMatch": BrowserIncorrectPassword(
+            message="Le code de sécurité saisi ne correspond pas à celui qui vous a été envoyé. Au bout de trois tentatives erronées, votre compte sera bloqué.",
+            bad_fields=["code"],
         ),
-        'error.technical': BrowserUnavailable(),
-        'error.anrlocked': BrowserUserBanned(
-            'Suite à trois tentatives erronées, vous ne pouvez plus recevoir de code par SMS pour valider les opérations sensibles. Cette fonctionnalité sera de nouveau disponible dans 24h.'
+        "error.technical": BrowserUnavailable(),
+        "error.anrlocked": BrowserUserBanned(
+            "Suite à trois tentatives erronées, vous ne pouvez plus recevoir de code par SMS pour valider les opérations sensibles. Cette fonctionnalité sera de nouveau disponible dans 24h."
         ),
         # not a typo
-        'accoundLocked': BrowserUserBanned(
-            'Suite à trois tentatives erronées, vous ne pouvez plus recevoir de code par SMS pour valider les opérations sensibles. Cette fonctionnalité sera de nouveau disponible dans 24h.'
+        "accoundLocked": BrowserUserBanned(
+            "Suite à trois tentatives erronées, vous ne pouvez plus recevoir de code par SMS pour valider les opérations sensibles. Cette fonctionnalité sera de nouveau disponible dans 24h."
         ),
     }
 
     def __init__(self, config, *args, **kwargs):
-        username = config['login'].get()
-        password = config['password'].get()
+        username = config["login"].get()
+        password = config["password"].get()
         super(BforbankBrowser, self).__init__(config, username, password, *args, **kwargs)
-        self.birthdate = self.config['birthdate'].get()
+        self.birthdate = self.config["birthdate"].get()
         self.accounts = None
         self.tokenDto = None
         self.anrtoken = None
         self.refresh_token = {}
 
         self.spirica = SpiricaBrowser(
-            'https://assurance-vie.bforbank.com/',
-            *args, username=None, password=None, **kwargs
+            "https://assurance-vie.bforbank.com/", *args, username=None, password=None, **kwargs
         )
 
         self.AUTHENTICATION_METHODS = {
-            'code': self.handle_sms,
+            "code": self.handle_sms,
         }
 
     def deinit(self):
@@ -162,10 +173,12 @@ class BforbankBrowser(TwoFactorBrowser):
         self.spirica.deinit()
 
     def get_expire(self):
-        if self.refresh_token.get('expires'):
-            expires = datetime.datetime.fromtimestamp(
-                self.refresh_token['expires'], tz.tzlocal()
-            ).replace(microsecond=0).isoformat()
+        if self.refresh_token.get("expires"):
+            expires = (
+                datetime.datetime.fromtimestamp(self.refresh_token["expires"], tz.tzlocal())
+                .replace(microsecond=0)
+                .isoformat()
+            )
             return expires
         return super(BforbankBrowser, self).get_expire()
 
@@ -183,24 +196,22 @@ class BforbankBrowser(TwoFactorBrowser):
             raise BrowserIncorrectPassword()
 
         if self.refresh_token:
-            self.session.cookies.set('refresh_token', self.refresh_token['value'], domain=self.refresh_token['domain'])
+            self.session.cookies.set("refresh_token", self.refresh_token["value"], domain=self.refresh_token["domain"])
 
         self.login.stay_or_go()
         assert self.login.is_here()
         result = self.start_login()
 
-        if result.get('eligibleForte'):  # if True, it means we're in a 2FA workflow
+        if result.get("eligibleForte"):  # if True, it means we're in a 2FA workflow
             self.check_interactive()
 
-            self.tokenDto = result['tokenDto']
+            self.tokenDto = result["tokenDto"]
 
             # A 2FA is triggered here
             self.trigger_twofa()
 
             raise BrowserQuestion(
-                Value(
-                    'code',
-                    label='Un SMS contenant un code vous a été envoyé sur votre téléphone portable')
+                Value("code", label="Un SMS contenant un code vous a été envoyé sur votre téléphone portable")
             )
 
         # When we try to login, the server return a json, if no error occurred
@@ -208,16 +219,16 @@ class BforbankBrowser(TwoFactorBrowser):
         # the error.
         # With the exception of wrongpass errors for which the content
         # of the error is an empty string.
-        error = result.get('errorMessage')
-        if result.get('errorCode') == 'BindException' and not error:
-            '''
+        error = result.get("errorMessage")
+        if result.get("errorCode") == "BindException" and not error:
+            """
             As found in '/connexion-client/js/wsso.js'
 
             var handleException = function (err) {
             if (err.errorCode === 'BindException') {
                 handleTechnicalError("error.authentification");
-            '''
-            error = 'error.authentification'
+            """
+            error = "error.authentification"
 
         self.handle_errors(error)
 
@@ -228,7 +239,8 @@ class BforbankBrowser(TwoFactorBrowser):
             # We are sometimes redirected to a page asking to verify the client's info.
             # The page is blank before JS so the action needed message is hard-coded.
             raise ActionNeeded(
-                locale="fr-FR", message="Vérification de vos informations personnelles",
+                locale="fr-FR",
+                message="Vérification de vos informations personnelles",
                 action_type=ActionType.FILL_KYC,
             )
 
@@ -240,13 +252,13 @@ class BforbankBrowser(TwoFactorBrowser):
         """
         vk = BfBKeyboard(self.page)
         data = {}
-        data['j_username'] = self.username
-        data['birthDate'] = self.birthdate.strftime('%d/%m/%Y')
-        data['indexes'] = vk.get_string_code(self.password)
-        data['_rememberClientLogin'] = 'on'
-        data['pinpadId'] = self.page.get_pinpad_id()
+        data["j_username"] = self.username
+        data["birthDate"] = self.birthdate.strftime("%d/%m/%Y")
+        data["indexes"] = vk.get_string_code(self.password)
+        data["_rememberClientLogin"] = "on"
+        data["pinpadId"] = self.page.get_pinpad_id()
 
-        result = self.open('/connexion-client/service/auth', data=data).json()
+        result = self.open("/connexion-client/service/auth", data=data).json()
 
         # Renew 2FA cookies if needed
         self.handle_twofa_cookies()
@@ -255,33 +267,33 @@ class BforbankBrowser(TwoFactorBrowser):
 
     def clear_twofa(self):
         self.code = None
-        self.config['code'].set(self.config['code'].default)
+        self.config["code"].set(self.config["code"].default)
 
     def trigger_twofa(self):
         data = {}
-        data['anr'] = None
-        data['clientId'] = self.username
-        data['tokenDto'] = self.tokenDto
-        data['tokenCode'] = None
+        data["anr"] = None
+        data["clientId"] = self.username
+        data["tokenDto"] = self.tokenDto
+        data["tokenCode"] = None
 
         self.send_twofa_page.go(client_id=self.username, json=data)
 
-        if self.page.doc['error']:
-            self.handle_errors(self.page.doc['messageError'])
+        if self.page.doc["error"]:
+            self.handle_errors(self.page.doc["messageError"])
 
-        self.anrtoken = self.page.doc['anrtoken']
-        self.tokenDto = self.page.doc['tokenDto']
+        self.anrtoken = self.page.doc["anrtoken"]
+        self.tokenDto = self.page.doc["tokenDto"]
 
     def handle_sms(self):
         data = {}
-        data['anr'] = self.code
-        data['clientId'] = self.username
-        data['tokenDto'] = self.tokenDto
-        data['tokenCode'] = self.anrtoken
+        data["anr"] = self.code
+        data["clientId"] = self.username
+        data["tokenDto"] = self.tokenDto
+        data["tokenCode"] = self.anrtoken
 
-        result = self.open('/connexion-client/service/authForte', json=data).json()
+        result = self.open("/connexion-client/service/authForte", json=data).json()
 
-        error = result.get('messageError')
+        error = result.get("messageError")
         self.handle_errors(error, clear_twofa=True)
 
         # Add/renew 2FA cookies if needed
@@ -296,18 +308,19 @@ class BforbankBrowser(TwoFactorBrowser):
         """
         for cookie in self.session.cookies:
             if (
-                cookie.name == 'refresh_token' and cookie.expires
-                and cookie.expires > self.refresh_token.get('expires', 0)
+                cookie.name == "refresh_token"
+                and cookie.expires
+                and cookie.expires > self.refresh_token.get("expires", 0)
             ):
-                self.refresh_token['value'] = cookie.value
-                self.refresh_token['expires'] = cookie.expires
-                self.refresh_token['domain'] = cookie.domain
+                self.refresh_token["value"] = cookie.value
+                self.refresh_token["expires"] = cookie.expires
+                self.refresh_token["domain"] = cookie.domain
                 break
 
     @need_login
     def iter_accounts(self):
         if self.accounts is None:
-            owner_name = self.get_profile().name.upper().split(' ', 1)[1]
+            owner_name = self.get_profile().name.upper().split(" ", 1)[1]
             self.home.go()
             accounts = list(self.page.iter_accounts(name=owner_name))
             if self.page.RIB_AVAILABLE:
@@ -337,7 +350,7 @@ class BforbankBrowser(TwoFactorBrowser):
                     cards = self.page.get_cards(account.id)
                     account._cards = cards
                     if cards:
-                        self.location(account.url.replace('operations', 'encoursCarte') + '/0')
+                        self.location(account.url.replace("operations", "encoursCarte") + "/0")
                         indexes = dict(self.page.get_card_indexes())
 
                     for card in cards:
@@ -348,13 +361,13 @@ class BforbankBrowser(TwoFactorBrowser):
                         card._checking_account = account
                         card._index = indexes[card.number]
 
-                        card_url = account.url.replace('operations', 'encoursCarte')
-                        card_url += '/%s' % card._index
+                        card_url = account.url.replace("operations", "encoursCarte")
+                        card_url += "/%s" % card._index
 
                         self.location(card_url)
                         next_month = datetime.date.today() + relativedelta(months=1)
                         if self.page.get_debit_date().month == next_month.month:
-                            card_url += '?month=1'
+                            card_url += "?month=1"
                             self.location(card_url)
 
                         card.balance = 0
@@ -378,8 +391,8 @@ class BforbankBrowser(TwoFactorBrowser):
             self.location(
                 bourse_account._link_id,
                 params={
-                    'nump': bourse_account._market_id,
-                }
+                    "nump": bourse_account._market_id,
+                },
             )
             assert self.bourse.is_here()
             history = list(self.page.iter_history())
@@ -409,7 +422,7 @@ class BforbankBrowser(TwoFactorBrowser):
             # for summary transactions, the transactions must be on both accounts:
             # negative amount on checking account, positive on card account
             transactions = []
-            self.location(account.url.replace('operations', 'encoursCarte') + '/%s?month=1' % account._index)
+            self.location(account.url.replace("operations", "encoursCarte") + "/%s?month=1" % account._index)
             if self.page.get_debit_date().month == (datetime.date.today() - relativedelta(months=1)).month:
                 transactions = list(self.page.get_operations())
                 summary = self.page.create_summary()
@@ -423,10 +436,10 @@ class BforbankBrowser(TwoFactorBrowser):
             self.coming.go(account=account._url_code)
             return self.page.get_operations()
         elif account.type == Account.TYPE_CARD:
-            self.location(account.url.replace('operations', 'encoursCarte') + '/%s' % account._index)
+            self.location(account.url.replace("operations", "encoursCarte") + "/%s" % account._index)
             transactions = list(self.page.get_operations())
             if self.page.get_debit_date().month == (datetime.date.today() + relativedelta(months=1)).month:
-                self.location(account.url.replace('operations', 'encoursCarte') + '/%s?month=1' % account._index)
+                self.location(account.url.replace("operations", "encoursCarte") + "/%s?month=1" % account._index)
                 transactions += list(self.page.get_operations())
             return sorted_transactions(transactions)
         else:
@@ -442,7 +455,7 @@ class BforbankBrowser(TwoFactorBrowser):
         self.goto_lifeinsurance(account)
 
         if self.login.is_here():
-            self.logger.info('was logged out, relogging')
+            self.logger.info("was logged out, relogging")
             # if we don't clear cookies, we may land on the wrong spirica page
             self.session.cookies.clear()
             self.spirica.session.cookies.clear()
@@ -451,23 +464,23 @@ class BforbankBrowser(TwoFactorBrowser):
             self.goto_lifeinsurance(account)
 
         if self.lifeinsurance_list.is_here():
-            self.logger.debug('multiple life insurances, searching for %r', account)
+            self.logger.debug("multiple life insurances, searching for %r", account)
             # multiple life insurances: dedicated page to choose
             for insurance_account in self.page.iter_accounts():
-                self.logger.debug('testing %r', account)
+                self.logger.debug("testing %r", account)
                 if insurance_account.id == account.id:
                     self.location(insurance_account.url)
                     assert self.lifeinsurance_iframe.is_here()
                     break
             else:
-                raise AccountNotFound('account was not found in the dedicated page')
+                raise AccountNotFound("account was not found in the dedicated page")
         else:
             assert self.lifeinsurance_iframe.is_here()
 
         self.location(self.page.get_iframe())
         if self.lifeinsurance_error.is_here():
             self.home.go()
-            self.logger.warning('life insurance site is unavailable')
+            self.logger.warning("life insurance site is unavailable")
             return False
 
         assert self.lifeinsurance_redir.is_here()
@@ -480,7 +493,7 @@ class BforbankBrowser(TwoFactorBrowser):
         return True
 
     def get_bourse_account(self, account):
-        owner_name = self.get_profile().name.upper().split(' ', 1)[1]
+        owner_name = self.get_profile().name.upper().split(" ", 1)[1]
         self.location(account.url)
 
         self.bourse.go()
@@ -488,9 +501,9 @@ class BforbankBrowser(TwoFactorBrowser):
 
         if self.page.password_required():
             return
-        self.logger.debug('searching account matching %r', account)
+        self.logger.debug("searching account matching %r", account)
         for bourse_account in self.page.get_list(name=owner_name):
-            self.logger.debug('iterating account %r', bourse_account)
+            self.logger.debug("iterating account %r", bourse_account)
             if bourse_account.id.startswith(account.id[3:]):
                 return bourse_account
         else:

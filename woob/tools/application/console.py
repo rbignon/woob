@@ -36,8 +36,17 @@ from woob.capabilities.account import Account, AccountRegisterError, CapAccount
 from woob.core.backendscfg import BackendAlreadyExists
 from woob.core.repositories import IProgress
 from woob.exceptions import (
-    ActionNeeded, BrowserForbidden, BrowserHTTPSDowngrade, BrowserIncorrectPassword, BrowserQuestion, BrowserSSLError,
-    BrowserUnavailable, CaptchaQuestion, ModuleInstallError, ModuleLoadError, NeedInteractiveFor2FA,
+    ActionNeeded,
+    BrowserForbidden,
+    BrowserHTTPSDowngrade,
+    BrowserIncorrectPassword,
+    BrowserQuestion,
+    BrowserSSLError,
+    BrowserUnavailable,
+    CaptchaQuestion,
+    ModuleInstallError,
+    ModuleLoadError,
+    NeedInteractiveFor2FA,
 )
 from woob.tools.application.pretty import BOLD, NC, colored
 from woob.tools.misc import classproperty, to_unicode
@@ -46,7 +55,7 @@ from woob.tools.value import Value, ValueBackendPassword, ValueBool, ValueFloat,
 from .base import Application, MoreResultsAvailable
 
 
-__all__ = ['ConsoleApplication', 'BackendNotGiven']
+__all__ = ["ConsoleApplication", "BackendNotGiven"]
 
 
 class BackendNotGiven(Exception):
@@ -54,8 +63,8 @@ class BackendNotGiven(Exception):
         self.id = id
         self.backends = sorted(backends)
         super().__init__(
-            'Please specify a backend to use for this argument (%s@backend_name). '
-            'Availables: %s.' % (id, ', '.join(name for name, backend in backends))
+            "Please specify a backend to use for this argument (%s@backend_name). "
+            "Availables: %s." % (id, ", ".join(name for name, backend in backends))
         )
 
 
@@ -72,9 +81,7 @@ class ConsoleProgress(IProgress):
     def progress(self, percent, message):
         if not self._progress:
             self._progress = Progress(
-                TaskProgressColumn(),
-                BarColumn(),
-                TextColumn("[progress.description]{task.description}")
+                TaskProgressColumn(), BarColumn(), TextColumn("[progress.description]{task.description}")
             )
             self._progress_task = self._progress.add_task(message, total=1)
             self._progress.start()
@@ -89,7 +96,7 @@ class ConsoleProgress(IProgress):
         if self._progress:
             self._progress.stop()
 
-        print(colored(f'ERROR: {message}', 'red'), file=self.app.stderr)
+        print(colored(f"ERROR: {message}", "red"), file=self.app.stderr)
 
         if self._progress:
             self._progress.start()
@@ -119,10 +126,10 @@ class ConsoleApplication(Application):
             That's also better to use :func:`woob.tools.application.pretty.colored`.
         """
         warnings.warn(
-            'Use woob.tools.application.pretty.BOLD instead.\n'
-            'That\'s also better to use woob.tools.application.pretty.colored.',
+            "Use woob.tools.application.pretty.BOLD instead.\n"
+            "That's also better to use woob.tools.application.pretty.colored.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return BOLD
 
@@ -134,29 +141,25 @@ class ConsoleApplication(Application):
             That's also better to use :func:`woob.tools.application.pretty.colored`.
         """
         warnings.warn(
-            'Use woob.tools.application.pretty.NC instead.\n'
-            'That\'s also better to use woob.tools.application.pretty.colored.',
+            "Use woob.tools.application.pretty.NC instead.\n"
+            "That's also better to use woob.tools.application.pretty.colored.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return NC
 
     def __init__(self, option_parser=None):
         super().__init__(option_parser)
-        self.woob.requests.register('login', self.login_cb)
+        self.woob.requests.register("login", self.login_cb)
         self.enabled_backends = set()
         self._parser.add_option(
-            '--auto-update',
-            action='store_true',
-            help='Automatically check for updates when a bug in a module is encountered'
+            "--auto-update",
+            action="store_true",
+            help="Automatically check for updates when a bug in a module is encountered",
         )
 
     def login_cb(self, backend_name, value):
-        return self.ask('[%s] %s' % (backend_name,
-                        value.label),
-                        masked=True,
-                        default='',
-                        regexp=value.regexp)
+        return self.ask("[%s] %s" % (backend_name, value.label), masked=True, default="", regexp=value.regexp)
 
     def unload_backends(self, *args, **kwargs):
         unloaded = self.woob.unload_backends(*args, **kwargs)
@@ -171,15 +174,15 @@ class ConsoleApplication(Application):
         return self.CAPS is None or info.has_caps(self.CAPS)
 
     def load_backends(self, *args, **kwargs):
-        if 'errors' in kwargs:
-            errors = kwargs['errors']
+        if "errors" in kwargs:
+            errors = kwargs["errors"]
         else:
-            kwargs['errors'] = errors = []
+            kwargs["errors"] = errors = []
         ret = super().load_backends(*args, **kwargs)
 
         for err in errors:
-            print('Error(%s): %s' % (err.backend_name, err), file=self.stderr)
-            if self.ask('Do you want to reconfigure this backend?', default=True):
+            print("Error(%s): %s" % (err.backend_name, err), file=self.stderr)
+            if self.ask("Do you want to reconfigure this backend?", default=True):
                 self.edit_backend(err.backend_name)
                 self.load_backends(names=[err.backend_name])
 
@@ -192,56 +195,53 @@ class ConsoleApplication(Application):
 
     def check_loaded_backends(self, default_config=None):
         if len(self.enabled_backends) == 0:
-            print('There is currently no configured backend for %s' % self.APPNAME)
+            print("There is currently no configured backend for %s" % self.APPNAME)
             self.prompt_create_backends(default_config)
 
         return True
 
     def prompt_create_backends(self, default_config=None):
-        r = ''
+        r = ""
         while True:
             modules = []
-            print('\nAvailable modules:')
+            print("\nAvailable modules:")
             for name, info in sorted(self.woob.repositories.get_all_modules_info().items()):
                 if not self.is_module_loadable(info):
                     continue
                 modules.append(name)
-                loaded = ' '
+                loaded = " "
                 for bi in self.woob.iter_backends():
                     if bi.NAME == name:
-                        if loaded == ' ':
-                            loaded = 'X'
-                        elif loaded == 'X':
+                        if loaded == " ":
+                            loaded = "X"
+                        elif loaded == "X":
                             loaded = 2
                         else:
                             loaded += 1
                 print(
-                    '%s) [%s] %s%s' % (
-                        colored('%2d' % len(modules), 'white', attrs=['bold']),
-                        colored(str(loaded), attrs=['bold']),
-                        colored('%-20s' % name, 'magenta', attrs=['bold']),
-                        colored(info.description, 'green')
+                    "%s) [%s] %s%s"
+                    % (
+                        colored("%2d" % len(modules), "white", attrs=["bold"]),
+                        colored(str(loaded), attrs=["bold"]),
+                        colored("%-20s" % name, "magenta", attrs=["bold"]),
+                        colored(info.description, "green"),
                     )
                 )
 
             print(
-                ' %s) %s                 %s' % (
-                    colored('a', 'white', attrs=['bold']),
-                    colored('--all--', attrs=['bold']),
-                    colored('install all backends', 'green')
+                " %s) %s                 %s"
+                % (
+                    colored("a", "white", attrs=["bold"]),
+                    colored("--all--", attrs=["bold"]),
+                    colored("install all backends", "green"),
                 )
             )
-            print(
-                ' %s) %s\n' % (
-                    colored('q', 'white', attrs=['bold']),
-                    colored('--stop--', attrs=['bold'])
-                )
-            )
-            r = self.ask('Select a backend to create', default='')
+            print(" %s) %s\n" % (colored("q", "white", attrs=["bold"]), colored("--stop--", attrs=["bold"])))
+            r = self.ask("Select a backend to create", default="")
 
-            if r in ('q', ''):
+            if r in ("q", ""):
                 break
-            if r == 'a':
+            if r == "a":
                 try:
                     for name in modules:
                         if name in [b.NAME for b in self.woob.iter_backends()]:
@@ -250,7 +250,7 @@ class ConsoleApplication(Application):
                         if inst:
                             self.load_backends(names=[inst])
                 except (KeyboardInterrupt, EOFError):
-                    print('\nAborted.')
+                    print("\nAborted.")
                 else:
                     break
                 continue
@@ -258,13 +258,13 @@ class ConsoleApplication(Application):
             if r.isdigit():
                 i = int(r) - 1
                 if i < 0 or i >= len(modules):
-                    print(f'Error: {r} is not a valid choice', file=self.stderr)
+                    print(f"Error: {r} is not a valid choice", file=self.stderr)
                     continue
                 name = modules[i]
             elif r in modules:
                 name = r
             else:
-                print(f'Error: {r} is not a valid choice', file=self.stderr)
+                print(f"Error: {r} is not a valid choice", file=self.stderr)
                 continue
 
             try:
@@ -272,7 +272,7 @@ class ConsoleApplication(Application):
                 if inst:
                     self.load_backends(names=[inst])
             except (KeyboardInterrupt, EOFError):
-                print('\nAborted.')
+                print("\nAborted.")
 
     def _handle_options(self):
         self.load_default_backends()
@@ -297,13 +297,13 @@ class ConsoleApplication(Application):
             sys.exit(1)
 
     def do(self, function, *args, **kwargs):
-        if 'backends' not in kwargs:
-            kwargs['backends'] = self.enabled_backends
+        if "backends" not in kwargs:
+            kwargs["backends"] = self.enabled_backends
         return self.woob.do(function, *args, **kwargs)
 
     def parse_id(self, _id, unique_backend=False):
         try:
-            _id, backend_name = _id.rsplit('@', 1)
+            _id, backend_name = _id.rsplit("@", 1)
         except ValueError:
             backend_name = None
         backends = [(b.name, b) for b in self.enabled_backends]
@@ -341,32 +341,36 @@ class ConsoleApplication(Application):
             return 1
 
         if not backend.has_caps(CapAccount) or backend.klass.ACCOUNT_REGISTER_PROPERTIES is None:
-            print('You can\'t register a new account with %s' % name, file=self.stderr)
+            print("You can't register a new account with %s" % name, file=self.stderr)
             return 1
 
         account = Account()
         account.properties = {}
         if backend.website:
-            website = 'on website %s' % backend.website
+            website = "on website %s" % backend.website
         else:
-            website = 'with backend %s' % backend.name
+            website = "with backend %s" % backend.name
         while True:
             asked_config = False
             for key, prop in backend.klass.ACCOUNT_REGISTER_PROPERTIES.items():
                 if not asked_config:
                     asked_config = True
-                    print('Configuration of new account %s' % website)
-                    print('-----------------------------%s' % ('-' * len(website)))
+                    print("Configuration of new account %s" % website)
+                    print("-----------------------------%s" % ("-" * len(website)))
                 p = copy(prop)
-                p.set(self.ask(prop, default=account.properties[key].get() if (key in account.properties) else prop.default))
+                p.set(
+                    self.ask(
+                        prop, default=account.properties[key].get() if (key in account.properties) else prop.default
+                    )
+                )
                 account.properties[key] = p
             if asked_config:
-                print('-----------------------------%s' % ('-' * len(website)))
+                print("-----------------------------%s" % ("-" * len(website)))
             try:
                 backend.klass.register_account(account)
             except AccountRegisterError as e:
-                print('%s' % e)
-                if self.ask('Do you want to try again?', default=True):
+                print("%s" % e)
+                if self.ask("Do you want to try again?", default=True):
                     continue
                 else:
                     return None
@@ -377,7 +381,7 @@ class ConsoleApplication(Application):
             if key in backend.config:
                 backend_config[key] = value.get()
 
-        if ask_add and self.ask('Do you want to add the new register account?', default=True):
+        if ask_add and self.ask("Do you want to add the new register account?", default=True):
             return self.add_backend(name, name, backend_config, ask_register=False)
 
         return backend_config
@@ -404,7 +408,7 @@ class ConsoleApplication(Application):
             if not edit:
                 minfo = self.woob.repositories.get_module_info(module_name)
                 if minfo is None:
-                    raise ModuleLoadError(module_name, 'Module does not exist')
+                    raise ModuleLoadError(module_name, "Module does not exist")
 
                 if not minfo.is_installed() and not self.install_module(minfo):
                     return
@@ -429,25 +433,29 @@ class ConsoleApplication(Application):
 
             if not asked_config:
                 asked_config = True
-                print('')
-                print('Configuration of backend %s' % module.name)
-                print('-------------------------%s' % ('-' * len(module.name)))
+                print("")
+                print("Configuration of backend %s" % module.name)
+                print("-------------------------%s" % ("-" * len(module.name)))
             if key not in params or edit:
                 params[key] = self.ask(value, default=params[key] if (key in params) else value.default)
             else:
-                print('[%s] %s: %s' % (key, value.description, '(masked)' if value.masked else to_unicode(params[key])))
+                print("[%s] %s: %s" % (key, value.description, "(masked)" if value.masked else to_unicode(params[key])))
         if asked_config:
-            print('-------------------------%s' % ('-' * len(module.name)))
+            print("-------------------------%s" % ("-" * len(module.name)))
 
         i = 2
         while not edit and self.woob.backends_config.backend_exists(backend_name):
-            if not self.ask('Backend "%s" already exists. Add a new one for module %s?' % (backend_name, module.name), default=False):
+            if not self.ask(
+                'Backend "%s" already exists. Add a new one for module %s?' % (backend_name, module.name), default=False
+            ):
                 return 1
 
-            backend_name = backend_name.rstrip('0123456789')
-            while self.woob.backends_config.backend_exists('%s%s' % (backend_name, i)):
+            backend_name = backend_name.rstrip("0123456789")
+            while self.woob.backends_config.backend_exists("%s%s" % (backend_name, i)):
                 i += 1
-            backend_name = self.ask('Please give new backend name', default='%s%s' % (backend_name, i), regexp=r'^[\w\-_]+$')
+            backend_name = self.ask(
+                "Please give new backend name", default="%s%s" % (backend_name, i), regexp=r"^[\w\-_]+$"
+            )
 
         if edit:
             self.woob.backends_config.edit_backend(backend_name, params)
@@ -458,7 +466,7 @@ class ConsoleApplication(Application):
                 print('Backend "%s" already exists.' % backend_name, file=self.stderr)
                 return None
 
-        print('Backend "%s" successfully %s.' % (backend_name, 'edited' if edit else 'added'))
+        print('Backend "%s" successfully %s.' % (backend_name, "edited" if edit else "added"))
         return backend_name
 
     def ask(self, question, default=None, masked=None, regexp=None, choices=None, tiny=None):
@@ -507,74 +515,73 @@ class ConsoleApplication(Application):
 
         question = v.label
         if v.description and v.description != v.label:
-            question = '%s: %s' % (question, v.description)
+            question = "%s: %s" % (question, v.description)
         if v.id:
-            question = '[%s] %s' % (v.id, question)
+            question = "[%s] %s" % (v.id, question)
 
         if isinstance(v, ValueBackendPassword):
-            print(question + ':')
+            print(question + ":")
             question = v.label
             choices = OrderedDict()
-            choices['c'] = 'Run an external tool during backend load'
+            choices["c"] = "Run an external tool during backend load"
             if not v.noprompt:
-                choices['p'] = 'Prompt value when needed (do not store it)'
-            choices['s'] = 'Store value in config'
+                choices["p"] = "Prompt value when needed (do not store it)"
+            choices["s"] = "Store value in config"
 
-            if v.default == '' and not v.noprompt:
-                default = 'p'
+            if v.default == "" and not v.noprompt:
+                default = "p"
             else:
-                default = 's'
+                default = "s"
 
-            r = self.ask('*** How do you want to store it?', choices=choices, tiny=True, default=default)
-            if r == 'p':
-                return ''
-            if r == 'c':
-                print('Enter the shell command that will print the required value on the standard output')
+            r = self.ask("*** How do you want to store it?", choices=choices, tiny=True, default=default)
+            if r == "p":
+                return ""
+            if r == "c":
+                print("Enter the shell command that will print the required value on the standard output")
                 while True:
-                    cmd = self.ask('')
+                    cmd = self.ask("")
                     try:
                         check_output(cmd, shell=True)  # nosec: this is intended
                     except subprocess.CalledProcessError as e:
-                        print('%s' % e)
+                        print("%s" % e)
                     else:
-                        return '`%s`' % cmd
+                        return "`%s`" % cmd
 
         aliases = {}
         if isinstance(v, ValueBool):
-            question = '%s (%s/%s)' % (question, 'Y' if v.default else 'y', 'n' if v.default else 'N')
+            question = "%s (%s/%s)" % (question, "Y" if v.default else "y", "n" if v.default else "N")
         elif v.choices:
             if v.tiny is None:
                 v.tiny = True
                 for key in v.choices:
-                    if len(key) > 5 or ' ' in key:
+                    if len(key) > 5 or " " in key:
                         v.tiny = False
                         break
 
             if v.tiny:
-                question = '%s (%s)' % (question, '/'.join((s.upper() if s == v.default else s)
-                                                           for s in v.choices))
+                question = "%s (%s)" % (question, "/".join((s.upper() if s == v.default else s) for s in v.choices))
                 for s in v.choices:
                     if s == v.default:
                         aliases[s.upper()] = s
                 for key, value in v.choices.items():
-                    print('     %s%s%s: %s' % (self.BOLD, key, self.NC, value))
+                    print("     %s%s%s: %s" % (self.BOLD, key, self.NC, value))
             else:
                 for n, (key, value) in enumerate(v.choices.items()):
-                    print('     %s%2d)%s %s' % (self.BOLD, n + 1, self.NC, value))
+                    print("     %s%2d)%s %s" % (self.BOLD, n + 1, self.NC, value))
                     aliases[str(n + 1)] = key
-                question = '%s (choose in list)' % question
+                question = "%s (choose in list)" % question
         if v.masked:
-            question = '%s (hidden input)' % question
+            question = "%s (hidden input)" % question
 
-        if not isinstance(v, ValueBool) and not v.tiny and v.default not in (None, ''):
-            question = '%s [%s]' % (question, '*******' if v.masked else v.default)
+        if not isinstance(v, ValueBool) and not v.tiny and v.default not in (None, ""):
+            question = "%s [%s]" % (question, "*******" if v.masked else v.default)
 
-        question += ': '
+        question += ": "
 
         while True:
             if v.masked:
                 line = getpass.getpass(question)
-                if sys.platform != 'win32':
+                if sys.platform != "win32":
                     if isinstance(line, bytes):  # only for python2
                         line = line.decode(self.encoding)
             else:
@@ -584,7 +591,7 @@ class ConsoleApplication(Application):
                 if len(line) == 0:
                     raise EOFError()
                 else:
-                    line = line.rstrip('\r\n')
+                    line = line.rstrip("\r\n")
 
             if not line and v.default is not None:
                 line = v.default
@@ -595,7 +602,7 @@ class ConsoleApplication(Application):
             try:
                 v.set(line)
             except ValueError as e:
-                print('Error: %s' % e, file=self.stderr)
+                print("Error: %s" % e, file=self.stderr)
             else:
                 break
 
@@ -606,10 +613,7 @@ class ConsoleApplication(Application):
         print(txt)
 
     def acquire_input(
-        self,
-        content: str | bytes | None = None,
-        editor_params: dict[str, str] | None = None,
-        suffix: str | None = None
+        self, content: str | bytes | None = None, editor_params: dict[str, str] | None = None, suffix: str | None = None
     ) -> str:
         """
         Get an input from a text editor.
@@ -632,27 +636,26 @@ class ConsoleApplication(Application):
         :type suffix: str
         :rtype: str
         """
-        editor = os.getenv('EDITOR', 'vi')
+        editor = os.getenv("EDITOR", "vi")
         if self.stdin.isatty() and editor:
             with NamedTemporaryFile(suffix=suffix) as f:
                 filename = f.name
                 if content is not None:
                     if isinstance(content, str):
-                        content = content.encode('utf-8')
+                        content = content.encode("utf-8")
                     f.write(content)
                     f.flush()
                 try:
                     params = editor_params[os.path.basename(editor)]
                 except (KeyError, TypeError):
-                    params = ''
+                    params = ""
                 cmd = shlex.split(editor) + shlex.split(params) + [filename]
                 subprocess.call(cmd)
                 f.seek(0)
                 text = f.read()
         else:
             if self.stdin.isatty():
-                print('Reading content from stdin... Type ctrl-D '
-                      'from an empty line to stop.')
+                print("Reading content from stdin... Type ctrl-D " "from an empty line to stop.")
             text = self.stdin.read()
         return to_unicode(text)
 
@@ -668,41 +671,53 @@ class ConsoleApplication(Application):
                 if v:
                     backend.config[field.id].set(v)
         elif isinstance(error, CaptchaQuestion):
-            print('Warning(%s): Captcha has been found on login page' % backend.name, file=self.stderr)
+            print("Warning(%s): Captcha has been found on login page" % backend.name, file=self.stderr)
         elif isinstance(error, BrowserIncorrectPassword):
             msg = str(error)
             if not msg:
-                msg = 'invalid login/password.'
-            print('Error(%s): %s' % (backend.name, msg), file=self.stderr)
-            if self.ask('Do you want to reconfigure this backend?', default=True):
+                msg = "invalid login/password."
+            print("Error(%s): %s" % (backend.name, msg), file=self.stderr)
+            if self.ask("Do you want to reconfigure this backend?", default=True):
                 self.unload_backends(names=[backend.name])
                 self.edit_backend(backend.name)
                 self.load_backends(names=[backend.name])
         elif isinstance(error, BrowserSSLError):
-            print('FATAL(%s): ' % backend.name + self.BOLD + r'/!\ SERVER CERTIFICATE IS INVALID /!\\' + self.NC, file=self.stderr)
+            print(
+                "FATAL(%s): " % backend.name + self.BOLD + r"/!\ SERVER CERTIFICATE IS INVALID /!\\" + self.NC,
+                file=self.stderr,
+            )
         elif isinstance(error, BrowserHTTPSDowngrade):
-            print('FATAL(%s): ' % backend.name + 'Downgrade from HTTPS to HTTP')
+            print("FATAL(%s): " % backend.name + "Downgrade from HTTPS to HTTP")
         elif isinstance(error, BrowserForbidden):
             msg = str(error)
-            print('Error(%s): %s' % (backend.name, msg or 'Forbidden'), file=self.stderr)
+            print("Error(%s): %s" % (backend.name, msg or "Forbidden"), file=self.stderr)
         elif isinstance(error, BrowserUnavailable):
             msg = str(error)
-            print('Error(%s): %s' % (backend.name, msg or 'Website is unavailable.'), file=self.stderr)
+            print("Error(%s): %s" % (backend.name, msg or "Website is unavailable."), file=self.stderr)
         elif isinstance(error, ActionNeeded):
             msg = str(error)
-            print('Error(%s): Action needed on website: %s' % (backend.name, msg), file=self.stderr)
+            print("Error(%s): Action needed on website: %s" % (backend.name, msg), file=self.stderr)
         elif isinstance(error, NotImplementedError):
-            print('Error(%s): this feature is not supported yet by this backend.' % backend.name, file=self.stderr)
-            print('      %s   To help the maintainer of this backend implement this feature,' % (' ' * len(backend.name)), file=self.stderr)
-            print('      %s   please contact us on the project mailing list' % (' ' * len(backend.name)), file=self.stderr)
+            print("Error(%s): this feature is not supported yet by this backend." % backend.name, file=self.stderr)
+            print(
+                "      %s   To help the maintainer of this backend implement this feature," % (" " * len(backend.name)),
+                file=self.stderr,
+            )
+            print(
+                "      %s   please contact us on the project mailing list" % (" " * len(backend.name)), file=self.stderr
+            )
         elif isinstance(error, NeedInteractiveFor2FA):
-            print('Error(%s): You have to run %s in interactive mode to perform a two-factor authentication' % (backend.name, self.APPNAME), file=self.stderr)
+            print(
+                "Error(%s): You have to run %s in interactive mode to perform a two-factor authentication"
+                % (backend.name, self.APPNAME),
+                file=self.stderr,
+            )
         elif isinstance(error, UserError):
-            print('Error(%s): %s' % (backend.name, error), file=self.stderr)
+            print("Error(%s): %s" % (backend.name, error), file=self.stderr)
         elif isinstance(error, MoreResultsAvailable):
-            print('Hint: There are more results for backend %s' % (backend.name), file=self.stderr)
+            print("Hint: There are more results for backend %s" % (backend.name), file=self.stderr)
         else:
-            print('Bug(%s): %s' % (backend.name, error), file=self.stderr)
+            print("Bug(%s): %s" % (backend.name, error), file=self.stderr)
 
             minfo = self.woob.repositories.get_module_info(backend.NAME)
             if minfo and not minfo.is_local():
@@ -712,22 +727,26 @@ class ConsoleApplication(Application):
                     # minfo of the new available module
                     minfo = self.woob.repositories.get_module_info(backend.NAME)
                     if (
-                        minfo and
-                        minfo.version > self.woob.repositories.versions.get(minfo.name) and
-                        self.ask(f'A new version of {minfo.name} is available. Do you want to install it?', default=True) and
-                        self.install_module(minfo)
+                        minfo
+                        and minfo.version > self.woob.repositories.versions.get(minfo.name)
+                        and self.ask(
+                            f"A new version of {minfo.name} is available. Do you want to install it?", default=True
+                        )
+                        and self.install_module(minfo)
                     ):
-                        print(f'New version of module {minfo.name} has been installed. Retry to call the command.')
+                        print(f"New version of module {minfo.name} has been installed. Retry to call the command.")
                         return
                 else:
-                    print('(If --auto-update is passed on the command-line, new versions of the module will be checked automatically)')
+                    print(
+                        "(If --auto-update is passed on the command-line, new versions of the module will be checked automatically)"
+                    )
 
             if logging.root.level <= logging.DEBUG:
                 print(backtrace, file=self.stderr)
             else:
                 return True
 
-    def bcall_errors_handler(self, errors, debugmsg='Use --debug option to print backtraces', ignore=()):
+    def bcall_errors_handler(self, errors, debugmsg="Use --debug option to print backtraces", ignore=()):
         """
         Handler for the CallErrors exception.
         """
@@ -748,6 +767,10 @@ class ConsoleApplication(Application):
         if ask_debug_mode:
             print(debugmsg, file=self.stderr)
         elif len(more_results) > 0:
-            print('Hint: There are more results available for %s (use option -n or count command)' % (', '.join(more_results)), file=self.stderr)
+            print(
+                "Hint: There are more results available for %s (use option -n or count command)"
+                % (", ".join(more_results)),
+                file=self.stderr,
+            )
 
         return err

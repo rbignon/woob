@@ -24,16 +24,16 @@ from woob.tools.backend import Module
 from .browser import EntreparticuliersBrowser
 
 
-__all__ = ['EntreparticuliersModule']
+__all__ = ["EntreparticuliersModule"]
 
 
 class EntreparticuliersModule(Module, CapHousing):
-    NAME = 'entreparticuliers'
-    DESCRIPTION = u'entreparticuliers.com website'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "entreparticuliers"
+    DESCRIPTION = "entreparticuliers.com website"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = EntreparticuliersBrowser
 
@@ -41,8 +41,7 @@ class EntreparticuliersModule(Module, CapHousing):
         return self.browser.search_city(pattern)
 
     def search_housings(self, query):
-        if(len(query.advert_types) == 1 and
-           query.advert_types[0] == ADVERT_TYPES.PROFESSIONAL):
+        if len(query.advert_types) == 1 and query.advert_types[0] == ADVERT_TYPES.PROFESSIONAL:
             # Entreparticuliers is personal only
             return list()
 
@@ -56,7 +55,7 @@ class EntreparticuliersModule(Module, CapHousing):
         return self.browser.get_housing(_id)
 
     def fill_photo(self, photo, fields):
-        if 'data' in fields and photo.url and not photo.data:
+        if "data" in fields and photo.url and not photo.data:
             photo.data = self.browser.open(photo.url).content
         return photo
 

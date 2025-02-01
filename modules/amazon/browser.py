@@ -25,28 +25,47 @@ from woob.browser import URL, LoginBrowser, StatesMixin, need_login
 from woob.browser.exceptions import HTTPNotFound
 from woob.capabilities.captcha import ImageCaptchaQuestion
 from woob.exceptions import (
-    AppValidation, AppValidationExpired, AuthMethodNotImplemented, BrowserIncorrectPassword, BrowserPasswordExpired,
-    BrowserUnavailable, NeedInteractiveFor2FA, SentOTPQuestion, WrongCaptchaResponse,
+    AppValidation,
+    AppValidationExpired,
+    AuthMethodNotImplemented,
+    BrowserIncorrectPassword,
+    BrowserPasswordExpired,
+    BrowserUnavailable,
+    NeedInteractiveFor2FA,
+    SentOTPQuestion,
+    WrongCaptchaResponse,
 )
 from woob.tools.value import Value
 
 from .pages import (
-    AccountSwitcherLoadingPage, AccountSwitcherPage, ApprovalPage, CountriesPage, DocumentsPage, HistoryPage, HomePage,
-    InvoiceFilesListPage, LanguagePage, LoginPage, PasswordExpired, PollingPage, SecurityPage, SubscriptionsPage,
+    AccountSwitcherLoadingPage,
+    AccountSwitcherPage,
+    ApprovalPage,
+    CountriesPage,
+    DocumentsPage,
+    HistoryPage,
+    HomePage,
+    InvoiceFilesListPage,
+    LanguagePage,
+    LoginPage,
+    PasswordExpired,
+    PollingPage,
+    SecurityPage,
+    SubscriptionsPage,
     SwitchedAccountPage,
 )
 
 
 class AmazonBrowser(LoginBrowser, StatesMixin):
-    BASEURL = 'https://www.amazon.fr'
+    BASEURL = "https://www.amazon.fr"
     TIMEOUT = 30
 
-    CURRENCY = 'EUR'
-    LANGUAGE = 'fr-FR'
+    CURRENCY = "EUR"
+    LANGUAGE = "fr-FR"
 
-    L_SIGNIN = 'Identifiez-vous'
-    L_LOGIN = 'Connexion'
-    L_SUBSCRIBER = 'Nom : (.*) Modifier E-mail'
+    L_SIGNIN = "Identifiez-vous"
+    L_LOGIN = "Connexion"
+    L_SUBSCRIBER = "Nom : (.*) Modifier E-mail"
 
     UNSUPPORTED_TWOFA_MESSAGE = (
         "Cette méthode d'authentification forte n'est pas supporté. "
@@ -69,55 +88,54 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
     ]
     WRONG_CAPTCHA_RESPONSE = "Saisissez les caractères tels qu'ils apparaissent sur l'image."
 
-    login = URL(r'/ap/signin(.*)', LoginPage)
-    account_switcher_loading = URL(r'/ap/signin(.*)', AccountSwitcherLoadingPage)
-    account_switcher = URL(r'/ap/cvf/request.embed\?arb=(?P<token>.*)', AccountSwitcherPage)
-    switched_account = URL(r'/ap/switchaccount', SwitchedAccountPage)
+    login = URL(r"/ap/signin(.*)", LoginPage)
+    account_switcher_loading = URL(r"/ap/signin(.*)", AccountSwitcherLoadingPage)
+    account_switcher = URL(r"/ap/cvf/request.embed\?arb=(?P<token>.*)", AccountSwitcherPage)
+    switched_account = URL(r"/ap/switchaccount", SwitchedAccountPage)
 
-    home = URL(r'/$', r'/\?language=.+$', HomePage)
+    home = URL(r"/$", r"/\?language=.+$", HomePage)
     subscriptions = URL(
-        r'/gp/primecentral',
-        r'/amazonprime',
-        r'/businessprime',
+        r"/gp/primecentral",
+        r"/amazonprime",
+        r"/businessprime",
         SubscriptionsPage,
     )
     history = URL(
-        r'/gp/your-account/order-history\?ref_=ya_d_c_yo',
-        r'/gp/css/order-history(/.*)?\?',
+        r"/gp/your-account/order-history\?ref_=ya_d_c_yo",
+        r"/gp/css/order-history(/.*)?\?",
         HistoryPage,
     )
     documents = URL(
-        r'/gp/your-account/order-history\?opt=ab&digitalOrders=1(.*)&orderFilter=year-(?P<year>.*)',
-        r'/gp/your-account/order-history',
-        r'/-/en/gp/your-account/order-history',
+        r"/gp/your-account/order-history\?opt=ab&digitalOrders=1(.*)&orderFilter=year-(?P<year>.*)",
+        r"/gp/your-account/order-history",
+        r"/-/en/gp/your-account/order-history",
         DocumentsPage,
     )
     invoice_files_list = URL(
-        r'/gp/shared-cs/ajax/invoice/invoice.html\?orderId=(?P<order_id>.*?)&relatedRequestId=(?P<request_id>.*?)&isADriveSubscription=&isHFC=',
-        r'/gp/shared-cs/ajax/invoice/invoice.html',
-        r'/-/en/gp/shared-cs/ajax/invoice/invoice.html',
-        InvoiceFilesListPage
+        r"/gp/shared-cs/ajax/invoice/invoice.html\?orderId=(?P<order_id>.*?)&relatedRequestId=(?P<request_id>.*?)&isADriveSubscription=&isHFC=",
+        r"/gp/shared-cs/ajax/invoice/invoice.html",
+        r"/-/en/gp/shared-cs/ajax/invoice/invoice.html",
+        InvoiceFilesListPage,
     )
     approval_page = URL(
-        r'/ap/cvf/approval\?',
-        r'/ap/cvf/transactionapproval',
+        r"/ap/cvf/approval\?",
+        r"/ap/cvf/transactionapproval",
         ApprovalPage,
     )
-    poll_page = URL(r'/ap/cvf/approval/poll', PollingPage)
+    poll_page = URL(r"/ap/cvf/approval/poll", PollingPage)
     security = URL(
-        r'/ap/dcq',
-        r'/ap/cvf/',
-        r'/ap/mfa',
+        r"/ap/dcq",
+        r"/ap/cvf/",
+        r"/ap/mfa",
         SecurityPage,
     )
     countries = URL(
-        r'/customer-preferences/api/flyout/xop-and-country\?icpContent=icp&_=(?P<timestamp>\d+)',
-        CountriesPage
+        r"/customer-preferences/api/flyout/xop-and-country\?icpContent=icp&_=(?P<timestamp>\d+)", CountriesPage
     )
-    language = URL(r'/customer-preferences/api/xop\?ref_=icp_lop_(?P<language>.*)_tn', LanguagePage)
-    password_expired = URL(r'/ap/forgotpassword/reverification', PasswordExpired)
+    language = URL(r"/customer-preferences/api/xop\?ref_=icp_lop_(?P<language>.*)_tn", LanguagePage)
+    password_expired = URL(r"/ap/forgotpassword/reverification", PasswordExpired)
 
-    __states__ = ('otp_form', 'otp_url', 'otp_style', 'otp_headers', 'captcha_form', 'captcha_url')
+    __states__ = ("otp_form", "otp_url", "otp_style", "otp_headers", "captcha_form", "captcha_url")
 
     # According to the cookies we are fine for 1 year after the last sync.
     # If we reset the state every 10 minutes we'll get a in-app validation after 10 minutes
@@ -132,8 +150,8 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        kwargs['username'] = self.config['email'].get()
-        kwargs['password'] = self.config['password'].get()
+        kwargs["username"] = self.config["email"].get()
+        kwargs["password"] = self.config["password"].get()
         super(AmazonBrowser, self).__init__(*args, **kwargs)
         self.previous_url = None
         self.captcha_form = None
@@ -141,15 +159,16 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
     def locate_browser(self, state):
         if (
-            not state['url'] or (self.captcha_form and self.config['captcha_response'].get())
-            or self.switched_account.match(state['url'])
+            not state["url"]
+            or (self.captcha_form and self.config["captcha_response"].get())
+            or self.switched_account.match(state["url"])
         ):
             return
-        if '/ap/cvf/verify' not in state['url'] and not state['url'].endswith('/ap/signin'):
+        if "/ap/cvf/verify" not in state["url"] and not state["url"].endswith("/ap/signin"):
             # don't perform a GET to this url, it's the otp url, which will be reached by otp_form
             # get requests to /ap/signin raise a 404 Client Error
             try:
-                self.location(state['url'])
+                self.location(state["url"])
             except HTTPNotFound as er:
                 if self.security.match(er.response.url):
                     # The security page seems to expire after too long
@@ -160,41 +179,41 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 raise BrowserPasswordExpired(self.page.get_message())
 
     def check_interactive(self):
-        if self.config['request_information'].get() is None:
+        if self.config["request_information"].get() is None:
             raise NeedInteractiveFor2FA()
 
     def send_notification_interactive_mode(self):
         # send app validation if we are in interactive mode
-        redirect = self.response.headers.get('Location', "")
-        if self.response.status_code == 302 and '/ap/challenge' in redirect:
+        redirect = self.response.headers.get("Location", "")
+        if self.response.status_code == 302 and "/ap/challenge" in redirect:
             self.check_interactive()
 
         if redirect:
-            self.location(self.response.headers['Location'])
+            self.location(self.response.headers["Location"])
 
     def push_security_otp(self, pin_code):
         res_form = self.otp_form
-        res_form['rememberDevice'] = ""
+        res_form["rememberDevice"] = ""
 
-        if self.otp_style == 'amazonDFA':
-            res_form['code'] = pin_code
+        if self.otp_style == "amazonDFA":
+            res_form["code"] = pin_code
             self.location(self.otp_url, data=res_form, headers=self.otp_headers)
         else:
-            res_form['otpCode'] = pin_code
-            self.location('/ap/signin', data=res_form, headers=self.otp_headers)
+            res_form["otpCode"] = pin_code
+            self.location("/ap/signin", data=res_form, headers=self.otp_headers)
 
     def handle_security(self):
-        if self.config['captcha_response'].get():
-            self.page.resolve_captcha(self.config['captcha_response'].get())
+        if self.config["captcha_response"].get():
+            self.page.resolve_captcha(self.config["captcha_response"].get())
             # many captcha, reset value
-            self.config['captcha_response'] = Value(value=None)
+            self.config["captcha_response"] = Value(value=None)
         else:
             otp_type = self.page.get_otp_type()
 
-            if otp_type == '/ap/signin':
+            if otp_type == "/ap/signin":
                 # this otp will be always present until user deactivate it
                 # we don't raise an error because for the seller account 2FA is mandatory
-                self.logger.warning('2FA is enabled, all connections send an OTP')
+                self.logger.warning("2FA is enabled, all connections send an OTP")
 
             has_new_otp_form = self.page.has_form_select_device()
             if self.page.has_form_verify() or self.page.has_form_auth_mfa() or has_new_otp_form:
@@ -202,7 +221,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 self.page.send_code()
                 captcha = self.page.get_captcha_url()
 
-                if captcha and not self.config['captcha_response'].get():
+                if captcha and not self.config["captcha_response"].get():
                     image = self.open(captcha).content
                     raise ImageCaptchaQuestion(image)
             # For some accounts after the login page we are redirected to the new-otp page which asks us to send
@@ -218,13 +237,13 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
         if self.page.has_form_verify() or self.page.has_form_auth_mfa():
             form = self.page.get_response_form()
-            self.otp_form = form['form']
+            self.otp_form = form["form"]
             self.otp_url = self.url
-            self.otp_style = form['style']
+            self.otp_style = form["style"]
             self.otp_headers = dict(self.session.headers)
 
             otp_message = self.page.get_otp_message()
-            raise SentOTPQuestion(field_name='pin_code', message=otp_message or 'Please type the OTP you received')
+            raise SentOTPQuestion(field_name="pin_code", message=otp_message or "Please type the OTP you received")
 
     def request_captcha_solver(self, captcha):
         self.captcha_form = self.page.get_captcha_form()
@@ -241,12 +260,12 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         timeout = time.time() + 600.00
         app_validation_link = self.page.get_link_app_validation()
         polling_request = self.page.get_polling_request()
-        approval_status = ''
+        approval_status = ""
         while time.time() < timeout:
             self.location(polling_request)
             approval_status = self.page.get_approval_status()
 
-            if approval_status != 'TransactionPending':
+            if approval_status != "TransactionPending":
                 break
 
             # poll every 5 seconds on website
@@ -255,34 +274,34 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         else:
             raise AppValidationExpired()
 
-        if approval_status in ['TransactionCompleted', 'TransactionResponded']:
+        if approval_status in ["TransactionCompleted", "TransactionResponded"]:
             self.location(app_validation_link)
 
             if self.password_expired.is_here():
                 raise BrowserPasswordExpired(self.page.get_message())
 
             if self.approval_page.is_here():
-                raise AssertionError('The validation was not effective for an unknown reason.')
+                raise AssertionError("The validation was not effective for an unknown reason.")
 
-        elif approval_status == 'TransactionCompletionTimeout':
+        elif approval_status == "TransactionCompletionTimeout":
             raise AppValidationExpired()
 
         else:
-            raise AssertionError('Unknown transaction status: %s' % approval_status)
+            raise AssertionError("Unknown transaction status: %s" % approval_status)
 
     def do_login(self):
-        if self.config['pin_code'].get():
+        if self.config["pin_code"].get():
             # Resolve pin_code
-            self.push_security_otp(self.config['pin_code'].get())
+            self.push_security_otp(self.config["pin_code"].get())
 
             if self.security.is_here() or self.login.is_here():
                 # Something went wrong, probably a wrong OTP code
-                raise BrowserIncorrectPassword('OTP incorrect')
+                raise BrowserIncorrectPassword("OTP incorrect")
             else:
                 # Means security was passed, we're logged
                 return
 
-        if self.config['resume'].get() or self.approval_page.is_here():
+        if self.config["resume"].get() or self.approval_page.is_here():
             self.check_app_validation()
             # we are logged
             return
@@ -290,7 +309,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         if self.security.is_here():
             self.handle_security()
 
-        if self.config['captcha_response'].get():
+        if self.config["captcha_response"].get():
             # Resolve captcha code
             if self.captcha_form:
                 # We need to send the form manually since reloading the page changes the captcha
@@ -298,9 +317,9 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                     # Some accounts can have an app validation after captcha solving.
                     self.check_interactive()
                     params = {
-                        'amzn': self.captcha_form['amzn'],
-                        'amzn-r': self.captcha_form['amzn-r'],
-                        'field-keywords': self.config['captcha_response'].get(),
+                        "amzn": self.captcha_form["amzn"],
+                        "amzn-r": self.captcha_form["amzn-r"],
+                        "field-keywords": self.config["captcha_response"].get(),
                     }
                     self.location(self.captcha_url, params=params)
                     self.page.login(self.username, self.password)
@@ -312,8 +331,8 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                                 raise BrowserIncorrectPassword(msg)
 
                 else:
-                    self.captcha_form['password'] = self.password
-                    self.captcha_form['guess'] = self.config['captcha_response'].get()
+                    self.captcha_form["password"] = self.password
+                    self.captcha_form["guess"] = self.config["captcha_response"].get()
                     self.location(self.captcha_url, data=self.captcha_form, allow_redirects=False)
 
                 self.captcha_form = None
@@ -325,11 +344,11 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                     raise AppValidation(msg_validation)
 
             else:
-                self.page.login(self.username, self.password, self.config['captcha_response'].get())
+                self.page.login(self.username, self.password, self.config["captcha_response"].get())
 
             self.send_notification_interactive_mode()
             # many captcha reset value
-            self.config['captcha_response'] = Value(value=None)
+            self.config["captcha_response"] = Value(value=None)
 
             if self.security.is_here():
                 # Raise security management
@@ -343,7 +362,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
                 elif self.WRONG_CAPTCHA_RESPONSE in msg:
                     raise WrongCaptchaResponse(msg)
                 else:
-                    raise AssertionError(f'Unexpected error message at login: {msg}')
+                    raise AssertionError(f"Unexpected error message at login: {msg}")
 
         if self.approval_page.is_here():
             # if we have captcha and app validation
@@ -369,7 +388,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
         if self.page.captcha_form_is_here():
             captcha = self.page.get_captcha()
-            if captcha and not self.config['captcha_response'].get():
+            if captcha and not self.config["captcha_response"].get():
                 self.request_captcha_solver(captcha)
 
         self.page.login(self.username, self.password)
@@ -389,7 +408,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
 
         if self.login.is_here():
             captcha = self.page.get_captcha()
-            if captcha and not self.config['captcha_response'].get():
+            if captcha and not self.config["captcha_response"].get():
                 self.request_captcha_solver(captcha)
             else:
                 msg = self.page.get_error_message()
@@ -403,15 +422,15 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.location(self.page.get_redirect_url())
         else:
             self.location(self.page.get_add_account_link())
-            assert self.login.is_here(), 'Unexpected redirection while adding account'
+            assert self.login.is_here(), "Unexpected redirection while adding account"
             self.page.login(self.username, self.password)
             if self.login.is_here():
                 captcha = self.page.get_captcha()
                 if captcha:
                     self.request_captcha_solver(captcha)
                 else:
-                    error = self.page.get_error_message() or ''
-                    raise AssertionError(f'Unexpected error at login: {error}')
+                    error = self.page.get_error_message() or ""
+                    raise AssertionError(f"Unexpected error at login: {error}")
 
         if self.password_expired.is_here():
             raise BrowserPasswordExpired(self.page.get_message())
@@ -423,7 +442,7 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             self.switch_account()
             if self.previous_url:
                 self.previous_url.go()
-                assert self.previous_url.is_here(), 'Unexpected redirection'
+                assert self.previous_url.is_here(), "Unexpected redirection"
         else:
             if self.approval_page.is_here():
                 self.check_app_validation()
@@ -431,25 +450,25 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
             raise BrowserUnavailable()
 
     def change_language(self, language):
-        if re.match(r'www.amazon.(?:fr|co.uk)', self.config['website'].get()):
+        if re.match(r"www.amazon.(?:fr|co.uk)", self.config["website"].get()):
             # The french and UK websites don't allow to change the language
             return
 
         headers = {
-            'Referer': self.home.build(),
-            'X-Requested-With': 'XMLHttpRequest',
+            "Referer": self.home.build(),
+            "X-Requested-With": "XMLHttpRequest",
         }
         timestamp = int(time.time() * 1000)
         countries_page = self.countries.open(timestamp=timestamp, headers=headers)
 
         # Change the language to language's value
-        headers['anti-csrftoken-a2z'] = countries_page.get_csrf_token()
+        headers["anti-csrftoken-a2z"] = countries_page.get_csrf_token()
         data = {
-            'lop': language.replace('-', '_'),
+            "lop": language.replace("-", "_"),
         }
         # Seems to return a 403 if the url in the referer is not from the same country
         # (e.g. referer set to www.amazon.fr while the BASEURL is set to www.amazon.de)
-        self.language.open(method='POST', language=language, json=data, headers=headers)
+        self.language.open(method="POST", language=language, json=data, headers=headers)
 
     @need_login
     def iter_subscription(self):
@@ -470,16 +489,16 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         if b2b_group_key:
             # this value is available for business account only
             params = {
-                'opt': 'ab',
-                'digitalOrders': 1,
-                'unifiedOrders': 1,
-                'selectedB2BGroupKey': b2b_group_key,
+                "opt": "ab",
+                "digitalOrders": 1,
+                "unifiedOrders": 1,
+                "selectedB2BGroupKey": b2b_group_key,
             }
             # we select the page where we can find documents from every payers, not just 'myself'
-            self.location('/gp/your-account/order-history/ref=b2b_yo_dd_oma', params=params)
-            _, group_key = b2b_group_key.split(':')
+            self.location("/gp/your-account/order-history/ref=b2b_yo_dd_oma", params=params)
+            _, group_key = b2b_group_key.split(":")
             # we need this to get bills when this is amazon business, else html page won't contain them
-            params = {'selectedB2BGroupKey': group_key}
+            params = {"selectedB2BGroupKey": group_key}
         else:
             params = {}
 
@@ -487,15 +506,17 @@ class AmazonBrowser(LoginBrowser, StatesMixin):
         old_year = year - 2
         while year >= old_year:
             self.documents.go(year=year, params=params)
-            request_id = self.page.response.headers['x-amz-rid']
+            request_id = self.page.response.headers["x-amz-rid"]
             for summary_doc in self.page.iter_summary_documents(subid=subscription.id, currency=self.CURRENCY):
                 page = self.invoice_files_list.open(order_id=summary_doc._order_id, request_id=request_id)
                 page.fill_order_document(obj=summary_doc)
                 yield summary_doc
 
-                invoices = list(page.iter_invoice_documents(
-                    date=summary_doc.date, summary_doc_id=summary_doc.id, order_id=summary_doc._order_id
-                ))
+                invoices = list(
+                    page.iter_invoice_documents(
+                        date=summary_doc.date, summary_doc_id=summary_doc.id, order_id=summary_doc._order_id
+                    )
+                )
                 if not page.is_missing_some_invoices() and len(invoices) == 1:
                     # If there are missing invoices or there are more than 1 invoice
                     # we can't determine its price without OCR

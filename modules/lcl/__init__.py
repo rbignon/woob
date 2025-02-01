@@ -21,4 +21,4 @@
 from .module import LCLModule
 
 
-__all__ = ['LCLModule']
+__all__ = ["LCLModule"]

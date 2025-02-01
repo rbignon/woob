@@ -23,24 +23,24 @@ from woob_modules.ganpatrimoine import GanPatrimoineModule
 from .browser import GroupamaBrowser
 
 
-__all__ = ['GroupamaModule']
+__all__ = ["GroupamaModule"]
 
 
 class GroupamaModule(GanPatrimoineModule, CapBank):
-    NAME = 'groupama'
-    DESCRIPTION = 'Groupama'
-    MAINTAINER = 'Quentin Defenouillere'
-    EMAIL = 'quentin.defenouillere@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('ganpatrimoine',)
+    NAME = "groupama"
+    DESCRIPTION = "Groupama"
+    MAINTAINER = "Quentin Defenouillere"
+    EMAIL = "quentin.defenouillere@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("ganpatrimoine",)
 
     BROWSER = GroupamaBrowser
 
     def create_default_browser(self):
         return self.create_browser(
-            'groupama',
+            "groupama",
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )

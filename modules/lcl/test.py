@@ -46,9 +46,7 @@ class LclTest(BackendTest):
         subscription = next(self.backend.iter_subscription())
         documents = list(self.backend.iter_documents(subscription))
 
-        self.assertTrue(
-            all(document.id.startswith(subscription.id) for document in documents)
-        )
+        self.assertTrue(all(document.id.startswith(subscription.id) for document in documents))
 
     def test_lcl_subscription_id(self):
         """Subscription ID must not contain whitespaces.

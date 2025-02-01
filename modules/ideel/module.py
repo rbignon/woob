@@ -25,24 +25,24 @@ from woob.tools.value import ValueBackendPassword
 from .browser import Ideel
 
 
-__all__ = ['IdeelModule']
+__all__ = ["IdeelModule"]
 
 
 class IdeelModule(Module, CapShop):
-    NAME = 'ideel'
-    MAINTAINER = u'Oleg Plakhotniuk'
-    EMAIL = 'olegus8@gmail.com'
-    VERSION = '3.7'
-    LICENSE = 'AGPLv3+'
-    DESCRIPTION = u'Ideel'
+    NAME = "ideel"
+    MAINTAINER = "Oleg Plakhotniuk"
+    EMAIL = "olegus8@gmail.com"
+    VERSION = "3.7"
+    LICENSE = "AGPLv3+"
+    DESCRIPTION = "Ideel"
     CONFIG = BackendConfig(
-        ValueBackendPassword('username', label='User name', masked=False),
-        ValueBackendPassword('password', label='Password'))
+        ValueBackendPassword("username", label="User name", masked=False),
+        ValueBackendPassword("password", label="Password"),
+    )
     BROWSER = Ideel
 
     def create_default_browser(self):
-        return self.create_browser(self.config['username'].get(),
-                                   self.config['password'].get())
+        return self.create_browser(self.config["username"].get(), self.config["password"].get())
 
     def get_currency(self):
         return self.browser.get_currency()

@@ -26,29 +26,35 @@ from .pages import CitiesPage, HousingPage, PhonePage, SearchPage
 
 
 class LogicimmoBrowser(PagesBrowser):
-    BASEURL = 'https://www.logic-immo.com/'
+    BASEURL = "https://www.logic-immo.com/"
     PROFILE = Firefox()
-    city = URL(r'asset/t9/getLocalityT9\.php\?site=fr&lang=fr&json=%22(?P<pattern>.*)%22',
-               CitiesPage)
-    search = URL(r'(?P<type>location-immobilier|vente-immobilier|recherche-colocation)-(?P<cities>.*)/options/(?P<options>.*)', SearchPage)
-    housing = URL(r'detail-(?P<_id>.*)\.htm', HousingPage)
-    phone = URL(r'(?P<urlcontact>.*)', PhonePage)
+    city = URL(r"asset/t9/getLocalityT9\.php\?site=fr&lang=fr&json=%22(?P<pattern>.*)%22", CitiesPage)
+    search = URL(
+        r"(?P<type>location-immobilier|vente-immobilier|recherche-colocation)-(?P<cities>.*)/options/(?P<options>.*)",
+        SearchPage,
+    )
+    housing = URL(r"detail-(?P<_id>.*)\.htm", HousingPage)
+    phone = URL(r"(?P<urlcontact>.*)", PhonePage)
 
-    TYPES = {POSTS_TYPES.RENT: 'location-immobilier',
-             POSTS_TYPES.SALE: 'vente-immobilier',
-             POSTS_TYPES.SHARING: 'recherche-colocation',
-             POSTS_TYPES.FURNISHED_RENT: 'location-immobilier',
-             POSTS_TYPES.VIAGER: 'vente-immobilier'}
+    TYPES = {
+        POSTS_TYPES.RENT: "location-immobilier",
+        POSTS_TYPES.SALE: "vente-immobilier",
+        POSTS_TYPES.SHARING: "recherche-colocation",
+        POSTS_TYPES.FURNISHED_RENT: "location-immobilier",
+        POSTS_TYPES.VIAGER: "vente-immobilier",
+    }
 
-    RET = {HOUSE_TYPES.HOUSE: '2',
-           HOUSE_TYPES.APART: '1',
-           HOUSE_TYPES.LAND: '3',
-           HOUSE_TYPES.PARKING: '10',
-           HOUSE_TYPES.OTHER: '14'}
+    RET = {
+        HOUSE_TYPES.HOUSE: "2",
+        HOUSE_TYPES.APART: "1",
+        HOUSE_TYPES.LAND: "3",
+        HOUSE_TYPES.PARKING: "10",
+        HOUSE_TYPES.OTHER: "14",
+    }
 
     def __init__(self, *args, **kwargs):
         super(LogicimmoBrowser, self).__init__(*args, **kwargs)
-        self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
+        self.session.headers["X-Requested-With"] = "XMLHttpRequest"
 
     def get_cities(self, pattern):
         if pattern:
@@ -62,37 +68,35 @@ class LogicimmoBrowser(PagesBrowser):
 
         ret = []
         if type == POSTS_TYPES.VIAGER:
-            ret = ['15']
+            ret = ["15"]
         else:
             for house_type in house_types:
                 if house_type in self.RET:
                     ret.append(self.RET.get(house_type))
 
         if len(ret):
-            options.append('groupprptypesids=%s' % ','.join(ret))
+            options.append("groupprptypesids=%s" % ",".join(ret))
 
         if type == POSTS_TYPES.FURNISHED_RENT:
-            options.append('searchoptions=4')
+            options.append("searchoptions=4")
 
-        options.append('pricemin=%s' % (cost_min if cost_min else '0'))
+        options.append("pricemin=%s" % (cost_min if cost_min else "0"))
 
         if cost_max:
-            options.append('pricemax=%s' % cost_max)
+            options.append("pricemax=%s" % cost_max)
 
-        options.append('areamin=%s' % (area_min if area_min else '0'))
+        options.append("areamin=%s" % (area_min if area_min else "0"))
 
         if area_max:
-            options.append('areamax=%s' % area_max)
+            options.append("areamax=%s" % area_max)
 
         if nb_rooms:
             if type == POSTS_TYPES.SHARING:
-                options.append('nbbedrooms=%s' % ','.join([str(i) for i in range(nb_rooms, 7)]))
+                options.append("nbbedrooms=%s" % ",".join([str(i) for i in range(nb_rooms, 7)]))
             else:
-                options.append('nbrooms=%s' % ','.join([str(i) for i in range(nb_rooms, 7)]))
+                options.append("nbrooms=%s" % ",".join([str(i) for i in range(nb_rooms, 7)]))
 
-        self.search.go(type=self.TYPES.get(type, 'location-immobilier'),
-                       cities=cities,
-                       options='/'.join(options))
+        self.search.go(type=self.TYPES.get(type, "location-immobilier"), cities=cities, options="/".join(options))
 
         if type == POSTS_TYPES.SHARING:
             return self.page.iter_sharing()
@@ -103,6 +107,6 @@ class LogicimmoBrowser(PagesBrowser):
         return self.housing.go(_id=_id).get_housing(obj=housing)
 
     def get_phone(self, _id):
-        if _id.startswith('location') or _id.startswith('vente'):
+        if _id.startswith("location") or _id.startswith("vente"):
             urlcontact, params = self.housing.stay_or_go(_id=_id).get_phone_url_datas()
             return self.phone.go(urlcontact=urlcontact, params=params).get_phone()

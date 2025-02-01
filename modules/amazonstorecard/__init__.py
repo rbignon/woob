@@ -21,4 +21,4 @@
 from .module import AmazonStoreCardModule
 
 
-__all__ = ['AmazonStoreCardModule']
+__all__ = ["AmazonStoreCardModule"]

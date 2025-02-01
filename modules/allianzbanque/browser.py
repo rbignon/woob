@@ -30,61 +30,56 @@ from woob_modules.cmso.par.browser import CmsoParBrowser
 from .pages import AccountsPage, ContractsPage, CypherPage, InvestmentsPage, LoansPage, MarketPage, ProfilePage
 
 
-__all__ = ['AllianzbanqueBrowser']
+__all__ = ["AllianzbanqueBrowser"]
 
 
 class AllianzbanqueBrowser(CmsoParBrowser):
-    BASEURL = 'https://api.allianzbanque.fr'
+    BASEURL = "https://api.allianzbanque.fr"
 
     # needed fo CMSO
-    redirect_uri = 'https://mon.allianzbanque.fr/auth/checkuser'
-    error_uri = 'https://mon.allianzbanque.fr/auth/errorauthn'
-    client_uri = 'com.arkea.azb.rwd'
-    name = 'azb'
-    arkea = 'B1'
-    arkea_si = '0B1'
-    arkea_client_id = 'FtzkRLIR3TurVkG4vzbbGxnyrTu0w2I8'
-    original_site = 'https://mon.allianzbanque.fr'
+    redirect_uri = "https://mon.allianzbanque.fr/auth/checkuser"
+    error_uri = "https://mon.allianzbanque.fr/auth/errorauthn"
+    client_uri = "com.arkea.azb.rwd"
+    name = "azb"
+    arkea = "B1"
+    arkea_si = "0B1"
+    arkea_client_id = "FtzkRLIR3TurVkG4vzbbGxnyrTu0w2I8"
+    original_site = "https://mon.allianzbanque.fr"
 
-    accounts = URL(r'/distri-account-api/api/v1/persons/me/accounts', AccountsPage)
+    accounts = URL(r"/distri-account-api/api/v1/persons/me/accounts", AccountsPage)
     balances = URL(
-        r'/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/balances$',
-        AccountsPage
+        r"/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/balances$", AccountsPage
     )
     balances_comings = URL(
-        r'/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/total-upcoming-transactions',
-        AccountsPage
+        r"/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/total-upcoming-transactions",
+        AccountsPage,
     )
     transactions = URL(
-        r'/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/transactions',
-        AccountsPage
+        r"/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/transactions", AccountsPage
     )
     transactions_comings = URL(
-        r'/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/upcoming-transactions',
-        AccountsPage
+        r"/distri-account-api/api/v1/persons/me/accounts/(?P<account_id>[A-Z0-9]{10})/upcoming-transactions",
+        AccountsPage,
     )
-    life_insurances = URL(r'/savingsb2bapi/api/v1/contractslist')
-    life_insurances_details = URL(r'/savingsb2bapi/api/v1/contractdetails/(?P<contract>.*)', ContractsPage)
-    loans = URL(r'/creditpartapi/api/v1//management-loans\?loanTypes=REAL_ESTATE,CONSUMER', LoansPage)
-    profile = URL(r'/personapi/api/v2/clients/me/infos', ProfilePage)
+    life_insurances = URL(r"/savingsb2bapi/api/v1/contractslist")
+    life_insurances_details = URL(r"/savingsb2bapi/api/v1/contractdetails/(?P<contract>.*)", ContractsPage)
+    loans = URL(r"/creditpartapi/api/v1//management-loans\?loanTypes=REAL_ESTATE,CONSUMER", LoansPage)
+    profile = URL(r"/personapi/api/v2/clients/me/infos", ProfilePage)
 
-    market_cypher = URL(
-        r'/cypher-api/cypher\?service=bourse&contractNumber=(?P<account_id>[A-Z0-9]{10})',
-        CypherPage
-    )
+    market_cypher = URL(r"/cypher-api/cypher\?service=bourse&contractNumber=(?P<account_id>[A-Z0-9]{10})", CypherPage)
     market = URL(
-        r'https://www.bourse.allianzbanque.fr/ariane/webact/WebBank/scripts/AGF/login.jsp\?cypher=(?P<cypher>.*)',
-        MarketPage
+        r"https://www.bourse.allianzbanque.fr/ariane/webact/WebBank/scripts/AGF/login.jsp\?cypher=(?P<cypher>.*)",
+        MarketPage,
     )
-    investments = URL(r'https://www.bourse.allianzbanque.fr/ariane/secure_ajax/(?P<page>\w+).html', InvestmentsPage)
+    investments = URL(r"https://www.bourse.allianzbanque.fr/ariane/secure_ajax/(?P<page>\w+).html", InvestmentsPage)
 
     def __init__(self, *args, **kwargs):
         # most of url return 403 without this origin header
-        kwargs['origin'] = self.original_site
+        kwargs["origin"] = self.original_site
         super(AllianzbanqueBrowser, self).__init__(*args, **kwargs)
 
-    def get_tpp_headers(self, data=''):
-        return {'X-ARKEA-EFS': self.arkea}
+    def get_tpp_headers(self, data=""):
+        return {"X-ARKEA-EFS": self.arkea}
 
     def get_pkce_codes(self):
         # Switched from parent CMSO
@@ -95,17 +90,19 @@ class AllianzbanqueBrowser(CmsoParBrowser):
         return self.code_challenge(verifier), verifier
 
     def refresh_access_token(self):
-        self.spaces.go(json={'includePart': True})
-        self.change_space.go(json={
-            'clientIdSource': self.arkea_client_id,
-            'espaceDestination': 'PART',
-            'fromMobile': False,
-            'numContractDestination': self.page.get_part_space(),
-        })
+        self.spaces.go(json={"includePart": True})
+        self.change_space.go(
+            json={
+                "clientIdSource": self.arkea_client_id,
+                "espaceDestination": "PART",
+                "fromMobile": False,
+                "numContractDestination": self.page.get_part_space(),
+            }
+        )
 
         access_token = self.page.get_access_token()
-        self.session.headers['Authorization'] = 'Bearer %s' % access_token
-        self.session.headers['X-Csrf-Token'] = access_token
+        self.session.headers["Authorization"] = "Bearer %s" % access_token
+        self.session.headers["X-Csrf-Token"] = access_token
 
     @need_login
     def iter_accounts(self):
@@ -124,22 +121,19 @@ class AllianzbanqueBrowser(CmsoParBrowser):
 
         # 1. get all checking and savings
         go_accounts = retry(ClientError, tries=5)(self.accounts.go)
-        go_accounts(params={'types': 'CHECKING,SAVING'})
+        go_accounts(params={"types": "CHECKING,SAVING"})
         for account in self.page.iter_accounts():
             self.balances.go(account_id=account.id)
             self.page.fill_balance(account)
-            date_to = (date.today() + relativedelta(months=1)).strftime('%Y-%m-%dT00:00:00.000Z')
-            self.balances_comings.go(account_id=account.id, params={'dateTo': date_to})
+            date_to = (date.today() + relativedelta(months=1)).strftime("%Y-%m-%dT00:00:00.000Z")
+            self.balances_comings.go(account_id=account.id, params={"dateTo": date_to})
             self.page.fill_coming(account)
             self.accounts_list.append(account)
 
         # 2. get life_insurances accounts
         page = self.life_insurances.go().json()
         # those ids are not persistent
-        contracts = [
-            contract['cryptedContractNumber']
-            for contract in page
-        ]
+        contracts = [contract["cryptedContractNumber"] for contract in page]
         for contract in contracts:
             self.location(self.life_insurances_details.build(contract=contract), timeout=30)
             con = self.page.get_contract()
@@ -179,9 +173,9 @@ class AllianzbanqueBrowser(CmsoParBrowser):
         if account.type not in (Account.TYPE_CHECKING, Account.TYPE_SAVINGS):
             return
 
-        date_to = (date.today() + relativedelta(months=3)).strftime('%Y-%m-%dT00:00:00.000Z')
+        date_to = (date.today() + relativedelta(months=3)).strftime("%Y-%m-%dT00:00:00.000Z")
         go_transactions_comings = retry((ServerError), tries=5)(self.transactions_comings.go)
-        go_transactions_comings(account_id=account.id, params={'dateTo': date_to})
+        go_transactions_comings(account_id=account.id, params={"dateTo": date_to})
         for coming in self.page.iter_comings():
             yield coming
 
@@ -195,7 +189,7 @@ class AllianzbanqueBrowser(CmsoParBrowser):
             cypher = self.page.get_cypher()
             self.market.go(cypher=cypher)
 
-            self.investments.go(page='synthesis', method='POST')
+            self.investments.go(page="synthesis", method="POST")
             vdate = self.page.get_vdate()
             investments = []
 
@@ -209,7 +203,7 @@ class AllianzbanqueBrowser(CmsoParBrowser):
                 if liquidity:
                     investments.append(liquidity)
 
-            self.investments.go(page='valorisation', method='POST')
+            self.investments.go(page="valorisation", method="POST")
             for investment in self.page.iter_investment(vdate=vdate):
                 investments.append(investment)
             return investments

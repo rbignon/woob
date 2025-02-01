@@ -21,7 +21,7 @@ from woob.tools.test import BackendTest
 
 
 class PaypalTest(BackendTest):
-    MODULE = 'paypal'
+    MODULE = "paypal"
 
     def test_balance(self):
         for account in self.backend.iter_accounts():

@@ -25,30 +25,28 @@ from woob.tools.backend import Module
 from .browser import LyricsmodeBrowser
 
 
-__all__ = ['LyricsmodeModule']
+__all__ = ["LyricsmodeModule"]
 
 
 class LyricsmodeModule(Module, CapLyrics):
-    NAME = 'lyricsmode'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'eneiluj@gmx.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'Lyricsmode.com lyrics website'
-    LICENSE = 'AGPLv3+'
+    NAME = "lyricsmode"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "eneiluj@gmx.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Lyricsmode.com lyrics website"
+    LICENSE = "AGPLv3+"
     BROWSER = LyricsmodeBrowser
 
     def get_lyrics(self, id):
         return self.browser.get_lyrics(id)
 
     def iter_lyrics(self, criteria, pattern):
-        return self.browser.iter_lyrics(criteria, quote_plus(pattern.encode('utf-8')))
+        return self.browser.iter_lyrics(criteria, quote_plus(pattern.encode("utf-8")))
 
     def fill_songlyrics(self, songlyrics, fields):
-        if 'content' in fields:
+        if "content" in fields:
             sl = self.get_lyrics(songlyrics.id)
             songlyrics.content = sl.content
         return songlyrics
 
-    OBJECTS = {
-        SongLyrics: fill_songlyrics
-    }
+    OBJECTS = {SongLyrics: fill_songlyrics}

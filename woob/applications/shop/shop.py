@@ -23,87 +23,95 @@ from woob.tools.application.formatters.iformatter import IFormatter
 from woob.tools.application.repl import ReplApplication, defaultcount
 
 
-__all__ = ['AppShop']
+__all__ = ["AppShop"]
 
 
 class OrdersFormatter(IFormatter):
-    MANDATORY_FIELDS = ('id', 'date', 'total')
+    MANDATORY_FIELDS = ("id", "date", "total")
 
     def start_format(self, **kwargs):
-        self.output('               Id                Date         Total   ')
-        self.output('-----------------------------+------------+-----------')
+        self.output("               Id                Date         Total   ")
+        self.output("-----------------------------+------------+-----------")
 
     def format_obj(self, obj, alias):
-        date = obj.date.strftime('%Y-%m-%d') if not empty(obj.date) else ''
-        total = obj.total or Decimal('0')
-        result = '%s  %s  %s' % (self.colored('%-28s' % obj.fullid, 'yellow'),
-                                 self.colored('%-10s' % date, 'blue'),
-                                 self.colored('%9.2f' % total, 'green'))
+        date = obj.date.strftime("%Y-%m-%d") if not empty(obj.date) else ""
+        total = obj.total or Decimal("0")
+        result = "%s  %s  %s" % (
+            self.colored("%-28s" % obj.fullid, "yellow"),
+            self.colored("%-10s" % date, "blue"),
+            self.colored("%9.2f" % total, "green"),
+        )
 
         return result
 
     def flush(self):
-        self.output('----------------------------+------------+-----------')
+        self.output("----------------------------+------------+-----------")
 
 
 class ItemsFormatter(IFormatter):
-    MANDATORY_FIELDS = ('label', 'url', 'price')
+    MANDATORY_FIELDS = ("label", "url", "price")
 
     def start_format(self, **kwargs):
-        self.output('                                    Label                                                           Url                       Price   ')
-        self.output('---------------------------------------------------------------------------+---------------------------------------------+----------')
+        self.output(
+            "                                    Label                                                           Url                       Price   "
+        )
+        self.output(
+            "---------------------------------------------------------------------------+---------------------------------------------+----------"
+        )
 
     def format_obj(self, obj, alias):
-        price = obj.price or Decimal('0')
-        result = '%s  %s  %s' % (self.colored('%-75s' % obj.label[:75], 'yellow'),
-                                 self.colored('%-43s' % obj.url, 'magenta'),
-                                 self.colored('%9.2f' % price, 'green'))
+        price = obj.price or Decimal("0")
+        result = "%s  %s  %s" % (
+            self.colored("%-75s" % obj.label[:75], "yellow"),
+            self.colored("%-43s" % obj.url, "magenta"),
+            self.colored("%9.2f" % price, "green"),
+        )
 
         return result
 
     def flush(self):
-        self.output('---------------------------------------------------------------------------+---------------------------------------------+----------')
+        self.output(
+            "---------------------------------------------------------------------------+---------------------------------------------+----------"
+        )
 
 
 class PaymentsFormatter(IFormatter):
-    MANDATORY_FIELDS = ('date', 'method', 'amount')
+    MANDATORY_FIELDS = ("date", "method", "amount")
 
     def start_format(self, **kwargs):
-        self.output('   Date          Method        Amount  ')
-        self.output('-----------+-----------------+----------')
+        self.output("   Date          Method        Amount  ")
+        self.output("-----------+-----------------+----------")
 
     def format_obj(self, obj, alias):
-        date = obj.date.strftime('%Y-%m-%d') if not empty(obj.date) else ''
-        amount = obj.amount or Decimal('0')
-        result = '%s  %s  %s' % (self.colored('%-10s' % date, 'blue'),
-                                 self.colored('%-17s' % obj.method, 'yellow'),
-                                 self.colored('%9.2f' % amount, 'green'))
+        date = obj.date.strftime("%Y-%m-%d") if not empty(obj.date) else ""
+        amount = obj.amount or Decimal("0")
+        result = "%s  %s  %s" % (
+            self.colored("%-10s" % date, "blue"),
+            self.colored("%-17s" % obj.method, "yellow"),
+            self.colored("%9.2f" % amount, "green"),
+        )
 
         return result
 
     def flush(self):
-        self.output('-----------+-----------------+----------')
+        self.output("-----------+-----------------+----------")
 
 
 class AppShop(ReplApplication):
-    APPNAME = 'shop'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2015 Christophe Lampin'
-    DESCRIPTION = 'Console application to obtain details and status of e-commerce orders.'
+    APPNAME = "shop"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2015 Christophe Lampin"
+    DESCRIPTION = "Console application to obtain details and status of e-commerce orders."
     SHORT_DESCRIPTION = "obtain details and status of e-commerce orders"
     CAPS = CapShop
-    COLLECTION_OBJECTS = (Order, )
-    EXTRA_FORMATTERS = {
-        'orders':   OrdersFormatter,
-        'items':   ItemsFormatter,
-        'payments':   PaymentsFormatter
-    }
-    DEFAULT_FORMATTER = 'table'
+    COLLECTION_OBJECTS = (Order,)
+    EXTRA_FORMATTERS = {"orders": OrdersFormatter, "items": ItemsFormatter, "payments": PaymentsFormatter}
+    DEFAULT_FORMATTER = "table"
     COMMANDS_FORMATTERS = {
-        'orders':    'orders',
-        'items':     'items',
-        'payments':  'payments',
-        'ls':        'orders',
+        "orders": "orders",
+        "items": "items",
+        "payments": "payments",
+        "ls": "orders",
     }
 
     def main(self, argv):
@@ -125,7 +133,7 @@ class AppShop(ReplApplication):
 
         self.do_count(str(self.options.count))  # Avoid raise of MoreResultsAvailable
         l = []
-        for order in self.do('iter_orders', backends=backend_name):
+        for order in self.do("iter_orders", backends=backend_name):
             l.append(order)
 
         self.start_format()
@@ -151,7 +159,7 @@ class AppShop(ReplApplication):
         id, backend_name = self.parse_id(id, unique_backend=True)
 
         if not id:
-            print('Error: please give a order ID (hint: use orders command)', file=self.stderr)
+            print("Error: please give a order ID (hint: use orders command)", file=self.stderr)
             return 2
         else:
             l.append((id, backend_name))
@@ -165,7 +173,7 @@ class AppShop(ReplApplication):
             mysum.price = Decimal("0.")
 
             self.start_format()
-            for item in self.do('iter_items', id, backends=names):
+            for item in self.do("iter_items", id, backends=names):
                 self.format(item)
                 mysum.price = item.price + mysum.price
 
@@ -182,9 +190,9 @@ class AppShop(ReplApplication):
         id, backend_name = self.parse_id(id, unique_backend=True)
 
         if not id:
-            print('Error: please give a order ID (hint: use orders command)', file=self.stderr)
+            print("Error: please give a order ID (hint: use orders command)", file=self.stderr)
             return 2
 
         self.start_format()
-        for payment in self.do('iter_payments', id, backends=backend_name):
+        for payment in self.do("iter_payments", id, backends=backend_name):
             self.format(payment)

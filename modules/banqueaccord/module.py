@@ -23,20 +23,20 @@ from woob.tools.value import ValueBackendPassword
 from woob_modules.oney.module import OneyModule
 
 
-__all__ = ['BanqueAccordModule']
+__all__ = ["BanqueAccordModule"]
 
 
 class BanqueAccordModule(OneyModule, CapBankWealth):
-    NAME = 'banqueaccord'
-    DESCRIPTION = 'Banque Accord'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "banqueaccord"
+    DESCRIPTION = "Banque Accord"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
-    DEPENDENCIES = ('oney',)
+    DEPENDENCIES = ("oney",)
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', regexp=r'\d+', masked=False),
-        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d+')
+        ValueBackendPassword("login", label="Identifiant", regexp=r"\d+", masked=False),
+        ValueBackendPassword("password", label="Code d'accès", regexp=r"\d+"),
     )

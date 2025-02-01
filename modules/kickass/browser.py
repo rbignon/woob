@@ -26,23 +26,20 @@ from woob.browser.url import URL
 from .pages import SearchPage, TorrentPage
 
 
-__all__ = ['KickassBrowser']
+__all__ = ["KickassBrowser"]
 
 
 class KickassBrowser(PagesBrowser):
     PROFILE = Firefox()
     TIMEOUT = 30
 
-    BASEURL = 'https://kat.cr/'
-    search = URL(r'usearch/(?P<pattern>.*)/\?field=seeders&sorder=desc',
-                 SearchPage)
-    torrent = URL(r'torrent-t(?P<id>.*)\.html',
-                  r'.*-t[0-9]*\.html',
-                  TorrentPage)
+    BASEURL = "https://kat.cr/"
+    search = URL(r"usearch/(?P<pattern>.*)/\?field=seeders&sorder=desc", SearchPage)
+    torrent = URL(r"torrent-t(?P<id>.*)\.html", r".*-t[0-9]*\.html", TorrentPage)
 
     def iter_torrents(self, pattern):
         self.search.go(pattern=pattern)
-        #print( self.page.content)
+        # print( self.page.content)
         return self.page.iter_torrents()
 
     def get_torrent(self, fullid):

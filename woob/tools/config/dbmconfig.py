@@ -24,7 +24,7 @@ from .iconfig import ConfigError, IConfig
 from .yamlconfig import WoobDumper
 
 
-__all__ = ['DBMConfig']
+__all__ = ["DBMConfig"]
 
 
 class DBMConfig(IConfig):
@@ -33,20 +33,20 @@ class DBMConfig(IConfig):
         self.storage = None
 
     def load(self, default=None):
-        self.storage = dbm.ndbm.open(self.path, 'c')
+        self.storage = dbm.ndbm.open(self.path, "c")
 
     def save(self):
-        if hasattr(self.storage, 'sync'):
+        if hasattr(self.storage, "sync"):
             self.storage.sync()
 
     def get(self, *args, **kwargs):
-        key = '.'.join(args)
+        key = ".".join(args)
         try:
             value = self.storage[key]
             value = yaml.load(value, Loader=yaml.SafeLoader)
         except KeyError as exc:
-            if 'default' in kwargs:
-                value = kwargs.get('default')
+            if "default" in kwargs:
+                value = kwargs.get("default")
             else:
                 raise ConfigError() from exc
         except TypeError as exc:
@@ -54,7 +54,7 @@ class DBMConfig(IConfig):
         return value
 
     def set(self, *args):
-        key = '.'.join(args[:-1])
+        key = ".".join(args[:-1])
         value = args[-1]
         try:
             self.storage[key] = yaml.dump(value, None, Dumper=WoobDumper, default_flow_style=False)
@@ -64,7 +64,7 @@ class DBMConfig(IConfig):
             raise ConfigError() from exc
 
     def delete(self, *args):
-        key = '.'.join(args)
+        key = ".".join(args)
         try:
             del self.storage[key]
         except KeyError as exc:

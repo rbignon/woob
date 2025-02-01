@@ -23,14 +23,14 @@ from woob.browser import URL, PagesBrowser
 from .pages import EventListPage, EventPage
 
 
-__all__ = ['RazibusBrowser']
+__all__ = ["RazibusBrowser"]
 
 
 class RazibusBrowser(PagesBrowser):
-    BASEURL = 'http://razibus.net/'
+    BASEURL = "http://razibus.net/"
     TIMEOUT = 20
-    event_list_page = URL(r'evenements-a-venir.php\?region=(?P<region>.*)', EventListPage)
-    event_page = URL(r'(?P<_id>.*).html', EventPage)
+    event_list_page = URL(r"evenements-a-venir.php\?region=(?P<region>.*)", EventListPage)
+    event_page = URL(r"(?P<_id>.*).html", EventPage)
     region = None
 
     def __init__(self, region, *args, **kwargs):
@@ -41,7 +41,6 @@ class RazibusBrowser(PagesBrowser):
         return self.event_page.go(_id=_id).get_event(obj=event)
 
     def list_events(self, date_from, date_to, city=None, categories=None):
-        return self.event_list_page.go(region=self.region).list_events(date_from=date_from,
-                                                                       date_to=date_to,
-                                                                       city=city,
-                                                                       categories=categories)
+        return self.event_list_page.go(region=self.region).list_events(
+            date_from=date_from, date_to=date_to, city=city, categories=categories
+        )

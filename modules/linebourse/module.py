@@ -26,15 +26,15 @@ from woob.tools.backend import Module
 from .browser import LinebourseAPIBrowser
 
 
-__all__ = ['LinebourseModule']
+__all__ = ["LinebourseModule"]
 
 
 class LinebourseModule(Module, CapBank):
-    NAME = 'linebourse'
-    DESCRIPTION = u'linebourse website'
-    MAINTAINER = u'Vincent Ardisson'
-    EMAIL = 'vardisson@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "linebourse"
+    DESCRIPTION = "linebourse website"
+    MAINTAINER = "Vincent Ardisson"
+    EMAIL = "vardisson@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = LinebourseAPIBrowser

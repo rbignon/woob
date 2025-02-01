@@ -24,16 +24,16 @@ from woob.tools.value import ValueBackendPassword
 from .browser import TwoCaptchaBrowser
 
 
-__all__ = ['TwoCaptchaModule']
+__all__ = ["TwoCaptchaModule"]
 
 
 class TwoCaptchaModule(Module, CapCaptchaSolver):
-    NAME = 'twocaptcha'
-    DESCRIPTION = '2captcha, FunCaptcha solving service'
-    MAINTAINER = 'Thomas Touhey'
-    EMAIL = 'thomas.touhey@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "twocaptcha"
+    DESCRIPTION = "2captcha, FunCaptcha solving service"
+    MAINTAINER = "Thomas Touhey"
+    EMAIL = "thomas.touhey@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     # Usually yields that the captcha is unsolvable around the 40th iteration.
     RETRIES = 50
@@ -41,16 +41,16 @@ class TwoCaptchaModule(Module, CapCaptchaSolver):
 
     CONFIG = BackendConfig(
         ValueBackendPassword(
-            'api_key',
-            label='API key',
-            regexp='^[a-z0-9]{32}$',
+            "api_key",
+            label="API key",
+            regexp="^[a-z0-9]{32}$",
         ),
     )
 
     BROWSER = TwoCaptchaBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['api_key'].get())
+        return self.create_browser(self.config["api_key"].get())
 
     def create_job(self, job):
         return self.browser.create_job(job)

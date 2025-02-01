@@ -32,39 +32,42 @@ from .browser import DLFP
 from .tools import id2url, rssid
 
 
-__all__ = ['DLFPModule']
+__all__ = ["DLFPModule"]
 
 
 class DLFPModule(Module, CapMessages, CapMessagesPost, CapContent):
-    NAME = 'dlfp'
-    MAINTAINER = u'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    LICENSE = 'AGPLv3+'
+    NAME = "dlfp"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    LICENSE = "AGPLv3+"
     DESCRIPTION = "Da Linux French Page news website"
-    CONFIG = BackendConfig(Value('username',                label='Username', default=''),
-                           ValueBackendPassword('password', label='Password', default=''),
-                           ValueBool('get_news',            label='Get newspapers', default=True),
-                           ValueBool('get_diaries',         label='Get diaries', default=False),
-                           ValueBool('get_polls',           label='Get polls', default=False),
-                           ValueBool('get_board',           label='Get board', default=False),
-                           ValueBool('get_wiki',            label='Get wiki', default=False),
-                           ValueBool('get_tracker',         label='Get tracker', default=False))
-    STORAGE = {'seen': {}}
+    CONFIG = BackendConfig(
+        Value("username", label="Username", default=""),
+        ValueBackendPassword("password", label="Password", default=""),
+        ValueBool("get_news", label="Get newspapers", default=True),
+        ValueBool("get_diaries", label="Get diaries", default=False),
+        ValueBool("get_polls", label="Get polls", default=False),
+        ValueBool("get_board", label="Get board", default=False),
+        ValueBool("get_wiki", label="Get wiki", default=False),
+        ValueBool("get_tracker", label="Get tracker", default=False),
+    )
+    STORAGE = {"seen": {}}
     BROWSER = DLFP
 
-    FEEDS = {'get_news':     "https://linuxfr.org/news.atom",
-             'get_diaries':  "https://linuxfr.org/journaux.atom",
-             'get_polls':    "https://linuxfr.org/sondages.atom",
-             'get_board':    "https://linuxfr.org/forums.atom",
-             'get_wiki':     "https://linuxfr.org/wiki.atom",
-             'get_tracker':  "https://linuxfr.org/suivi.atom",
-            }
+    FEEDS = {
+        "get_news": "https://linuxfr.org/news.atom",
+        "get_diaries": "https://linuxfr.org/journaux.atom",
+        "get_polls": "https://linuxfr.org/sondages.atom",
+        "get_board": "https://linuxfr.org/forums.atom",
+        "get_wiki": "https://linuxfr.org/wiki.atom",
+        "get_tracker": "https://linuxfr.org/suivi.atom",
+    }
 
     def create_default_browser(self):
-        username = self.config['username'].get()
+        username = self.config["username"].get()
         if username:
-            password = self.config['password'].get()
+            password = self.config["password"].get()
         else:
             password = None
         return self.create_browser(username, password)
@@ -103,7 +106,7 @@ class DLFPModule(Module, CapMessages, CapMessagesPost, CapContent):
             id = thread.id
 
             if thread.date:
-                self.storage.set('date', id, thread.date)
+                self.storage.set("date", id, thread.date)
                 self.storage.save()
 
         content = self.browser.get_content(id)
@@ -115,25 +118,27 @@ class DLFPModule(Module, CapMessages, CapMessagesPost, CapContent):
             thread = Thread(content.id)
 
         flags = Message.IS_HTML
-        if thread.id not in self.storage.get('seen', default={}):
+        if thread.id not in self.storage.get("seen", default={}):
             flags |= Message.IS_UNREAD
 
         thread.title = content.title
         if not thread.date:
             thread.date = content.date
 
-        thread.root = Message(thread=thread,
-                              id='0',  # root message
-                              url=self.browser.absurl(id2url(content.id)),
-                              title=content.title,
-                              sender=content.author or u'',
-                              receivers=None,
-                              date=thread.date,
-                              parent=None,
-                              content=content.body,
-                              signature='URL: %s' % self.browser.absurl(id2url(content.id)),
-                              children=[],
-                              flags=flags)
+        thread.root = Message(
+            thread=thread,
+            id="0",  # root message
+            url=self.browser.absurl(id2url(content.id)),
+            title=content.title,
+            sender=content.author or "",
+            receivers=None,
+            date=thread.date,
+            parent=None,
+            content=content.body,
+            signature="URL: %s" % self.browser.absurl(id2url(content.id)),
+            children=[],
+            flags=flags,
+        )
 
         for com in content.comments:
             self._insert_comment(com, thread.root, getseen)
@@ -141,35 +146,31 @@ class DLFPModule(Module, CapMessages, CapMessagesPost, CapContent):
         return thread
 
     def _insert_comment(self, com, parent, getseen=True):
-        """"
+        """ "
         Insert 'com' comment and its children in the parent message.
         """
         flags = Message.IS_HTML
-        if com.id not in self.storage.get('seen', parent.thread.id, 'comments', default=[]):
+        if com.id not in self.storage.get("seen", parent.thread.id, "comments", default=[]):
             flags |= Message.IS_UNREAD
 
         if getseen or flags & Message.IS_UNREAD:
             com.parse()
-            message = Message(thread=parent.thread,
-                              id=com.id,
-                              url=com.url,
-                              title=com.title,
-                              sender=com.author or u'',
-                              receivers=None,
-                              date=com.date,
-                              parent=parent,
-                              content=com.body,
-                              signature=com.signature +
-                                        '<br />'.join(['Score: %d' % com.score,
-                                                       'URL: %s' % com.url]),
-                              children=[],
-                              flags=flags)
+            message = Message(
+                thread=parent.thread,
+                id=com.id,
+                url=com.url,
+                title=com.title,
+                sender=com.author or "",
+                receivers=None,
+                date=com.date,
+                parent=parent,
+                content=com.body,
+                signature=com.signature + "<br />".join(["Score: %d" % com.score, "URL: %s" % com.url]),
+                children=[],
+                flags=flags,
+            )
         else:
-            message = Message(thread=parent.thread,
-                              id=com.id,
-                              children=[],
-                              parent=parent,
-                              flags=flags)
+            message = Message(thread=parent.thread, id=com.id, children=[], parent=parent, flags=flags)
         parent.children.append(message)
         for sub in com.comments:
             self._insert_comment(sub, message, getseen)
@@ -177,43 +178,47 @@ class DLFPModule(Module, CapMessages, CapMessagesPost, CapContent):
     def iter_unread_messages(self):
         for thread in self.iter_threads():
             # Check if we have seen all comments of this thread.
-            oldhash = self.storage.get('hash', thread.id, default="")
+            oldhash = self.storage.get("hash", thread.id, default="")
             newhash = self.browser.get_hash(thread._rsscomment)
             if oldhash != newhash:
-                self.storage.set('hash', thread.id, newhash)
+                self.storage.set("hash", thread.id, newhash)
                 self.storage.save()
 
-                self.fill_thread(thread, 'root', getseen=False)
+                self.fill_thread(thread, "root", getseen=False)
                 for m in thread.iter_all_messages():
                     if m.flags & m.IS_UNREAD:
                         yield m
 
     def set_message_read(self, message):
-        self.storage.set('seen', message.thread.id, 'comments',
-            self.storage.get('seen', message.thread.id, 'comments', default=[]) + [message.id])
+        self.storage.set(
+            "seen",
+            message.thread.id,
+            "comments",
+            self.storage.get("seen", message.thread.id, "comments", default=[]) + [message.id],
+        )
         self.storage.save()
 
-        lastpurge = self.storage.get('lastpurge', default=0)
+        lastpurge = self.storage.get("lastpurge", default=0)
         # 86400 = one day
         if time.time() - lastpurge > 86400:
-            self.storage.set('lastpurge', time.time())
+            self.storage.set("lastpurge", time.time())
             self.storage.save()
 
             # we can't directly delete without a "RuntimeError: dictionary changed size during iteration"
             todelete = []
 
-            for id in self.storage.get('seen', default={}):
-                date = self.storage.get('date', id, default=0)
+            for id in self.storage.get("seen", default={}):
+                date = self.storage.get("date", id, default=0)
                 # if no date available, create a new one (compatibility with "old" storage)
                 if date == 0:
-                    self.storage.set('date', id, datetime.now())
+                    self.storage.set("date", id, datetime.now())
                 elif datetime.now() - date > timedelta(days=60):
                     todelete.append(id)
 
             for id in todelete:
-                self.storage.delete('hash', id)
-                self.storage.delete('date', id)
-                self.storage.delete('seen', id)
+                self.storage.delete("hash", id)
+                self.storage.delete("date", id)
+                self.storage.delete("seen", id)
             self.storage.save()
 
     def fill_thread(self, thread, fields, getseen=True):
@@ -224,14 +229,11 @@ class DLFPModule(Module, CapMessages, CapMessagesPost, CapContent):
         if not self.browser.username:
             raise BrowserForbidden()
         if not message.parent:
-            raise CantSendMessage('Posting news and diaries on DLFP is not supported yet')
+            raise CantSendMessage("Posting news and diaries on DLFP is not supported yet")
 
         assert message.thread
 
-        return self.browser.post_comment(message.thread.id,
-                                         message.parent.id,
-                                         message.title,
-                                         message.content)
+        return self.browser.post_comment(message.thread.id, message.parent.id, message.title, message.content)
 
     #### CapContent ###############################################
     def get_content(self, _id, revision=None):
@@ -242,7 +244,7 @@ class DLFPModule(Module, CapMessages, CapMessagesPost, CapContent):
             _id = content.id
 
         if revision:
-            raise NotImplementedError('Website does not provide access to older revisions sources.')
+            raise NotImplementedError("Website does not provide access to older revisions sources.")
 
         data = self.browser.get_wiki_content(_id)
 

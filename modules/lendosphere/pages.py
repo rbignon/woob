@@ -26,21 +26,21 @@ from woob.capabilities.base import NotAvailable
 from woob.exceptions import BrowserIncorrectPassword
 
 
-MAIN_ID = '_lendosphere_'
+MAIN_ID = "_lendosphere_"
 
 
 class LoginPage(HTMLPage):
     def do_login(self, username, password):
-        form = self.get_form(id='session-new-form')
-        form['user[email]'] = username
-        form['user[password]'] = password
+        form = self.get_form(id="session-new-form")
+        form["user[email]"] = username
+        form["user[password]"] = password
         form.submit()
 
     def raise_error(self):
         msg = CleanText('//div[has-class("alert-danger")]')(self.doc)
-        if 'Votre email ou mot de passe est incorrect' in msg:
+        if "Votre email ou mot de passe est incorrect" in msg:
             raise BrowserIncorrectPassword(msg)
-        assert False, 'unhandled error %r' % msg
+        assert False, "unhandled error %r" % msg
 
 
 class SummaryPage(LoggedPage, HTMLPage):
@@ -55,7 +55,7 @@ class ProfilePage(LoggedPage, HTMLPage):
 
 class ComingProjectPage(LoggedPage, HTMLPage):
     def iter_projects(self):
-        return [value for value in self.doc.xpath('//select[@id="offer"]/option/@value') if value != '*']
+        return [value for value in self.doc.xpath('//select[@id="offer"]/option/@value') if value != "*"]
 
 
 class ComingPage(LoggedPage, CsvPage):
@@ -67,14 +67,14 @@ class ComingPage(LoggedPage, CsvPage):
             klass = Transaction
 
             obj_type = Transaction.TYPE_BANK
-            obj_raw = Dict('Projet')
-            obj_date = Date(Dict('Date'), dayfirst=True)
+            obj_raw = Dict("Projet")
+            obj_date = Date(Dict("Date"), dayfirst=True)
 
-            obj_gross_amount = CleanDecimal.SI(Dict('Capital rembourse'))
-            obj_amount = CleanDecimal.SI(Dict('Montant brut'))
-            obj_commission = CleanDecimal.SI(Dict('Interets'))
+            obj_gross_amount = CleanDecimal.SI(Dict("Capital rembourse"))
+            obj_amount = CleanDecimal.SI(Dict("Montant brut"))
+            obj_commission = CleanDecimal.SI(Dict("Interets"))
 
-            obj__amount_left = CleanDecimal.SI(Dict('Capital restant du'))
+            obj__amount_left = CleanDecimal.SI(Dict("Capital restant du"))
 
 
 class GSummaryPage(LoggedPage, HTMLPage):
@@ -83,8 +83,8 @@ class GSummaryPage(LoggedPage, HTMLPage):
         klass = Account
 
         obj_id = MAIN_ID
-        obj_currency = 'EUR'
+        obj_currency = "EUR"
         obj_number = NotAvailable
         obj_type = Account.TYPE_CROWDLENDING
-        obj_label = 'Lendosphere'
+        obj_label = "Lendosphere"
         obj__invested = CleanDecimal.French('//tr[td[contains(text(),"chéances restantes")]]/td[last()]')

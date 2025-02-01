@@ -25,16 +25,16 @@ from woob.tools.backend import Module
 from .browser import FreeteknomusicBrowser
 
 
-__all__ = ['FreeteknomusicModule']
+__all__ = ["FreeteknomusicModule"]
 
 
 class FreeteknomusicModule(Module, CapAudio, CapCollection):
-    NAME = 'freeteknomusic'
-    DESCRIPTION = 'freeteknomusic website'
-    MAINTAINER = 'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "freeteknomusic"
+    DESCRIPTION = "freeteknomusic website"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = FreeteknomusicBrowser
 
@@ -44,7 +44,7 @@ class FreeteknomusicModule(Module, CapAudio, CapCollection):
         return []
 
     def get_album(self, id):
-        coll = find_object(self.browser.ls_content([]), id='album.%s' % id)
+        coll = find_object(self.browser.ls_content([]), id="album.%s" % id)
         if coll:
             return self._make_album(coll)
 
@@ -69,10 +69,10 @@ class FreeteknomusicModule(Module, CapAudio, CapCollection):
         return alb
 
     def fill_album(self, obj, fields):
-        if 'tracks_list' in fields:
-            id = obj.id.replace('album.', '')
+        if "tracks_list" in fields:
+            id = obj.id.replace("album.", "")
             obj.tracks_list = []
-            for el in self.browser.ls_content(id.split('/')):
+            for el in self.browser.ls_content(id.split("/")):
                 if isinstance(el, BaseAudio):
                     obj.tracks_list.append(el)
 

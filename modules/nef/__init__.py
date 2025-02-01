@@ -21,4 +21,4 @@
 from .module import NefModule
 
 
-__all__ = ['NefModule']
+__all__ = ["NefModule"]

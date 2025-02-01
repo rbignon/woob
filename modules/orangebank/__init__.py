@@ -20,4 +20,4 @@
 from .module import OrangeBankModule
 
 
-__all__ = ['OrangeBankModule']
+__all__ = ["OrangeBankModule"]

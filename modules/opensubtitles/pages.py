@@ -26,8 +26,8 @@ from woob.capabilities.subtitle import Subtitle
 
 
 class SearchPage(HTMLPage):
-    """ Page which contains results as a list of movies
-    """
+    """Page which contains results as a list of movies"""
+
     next_page = Link('.//div[@id="pager"]//div//a[text()=">>"]')
 
     @pagination
@@ -48,14 +48,11 @@ class SubtitlesPage(HTMLPage):
 
         class item(ItemElement):
             klass = Subtitle
-            obj_id = Regexp(Attr('.//td[1]', 'id'), r'main(\d*)')
-            obj_name = Regexp(
-                CleanText('.//td[1]'),
-                '(.*)Download at 25'
-            )
-            obj_nb_cd = CleanDecimal('.//td[3]')
-            obj_url = AbsoluteLink('.//td[5]//a')
-            obj_language = Regexp(Attr('.//td[2]//a//div', 'class'), 'flag (.*)')
+            obj_id = Regexp(Attr(".//td[1]", "id"), r"main(\d*)")
+            obj_name = Regexp(CleanText(".//td[1]"), "(.*)Download at 25")
+            obj_nb_cd = CleanDecimal(".//td[3]")
+            obj_url = AbsoluteLink(".//td[5]//a")
+            obj_language = Regexp(Attr(".//td[2]//a//div", "class"), "flag (.*)")
 
 
 class SubtitlePage(HTMLPage):
@@ -65,11 +62,11 @@ class SubtitlePage(HTMLPage):
         if id:
             subtitle.id = id
         else:
-            regexp = re.compile(r'https://www\.opensubtitles\.org/en/subtitles/(?P<id>\d+)/.*$')
+            regexp = re.compile(r"https://www\.opensubtitles\.org/en/subtitles/(?P<id>\d+)/.*$")
             result = regexp.match(self.url)
-            subtitle.id = result.groupdict()['id']
+            subtitle.id = result.groupdict()["id"]
 
-        subtitle.name = CleanText('.//div//div//h2')(self.doc)
+        subtitle.name = CleanText(".//div//div//h2")(self.doc)
         subtitle.url = self.url
         return subtitle
 
@@ -79,19 +76,19 @@ class SubtitlePage(HTMLPage):
 
 class SeriesSubtitlePage(HTMLPage):
     def iter_subtitles(self):
-        season = ''
+        season = ""
         series_name = CleanText('//div[has-class("msg")]//h1//span[@itemprop="name"]')(self.doc)
         # A regexp to recover the sub id from url
-        regexp = re.compile(r'.*/imdbid-(?P<episode_id>\d+)$')
+        regexp = re.compile(r".*/imdbid-(?P<episode_id>\d+)$")
         for sub in self.doc.xpath('//table[@id="search_results"]//tbody//tr[not(contains(@class,"head"))]'):
-            if not Attr('.', 'class', default=None)(sub):
-                season = CleanText('.//td[1]')(sub)
+            if not Attr(".", "class", default=None)(sub):
+                season = CleanText(".//td[1]")(sub)
             else:
                 subtitle = Subtitle()
-                episode = CleanText('.//td[1]')(sub)
-                subtitle.name = '%s - %s - Episode %s' % (series_name, season, episode)
-                url = Link('.//td[3]//a')(sub)
+                episode = CleanText(".//td[1]")(sub)
+                subtitle.name = "%s - %s - Episode %s" % (series_name, season, episode)
+                url = Link(".//td[3]//a")(sub)
                 subtitle.url = self.browser.absurl(url)
                 result = regexp.match(url)
-                subtitle.id = result.groupdict()['episode_id']
+                subtitle.id = result.groupdict()["episode_id"]
                 yield subtitle

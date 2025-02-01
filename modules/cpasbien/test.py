@@ -24,13 +24,13 @@ from woob.tools.test import BackendTest
 
 
 class CpasbienTest(BackendTest):
-    MODULE = 'cpasbien'
+    MODULE = "cpasbien"
 
     def test_torrent(self):
-        torrents = list(self.backend.iter_torrents('spiderman'))
+        torrents = list(self.backend.iter_torrents("spiderman"))
         for torrent in torrents:
-            path, _, qs = torrent.url.partition('?')
-            assert path.endswith('.torrent')
+            path, _, qs = torrent.url.partition("?")
+            assert path.endswith(".torrent")
             if qs:
                 assert torrent.filename
             assert torrent.id

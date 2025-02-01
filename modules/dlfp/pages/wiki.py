@@ -26,7 +26,7 @@ from .index import DLFPPage
 
 class WikiEditPage(DLFPPage):
     def get_body(self):
-        return CleanText('//textarea[has-class("wiki_page_wiki_body")]', default='')(self)
+        return CleanText('//textarea[has-class("wiki_page_wiki_body")]', default="")(self)
 
     form_xpath = '//form[@class="new_wiki_page" or @class="edit_wiki_page"]'
 
@@ -34,19 +34,19 @@ class WikiEditPage(DLFPPage):
         form = self.get_form(xpath=self.form_xpath)
 
         if title is not None:
-            form['wiki_page[title]'] = title.encode('utf-8')
-            form['commit'] = 'Créer'
+            form["wiki_page[title]"] = title.encode("utf-8")
+            form["commit"] = "Créer"
         else:
-            form['commit'] = 'Mettre à jour'
-        form['wiki_page[wiki_body]'] = body.encode('utf-8')
+            form["commit"] = "Mettre à jour"
+        form["wiki_page[wiki_body]"] = body.encode("utf-8")
         if message is not None:
-            form['wiki_page[message]'] = message.encode('utf-8')
+            form["wiki_page[message]"] = message.encode("utf-8")
 
         form.submit()
 
     def post_preview(self, body):
         form = self.get_form(xpath=self.form_xpath)
-        form['wiki_page[wiki_body]'] = body
+        form["wiki_page[wiki_body]"] = body
         form.submit()
 
     def get_preview_html(self):

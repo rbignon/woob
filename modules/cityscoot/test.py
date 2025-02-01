@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class CityscootTest(BackendTest):
-    MODULE = 'cityscoot'
+    MODULE = "cityscoot"
 
     def test_document(self):
         subscriptions = list(self.backend.iter_subscription())

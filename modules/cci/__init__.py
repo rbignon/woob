@@ -21,4 +21,4 @@
 from .module import CciModule
 
 
-__all__ = ['CciModule']
+__all__ = ["CciModule"]

@@ -23,30 +23,30 @@ from woob.tools.test import BackendTest
 
 
 class MediawikiTest(BackendTest):
-    MODULE = 'mediawiki'
+    MODULE = "mediawiki"
 
     def test_get_content(self):
-        obj = self.backend.get_content(u"Project:Sandbox")
+        obj = self.backend.get_content("Project:Sandbox")
         assert len(obj.content) > 0
 
     def test_iter_revisions(self):
-        for rev in zip(range(10), self.backend.iter_revisions(u"Project:Sandbox")):
+        for rev in zip(range(10), self.backend.iter_revisions("Project:Sandbox")):
             pass
 
     def test_push_content(self):
-        content = self.backend.get_content(u"Project:Sandbox")
+        content = self.backend.get_content("Project:Sandbox")
         content.content = "%s\nhello %s" % (content.content, datetime.now())
         # ^ warning: wikipedia seems to have blocked lines starting with "test"...
         self.backend.push_content(content, message="test woob", minor=True)
-        new_content = self.backend.get_content(u"Project:Sandbox")
+        new_content = self.backend.get_content("Project:Sandbox")
         self.assertEquals(content.content, new_content.content)
 
     def test_content_preview(self):
-        content = self.backend.get_content(u"Project:Sandbox")
+        content = self.backend.get_content("Project:Sandbox")
         self.backend.get_content_preview(content)
 
     def test_search_image(self):
-        it = iter(self.backend.search_file('logo'))
+        it = iter(self.backend.search_file("logo"))
         for _, img in zip(range(3), it):
             assert img
             assert img.title
@@ -54,6 +54,6 @@ class MediawikiTest(BackendTest):
             assert img.page_url
             assert img.size
             if not img.url:
-                img = self.backend.fillobj(img, ['url'])
+                img = self.backend.fillobj(img, ["url"])
             assert img.url
             assert img.thumbnail.url

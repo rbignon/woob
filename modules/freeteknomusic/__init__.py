@@ -21,4 +21,4 @@
 from .module import FreeteknomusicModule
 
 
-__all__ = ['FreeteknomusicModule']
+__all__ = ["FreeteknomusicModule"]

@@ -26,7 +26,7 @@ from .pages import ReadPage0, ReadPageZero, WritePage0, WritePageZero
 
 
 class ZeroPaste(BasePaste):
-    expire = DateField('Expire date')
+    expire = DateField("Expire date")
 
     @property
     def page_url(self):
@@ -34,12 +34,12 @@ class ZeroPaste(BasePaste):
 
 
 class ZerobinBrowser(PagesBrowser):
-    BASEURL = 'https://zerobin.net/'
+    BASEURL = "https://zerobin.net/"
 
-    read_page_zero = URL(r'/\?(?P<id>[\w+-]+)$', ReadPageZero)
-    read_page_0 = URL(r'/paste/(?P<id>[\w+-]+)$', ReadPage0)
-    write_page_zero = URL('.*', WritePageZero)
-    write_page_0 = URL('.*', WritePage0)
+    read_page_zero = URL(r"/\?(?P<id>[\w+-]+)$", ReadPageZero)
+    read_page_0 = URL(r"/paste/(?P<id>[\w+-]+)$", ReadPage0)
+    write_page_zero = URL(".*", WritePageZero)
+    write_page_0 = URL(".*", WritePage0)
 
     def __init__(self, baseurl, opendiscussion, *args, **kwargs):
         super(ZerobinBrowser, self).__init__(*args, **kwargs)
@@ -58,14 +58,14 @@ class ZerobinBrowser(PagesBrowser):
                 continue
 
     def get_paste(self, id):
-        if id.startswith('http://') or id.startswith('https://'):
+        if id.startswith("http://") or id.startswith("https://"):
             url = id
-            server_url, key = url.split('#')
+            server_url, key = url.split("#")
             m = self.read_page_0.match(server_url) or self.read_page_zero.match(server_url)
             if not m:
                 return
-            subid = m.group('id')
-            id = '%s#%s' % (subid, key)
+            subid = m.group("id")
+            id = "%s#%s" % (subid, key)
 
             self.location(server_url)
             if not (self.read_page_zero.is_here() or self.read_page_0.is_here()):
@@ -73,18 +73,18 @@ class ZerobinBrowser(PagesBrowser):
             elif not self.page.has_paste():
                 return
         else:
-            subid, key = id.split('#')
+            subid, key = id.split("#")
             server_url = self._find_page(subid)
             if not server_url:
                 return
-            url = '%s#%s' % (server_url, key)
+            url = "%s#%s" % (server_url, key)
 
         ret = ZeroPaste(id)
         ret.url = url
         ret.contents = self.page.decode_paste(key)
         ret.public = False
-        ret.title = self.page.params['id']
-        if hasattr(self.page, 'get_expire'):
+        ret.title = self.page.params["id"]
+        if hasattr(self.page, "get_expire"):
             ret.expire = self.page.get_expire()
             # TODO impl in ReadPage0
         return ret
@@ -102,7 +102,7 @@ class ZerobinBrowser(PagesBrowser):
         self.location(self.BASEURL)
         p.url = self.page.post(p.contents, max_age)
 
-        server_url, key = p.url.split('#')
+        server_url, key = p.url.split("#")
         m = self.read_page_0.match(server_url) or self.read_page_zero.match(server_url)
-        p.title = m.group('id')
-        p.id = '%s#%s' % (p.title, key)
+        p.title = m.group("id")
+        p.id = "%s#%s" % (p.title, key)

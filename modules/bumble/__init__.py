@@ -18,4 +18,4 @@
 from .module import BumbleModule
 
 
-__all__ = ['BumbleModule']
+__all__ = ["BumbleModule"]

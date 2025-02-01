@@ -21,4 +21,4 @@
 from .module import Number26Module
 
 
-__all__ = ['Number26Module']
+__all__ = ["Number26Module"]

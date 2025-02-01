@@ -34,49 +34,49 @@ from woob.exceptions import BrowserIncorrectPassword
 
 class BoobankMuninPlugin(object):
     def __init__(self):
-        if 'woob_path' in os.environ:
-            self.woob = Woob(os.environ['woob_path'])
+        if "woob_path" in os.environ:
+            self.woob = Woob(os.environ["woob_path"])
         else:
             self.woob = Woob()
         self.monitored_accounts = None
-        if 'boobank_monitored' in os.environ:
-            self.monitored_accounts = os.environ['boobank_monitored'].split(' ')
-        self.cache_expire = int(os.environ.get('boobank_cache_expire', 3600))
-        self.add_coming = int(os.environ.get('boobank_add_coming', 1))
-        self.cumulate = int(os.environ.get('boobank_cumulate', 1))
+        if "boobank_monitored" in os.environ:
+            self.monitored_accounts = os.environ["boobank_monitored"].split(" ")
+        self.cache_expire = int(os.environ.get("boobank_cache_expire", 3600))
+        self.add_coming = int(os.environ.get("boobank_add_coming", 1))
+        self.cumulate = int(os.environ.get("boobank_cumulate", 1))
         self.cache = None
 
     def display_help(self):
-        print('boobank-munin is a plugin for munin')
-        print('')
-        print('Copyright(C) 2010-2011 Romain Bignon')
-        print('')
-        print('To use it, create a symlink /etc/munin/plugins/boobank to this script')
-        print('and add this section in /etc/munin/plugin-conf.d/munin-node:')
-        print('')
-        print('[boobank]')
-        print('user romain')
-        print('group romain')
-        print('env.HOME /home/romain')
-        print('# The woob directory path.')
-        print('env.woob_path /home/romain/.config/woob/')
-        print('# Monitored accounts. If this parameter is missing, all accounts')
-        print('# will be displayed.')
-        print('env.boobank_monitored 0125XXXXXXXXXXXX@bnporc 0125XXXXXXXXXXXX@bnporc')
-        print('# To prevent mass connections to bank websites, results are cached.')
-        print('# You can set here the expiration delay (in seconds).')
-        print('env.boobank_cache_expire 7200')
-        print('# If enabled, coming operations are added to the value of accounts\'')
-        print('# balance.')
-        print('env.boobank_add_coming 1')
-        print('# Cumulate accounts values')
-        print('env.boobank_cumulate 1')
-        print('')
-        print('When you change configuration, you can use this command to reset cache:')
-        print('$ boobank-munin --reset')
+        print("boobank-munin is a plugin for munin")
+        print("")
+        print("Copyright(C) 2010-2011 Romain Bignon")
+        print("")
+        print("To use it, create a symlink /etc/munin/plugins/boobank to this script")
+        print("and add this section in /etc/munin/plugin-conf.d/munin-node:")
+        print("")
+        print("[boobank]")
+        print("user romain")
+        print("group romain")
+        print("env.HOME /home/romain")
+        print("# The woob directory path.")
+        print("env.woob_path /home/romain/.config/woob/")
+        print("# Monitored accounts. If this parameter is missing, all accounts")
+        print("# will be displayed.")
+        print("env.boobank_monitored 0125XXXXXXXXXXXX@bnporc 0125XXXXXXXXXXXX@bnporc")
+        print("# To prevent mass connections to bank websites, results are cached.")
+        print("# You can set here the expiration delay (in seconds).")
+        print("env.boobank_cache_expire 7200")
+        print("# If enabled, coming operations are added to the value of accounts'")
+        print("# balance.")
+        print("env.boobank_add_coming 1")
+        print("# Cumulate accounts values")
+        print("env.boobank_cumulate 1")
+        print("")
+        print("When you change configuration, you can use this command to reset cache:")
+        print("$ boobank-munin --reset")
 
     def clear_cache(self):
-        for name in ('boobank-munin', 'boobank-munin-config'):
+        for name in ("boobank-munin", "boobank-munin-config"):
             try:
                 os.unlink(self.cachepath(name))
             except IOError:
@@ -94,7 +94,7 @@ class BoobankMuninPlugin(object):
 
     def print_cache(self, name, check=False):
         try:
-            f = open(self.cachepath(name), 'r')
+            f = open(self.cachepath(name), "r")
         except IOError:
             return False
 
@@ -112,16 +112,16 @@ class BoobankMuninPlugin(object):
 
     def new_cache(self, name):
         os.umask(0o077)
-        new_name = '%s.new' % name
+        new_name = "%s.new" % name
         filename = self.cachepath(new_name)
         try:
-            f = open(filename, 'w')
+            f = open(filename, "w")
         except IOError as e:
-            print('Unable to create the cache file %s: %s' % (filename, e), file=sys.stderr)
+            print("Unable to create the cache file %s: %s" % (filename, e), file=sys.stderr)
             return
 
         self.cache = f
-        self.cache.write('%d\n' % time.time())
+        self.cache.write("%d\n" % time.time())
 
     def flush_cache(self):
         old_name = self.cache.name
@@ -130,27 +130,27 @@ class BoobankMuninPlugin(object):
         os.rename(old_name, new_name)
 
     def write_output(self, line):
-        sys.stdout.write('%s\n' % line)
+        sys.stdout.write("%s\n" % line)
         if self.cache:
-            self.cache.write('%s\n' % line)
+            self.cache.write("%s\n" % line)
 
     def config(self):
-        if self.check_cache('boobank-munin-config'):
+        if self.check_cache("boobank-munin-config"):
             return
 
-        self.new_cache('boobank-munin-config')
+        self.new_cache("boobank-munin-config")
         self.woob.load_backends(CapBank)
-        self.write_output('graph_title Bank accounts')
-        self.write_output('graph_vlabel balance')
-        self.write_output('graph_category woob')
-        self.write_output('graph_args -l 0')
+        self.write_output("graph_title Bank accounts")
+        self.write_output("graph_vlabel balance")
+        self.write_output("graph_category woob")
+        self.write_output("graph_args -l 0")
         try:
             accounts = []
             if self.monitored_accounts is not None:
                 d = {}
-                for account in self.woob.do('iter_accounts'):
+                for account in self.woob.do("iter_accounts"):
                     if self.monitored(account):
-                        d['%s@%s' % (account.id, account.backend)] = account
+                        d["%s@%s" % (account.id, account.backend)] = account
 
                 for id in self.monitored_accounts:
                     try:
@@ -158,70 +158,74 @@ class BoobankMuninPlugin(object):
                     except KeyError:
                         pass
             else:
-                accounts = reversed([a for a in self.woob.do('iter_accounts')])
+                accounts = reversed([a for a in self.woob.do("iter_accounts")])
 
             first = True
             for account in accounts:
                 id = self.account2id(account)
-                type = 'STACK'
+                type = "STACK"
                 if first:
-                    type = 'AREA'
+                    type = "AREA"
                     first = False
-                self.write_output('%s.label %s' % (id, account.label.encode('iso-8859-15')))
+                self.write_output("%s.label %s" % (id, account.label.encode("iso-8859-15")))
                 if self.cumulate:
-                    self.write_output('%s.draw %s' % (id, type))
+                    self.write_output("%s.draw %s" % (id, type))
         except CallErrors as errors:
             self.print_errors(errors)
-            self.print_cache('boobank-munin-config')
+            self.print_cache("boobank-munin-config")
         else:
             self.flush_cache()
 
     def monitored(self, account):
-        return not self.monitored_accounts or ('%s@%s' % (account.id, account.backend)) in self.monitored_accounts
+        return not self.monitored_accounts or ("%s@%s" % (account.id, account.backend)) in self.monitored_accounts
 
     def account2id(self, account):
-        return '%s_%s' % (account.backend, account.id)
+        return "%s_%s" % (account.backend, account.id)
 
     def print_errors(self, errors):
         for backend, err, backtrace in errors:
-            print((u'%s(%s): %s' % (type(err).__name__, backend.name, err)).encode(sys.stdout.encoding or locale.getpreferredencoding(), 'replace'), file=sys.stderr)
+            print(
+                ("%s(%s): %s" % (type(err).__name__, backend.name, err)).encode(
+                    sys.stdout.encoding or locale.getpreferredencoding(), "replace"
+                ),
+                file=sys.stderr,
+            )
             if isinstance(err, BrowserIncorrectPassword):
-                self.woob.backends_config.edit_backend(backend.name, backend.NAME, {'_enabled': 'false'})
+                self.woob.backends_config.edit_backend(backend.name, backend.NAME, {"_enabled": "false"})
 
     def execute(self):
-        if self.check_cache('boobank-munin'):
+        if self.check_cache("boobank-munin"):
             return
 
-        self.new_cache('boobank-munin')
+        self.new_cache("boobank-munin")
         self.woob.load_backends(CapBank)
         try:
-            for account in self.woob.do('iter_accounts'):
+            for account in self.woob.do("iter_accounts"):
                 if self.monitored(account):
                     balance = account.balance
                     if account.coming and self.add_coming:
                         balance += account.coming
-                    self.write_output('%s.value %d' % (self.account2id(account), balance))
+                    self.write_output("%s.value %d" % (self.account2id(account), balance))
         except CallErrors as errors:
             self.print_errors(errors)
-            self.print_cache('boobank-munin')
+            self.print_cache("boobank-munin")
         else:
             self.flush_cache()
 
     def run(self):
         cmd = (len(sys.argv) > 1 and sys.argv[1]) or "execute"
-        if cmd == 'execute':
+        if cmd == "execute":
             self.execute()
-        elif cmd == 'config':
+        elif cmd == "config":
             self.config()
-        elif cmd == 'autoconf':
-            print('no')
+        elif cmd == "autoconf":
+            print("no")
             sys.exit(1)
-        elif cmd == 'suggest':
+        elif cmd == "suggest":
             sys.exit(1)
-        elif cmd == 'help' or cmd == '-h' or cmd == '--help':
+        elif cmd == "help" or cmd == "-h" or cmd == "--help":
             self.display_help()
-        elif cmd == 'reload' or cmd == '--reload' or \
-             cmd == 'reset' or cmd == '--reset':
+        elif cmd == "reload" or cmd == "--reload" or cmd == "reset" or cmd == "--reset":
             self.clear_cache()
 
         if self.cache:
@@ -229,6 +233,7 @@ class BoobankMuninPlugin(object):
 
         sys.exit(0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     logging.basicConfig()
     BoobankMuninPlugin().run()

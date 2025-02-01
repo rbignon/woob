@@ -55,7 +55,7 @@ class PicrossSolver:
 
         def combinations_recur(fmt, spaces):
             if not fmt:
-                yield ' ' * spaces
+                yield " " * spaces
                 return
 
             fst, *rest = fmt
@@ -64,10 +64,7 @@ class PicrossSolver:
                     rest,
                     spaces - current_spaces,
                 ):
-                    yield (
-                        ' ' * current_spaces + 'x' * fst
-                        + (' ' if rest else '') + combination
-                    )
+                    yield (" " * current_spaces + "x" * fst + (" " if rest else "") + combination)
 
         return list(combinations_recur(fmt, length - min_length))
 
@@ -84,7 +81,7 @@ class PicrossSolver:
         for i in range(len(combinations) - 1, -1, -1):
             incompatible = False
             for cc, cx in zip(combinations[i], current_row):
-                if cx != '?' and cx != cc:
+                if cx != "?" and cx != cc:
                     incompatible = True
                     break
 
@@ -108,9 +105,9 @@ class PicrossSolver:
                 if all(c == s[0] for c in s[1:]):
                     yield s[0]
                 else:
-                    yield '?'
+                    yield "?"
 
-        return ''.join(intersection_inner(combinations))
+        return "".join(intersection_inner(combinations))
 
     def solve(self, puzzle):
         """Return a solution for a given picross puzzle.
@@ -134,15 +131,15 @@ class PicrossSolver:
                 if len(yc) == 1:
                     continue
 
-                current_column = ''.join(s[x] for s in current)
+                current_column = "".join(s[x] for s in current)
                 yc[x] = self.precise(yc[x], current_column)
                 new_column = self.intersection(yc[x])
-                if '?' in new_column:
+                if "?" in new_column:
                     no_unknown = False
 
                 for y, c in enumerate(new_column):
                     s = current[y]
-                    current[y] = s[:x] + c + s[x + 1:]
+                    current[y] = s[:x] + c + s[x + 1 :]
 
             for y in range(h):
                 if len(xc) == 1:
@@ -151,7 +148,7 @@ class PicrossSolver:
                 current_row = current[y]
                 xc[y] = self.precise(xc[y], current_row)
                 new_row = self.intersection(xc[y])
-                if '?' in new_row:
+                if "?" in new_row:
                     no_unknown = False
 
                 current[y] = new_row
@@ -167,36 +164,36 @@ class PicrossSolver:
         return solution
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Solve some picrosses using Woob!',
+        description="Solve some picrosses using Woob!",
     )
     parser.add_argument(
-        '-a',
-        '--save-responses',
-        action='store_true',
-        help='save every response',
+        "-a",
+        "--save-responses",
+        action="store_true",
+        help="save every response",
     )
-    parser.add_argument('-b', dest='backend', required=True)
-    subcommands = parser.add_subparsers(dest='command', required=True)
+    parser.add_argument("-b", dest="backend", required=True)
+    subcommands = parser.add_subparsers(dest="command", required=True)
 
     list_unsolved = subcommands.add_parser(
-        'list-unsolved',
-        description='List unsolved picrosses.',
+        "list-unsolved",
+        description="List unsolved picrosses.",
     )
     list_unsolved.set_defaults(func=list_unsolved)
 
     list_solved = subcommands.add_parser(
-        'list-solved',
-        description='List solved picrosses.',
+        "list-solved",
+        description="List solved picrosses.",
     )
     list_solved.set_defaults(func=list_solved)
 
     solve = subcommands.add_parser(
-        'solve',
-        description='Solve a given picross',
+        "solve",
+        description="Solve a given picross",
     )
-    solve.add_argument('id', help='Identifier of the picross to solve.')
+    solve.add_argument("id", help="Identifier of the picross to solve.")
     solve.set_defaults(func=solve)
 
     parsed_args = parser.parse_args()
@@ -204,13 +201,12 @@ if __name__ == '__main__':
     if parsed_args.save_responses:
         basicConfig(level=DEBUG)
 
-        responses_dirname = tempfile.mkdtemp(prefix='woob_session_')
+        responses_dirname = tempfile.mkdtemp(prefix="woob_session_")
         print(
-            'Debug data will be saved in this directory: %s'
-            % responses_dirname,
+            "Debug data will be saved in this directory: %s" % responses_dirname,
             file=stderr,
         )
-        log_settings['responses_dirname'] = responses_dirname
+        log_settings["responses_dirname"] = responses_dirname
 
     woob = None
     try:
@@ -220,20 +216,22 @@ if __name__ == '__main__':
         try:
             backend = woob.get_backend(parsed_args.backend)
         except KeyError:
-            print(f'No backend with the name {parsed_args.backend!r}.')
+            print(f"No backend with the name {parsed_args.backend!r}.")
             exit()
 
-        if parsed_args.command == 'list-unsolved':
+        if parsed_args.command == "list-unsolved":
             is_first = True
             has_stopped_naturally = False
-            for i, picross in enumerate(backend.iter_picross_puzzles(
-                PicrossSolvedStatus.UNSOLVED,
-            )):
+            for i, picross in enumerate(
+                backend.iter_picross_puzzles(
+                    PicrossSolvedStatus.UNSOLVED,
+                )
+            ):
                 if is_first:
-                    print('Available picrosses:', end=linesep * 2)
+                    print("Available picrosses:", end=linesep * 2)
                     is_first = False
 
-                print(f'{picross.id} - {picross.name} ({picross.variant})')
+                print(f"{picross.id} - {picross.name} ({picross.variant})")
 
                 if i >= 4:
                     break
@@ -241,20 +239,22 @@ if __name__ == '__main__':
                 has_stopped_naturally = True
 
             if is_first:
-                print('No unsolved picross available. Better luck next time!')
+                print("No unsolved picross available. Better luck next time!")
             elif not has_stopped_naturally:
-                print(linesep + '... and more!')
-        elif parsed_args.command == 'list-solved':
+                print(linesep + "... and more!")
+        elif parsed_args.command == "list-solved":
             is_first = True
             has_stopped_naturally = False
-            for i, picross in enumerate(backend.iter_picross_puzzles(
-                PicrossSolvedStatus.SOLVED,
-            )):
+            for i, picross in enumerate(
+                backend.iter_picross_puzzles(
+                    PicrossSolvedStatus.SOLVED,
+                )
+            ):
                 if is_first:
-                    print('Solved picrosses:', end=linesep * 2)
+                    print("Solved picrosses:", end=linesep * 2)
                     is_first = False
 
-                print(f'{picross.id} - {picross.name} ({picross.variant})')
+                print(f"{picross.id} - {picross.name} ({picross.variant})")
 
                 if i >= 4:
                     break
@@ -262,28 +262,28 @@ if __name__ == '__main__':
                 has_stopped_naturally = True
 
             if is_first:
-                print('No solved picross available. Better luck next time!')
+                print("No solved picross available. Better luck next time!")
             elif not has_stopped_naturally:
-                print(linesep + '... and more!')
-        elif parsed_args.command == 'solve':
+                print(linesep + "... and more!")
+        elif parsed_args.command == "solve":
             try:
                 picross = backend.get_picross_puzzle(parsed_args.id)
             except PicrossNotFound:
-                print('Picross not found.')
+                print("Picross not found.")
             else:
                 solver = PicrossSolver()
                 solution = solver.solve(picross)
 
-                print('Found the following solution:', end=linesep * 2)
+                print("Found the following solution:", end=linesep * 2)
 
                 for line in solution.lines:
-                    print(' '.join(line))
+                    print(" ".join(line))
 
-                print('')  # Print an empty line in case of error here.
+                print("")  # Print an empty line in case of error here.
                 backend.submit_picross_puzzle_solution(picross, solution)
-                print('Submitted the solution.')
+                print("Submitted the solution.")
         else:
-            print(f'Unknown command {parsed_args.command!r}!')
+            print(f"Unknown command {parsed_args.command!r}!")
     finally:
         if woob is not None:
             woob.deinit()

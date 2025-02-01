@@ -34,31 +34,39 @@ class SearchPage(HTMLPage):
 
         class item(ItemElement):
             klass = Torrent
-            obj_id = Regexp(CleanText('.//div[@class="torrentname"]//a[@class="cellMainLink"]/@href'),
-                    '.*-t([0-9]*).html')
+            obj_id = Regexp(
+                CleanText('.//div[@class="torrentname"]//a[@class="cellMainLink"]/@href'), ".*-t([0-9]*).html"
+            )
             obj_name = CleanText('.//a[@class="cellMainLink"]', default=NotAvailable)
-            obj_magnet = CleanText('.//div[has-class("iaconbox")]//a[starts-with(@href,"magnet")]/@href', default=NotAvailable)
-            obj_seeders = CleanText('.//td[has-class("green") and has-class("center")]', default=NotAvailable) & Type(type=int)
-            obj_leechers = CleanText('.//td[has-class("red") and has-class("center")]', default=NotAvailable) & Type(type=int)
+            obj_magnet = CleanText(
+                './/div[has-class("iaconbox")]//a[starts-with(@href,"magnet")]/@href', default=NotAvailable
+            )
+            obj_seeders = CleanText('.//td[has-class("green") and has-class("center")]', default=NotAvailable) & Type(
+                type=int
+            )
+            obj_leechers = CleanText('.//td[has-class("red") and has-class("center")]', default=NotAvailable) & Type(
+                type=int
+            )
 
             obj_description = NotLoaded
             obj_files = NotLoaded
 
             def obj_url(self):
                 href = CleanText('.//div[has-class("iaconbox")]//a[starts-with(@href,"//")]/@href')(self)
-                return 'https:%s'%href
+                return "https:%s" % href
 
             def obj_size(self):
-                rawsize = CleanText('./td[2]')(self)
-                rawsize = rawsize.replace(',','.')
+                rawsize = CleanText("./td[2]")(self)
+                rawsize = rawsize.replace(",", ".")
                 nsize = float(rawsize.split()[0])
                 usize = rawsize.split()[-1].upper()
-                size = get_bytes_size(nsize,usize)
+                size = get_bytes_size(nsize, usize)
                 return size
 
-            obj_filename = CleanText(Regexp(CleanText('.//div[has-class("iaconbox")]//a[starts-with(@href,"//")]/@href'),
-                    '.*title=(.*)'), default=NotAvailable)
-
+            obj_filename = CleanText(
+                Regexp(CleanText('.//div[has-class("iaconbox")]//a[starts-with(@href,"//")]/@href'), ".*title=(.*)"),
+                default=NotAvailable,
+            )
 
 
 class TorrentPage(HTMLPage):
@@ -70,21 +78,23 @@ class TorrentPage(HTMLPage):
         obj_seeders = CleanText('(//div[has-class("seedBlock")]/strong)[1]') & Type(type=int)
         obj_leechers = CleanText('(//div[has-class("leechBlock")]/strong)[1]') & Type(type=int)
         obj_name = CleanText('//h1[has-class("novertmarg")]//span', default=NotAvailable)
-        obj_magnet = CleanText('//div[has-class("downloadButtonGroup")]//a[starts-with(@href,"magnet")]/@href', default=NotAvailable)
+        obj_magnet = CleanText(
+            '//div[has-class("downloadButtonGroup")]//a[starts-with(@href,"magnet")]/@href', default=NotAvailable
+        )
 
-        obj_id = Regexp(CleanText('//h1[has-class("novertmarg")]/a/@href'),
-                        r'.*-t([0-9]*)\.html')
+        obj_id = Regexp(CleanText('//h1[has-class("novertmarg")]/a/@href'), r".*-t([0-9]*)\.html")
+
         def obj_url(self):
             href = CleanText('//div[has-class("downloadButtonGroup")]//a[starts-with(@href,"//")]/@href')(self)
-            return u'https:%s'%href
+            return "https:%s" % href
 
         def obj_size(self):
             rawsize = CleanText('//span[has-class("folder") or has-class("folderopen")]')(self)
-            rawsize = rawsize.split(': ')[-1].split(')')[0].strip()
-            rawsize = rawsize.replace(',','.')
+            rawsize = rawsize.split(": ")[-1].split(")")[0].strip()
+            rawsize = rawsize.replace(",", ".")
             nsize = float(rawsize.split()[0])
             usize = rawsize.split()[-1].upper()
-            size = get_bytes_size(nsize,usize)
+            size = get_bytes_size(nsize, usize)
             return size
 
         def obj_files(self):
@@ -93,5 +103,9 @@ class TorrentPage(HTMLPage):
                 res.append(CleanText(f)(self))
             return res
 
-        obj_filename = CleanText(Regexp(CleanText('//div[has-class("downloadButtonGroup")]//a[starts-with(@href,"//")]/@href'),
-                        '.*title=(.*)'), default=NotAvailable)
+        obj_filename = CleanText(
+            Regexp(
+                CleanText('//div[has-class("downloadButtonGroup")]//a[starts-with(@href,"//")]/@href'), ".*title=(.*)"
+            ),
+            default=NotAvailable,
+        )

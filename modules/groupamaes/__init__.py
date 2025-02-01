@@ -20,4 +20,4 @@
 from .module import GroupamaesModule
 
 
-__all__ = ['GroupamaesModule']
+__all__ = ["GroupamaesModule"]

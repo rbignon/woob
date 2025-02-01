@@ -32,20 +32,20 @@ import unidecode
 
 
 __all__ = [
-    'NO_DEFAULT',
-    'NoDefaultType',
-    'classproperty',
-    'clean_text',
-    'find_exe',
-    'get_backtrace',
-    'get_bytes_size',
-    'iter_fields',
-    'limit',
-    'polling_loop',
-    'to_unicode',
+    "NO_DEFAULT",
+    "NoDefaultType",
+    "classproperty",
+    "clean_text",
+    "find_exe",
+    "get_backtrace",
+    "get_bytes_size",
+    "iter_fields",
+    "limit",
+    "polling_loop",
+    "to_unicode",
 ]
 
-NEWLINES_RE = re.compile(r'\s+', flags=re.UNICODE)
+NEWLINES_RE = re.compile(r"\s+", flags=re.UNICODE)
 
 
 class NoDefaultType:
@@ -62,7 +62,7 @@ class NoDefaultType:
             return value
 
     def __repr__(self):
-        return 'NO_DEFAULT'
+        return "NO_DEFAULT"
 
 
 NO_DEFAULT = NoDefaultType()
@@ -90,22 +90,22 @@ def get_bytes_size(size, unit_name):
     2048.0
     """
     unit_data = {
-        'bytes': 1,
-        'KB': 1024,
-        'KiB': 1024,
-        'MB': 1024 * 1024,
-        'MiB': 1024 * 1024,
-        'GB': 1024 * 1024 * 1024,
-        'GiB': 1024 * 1024 * 1024,
-        'TB': 1024 * 1024 * 1024 * 1024,
-        'TiB': 1024 * 1024 * 1024 * 1024,
-        }
+        "bytes": 1,
+        "KB": 1024,
+        "KiB": 1024,
+        "MB": 1024 * 1024,
+        "MiB": 1024 * 1024,
+        "GB": 1024 * 1024 * 1024,
+        "GiB": 1024 * 1024 * 1024,
+        "TB": 1024 * 1024 * 1024 * 1024,
+        "TiB": 1024 * 1024 * 1024 * 1024,
+    }
     return float(size * unit_data.get(unit_name, 1))
 
 
 def iter_fields(obj):
     for attribute_name in dir(obj):
-        if attribute_name.startswith('_'):
+        if attribute_name.startswith("_"):
             continue
         attribute = getattr(obj, attribute_name)
         if not isinstance(attribute, types.MethodType):
@@ -131,14 +131,14 @@ def to_unicode(text):
         return str(text)
 
     try:
-        return text.decode('utf-8')
+        return text.decode("utf-8")
     except UnicodeError:
         pass
     try:
-        return text.decode('iso-8859-15')
+        return text.decode("iso-8859-15")
     except UnicodeError:
         pass
-    return text.decode('windows-1252', 'replace')
+    return text.decode("windows-1252", "replace")
 
 
 def guess_encoding(stdio):
@@ -147,8 +147,8 @@ def guess_encoding(stdio):
     except AttributeError:
         encoding = None
     # ASCII or ANSI is most likely a user mistake
-    if not encoding or encoding.lower() == 'ascii' or encoding.lower().startswith('ansi'):
-        encoding = 'UTF-8'
+    if not encoding or encoding.lower() == "ascii" or encoding.lower().startswith("ansi"):
+        encoding = "UTF-8"
     return encoding
 
 
@@ -181,12 +181,13 @@ def ratelimit(group, delay):
     """
 
     from tempfile import gettempdir
-    path = os.path.join(gettempdir(), 'woob_ratelimit.%s' % group)
+
+    path = os.path.join(gettempdir(), "woob_ratelimit.%s" % group)
     while True:
         try:
             offset = time() - os.stat(path).st_mtime
         except OSError:
-            with open(path, 'w'):
+            with open(path, "w"):
                 pass
             offset = 0
 
@@ -211,13 +212,13 @@ def find_exe(basename):
     If the executable can not be found, None is returned.
     """
 
-    env_exe = os.getenv('%s_EXECUTABLE' % basename.upper())
+    env_exe = os.getenv("%s_EXECUTABLE" % basename.upper())
     if env_exe and os.path.exists(env_exe) and os.access(env_exe, os.X_OK):
         return env_exe
 
-    paths = os.getenv('PATH', os.defpath).split(os.pathsep)
+    paths = os.getenv("PATH", os.defpath).split(os.pathsep)
     for path in paths:
-        for ex in (basename, basename + '.exe'):
+        for ex in (basename, basename + ".exe"):
             fpath = os.path.join(path, ex)
             if os.path.exists(fpath) and os.access(fpath, os.X_OK):
                 return fpath
@@ -227,7 +228,7 @@ def clean_text(
     text: str,
     *,
     remove_newlines: bool = True,
-    normalize: Optional[Union[str, bool]] = 'NFC',
+    normalize: Optional[Union[str, bool]] = "NFC",
     transliterate: bool = False,
 ) -> str:
     """Clean a given text.
@@ -249,13 +250,13 @@ def clean_text(
     if normalize is False:
         normalize = None
     elif normalize is True:
-        normalize = 'NFC'
+        normalize = "NFC"
 
     if remove_newlines:
-        text = NEWLINES_RE.sub(' ', text)
+        text = NEWLINES_RE.sub(" ", text)
     else:
         # normalize newlines and clean what is inside
-        text = '\n'.join(clean_text(line) for line in text.splitlines())
+        text = "\n".join(clean_text(line) for line in text.splitlines())
 
     text = text.strip()
     if normalize is not None:
@@ -285,7 +286,7 @@ def polling_loop(*, count=None, timeout=None, delay=5):
 
     if count is None and timeout is None:
         raise ValueError(
-            'polling_loop should be given at least a count or a timeout',
+            "polling_loop should be given at least a count or a timeout",
         )
 
     counter = itertools.count()
@@ -318,6 +319,7 @@ class classproperty:
     >>> C().VERSION
     '3.3'
     """
+
     def __init__(self, f):
         self.f = f
 

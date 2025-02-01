@@ -31,19 +31,15 @@ def get_color(expr):
     Get an integer representing an sRGB color from an expression.
     """
 
-    m = re.search(r'rgb\((?P<r>\d+), (?P<g>\d+), (?P<b>\d+)\)', expr)
+    m = re.search(r"rgb\((?P<r>\d+), (?P<g>\d+), (?P<b>\d+)\)", expr)
     if m:
-        return (
-            int(m.group('r')) * 65535
-            + int(m.group('g')) * 255
-            + int(m.group('b'))
-        )
+        return int(m.group("r")) * 65535 + int(m.group("g")) * 255 + int(m.group("b"))
 
-    m = re.search(r'#([0-9A-Fa-f]{6})', expr)
+    m = re.search(r"#([0-9A-Fa-f]{6})", expr)
     if m:
         return int(m.group(1), 16)
 
-    raise ValueError(f'Could not decode color from expression {expr!r}!')
+    raise ValueError(f"Could not decode color from expression {expr!r}!")
 
 
 class NonogramListPage(HTMLPage):
@@ -67,9 +63,9 @@ class NonogramListPage(HTMLPage):
         class item(ItemElement):
             klass = Picross
 
-            obj_id = Regexp(Link('.//a'), r'^/?(\d+)$')
-            obj_url = BrowserURL('nonogram', nonogram_id=Field('id'))
-            obj_name = Format('Nonogram #%s', Field('id'))
+            obj_id = Regexp(Link(".//a"), r"^/?(\d+)$")
+            obj_url = BrowserURL("nonogram", nonogram_id=Field("id"))
+            obj_name = Format("Nonogram #%s", Field("id"))
             obj_variant = PicrossVariant.COLORED
             obj_solved_status = PicrossSolvedStatus.UNSOLVED
 
@@ -86,7 +82,7 @@ class NonogramPage(HTMLPage):
             for col_no, top_line in enumerate(
                 el.xpath('//table[@id="cross_top"]//tr'),
             ):
-                top_cells = list(top_line.xpath('./td'))
+                top_cells = list(top_line.xpath("./td"))
 
                 # If we have the first line here, we adapt the number of
                 # columns following the number of cells.
@@ -97,7 +93,7 @@ class NonogramPage(HTMLPage):
                     columns = [[] for _ in range(len(top_cells))]
                     column_colors = [[] for _ in range(len(columns))]
                 elif len(top_cells) != len(columns):
-                    raise AssertionError('Inconsistent number of columns')
+                    raise AssertionError("Inconsistent number of columns")
 
                 for top_cell, col, color_col in zip(
                     top_cells,
@@ -105,14 +101,14 @@ class NonogramPage(HTMLPage):
                     column_colors,
                 ):
                     # Get the number in the cell.
-                    number = CleanText('.')(top_cell)
+                    number = CleanText(".")(top_cell)
                     if number:
                         number = int(number)
                     elif col:
                         # We've already picked up a number for this column,
                         # which means there was a gap in the column
                         # definition; this shouldn't happen.
-                        raise AssertionError('Gap in column while parsing')
+                        raise AssertionError("Gap in column while parsing")
                     else:
                         # We haven't reached actual numbers for this column
                         # yet, so let's continue.
@@ -123,9 +119,9 @@ class NonogramPage(HTMLPage):
                     # Find out which color the cell corresponds to, if there
                     # actually is a color.
                     background_color = Regexp(
-                        Attr('.', 'style'),
-                        r'background-color: ([^;]+);',
-                        default='#E0E0E0',
+                        Attr(".", "style"),
+                        r"background-color: ([^;]+);",
+                        default="#E0E0E0",
                     )(top_cell)
 
                     color = get_color(background_color)
@@ -144,16 +140,16 @@ class NonogramPage(HTMLPage):
                 rows,
                 row_colors,
             ):
-                for row_cell in raw_row.xpath('./td'):
+                for row_cell in raw_row.xpath("./td"):
                     # Get the number in the cell.
-                    number = CleanText('.')(row_cell)
+                    number = CleanText(".")(row_cell)
                     if number:
                         number = int(number)
                     elif row:
                         # We've already picked up a number for this row,
                         # which means there was a gap in the row
                         # definition; this shouldn't happen.
-                        raise AssertionError('Gap in row while parsing')
+                        raise AssertionError("Gap in row while parsing")
                     else:
                         # We haven't reached actual numbers for this row
                         # yet, so let's continue.
@@ -164,9 +160,9 @@ class NonogramPage(HTMLPage):
                     # Find out which color the cell corresponds to, if there
                     # actually is a color.
                     background_color = Regexp(
-                        Attr('.', 'style'),
-                        r'background-color: ([^;]+)(;|$)',
-                        default='#E0E0E0',
+                        Attr(".", "style"),
+                        r"background-color: ([^;]+)(;|$)",
+                        default="#E0E0E0",
                     )(row_cell)
 
                     color = get_color(background_color)
@@ -175,29 +171,29 @@ class NonogramPage(HTMLPage):
                     row.append(number)
                     color_row.append(color)
 
-            self.env['rows'] = rows
-            self.env['columns'] = columns
+            self.env["rows"] = rows
+            self.env["columns"] = columns
 
-            self.env['variant'] = PicrossVariant.BASIC
+            self.env["variant"] = PicrossVariant.BASIC
 
             for _ in self.el.xpath('//button[@class="color_button bc_2"]'):
                 # A second primary color is present for selecting,
                 # so the picross is a colored picross!
-                self.env['variant'] = PicrossVariant.COLORED
-                self.env['row_colors'] = row_colors
-                self.env['column_colors'] = column_colors
+                self.env["variant"] = PicrossVariant.COLORED
+                self.env["row_colors"] = row_colors
+                self.env["column_colors"] = column_colors
                 break
 
         obj_id = Regexp(
             CleanText('//script[contains(., "currentID=")]'),
-            r'currentID=(\d+);',
+            r"currentID=(\d+);",
         )
-        obj_url = BrowserURL('nonogram', nonogram_id=Field('id'))
-        obj_name = Format('Nonogram #%s', Field('id'))
-        obj_variant = Env('variant')
+        obj_url = BrowserURL("nonogram", nonogram_id=Field("id"))
+        obj_name = Format("Nonogram #%s", Field("id"))
+        obj_variant = Env("variant")
         obj_solved_status = PicrossSolvedStatus.UNSOLVED
 
-        obj_lines = Env('rows')
-        obj_columns = Env('columns')
-        obj_color_lines = Env('row_colors', default=None)
-        obj_color_columns = Env('column_colors', default=None)
+        obj_lines = Env("rows")
+        obj_columns = Env("columns")
+        obj_color_lines = Env("row_colors", default=None)
+        obj_color_columns = Env("column_colors", default=None)

@@ -27,35 +27,33 @@ from woob.capabilities.base import find_object
 from woob.exceptions import OTPSentType, SentOTPQuestion
 
 
-__all__ = ['GreenGotBrowser']
+__all__ = ["GreenGotBrowser"]
 
 
 class GreenGotBrowser(TwoFactorBrowser, APIBrowser):
-    BASEURL = 'https://api.retail.green-got.com'
+    BASEURL = "https://api.retail.green-got.com"
 
-    BANK_NAME = 'GreenGot'
+    BANK_NAME = "GreenGot"
 
-    __states__ = (
-        'access_token',
-    )
+    __states__ = ("access_token",)
 
     def __init__(self, config, email, *args, **kwargs):
         super().__init__(config, email, "", *args, **kwargs)
         self.email = email
 
         self.AUTHENTICATION_METHODS = {
-            'smscode': self.handle_otp,
-            'emailcode': self.handle_otp,
+            "smscode": self.handle_otp,
+            "emailcode": self.handle_otp,
         }
         self.access_token = None
 
-    def do_request(self, payload, endpoint='/graphql', headers=None):
+    def do_request(self, payload, endpoint="/graphql", headers=None):
         if headers is None:
             headers = {}
         self.session.headers = headers
         return self.request(endpoint, data=payload)
 
-    def do_open(self, payload, endpoint='/graphql', headers=None):
+    def do_open(self, payload, endpoint="/graphql", headers=None):
         if headers is None:
             headers = {}
         self.session.headers = headers
@@ -75,15 +73,15 @@ class GreenGotBrowser(TwoFactorBrowser, APIBrowser):
                 }
                 self.do_request(payload)
                 raise SentOTPQuestion(
-                    'smscode',
+                    "smscode",
                     medium_type=OTPSentType.SMS,
-                    message='Veuillez entrer le code reçu par SMS',
+                    message="Veuillez entrer le code reçu par SMS",
                 )
             elif self.config["emailcode"].get() is None:
                 raise SentOTPQuestion(
-                    'emailcode',
+                    "emailcode",
                     medium_type=OTPSentType.EMAIL,
-                    message='Veuillez entrer le code reçu par email',
+                    message="Veuillez entrer le code reçu par email",
                 )
             else:
                 self.get_token()
@@ -104,12 +102,14 @@ class GreenGotBrowser(TwoFactorBrowser, APIBrowser):
         self.access_token = response["data"]["user_checkLoginCode"]["idToken"]
 
     def build_request(self, *args, **kwargs):
-        headers = kwargs.setdefault('headers', {})
+        headers = kwargs.setdefault("headers", {})
 
         if self.access_token is not None:
-            headers['Authorization'] = 'Bearer %s' % self.access_token
+            headers["Authorization"] = "Bearer %s" % self.access_token
 
-        headers['Accept'] = 'application/graphql-response+json, application/graphql+json, application/json, text/event-stream, multipart/mixed'
+        headers["Accept"] = (
+            "application/graphql-response+json, application/graphql+json, application/json, text/event-stream, multipart/mixed"
+        )
 
         req = super().build_request(*args, **kwargs)
         return req
@@ -156,36 +156,36 @@ class GreenGotBrowser(TwoFactorBrowser, APIBrowser):
 
     # Extract JSON from a string
     def parse_json_garbage(self, s):
-        opening_bracket_index = next((idx for idx, c in enumerate(s) if c in '{['), None)
+        opening_bracket_index = next((idx for idx, c in enumerate(s) if c in "{["), None)
 
         if opening_bracket_index is None:
             return None
-        s = s[next(idx for idx, c in enumerate(s) if c in '{['):]
+        s = s[next(idx for idx, c in enumerate(s) if c in "{[") :]
         try:
             return json.loads(s)
         except json.JSONDecodeError as e:
-            return json.loads(s[:e.pos])
+            return json.loads(s[: e.pos])
 
     def list_accounts_from_json(self, json_data):
         result = []
         if json_data is not None:
-            accounts = json_data.get('data', {}).get('accounts', [])
+            accounts = json_data.get("data", {}).get("accounts", [])
             for account in accounts:
-                woob_account = Account(id=account['accountRef'])
-                amount = account.get('balance', {}).get('amount', {})
-                woob_account.currency = amount.get('currency')
-                woob_account.balance = amount.get('value') / 100
+                woob_account = Account(id=account["accountRef"])
+                amount = account.get("balance", {}).get("amount", {})
+                woob_account.currency = amount.get("currency")
+                woob_account.balance = amount.get("value") / 100
                 woob_account.bank_name = self.BANK_NAME
                 woob_account.type = AccountType.CHECKING
-                woob_account.label = account['name']
+                woob_account.label = account["name"]
                 result.append(woob_account)
-            account_wallets = json_data.get('data', {}).get('wallets', {}).get('edges', [])
+            account_wallets = json_data.get("data", {}).get("wallets", {}).get("edges", [])
             for wallet in account_wallets:
-                wallet = wallet.get('node', {})
-                woob_account = Account(id=wallet['id'])
-                amount = wallet.get('balance', {}).get('amount', {})
+                wallet = wallet.get("node", {})
+                woob_account = Account(id=wallet["id"])
+                amount = wallet.get("balance", {}).get("amount", {})
                 woob_account.type = AccountType.DEPOSIT
-                woob_account.balance = amount.get('value')
+                woob_account.balance = amount.get("value")
                 woob_account.label = f"{wallet['icon']} {wallet['name']}"
                 result.append(woob_account)
         return result
@@ -209,23 +209,26 @@ class GreenGotBrowser(TwoFactorBrowser, APIBrowser):
         }
         while hasNextPage:
             response = self.do_request(payload)
-            hasNextPage = response.get('data', {}).get('transactions', {}).get('pageInfo', {})["hasNextPage"]
-            transactions = response.get('data', {}).get('transactions', {}).get('edges', [])
+            hasNextPage = response.get("data", {}).get("transactions", {}).get("pageInfo", {})["hasNextPage"]
+            transactions = response.get("data", {}).get("transactions", {}).get("edges", [])
             filtered_transactions = [
-                transaction for transaction in transactions
-                if transaction['node']['account']['accountRef'] == account.id
+                transaction
+                for transaction in transactions
+                if transaction["node"]["account"]["accountRef"] == account.id
             ]
             for transac in filtered_transactions:
-                woob_transaction = Transaction(id=transac['node']['id'])
-                woob_transaction.amount = transac['node']['amount']['value'] / 100
-                woob_transaction.date = datetime.strptime(transac['node']['createdAt'], "%Y-%m-%dT%H:%M:%S.%fZ")
-                woob_transaction.coming = transac['node']['status'] == 'AUTHORISED'
-                woob_transaction.label = transac['node']['counterparty']
-                woob_transaction.category = transac['node']['category']
-                if transac['node']['direction'] == 'DEBIT':
+                woob_transaction = Transaction(id=transac["node"]["id"])
+                woob_transaction.amount = transac["node"]["amount"]["value"] / 100
+                woob_transaction.date = datetime.strptime(transac["node"]["createdAt"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                woob_transaction.coming = transac["node"]["status"] == "AUTHORISED"
+                woob_transaction.label = transac["node"]["counterparty"]
+                woob_transaction.category = transac["node"]["category"]
+                if transac["node"]["direction"] == "DEBIT":
                     woob_transaction.amount = -woob_transaction.amount
                 result.append(woob_transaction)
-            payload['variables']['after'] = response.get('data', {}).get('transactions', {}).get('pageInfo', {})["endCursor"]
+            payload["variables"]["after"] = (
+                response.get("data", {}).get("transactions", {}).get("pageInfo", {})["endCursor"]
+            )
 
         return result
 

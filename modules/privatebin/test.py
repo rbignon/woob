@@ -23,10 +23,10 @@ from woob.tools.test import BackendTest
 
 
 class PrivatebinTest(BackendTest):
-    MODULE = 'privatebin'
+    MODULE = "privatebin"
 
     def test_writeread(self):
-        p = self.backend.new_paste(_id=None, contents='woob test')
+        p = self.backend.new_paste(_id=None, contents="woob test")
         # 1day should exist on most instances
         assert self.backend.browser.can_post(p, max_age=86400)
         self.backend.browser.post_paste(p, max_age=86400)
@@ -36,7 +36,7 @@ class PrivatebinTest(BackendTest):
         assert p.title
 
         p2 = self.backend.get_paste(p.id)
-        self.assertEqual(p2.contents, 'woob test')
+        self.assertEqual(p2.contents, "woob test")
         assert p.url.startswith(self.backend.browser.BASEURL)
         self.assertEqual(p.url, p2.url)
         self.assertEqual(p.id, p2.id)
@@ -45,7 +45,7 @@ class PrivatebinTest(BackendTest):
         self.assertEqual(p.id, p3.id)
 
     def test_too_far_expiry(self):
-        p = self.backend.new_paste(_id=None, contents='woob test')
+        p = self.backend.new_paste(_id=None, contents="woob test")
         # 10 years should not be supported
         assert not self.backend.browser.can_post(p, max_age=86400 * 365 * 10)
         try:

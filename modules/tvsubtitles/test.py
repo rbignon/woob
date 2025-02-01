@@ -23,13 +23,13 @@ from woob.tools.test import BackendTest
 
 
 class TvsubtitlesTest(BackendTest):
-    MODULE = 'tvsubtitles'
+    MODULE = "tvsubtitles"
 
     def test_subtitle(self):
-        subtitles = list(self.backend.iter_subtitles('fr', 'sopranos'))
-        assert (len(subtitles) > 0)
+        subtitles = list(self.backend.iter_subtitles("fr", "sopranos"))
+        assert len(subtitles) > 0
         for subtitle in subtitles:
-            assert subtitle.url.startswith('http')
+            assert subtitle.url.startswith("http")
 
         # get the file of a random sub
         if len(subtitles):
@@ -37,7 +37,7 @@ class TvsubtitlesTest(BackendTest):
             self.backend.get_subtitle_file(subtitle.id)
 
     def test_get_subtitle(self):
-        subtitles = list(self.backend.iter_subtitles('fr', 'sopranos'))
-        assert (len(subtitles) > 0)
+        subtitles = list(self.backend.iter_subtitles("fr", "sopranos"))
+        assert len(subtitles) > 0
         subtitle = choice(subtitles)
         assert self.backend.get_subtitle(subtitle.id)

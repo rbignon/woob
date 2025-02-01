@@ -26,32 +26,32 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import GanPatrimoineBrowser
 
 
-__all__ = ['GanPatrimoineModule']
+__all__ = ["GanPatrimoineModule"]
 
 
 class GanPatrimoineModule(Module, CapBankWealth, CapProfile):
-    NAME = 'ganpatrimoine'
-    DESCRIPTION = 'Gan Patrimoine'
-    MAINTAINER = 'Quentin Defenouillere'
-    EMAIL = 'quentin.defenouillere@budget-insight.com'
-    VERSION = '3.7'
-    LICENSE = 'LGPLv3+'
+    NAME = "ganpatrimoine"
+    DESCRIPTION = "Gan Patrimoine"
+    MAINTAINER = "Quentin Defenouillere"
+    EMAIL = "quentin.defenouillere@budget-insight.com"
+    VERSION = "3.7"
+    LICENSE = "LGPLv3+"
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Numéro client', masked=False),
-        ValueBackendPassword('password', label="Code d'accès", regexp=r'\d{6}'),
-        ValueTransient('otp_sms', regexp=r'\d{6}'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Numéro client", masked=False),
+        ValueBackendPassword("password", label="Code d'accès", regexp=r"\d{6}"),
+        ValueTransient("otp_sms", regexp=r"\d{6}"),
+        ValueTransient("request_information"),
     )
 
     BROWSER = GanPatrimoineBrowser
 
     def create_default_browser(self):
         return self.create_browser(
-            'ganpatrimoine',
+            "ganpatrimoine",
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )
 
     def iter_accounts(self):

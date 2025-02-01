@@ -18,7 +18,11 @@
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
 from woob.capabilities.bank import (
-    Account, AccountNotFound, CapBankTransferAddRecipient, CapCurrencyRate, RecipientNotFound,
+    Account,
+    AccountNotFound,
+    CapBankTransferAddRecipient,
+    CapCurrencyRate,
+    RecipientNotFound,
 )
 from woob.capabilities.base import find_object
 from woob.tools.backend import BackendConfig, Module
@@ -27,30 +31,34 @@ from woob.tools.value import ValueBackendPassword, ValueBool, ValueTransient
 from .browser import KrakenBrowser
 
 
-__all__ = ['KrakenModule']
+__all__ = ["KrakenModule"]
 
 
 class KrakenModule(Module, CapBankTransferAddRecipient, CapCurrencyRate):
-    NAME = 'kraken'
-    DESCRIPTION = 'Kraken bitcoin exchange'
-    MAINTAINER = 'Andras Bartok'
-    EMAIL = 'andras.bartok@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "kraken"
+    DESCRIPTION = "Kraken bitcoin exchange"
+    MAINTAINER = "Andras Bartok"
+    EMAIL = "andras.bartok@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     BROWSER = KrakenBrowser
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('api_key', label='API key'),
-        ValueBackendPassword('private_api_key', label='Private API key'),
-        ValueBool('otp_enabled', label='Two factor auth password enabled (on API keys)', choices={'y': 'Enabled', 'n': 'Disabled'}),
-        ValueTransient('otp'),
-        ValueTransient('request_information'),
+        ValueBackendPassword("api_key", label="API key"),
+        ValueBackendPassword("private_api_key", label="Private API key"),
+        ValueBool(
+            "otp_enabled",
+            label="Two factor auth password enabled (on API keys)",
+            choices={"y": "Enabled", "n": "Disabled"},
+        ),
+        ValueTransient("otp"),
+        ValueTransient("request_information"),
     )
 
     # kraken uses XBT instead of BTC, but we want to keep BTC in the responses
     def convert_id(self, currency_id):
-        return {'BTC':'XBT','XBT':'BTC'}.get(currency_id, currency_id)
+        return {"BTC": "XBT", "XBT": "BTC"}.get(currency_id, currency_id)
 
     def create_default_browser(self):
         return self.create_browser(self.config)
@@ -73,7 +81,9 @@ class KrakenModule(Module, CapBankTransferAddRecipient, CapCurrencyRate):
 
     def execute_transfer(self, transfer, **params):
         account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
-        recipient = find_object(self.iter_transfer_recipients(account), id=transfer.recipient_id, error=RecipientNotFound)
+        recipient = find_object(
+            self.iter_transfer_recipients(account), id=transfer.recipient_id, error=RecipientNotFound
+        )
         return self.browser.execute_transfer(account, recipient, transfer)
 
     def iter_currencies(self):

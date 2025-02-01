@@ -34,7 +34,7 @@ def test_person():
         ("company_siren", "siren"),
         ("company_name", "name"),
         ("job_activity_area", "activity_area"),
-    ]
+    ],
 )
 def test_person_company(old, new):
     from woob.capabilities.profile import Person

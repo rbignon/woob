@@ -31,11 +31,11 @@ from woob.exceptions import BrowserIncorrectPassword
 from woob.tools.capabilities.bank.transactions import AmericanTransaction as AmTr
 
 
-__all__ = ['MyHabit']
+__all__ = ["MyHabit"]
 
 
 def cleanup(s):
-    return u' '.join(str(s).split())
+    return " ".join(str(s).split())
 
 
 class MyHabitPage(HTMLPage):
@@ -46,9 +46,9 @@ class MyHabitPage(HTMLPage):
 
 class LoginPage(MyHabitPage):
     def login(self, username, password):
-        form = self.get_form(name='signIn')
-        form['email'] = username
-        form['password'] = password
+        form = self.get_form(name="signIn")
+        form["email"] = username
+        form["password"] = password
         form.submit()
         return self.browser.page
 
@@ -61,7 +61,7 @@ class HistoryPage(MyHabitPage):
 
     def to_year(self, year):
         form = self.get_form(xpath='//form[@id="viewOrdersHistory"]')
-        form['orderRange'] = year
+        form["orderRange"] = year
         form.submit()
         return self.browser.page
 
@@ -92,13 +92,12 @@ class OrderPage(MyHabitPage):
         yield pmt
 
     def items(self):
-        for span in self.doc.xpath('//div[@class="shipmentItems1"]'
-                                   '/span[@class="item"]'):
+        for span in self.doc.xpath('//div[@class="shipmentItems1"]' '/span[@class="item"]'):
             url = span.xpath('span[@class="itemLink"]/a/@href')[0]
             label = span.xpath('span[@class="itemLink"]/a/text()')[0]
             qty = span.xpath('span[@class="itemQuantity"]/text()')[0]
             price = span.xpath('span[@class="itemPrice"]/text()')[0]
-            price = Decimal(qty)*AmTr.decimal_amount(price)
+            price = Decimal(qty) * AmTr.decimal_amount(price)
             item = Item()
             item.url = url
             item.label = cleanup(label)
@@ -106,44 +105,40 @@ class OrderPage(MyHabitPage):
             yield item
 
     def order_date(self):
-        date = self.doc.xpath(u'//span[text()="Order Placed:"]'
-                              u'/following-sibling::span[1]/text()')[0].strip()
-        return datetime.strptime(date, '%b %d, %Y')
+        date = self.doc.xpath('//span[text()="Order Placed:"]' "/following-sibling::span[1]/text()")[0].strip()
+        return datetime.strptime(date, "%b %d, %Y")
 
     def order_number(self):
-        return self.doc.xpath(u'//span[text()="MyHabit Order Number:"]'
-                              u'/following-sibling::span[1]/text()')[0].strip()
+        return self.doc.xpath('//span[text()="MyHabit Order Number:"]' "/following-sibling::span[1]/text()")[0].strip()
 
     def order_amount(self, which):
-        return AmTr.decimal_amount((self.doc.xpath(
-            '//tr[@class="%s"]/td[2]/text()' % which) or ['0'])[0])
+        return AmTr.decimal_amount((self.doc.xpath('//tr[@class="%s"]/td[2]/text()' % which) or ["0"])[0])
 
     def tax(self):
-        return self.order_amount('tax')
+        return self.order_amount("tax")
 
     def shipping(self):
-        return self.order_amount('shippingCharge')
+        return self.order_amount("shippingCharge")
 
     def discount(self):
-        TAGS = ['discount', 'gc']
+        TAGS = ["discount", "gc"]
         return sum(self.order_amount(t) for t in TAGS)
 
     def total(self):
-        return self.order_amount('total')
+        return self.order_amount("total")
 
 
 class MyHabit(LoginBrowser):
-    BASEURL = 'https://www.myhabit.com'
+    BASEURL = "https://www.myhabit.com"
     MAX_RETRIES = 10
-    login = URL(r'/signin', r'https://www.amazon.com/ap/signin.*$', LoginPage)
-    order = URL(r'/vieworders\?.*appAction=ViewOrdersDetail.*', OrderPage)
-    history = URL(r'/vieworders$',
-                  r'/vieworders\?.*appAction=ViewOrdersHistory.*', HistoryPage)
-    unknown = URL(r'/.*$', r'http://www.myhabit.com/.*$', MyHabitPage)
+    login = URL(r"/signin", r"https://www.amazon.com/ap/signin.*$", LoginPage)
+    order = URL(r"/vieworders\?.*appAction=ViewOrdersDetail.*", OrderPage)
+    history = URL(r"/vieworders$", r"/vieworders\?.*appAction=ViewOrdersHistory.*", HistoryPage)
+    unknown = URL(r"/.*$", r"http://www.myhabit.com/.*$", MyHabitPage)
 
     def get_currency(self):
         # MyHabit uses only U.S. dollars.
-        return Currency.get_currency(u'$')
+        return Currency.get_currency("$")
 
     @need_login
     def get_order(self, id_):
@@ -172,14 +167,14 @@ class MyHabit(LoginBrowser):
 
     @need_login
     def iter_payments(self, order):
-        if self.url != self.BASEURL+order.url:
+        if self.url != self.BASEURL + order.url:
             self.location(order.url)
         assert self.order.is_here()
         return self.page.payments()
 
     @need_login
     def iter_items(self, order):
-        if self.url != self.BASEURL+order.url:
+        if self.url != self.BASEURL + order.url:
             self.location(order.url)
         assert self.order.is_here()
         return self.page.items()

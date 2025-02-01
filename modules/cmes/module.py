@@ -24,20 +24,20 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import CmesBrowser
 
 
-__all__ = ['CmesModule']
+__all__ = ["CmesModule"]
 
 
 class CmesModule(Module, CapBankWealth):
-    NAME = 'cmes'
-    DESCRIPTION = 'Crédit Mutuel Épargne Salariale'
-    MAINTAINER = 'Edouard Lambert'
-    EMAIL = 'elambert@budget-insight.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "cmes"
+    DESCRIPTION = "Crédit Mutuel Épargne Salariale"
+    MAINTAINER = "Edouard Lambert"
+    EMAIL = "elambert@budget-insight.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('captcha_response'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("captcha_response"),
     )
 
     BROWSER = CmesBrowser
@@ -45,9 +45,9 @@ class CmesModule(Module, CapBankWealth):
     def create_default_browser(self):
         return self.create_browser(
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
-            'https://www.creditmutuel-epargnesalariale.fr',
+            self.config["login"].get(),
+            self.config["password"].get(),
+            "https://www.creditmutuel-epargnesalariale.fr",
         )
 
     def iter_accounts(self):

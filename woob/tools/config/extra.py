@@ -22,7 +22,7 @@ import os
 from .util import time_buffer
 
 
-__all__ = ['AutoCleanConfig', 'ForkingConfig', 'TimeBufferConfig']
+__all__ = ["AutoCleanConfig", "ForkingConfig", "TimeBufferConfig"]
 
 
 """
@@ -41,6 +41,7 @@ class AutoCleanConfig:
     """
     Removes config file if it has no values.
     """
+
     def save(self):
         if self.values:
             super(AutoCleanConfig, self).save()
@@ -58,6 +59,7 @@ class ForkingConfig:
     if it is not finished.
     It is also possible to call join() to wait for the save to complete.
     """
+
     process = None
 
     def __init__(self, *args, **kwargs):
@@ -76,7 +78,7 @@ class ForkingConfig:
 
         parent_save = super(ForkingConfig, self).save
         with self.lock:
-            self.process = multiprocessing.Process(target=parent_save, name='save %s' % self.path)
+            self.process = multiprocessing.Process(target=parent_save, name="save %s" % self.path)
             self.process.start()
 
     def __exit__(self, t, v, tb):
@@ -85,11 +87,11 @@ class ForkingConfig:
 
     def __getstate__(self):
         d = self.__dict__.copy()
-        d.pop('lock', None)
+        d.pop("lock", None)
         return d
 
     def __setstate__(self, d):
-        self.__init__(path=d['path'])
+        self.__init__(path=d["path"])
         for k, v in d.items():
             setattr(self, k, v)
 
@@ -99,6 +101,7 @@ class TimeBufferConfig:
     Really saves only every saved_since_seconds seconds.
     It is possible to force save (e.g. at exit) with force_save().
     """
+
     saved_since_seconds = None
 
     def __init__(self, path, saved_since_seconds=None, last_run=True, logger=None, *args, **kwargs):
@@ -109,7 +112,7 @@ class TimeBufferConfig:
             self.save = time_buffer(since_seconds=self.saved_since_seconds, last_run=last_run, logger=logger)(self.save)
 
     def save(self, *args, **kwargs):
-        kwargs.pop('since_seconds', None)
+        kwargs.pop("since_seconds", None)
         super(TimeBufferConfig, self).save(*args, **kwargs)
 
     def force_save(self):
@@ -126,12 +129,11 @@ class TimeBufferConfig:
             d = self.__dict__.copy()
         # When decorated, it is not serializable.
         # The decorator will be added again by __setstate__.
-        d.pop('save', None)
+        d.pop("save", None)
         return d
 
     def __setstate__(self, d):
         # Add the decorator if needed
-        self.__init__(path=d['path'],
-                      saved_since_seconds=d.get('saved_since_seconds'))
+        self.__init__(path=d["path"], saved_since_seconds=d.get("saved_since_seconds"))
         for k, v in d.items():
             setattr(self, k, v)

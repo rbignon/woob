@@ -20,11 +20,11 @@
 __all__ = ["naive_deobfuscate", "obfuscate"]
 
 SYS4 = (
-    '\\\'\"$ -!#%&()*,./:;?@[]^_`{|}~¡¦¨¯´¸¿+<=>±«»×÷¢£¤¥§©¬®°µ¶·0¼½¾1¹2²3³456'
-    + '789aAªáÁàÀâÂäÄãÃåÅæÆbBcCçÇdDðÐeEéÉèÈêÊëËfFfgGhHiIíÍìÌîÎïÏjJkKlLmMnNñÑoO'
-    + 'ºóÓòÒôÔöÖõÕøØpPqQrRsSßtTþÞuUúÚùÙûÛüÜvVwWxXyYýÝÿzZ'
+    "\\'\"$ -!#%&()*,./:;?@[]^_`{|}~¡¦¨¯´¸¿+<=>±«»×÷¢£¤¥§©¬®°µ¶·0¼½¾1¹2²3³456"
+    + "789aAªáÁàÀâÂäÄãÃåÅæÆbBcCçÇdDðÐeEéÉèÈêÊëËfFfgGhHiIíÍìÌîÎïÏjJkKlLmMnNñÑoO"
+    + "ºóÓòÒôÔöÖõÕøØpPqQrRsSßtTþÞuUúÚùÙûÛüÜvVwWxXyYýÝÿzZ"
 )
-SYS5 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+SYS5 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
 def get_obfuscation_code(letter: str) -> str:
@@ -37,7 +37,7 @@ def get_obfuscation_code(letter: str) -> str:
     if code < 0:
         return SYS5[code % 32]
 
-    return SYS5[code // 32:][:1] + SYS5[code % 32]
+    return SYS5[code // 32 :][:1] + SYS5[code % 32]
 
 
 def obfuscate(text: str) -> str:
@@ -60,7 +60,7 @@ def obfuscate(text: str) -> str:
     :param text: The text to obfuscate.
     :return: The obfuscated text.
     """
-    return ''.join(map(get_obfuscation_code, text))
+    return "".join(map(get_obfuscation_code, text))
 
 
 def naive_deobfuscate(obfuscated_text):
@@ -71,7 +71,6 @@ def naive_deobfuscate(obfuscated_text):
 
     Equivalent of c2t() in system_v1.js.
     """
-    return ''.join(
-        SYS4[SYS5.find(c1) * 32 + SYS5.find(c2)]
-        for c1, c2 in zip(obfuscated_text[::2], obfuscated_text[1::2])
+    return "".join(
+        SYS4[SYS5.find(c1) * 32 + SYS5.find(c2)] for c1, c2 in zip(obfuscated_text[::2], obfuscated_text[1::2])
     )

@@ -67,13 +67,13 @@ class RecipientTokenPage(LoggedPage, RawPage):
 
 class ValidateNewRecipientPage(LoggedPage, JsonPage):
     def get_redirect_url(self):
-        return CleanText(Dict('page'))(self.doc)
+        return CleanText(Dict("page"))(self.doc)
 
 
 class RecipientsPage(LoggedPage, JsonPage):
     def is_sender_account(self, account_id):
         for acc in self.doc:
-            if acc.get('senderOfTransfert') and account_id == acc.get('accountNumber'):
+            if acc.get("senderOfTransfert") and account_id == acc.get("accountNumber"):
                 return True
 
     @method
@@ -85,21 +85,21 @@ class RecipientsPage(LoggedPage, JsonPage):
 
         class item(ItemElement):
             def condition(self):
-                return Dict('accountNumber', default=None)(self)
+                return Dict("accountNumber", default=None)(self)
 
             klass = Account
 
-            obj_id = obj_number = Dict('accountNumber')
+            obj_id = obj_number = Dict("accountNumber")
             obj_label = Coalesce(
-                Dict('accountNatureLongLabel', default=''),
-                Dict('accountNatureShortLabel', default=''),
+                Dict("accountNatureLongLabel", default=""),
+                Dict("accountNatureShortLabel", default=""),
             )
-            obj_iban = Upper(Dict('ibanCode'))
-            obj_currency = Dict('currencyCode')
+            obj_iban = Upper(Dict("ibanCode"))
+            obj_currency = Dict("currencyCode")
 
             def obj_balance(self):
-                balance_value = CleanDecimal(Dict('balanceValue'))(self)
-                if CleanText(Dict('balanceSign'))(self) == '-':
+                balance_value = CleanDecimal(Dict("balanceValue"))(self)
+                if CleanText(Dict("balanceSign"))(self) == "-":
                     return -balance_value
                 return balance_value
 
@@ -110,23 +110,23 @@ class RecipientsPage(LoggedPage, JsonPage):
 
         class item(ItemElement):
             def condition(self):
-                return Dict('accountNumber', default=None)(self)
+                return Dict("accountNumber", default=None)(self)
 
             klass = Recipient
 
-            obj_id = Dict('accountNumber')
+            obj_id = Dict("accountNumber")
             obj_label = CleanText(
                 Format(
-                    '%s %s',
-                    Dict('accountHolderLongDesignation'),
-                    Dict('accountNatureShortLabel', default=''),
+                    "%s %s",
+                    Dict("accountHolderLongDesignation"),
+                    Dict("accountNatureShortLabel", default=""),
                 )
             )
-            obj_iban = Upper(Dict('ibanCode'))
-            obj_category = 'Interne'
+            obj_iban = Upper(Dict("ibanCode"))
+            obj_category = "Interne"
             obj_enabled_at = date.today()
-            obj__is_recipient = Dict('recipientOfTransfert', default=False)
-            obj__owner_name = CleanText(Dict('accountHolderLongDesignation'))
+            obj__is_recipient = Dict("recipientOfTransfert", default=False)
+            obj__owner_name = CleanText(Dict("accountHolderLongDesignation"))
 
     @method
     class iter_external_recipient(DictElement):
@@ -135,28 +135,28 @@ class RecipientsPage(LoggedPage, JsonPage):
 
         class item(ItemElement):
             def condition(self):
-                return Dict('recipientId', default=None)(self)
+                return Dict("recipientId", default=None)(self)
 
             klass = Recipient
 
-            obj_id = Dict('ibanCode')
-            obj_iban = Upper(Dict('ibanCode'))
-            obj_label = CleanText(Dict('recipientName'))
-            obj_category = 'Externe'
+            obj_id = Dict("ibanCode")
+            obj_iban = Upper(Dict("ibanCode"))
+            obj_label = CleanText(Dict("recipientName"))
+            obj_category = "Externe"
             obj_enabled_at = date.today()
 
     @method
     class iter_emitters(DictElement):
         class item(ItemElement):
             def condition(self):
-                return Dict('senderOfTransfert', default=None)(self) and Dict('accountNumber', default=None)(self)
+                return Dict("senderOfTransfert", default=None)(self) and Dict("accountNumber", default=None)(self)
 
             klass = Emitter
 
-            obj_id = Dict('accountNumber')
+            obj_id = Dict("accountNumber")
             obj_number_type = EmitterNumberType.IBAN
-            obj_number = Dict('ibanCode')
-            obj_currency = Dict('currencyCode')
+            obj_number = Dict("ibanCode")
+            obj_currency = Dict("currencyCode")
 
             def obj_label(self):
                 """
@@ -165,24 +165,24 @@ class RecipientsPage(LoggedPage, JsonPage):
                 Add the owner name to differentiate them.
                 """
                 account_name = Coalesce(
-                    CleanText(Dict('accountNatureLongLabel', default='')),
-                    CleanText(Dict('accountNatureShortLabel', default='')),
+                    CleanText(Dict("accountNatureLongLabel", default="")),
+                    CleanText(Dict("accountNatureShortLabel", default="")),
                 )
                 owner_name = Coalesce(
-                    CleanText(Dict('accountHolderLongDesignation', default='')),
-                    CleanText(Dict('accountHolderShortDesignation', default='')),
+                    CleanText(Dict("accountHolderLongDesignation", default="")),
+                    CleanText(Dict("accountHolderShortDesignation", default="")),
                 )
-                return Format('%s %s', account_name, owner_name)(self)
+                return Format("%s %s", account_name, owner_name)(self)
 
             def obj_balance(self):
                 # For some reason, the balance here is given without its decimal part
-                balance_value = CleanDecimal(Dict('balanceValue', default=NotAvailable), default=NotAvailable)(self)
+                balance_value = CleanDecimal(Dict("balanceValue", default=NotAvailable), default=NotAvailable)(self)
 
                 if empty(balance_value):
                     return balance_value
 
                 balance_value = balance_value / 100
-                if CleanText(Dict('balanceSign'))(self) == '-':
+                if CleanText(Dict("balanceSign"))(self) == "-":
                     return -balance_value
                 return balance_value
 
@@ -194,10 +194,10 @@ class TransferTokenPage(LoggedPage, RawPage):
 
 class TransferPage(LoggedPage, JsonPage):
     def check_transfer(self):
-        error_msg = Dict('messageErreur')(self.doc)
+        error_msg = Dict("messageErreur")(self.doc)
         if error_msg:
             raise TransferBankError(message=error_msg)
-        return Dict('page')(self.doc) == '/recap'
+        return Dict("page")(self.doc) == "/recap"
 
     def handle_response(self, transfer):
         t = Transfer()
@@ -206,26 +206,26 @@ class TransferPage(LoggedPage, JsonPage):
         t._token = transfer._token
         t._connection_id = transfer._connection_id
 
-        t.label = Dict('transferComplementaryInformations1')(self.doc)
-        t.exec_date = Date(Dict('dateVirement'), dayfirst=True)(self.doc)
-        t.amount = CleanDecimal(Dict('amount'))(self.doc)
-        t.currency = Dict('currencyCode')(self.doc)
+        t.label = Dict("transferComplementaryInformations1")(self.doc)
+        t.exec_date = Date(Dict("dateVirement"), dayfirst=True)(self.doc)
+        t.amount = CleanDecimal(Dict("amount"))(self.doc)
+        t.currency = Dict("currencyCode")(self.doc)
 
-        t.account_id = Dict('currentDebitAccountNumber')(self.doc)
-        t.account_iban = Dict('currentDebitIbanCode')(self.doc)
-        t.account_label = Dict('currentDebitTypeCompte')(self.doc)
+        t.account_id = Dict("currentDebitAccountNumber")(self.doc)
+        t.account_iban = Dict("currentDebitIbanCode")(self.doc)
+        t.account_label = Dict("currentDebitTypeCompte")(self.doc)
 
-        t.recipient_label = CleanText(Dict('currentCreditAccountName'))(self.doc)
-        t.recipient_id = t.recipient_iban = Dict('currentCreditIbanCode')(self.doc)
+        t.recipient_label = CleanText(Dict("currentCreditAccountName"))(self.doc)
+        t.recipient_id = t.recipient_iban = Dict("currentCreditIbanCode")(self.doc)
 
         # Internal transfer
-        if not Dict('isExternalTransfer')(self.doc):
-            t.recipient_id = Dict('currentCreditAccountNumber')(self.doc)
+        if not Dict("isExternalTransfer")(self.doc):
+            t.recipient_id = Dict("currentCreditAccountNumber")(self.doc)
 
         return t
 
     def check_transfer_exec(self):
-        error_msg = Dict('messageErreur')(self.doc)
+        error_msg = Dict("messageErreur")(self.doc)
         if error_msg:
             raise TransferBankError(message=error_msg)
-        return Dict('page')(self.doc)
+        return Dict("page")(self.doc)

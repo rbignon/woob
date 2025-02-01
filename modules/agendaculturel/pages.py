@@ -32,13 +32,13 @@ from .calendar import AgendaculturelEvent
 
 class AgendaculturelCategory(Filter):
     def filter(self, text):
-        if text == u'MusicEvent':
+        if text == "MusicEvent":
             return CATEGORIES.CONCERT
-        elif text == u'TheaterEvent':
+        elif text == "TheaterEvent":
             return CATEGORIES.THEATRE
-        elif text == u'VisuelArtsEvent':
+        elif text == "VisuelArtsEvent":
             return CATEGORIES.EXPO
-        elif text == u'Festival':
+        elif text == "Festival":
             return CATEGORIES.FEST
         else:
             return CATEGORIES.AUTRE
@@ -52,7 +52,7 @@ class AgendaculturelDate(Filter):
 class BasePage(HTMLPage):
     def search_events(self, query_date_from):
         form = self.get_form(nr=0)
-        form['search_month'] = query_date_from
+        form["search_month"] = query_date_from
         form.submit()
 
     @method
@@ -60,22 +60,21 @@ class BasePage(HTMLPage):
         klass = AgendaculturelEvent
 
         def parse(self, el):
-            _json = CleanText('.')(XPath('//script[@type="application/ld+json"][1]')(el)[0])
+            _json = CleanText(".")(XPath('//script[@type="application/ld+json"][1]')(el)[0])
 
             try:
                 from woob.tools.json import json
-                self.env['_json'] = json.loads(_json)
+
+                self.env["_json"] = json.loads(_json)
             except ValueError:
-                self.env['_json'] = {}
+                self.env["_json"] = {}
 
         def validate(self, obj):
-            return self.env['_json']
+            return self.env["_json"]
 
-        obj_id = Format('%s.%s',
-                        Env('region'),
-                        Decode(Env('_id')))
+        obj_id = Format("%s.%s", Env("region"), Decode(Env("_id")))
 
-        obj_summary = CleanText('//h1')
+        obj_summary = CleanText("//h1")
 
         def obj_description(self):
             desc = CleanHTML('//div[@class="description"]')(self)
@@ -84,55 +83,51 @@ class BasePage(HTMLPage):
             return desc
 
         def obj_start_date(self):
-            if not self.env['_json']:
+            if not self.env["_json"]:
                 return
 
             _time = Time(CleanText('//div[@class="hours"]'), default=None)(self)
             if not _time:
                 _time = time.min
-            date = AgendaculturelDate(Dict('startDate'))(self.env['_json'])
+            date = AgendaculturelDate(Dict("startDate"))(self.env["_json"])
             return datetime.combine(date, _time)
 
         def obj_end_date(self):
-            if not self.env['_json']:
+            if not self.env["_json"]:
                 return
 
-            date = AgendaculturelDate(Dict('endDate'))(self.env['_json'])
+            date = AgendaculturelDate(Dict("endDate"))(self.env["_json"])
             return datetime.combine(date, time.max)
 
         def obj_url(self):
-            if not self.env['_json']:
+            if not self.env["_json"]:
                 return
 
-            return Dict('url')(self.env['_json'])
+            return Dict("url")(self.env["_json"])
 
         def obj_city(self):
-            if not self.env['_json']:
+            if not self.env["_json"]:
                 return
 
-            return Dict('location/address/addressLocality')(self.env['_json'])
+            return Dict("location/address/addressLocality")(self.env["_json"])
 
         def obj_category(self):
-            if not self.env['_json']:
+            if not self.env["_json"]:
                 return
 
-            return AgendaculturelCategory(Dict('@type'))(self.env['_json'])
+            return AgendaculturelCategory(Dict("@type"))(self.env["_json"])
 
         def obj_location(self):
-            if not self.env['_json']:
+            if not self.env["_json"]:
                 return
 
-            return Format('%s, %s',
-                          Dict('location/name'),
-                          Dict('location/address/streetAddress'))(self.env['_json'])
+            return Format("%s, %s", Dict("location/name"), Dict("location/address/streetAddress"))(self.env["_json"])
 
         def obj_price(self):
-            if not self.env['_json']:
+            if not self.env["_json"]:
                 return
 
-            return Type(CleanText(Dict('offers/price', default="0")),
-                        type=float,
-                        default=0)(self.env['_json'])
+            return Type(CleanText(Dict("offers/price", default="0")), type=float, default=0)(self.env["_json"])
 
     @method
     class list_events(ListElement):
@@ -145,26 +140,23 @@ class BasePage(HTMLPage):
                 return self.check_date(obj) and self.check_category(obj)
 
             def check_date(self, obj):
-                if self.env['date_from'] and obj.start_date >= self.env['date_from']:
-                    if not self.env['date_to']:
+                if self.env["date_from"] and obj.start_date >= self.env["date_from"]:
+                    if not self.env["date_to"]:
                         return True
-                    elif obj.end_date and obj.end_date <= self.env['date_to']:
+                    elif obj.end_date and obj.end_date <= self.env["date_to"]:
                         return True
-                    elif self.env['date_to'] >= obj.start_date:
+                    elif self.env["date_to"] >= obj.start_date:
                         return True
                 return False
 
             def check_category(self, obj):
-                return not self.env['categories'] or obj.category in self.env['categories']
+                return not self.env["categories"] or obj.category in self.env["categories"]
 
-            obj_id = Format('%s.%s',
-                            Env('region'),
-                            Regexp(CleanText('./div/a[@itemprop="url"]/@href'),
-                                   '/(.*).html'))
+            obj_id = Format("%s.%s", Env("region"), Regexp(CleanText('./div/a[@itemprop="url"]/@href'), "/(.*).html"))
             obj_summary = CleanText('./div/a[@itemprop="url"]')
 
             def obj_start_date(self):
                 _date = Date(CleanText('./meta[@itemprop="startDate"]/@content'))(self)
                 return datetime.combine(_date, time.min)
 
-            obj_category = AgendaculturelCategory(Regexp(CleanText('./@itemtype'), 'https://schema.org/(.*)'))
+            obj_category = AgendaculturelCategory(Regexp(CleanText("./@itemtype"), "https://schema.org/(.*)"))

@@ -21,4 +21,4 @@
 from .module import FunmoocModule
 
 
-__all__ = ['FunmoocModule']
+__all__ = ["FunmoocModule"]

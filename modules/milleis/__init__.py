@@ -19,4 +19,4 @@
 from .module import MilleisModule
 
 
-__all__ = ['MilleisModule']
+__all__ = ["MilleisModule"]

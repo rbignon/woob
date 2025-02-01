@@ -23,7 +23,7 @@ from .browsers import LoginBrowser
 from .exceptions import LoggedOut
 
 
-__all__ = ['login_method', 'retry_on_logout', 'RetryLoginBrowser']
+__all__ = ["login_method", "retry_on_logout", "RetryLoginBrowser"]
 
 
 def login_method(func):
@@ -43,6 +43,7 @@ def login_method(func):
             return func(browser, *args, **kwargs)
         finally:
             browser.logging_in -= 1
+
     return wrapper
 
 
@@ -63,7 +64,7 @@ def retry_on_logout(exc_check=LoggedOut, tries=4):
     """
 
     if not isinstance(exc_check, type) or not issubclass(exc_check, Exception):
-        raise TypeError('retry_on_logout() must be called in order to decorate %r' % tries)
+        raise TypeError("retry_on_logout() must be called in order to decorate %r" % tries)
 
     def decorator(func):
         @wraps(func)
@@ -74,16 +75,17 @@ def retry_on_logout(exc_check=LoggedOut, tries=4):
                 try:
                     ret = cb()
                 except exc_check as exc:
-                    browser.logger.info('%r raised, retrying', exc)
+                    browser.logger.info("%r raised, retrying", exc)
                     continue
 
-                if not (hasattr(ret, '__next__') or hasattr(ret, 'next')):
+                if not (hasattr(ret, "__next__") or hasattr(ret, "next")):
                     return ret  # simple value, no need to retry on items
                 return iter_retry(cb, value=ret, remaining=i, exc_check=exc_check, logger=browser.logger)
 
-            raise BrowserUnavailable('Site did not reply successfully after multiple tries')
+            raise BrowserUnavailable("Site did not reply successfully after multiple tries")
 
         return wrapper
+
     return decorator
 
 
@@ -94,10 +96,10 @@ def retry_on_logout_context(tries=4, logger=None):
             yield
         except LoggedOut as exc:
             if logger:
-                logger.debug('%r raised, retrying', exc)
+                logger.debug("%r raised, retrying", exc)
         else:
             return
-    raise BrowserUnavailable('Site did not reply successfully after multiple tries')
+    raise BrowserUnavailable("Site did not reply successfully after multiple tries")
 
 
 class RetryLoginBrowser(LoginBrowser):
@@ -112,12 +114,13 @@ class RetryLoginBrowser(LoginBrowser):
     is not currently logging in. To detect this situation, the `do_login`
     method MUST be decorated with `@login_method`.
     """
+
     def __init__(self, *args, **kwargs):
         super(RetryLoginBrowser, self).__init__(*args, **kwargs)
         self.logging_in = 0
 
-        if not hasattr(self.do_login, 'login_decorated'):
-            raise Exception('do_login method was not decorated with @login_method')
+        if not hasattr(self.do_login, "login_decorated"):
+            raise Exception("do_login method was not decorated with @login_method")
 
 
 class iter_retry:
@@ -137,7 +140,7 @@ class iter_retry:
 
     def __next__(self):
         if self.remaining <= 0:
-            raise BrowserUnavailable('Site did not reply successfully after multiple tries')
+            raise BrowserUnavailable("Site did not reply successfully after multiple tries")
 
         if self.it is None:
             self.it = iter(self.cb())
@@ -147,18 +150,20 @@ class iter_retry:
                 nb = -1
                 for nb, sent in enumerate(self.items):
                     new = next(self.it)
-                    if hasattr(new, 'iter_fields'):
+                    if hasattr(new, "iter_fields"):
                         equal = dict(sent.iter_fields()) == dict(new.iter_fields())
                     else:
                         equal = sent == new
                     if not equal:
                         # safety is not guaranteed
-                        raise BrowserUnavailable('Site replied inconsistently between retries, %r vs %r', sent, new)
+                        raise BrowserUnavailable("Site replied inconsistently between retries, %r vs %r", sent, new)
             except StopIteration:
-                raise BrowserUnavailable('Site replied fewer elements (%d) than last iteration (%d)', nb + 1, len(self.items))
+                raise BrowserUnavailable(
+                    "Site replied fewer elements (%d) than last iteration (%d)", nb + 1, len(self.items)
+                )
             except self.exc_check as exc:
                 if self.logger:
-                    self.logger.info('%r raised, retrying', exc)
+                    self.logger.info("%r raised, retrying", exc)
                 self.it = None
                 self.remaining -= 1
                 return next(self)
@@ -168,7 +173,7 @@ class iter_retry:
             obj = next(self.it)
         except self.exc_check as exc:
             if self.logger:
-                self.logger.info('%r raised, retrying', exc)
+                self.logger.info("%r raised, retrying", exc)
             self.it = None
             self.remaining -= 1
             return next(self)

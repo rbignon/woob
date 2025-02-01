@@ -28,16 +28,16 @@ from woob.tools.backend import Module
 from .browser import AllocineBrowser
 
 
-__all__ = ['AllocineModule']
+__all__ = ["AllocineModule"]
 
 
 class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollection):
-    NAME = 'allocine'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = u'AlloCiné French cinema database service'
-    LICENSE = 'AGPLv3+'
+    NAME = "allocine"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "julien.veyssier@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "AlloCiné French cinema database service"
+    LICENSE = "AGPLv3+"
     BROWSER = AllocineBrowser
     ASSOCIATED_CATEGORIES = [CATEGORIES.CINE]
 
@@ -48,10 +48,10 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
         return self.browser.get_person(id)
 
     def iter_movies(self, pattern):
-        return self.browser.iter_movies(pattern.encode('utf-8'))
+        return self.browser.iter_movies(pattern.encode("utf-8"))
 
     def iter_persons(self, pattern):
-        return self.browser.iter_persons(pattern.encode('utf-8'))
+        return self.browser.iter_persons(pattern.encode("utf-8"))
 
     def iter_movie_persons(self, id, role=None):
         return self.browser.iter_movie_persons(id, role)
@@ -72,12 +72,19 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
         return self.browser.get_movie_releases(id, country)
 
     def fill_person(self, person, fields):
-        if 'real_name' in fields or 'birth_place' in fields\
-            or 'death_date' in fields or 'nationality' in fields\
-            or 'short_biography' in fields or 'roles' in fields\
-            or 'birth_date' in fields or 'thumbnail_url' in fields\
-            or 'biography' in fields\
-                or 'gender' in fields or fields is None:
+        if (
+            "real_name" in fields
+            or "birth_place" in fields
+            or "death_date" in fields
+            or "nationality" in fields
+            or "short_biography" in fields
+            or "roles" in fields
+            or "birth_date" in fields
+            or "thumbnail_url" in fields
+            or "biography" in fields
+            or "gender" in fields
+            or fields is None
+        ):
             per = self.get_person(person.id)
             person.real_name = per.real_name
             person.birth_date = per.birth_date
@@ -94,10 +101,15 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
         return person
 
     def fill_movie(self, movie, fields):
-        if 'other_titles' in fields or 'release_date' in fields\
-            or 'duration' in fields or 'country' in fields\
-            or 'roles' in fields or 'note' in fields\
-                or 'thumbnail_url' in fields:
+        if (
+            "other_titles" in fields
+            or "release_date" in fields
+            or "duration" in fields
+            or "country" in fields
+            or "roles" in fields
+            or "note" in fields
+            or "thumbnail_url" in fields
+        ):
             mov = self.get_movie(movie.id)
             movie.other_titles = mov.other_titles
             movie.release_date = mov.release_date
@@ -110,26 +122,26 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
             movie.short_description = mov.short_description
             movie.thumbnail_url = mov.thumbnail_url
 
-        if 'all_release_dates' in fields:
+        if "all_release_dates" in fields:
             movie.all_release_dates = self.get_movie_releases(movie.id)
 
         return movie
 
     def fill_video(self, video, fields):
-        if 'url' in fields:
+        if "url" in fields:
             if not isinstance(video, BaseVideo):
                 video = self.get_video(self, video.id)
 
-            if hasattr(video, '_video_code'):
+            if hasattr(video, "_video_code"):
                 video.url = str(self.browser.get_video_url(video._video_code))
 
-        if 'thumbnail' in fields and video and video.thumbnail:
+        if "thumbnail" in fields and video and video.thumbnail:
             video.thumbnail.data = self.browser.open(video.thumbnail.url)
         return video
 
     def get_video(self, _id):
-        split_id = _id.split('#')
-        if split_id[-1] == 'movie':
+        split_id = _id.split("#")
+        if split_id[-1] == "movie":
             return self.browser.get_movie_from_id(split_id[0])
         return self.browser.get_video_from_id(split_id[0], split_id[-1])
 
@@ -137,17 +149,17 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
         if BaseVideo in objs:
             collection = self.get_collection(objs, split_path)
             if collection.path_level == 0:
-                yield Collection([u'comingsoon'], u'Films prochainement au cinéma')
-                yield Collection([u'nowshowing'], u'Films au cinéma')
-                yield Collection([u'acshow'], u'Émissions')
-                yield Collection([u'interview'], u'Interviews')
+                yield Collection(["comingsoon"], "Films prochainement au cinéma")
+                yield Collection(["nowshowing"], "Films au cinéma")
+                yield Collection(["acshow"], "Émissions")
+                yield Collection(["interview"], "Interviews")
             if collection.path_level == 1:
-                if collection.basename == u'acshow':
+                if collection.basename == "acshow":
                     emissions = self.browser.get_emissions(collection.basename)
                     if emissions:
                         for emission in emissions:
                             yield emission
-                elif collection.basename == u'interview':
+                elif collection.basename == "interview":
                     videos = self.browser.get_categories_videos(collection.basename)
                     if videos:
                         for video in videos:
@@ -158,7 +170,7 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
                         for video in videos:
                             yield video
             if collection.path_level == 2:
-                videos = self.browser.get_categories_videos(':'.join(collection.split_path))
+                videos = self.browser.get_categories_videos(":".join(collection.split_path))
                 if videos:
                     for video in videos:
                         yield video
@@ -166,37 +178,31 @@ class AllocineModule(Module, CapCinema, CapVideo, CapCalendarEvent, CapCollectio
     def validate_collection(self, objs, collection):
         if collection.path_level == 0:
             return
-        if collection.path_level == 1 and (collection.basename in
-                                           [u'comingsoon', u'nowshowing', u'acshow', u'interview']):
+        if collection.path_level == 1 and (collection.basename in ["comingsoon", "nowshowing", "acshow", "interview"]):
             return
 
-        if collection.path_level == 2 and collection.parent_path == [u'acshow']:
+        if collection.path_level == 2 and collection.parent_path == ["acshow"]:
             return
 
         raise CollectionNotFound(collection.split_path)
 
     def search_events(self, query):
         if CATEGORIES.CINE in query.categories:
-            if query.city and re.match(r'\d{5}', query.city):
+            if query.city and re.match(r"\d{5}", query.city):
                 events = list(self.browser.search_events(query))
                 events.sort(key=lambda x: x.start_date, reverse=False)
                 return events
 
-            raise UserError('You must enter a zip code in city field')
+            raise UserError("You must enter a zip code in city field")
 
     def get_event(self, id):
         return self.browser.get_event(id)
 
     def fill_event(self, event, fields):
-        if 'description' in fields:
-            movieCode = event.id.split('#')[2]
+        if "description" in fields:
+            movieCode = event.id.split("#")[2]
             movie = self.get_movie(movieCode)
             event.description = movie.pitch
         return event
 
-    OBJECTS = {
-        Person: fill_person,
-        Movie: fill_movie,
-        BaseVideo: fill_video,
-        BaseCalendarEvent: fill_event
-    }
+    OBJECTS = {Person: fill_person, Movie: fill_movie, BaseVideo: fill_video, BaseCalendarEvent: fill_event}

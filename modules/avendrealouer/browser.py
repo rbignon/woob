@@ -26,11 +26,14 @@ from .pages import CitiesPage, HousingPage, SearchPage
 
 
 class AvendrealouerBrowser(PagesBrowser):
-    BASEURL = 'https://www.avendrealouer.fr'
+    BASEURL = "https://www.avendrealouer.fr"
 
-    cities = URL(r'/common/api/localities\?term=(?P<term>)', CitiesPage)
-    search = URL(r'/recherche.html\?pageIndex=1&sortPropertyName=Price&sortDirection=Ascending&searchTypeID=(?P<type_id>.*)&typeGroupCategoryID=(?P<group_id>.*)&transactionId=1&localityIds=(?P<location_ids>.*)&typeGroupIds=(?P<type_group_ids>.*)&roomComfortIds=(?P<rooms>.*)&minimumPrice=(?P<min_price>.*)&maximumPrice=(?P<max_price>.*)&minimumSurface=(?P<min_surface>.*)&maximumSurface=(?P<max_surface>.*)&furnished=(?P<furnished>.*)', SearchPage)
-    housing = URL(r'/(?P<id>[vente|location].*).html', HousingPage)
+    cities = URL(r"/common/api/localities\?term=(?P<term>)", CitiesPage)
+    search = URL(
+        r"/recherche.html\?pageIndex=1&sortPropertyName=Price&sortDirection=Ascending&searchTypeID=(?P<type_id>.*)&typeGroupCategoryID=(?P<group_id>.*)&transactionId=1&localityIds=(?P<location_ids>.*)&typeGroupIds=(?P<type_group_ids>.*)&roomComfortIds=(?P<rooms>.*)&minimumPrice=(?P<min_price>.*)&maximumPrice=(?P<max_price>.*)&minimumSurface=(?P<min_surface>.*)&maximumSurface=(?P<max_surface>.*)&furnished=(?P<furnished>.*)",
+        SearchPage,
+    )
+    housing = URL(r"/(?P<id>[vente|location].*).html", HousingPage)
 
     def __init__(self, datadome_cookie_search, datadome_cookie_detail, *args, **kwargs):
         super(AvendrealouerBrowser, self).__init__(*args, **kwargs)
@@ -46,9 +49,9 @@ class AvendrealouerBrowser(PagesBrowser):
         if POSTS_TYPES.SHARING == query.type:
             return []
 
-        type_id = QUERY_TYPES[query.type]['searchTypeID']
-        group_id = QUERY_TYPES[query.type]['typeGroupCategoryID']
-        furnished = FURNISHED_VALUES['YES'] if query.type == POSTS_TYPES.FURNISHED_RENT else FURNISHED_VALUES['BOTH']
+        type_id = QUERY_TYPES[query.type]["searchTypeID"]
+        group_id = QUERY_TYPES[query.type]["typeGroupCategoryID"]
+        furnished = FURNISHED_VALUES["YES"] if query.type == POSTS_TYPES.FURNISHED_RENT else FURNISHED_VALUES["BOTH"]
 
         house_types = []
         for house_type in query.house_types:
@@ -57,34 +60,29 @@ class AvendrealouerBrowser(PagesBrowser):
                 break
             house_types += QUERY_HOUSE_TYPES[query.type][house_type]
 
-        type_group_ids = ','.join(house_types)
-        location_ids = ','.join([city.id for city in query.cities])
-        rooms = ','.join([str(_) for _ in
-                          range(1 if not query.nb_rooms else query.nb_rooms if query.nb_rooms < 5 else 5, 6)])
+        type_group_ids = ",".join(house_types)
+        location_ids = ",".join([city.id for city in query.cities])
+        rooms = ",".join(
+            [str(_) for _ in range(1 if not query.nb_rooms else query.nb_rooms if query.nb_rooms < 5 else 5, 6)]
+        )
 
         reg_exp = {
-            'type_id': type_id,
-            'group_id': group_id,
-            'type_group_ids': type_group_ids,
-            'rooms': rooms,
-            'furnished': furnished,
-            'min_price': query.cost_min if query.cost_min else '',
-            'max_price': query.cost_max if query.cost_max else '',
-            'min_surface': query.area_min if query.area_min else '',
-            'max_surface': query.area_max if query.area_max else '',
-            'location_ids': location_ids
+            "type_id": type_id,
+            "group_id": group_id,
+            "type_group_ids": type_group_ids,
+            "rooms": rooms,
+            "furnished": furnished,
+            "min_price": query.cost_min if query.cost_min else "",
+            "max_price": query.cost_max if query.cost_max else "",
+            "min_surface": query.area_min if query.area_min else "",
+            "max_surface": query.area_max if query.area_max else "",
+            "location_ids": location_ids,
         }
 
         if self.datadome_cookie_search:
-            self.session.cookies.set(
-                'datadome',
-                self.datadome_cookie_search
-            )
+            self.session.cookies.set("datadome", self.datadome_cookie_search)
         return self.search.open(**reg_exp).iter_housings()
 
     def get_housing(self, housing_id, obj=None):
-        self.session.cookies.set(
-            'datadome',
-            self.datadome_cookie_detail
-        )
-        return self.housing.go(id=housing_id.replace('#', '/')).get_housing(obj)
+        self.session.cookies.set("datadome", self.datadome_cookie_detail)
+        return self.housing.go(id=housing_id.replace("#", "/")).get_housing(obj)

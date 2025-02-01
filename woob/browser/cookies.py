@@ -20,7 +20,7 @@ import http.cookiejar
 import requests.cookies
 
 
-__all__ = ['WoobCookieJar', 'BlockAllCookies']
+__all__ = ["WoobCookieJar", "BlockAllCookies"]
 
 
 class WoobCookieJar(requests.cookies.RequestsCookieJar):
@@ -41,7 +41,7 @@ class WoobCookieJar(requests.cookies.RequestsCookieJar):
     def copy(self):
         """Return an object copy of the cookie jar."""
         new_cj = type(self)()
-        if hasattr(self, 'get_policy'):
+        if hasattr(self, "get_policy"):
             new_cj.set_policy(self.get_policy())
         else:
             new_cj.set_policy(self._policy)

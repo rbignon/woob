@@ -20,4 +20,4 @@
 from .module import PastebinModule
 
 
-__all__ = ['PastebinModule']
+__all__ = ["PastebinModule"]

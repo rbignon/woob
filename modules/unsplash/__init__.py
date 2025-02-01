@@ -21,4 +21,4 @@
 from .module import UnsplashModule
 
 
-__all__ = ['UnsplashModule']
+__all__ = ["UnsplashModule"]

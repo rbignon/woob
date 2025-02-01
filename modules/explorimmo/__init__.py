@@ -21,4 +21,4 @@
 from .module import ExplorimmoModule
 
 
-__all__ = ['ExplorimmoModule']
+__all__ = ["ExplorimmoModule"]

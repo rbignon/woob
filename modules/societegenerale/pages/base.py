@@ -30,7 +30,9 @@ from woob.tools.capabilities.bank.transactions import FrenchTransaction
 class BasePage(HTMLPage):
     def on_load(self):
         if self.doc.xpath('//script[contains(text(), "gdpr/recueil")]'):
-            self.browser.open('https://particuliers.secure.societegenerale.fr/icd/gdpr/data/gdpr-update-compteur-clicks-client.json')
+            self.browser.open(
+                "https://particuliers.secure.societegenerale.fr/icd/gdpr/data/gdpr-update-compteur-clicks-client.json"
+            )
 
     def get_error(self):
         try:
@@ -39,7 +41,7 @@ class BasePage(HTMLPage):
             return None
 
     def parse_decimal(self, td):
-        value = CleanText('.')(td)
+        value = CleanText(".")(td)
         if value:
             return Decimal(FrenchTransaction.clean_amount(value))
         else:

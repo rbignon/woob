@@ -48,13 +48,13 @@ from woob.capabilities.bank import AccountType
 from woob.tools.application.formatters.simple import SimpleFormatter
 
 
-__all__ = ['AppMoney']
+__all__ = ["AppMoney"]
 
 
 def handler(signum, frame):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-    print('Interrupted', file=sys.__stderr__)
+    print("Interrupted", file=sys.__stderr__)
     for t in HistoryThread.allthreads:
         t.terminate()
     sys.exit()
@@ -75,15 +75,15 @@ class MoneyOfxFormatter(OfxFormatter):
         self.seen = set()
 
         # MSMoney only supports CHECKING accounts
-        self.original_type = kwargs['account'].type
+        self.original_type = kwargs["account"].type
 
         # we collect this formatter output because we will need to do some processing to restore the account type
         self.original_outfile = self.outfile
         self.outfile = StringIO()
 
-        kwargs['account'].type = AccountType.CHECKING
+        kwargs["account"].type = AccountType.CHECKING
         super(MoneyOfxFormatter, self).start_format(**kwargs)
-        kwargs['account'].type = self.original_type
+        kwargs["account"].type = self.original_type
 
     def format_obj(self, obj, alias):
         cat = obj.category
@@ -103,10 +103,12 @@ class MoneyOfxFormatter(OfxFormatter):
 
         # we process the output by restoring the account type
         collected_output = self.outfile.getvalue()
-        if hasattr(self, 'original_outfile'):
+        if hasattr(self, "original_outfile"):
             # do the test because when killed, flush might be called before original_outfile is called
             self.outfile = self.original_outfile
-            self.outfile.write(re.sub('<ACCTTYPE>[^\r]*\r', '<ACCTTYPE>' + str(self.original_type) + '\r', collected_output))
+            self.outfile.write(
+                re.sub("<ACCTTYPE>[^\r]*\r", "<ACCTTYPE>" + str(self.original_type) + "\r", collected_output)
+            )
 
 
 class ListFormatter(SimpleFormatter):
@@ -128,7 +130,7 @@ class HistoryThread(Thread):
         self.accounts = accounts
         self.last_dates = {}
         for a in self.accounts:
-            self.last_dates[a] = self.money.config.get(a, 'last_date', default='')
+            self.last_dates[a] = self.money.config.get(a, "last_date", default="")
 
     def terminate(self):
         pass
@@ -156,7 +158,7 @@ class HistoryThreadAsAProcess(HistoryThread):
         return super(HistoryThreadAsAProcess, self).terminate()
 
     def retrieve_history(self, account):
-        self.ofxcontent[account] = re.sub(r'\r\r\n', r'\n', self.ofxcontent[account])
+        self.ofxcontent[account] = re.sub(r"\r\r\n", r"\n", self.ofxcontent[account])
         return self.ofxcontent[account], self.stderrcontent[account]
 
     async def _read_stream(self, stream, callback):
@@ -173,31 +175,31 @@ class HistoryThreadAsAProcess(HistoryThread):
         propagated_options = []
         for o in vars(self.money.options):
             switcher = {
-                'backends': False,
-                'exclude_backends': False,
-                'insecure': True,
-                'nss': True,
-                'debug': True,
-                'quiet': False,
-                'verbose': True,
-                'logging_file': False,
-                'save_responses': False,
-                'export_session': False,
-                'shell_completion': False,
-                'auto_update': False,
-                'condition': False,
-                'count': True,
-                'select': False,
-                'formatter': False,
-                'no_header': False,
-                'no_keys': False,
-                'outfile': False,
-                'list': False,
-                'force': True,
-                'accounts': False,
-                'until_date': True,
-                'no_import': False,
-                'display': False
+                "backends": False,
+                "exclude_backends": False,
+                "insecure": True,
+                "nss": True,
+                "debug": True,
+                "quiet": False,
+                "verbose": True,
+                "logging_file": False,
+                "save_responses": False,
+                "export_session": False,
+                "shell_completion": False,
+                "auto_update": False,
+                "condition": False,
+                "count": True,
+                "select": False,
+                "formatter": False,
+                "no_header": False,
+                "no_keys": False,
+                "outfile": False,
+                "list": False,
+                "force": True,
+                "accounts": False,
+                "until_date": True,
+                "no_import": False,
+                "display": False,
             }
             propagate = switcher.get(o, None)
             if propagate is None:
@@ -217,11 +219,11 @@ class HistoryThreadAsAProcess(HistoryThread):
         self.cmd = [
             sys.executable,  # D:\...\woob.exe
             sys.path[0],
-            'money',
-            '--no-import',
-            '--display',
-            '--backends=' + backend,
-            '--accounts=' + ",".join(self.accounts)
+            "money",
+            "--no-import",
+            "--display",
+            "--backends=" + backend,
+            "--accounts=" + ",".join(self.accounts),
         ] + propagated_options
         self.money.logger.info(" ".join(self.cmd))
 
@@ -274,11 +276,11 @@ class HistoryThreadAsAProcess(HistoryThread):
         self.intransaction = False
 
         await asyncio.wait(
-                [
-                    self._read_stream(self.process.stdout, handle_stdout_line),
-                    self._read_stream(self.process.stderr, handle_stderr_line)
-                ]
-            )
+            [
+                self._read_stream(self.process.stdout, handle_stdout_line),
+                self._read_stream(self.process.stderr, handle_stderr_line),
+            ]
+        )
 
         await self.process.wait()
 
@@ -289,26 +291,43 @@ class HistoryThreadAsAProcess(HistoryThread):
 
 
 class AppMoney(Appbank):
-    APPNAME = 'money'
-    OLD_APPNAME = 'boomoney'
-    VERSION = '3.7'
-    COPYRIGHT = 'Copyright(C) 2018-YEAR Bruno Chabrier'
+    APPNAME = "money"
+    OLD_APPNAME = "boomoney"
+    VERSION = "3.7"
+    COPYRIGHT = "Copyright(C) 2018-YEAR Bruno Chabrier"
     DESCRIPTION = "Console application that imports bank accounts into Microsoft Money"
     SHORT_DESCRIPTION = "import bank accounts into Microsoft Money"
 
-    EXTRA_FORMATTERS = {'list': ListFormatter, 'ops_list': MoneyOfxFormatter}
-    COMMANDS_FORMATTERS = {'list': 'list', 'history': 'ops_list', 'coming': 'ops_list'}
+    EXTRA_FORMATTERS = {"list": ListFormatter, "ops_list": MoneyOfxFormatter}
+    COMMANDS_FORMATTERS = {"list": "list", "history": "ops_list", "coming": "ops_list"}
 
     def __init__(self):
         super(AppMoney, self).__init__()
         self.importIndex = 0
-        application_options = OptionGroup(self._parser, 'Money Options')
-        application_options.add_option('-l', '--list', action='store_true', help='list the accounts and balance, without generating any import to MSMoney')
-        application_options.add_option('-F', '--force', action='store_true', help='forces the retrieval of transactions (10 maximum), otherwise retrieves only the transactions newer than the previous retrieval date')
-        application_options.add_option('-U', '--until-date', help='retrieves until date YYYY-MM-DD max')
-        application_options.add_option('-A', '--accounts', help='retrieves only the specified accounts. By default, all accounts are retrieved')
-        application_options.add_option('-N', '--no-import', action='store_true', help='no import. Generates the files, but they are not imported in MSMoney. Last import dates are not modified')
-        application_options.add_option('-D', '--display', action='store_true', help='displays the generated OFX file')
+        application_options = OptionGroup(self._parser, "Money Options")
+        application_options.add_option(
+            "-l",
+            "--list",
+            action="store_true",
+            help="list the accounts and balance, without generating any import to MSMoney",
+        )
+        application_options.add_option(
+            "-F",
+            "--force",
+            action="store_true",
+            help="forces the retrieval of transactions (10 maximum), otherwise retrieves only the transactions newer than the previous retrieval date",
+        )
+        application_options.add_option("-U", "--until-date", help="retrieves until date YYYY-MM-DD max")
+        application_options.add_option(
+            "-A", "--accounts", help="retrieves only the specified accounts. By default, all accounts are retrieved"
+        )
+        application_options.add_option(
+            "-N",
+            "--no-import",
+            action="store_true",
+            help="no import. Generates the files, but they are not imported in MSMoney. Last import dates are not modified",
+        )
+        application_options.add_option("-D", "--display", action="store_true", help="displays the generated OFX file")
         self._parser.add_option_group(application_options)
         self.labels = dict()
         self.commands_formatters["select"] = "simple"
@@ -335,23 +354,30 @@ class AppMoney(Appbank):
             sys.stdout.write(*args)
 
     def get_downloads_path(self):
-        if not hasattr(self, '_downloadsPath'):
-            s = subprocess.check_output('reg query "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders" /v "{374DE290-123F-4565-9164-39C4925E467B}"', encoding='CP850')
-            t = re.sub(r'^(.|\r|\n)+REG_EXPAND_SZ\s+([^\n\r]+)(.|\r|\n)*$', r'\2', s)
+        if not hasattr(self, "_downloadsPath"):
+            s = subprocess.check_output(
+                'reg query "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders" /v "{374DE290-123F-4565-9164-39C4925E467B}"',
+                encoding="CP850",
+            )
+            t = re.sub(r"^(.|\r|\n)+REG_EXPAND_SZ\s+([^\n\r]+)(.|\r|\n)*$", r"\2", s)
             self._downloadsPath = os.path.expandvars(t)
         return self._downloadsPath
 
     def get_money_path(self):
-        if not hasattr(self, '_moneyPath'):
-            s = subprocess.check_output('reg query HKEY_CLASSES_ROOT\\money\\Shell\\Open\\Command /ve', encoding='CP850')
-            t = re.sub(r'^(.|\r|\n)+REG_SZ\s+([^\n\r]+)(.|\r|\n)*$', r'\2', s)
+        if not hasattr(self, "_moneyPath"):
+            s = subprocess.check_output(
+                "reg query HKEY_CLASSES_ROOT\\money\\Shell\\Open\\Command /ve", encoding="CP850"
+            )
+            t = re.sub(r"^(.|\r|\n)+REG_SZ\s+([^\n\r]+)(.|\r|\n)*$", r"\2", s)
             self._moneyPath = os.path.expandvars(os.path.dirname(t))
         return self._moneyPath
 
     def get_money_file(self):
-        if not hasattr(self, '_moneyFile'):
-            s = subprocess.check_output('reg query HKEY_CURRENT_USER\\Software\\Microsoft\\Money\\14.0 /v CurrentFile', encoding='CP850')
-            t = re.sub(r'^(.|\r|\n)+REG_SZ\s+([^\n\r]+)(.|\r|\n)*$', r'\2', s)
+        if not hasattr(self, "_moneyFile"):
+            s = subprocess.check_output(
+                "reg query HKEY_CURRENT_USER\\Software\\Microsoft\\Money\\14.0 /v CurrentFile", encoding="CP850"
+            )
+            t = re.sub(r"^(.|\r|\n)+REG_SZ\s+([^\n\r]+)(.|\r|\n)*$", r"\2", s)
             self._moneyFile = os.path.expandvars(t)
         return self._moneyFile
 
@@ -359,7 +385,7 @@ class AppMoney(Appbank):
         if not self._backupDone:
             with backupMutex:
                 # redo the test in mutual exclusion
-                if not (hasattr(self, '_backupDone') and self._backupDone):
+                if not (hasattr(self, "_backupDone") and self._backupDone):
                     file = self.get_money_file()
                     filename = os.path.splitext(os.path.basename(file))[0]
                     dir = os.path.dirname(file)
@@ -371,10 +397,10 @@ class AppMoney(Appbank):
     def save_config(self):
         for t in self.threads:
             for a in t.accounts:
-                self.config.set(a, 'label', self.config.get(a, 'label', default=''))
-                self.config.set(a, 'disabled', self.str2bool(self.config.get(a, 'disabled', default=False)))
-                self.config.set(a, 'date_min', self.config.get(a, 'date_min', default=''))
-                self.config.set(a, 'last_date', t.last_dates[a])
+                self.config.set(a, "label", self.config.get(a, "label", default=""))
+                self.config.set(a, "disabled", self.str2bool(self.config.get(a, "disabled", default=False)))
+                self.config.set(a, "date_min", self.config.get(a, "date_min", default=""))
+                self.config.set(a, "last_date", t.last_dates[a])
 
         self.config.save()
 
@@ -402,9 +428,9 @@ class AppMoney(Appbank):
                 self.ids.append(id)
                 id_maxlength = max(id_maxlength, len(id))
                 notusedlabel, label = labelspec.split("=")
-                bmnlabel = self.config.get(id, 'label', default='')
-                if bmnlabel != '' and bmnlabel != label:
-                    label = bmnlabel + ' (' + label + ')'
+                bmnlabel = self.config.get(id, "label", default="")
+                if bmnlabel != "" and bmnlabel != label:
+                    label = bmnlabel + " (" + label + ")"
                 labels.append(label)
                 label_maxlength = max(label_maxlength, len(label))
                 notusednumber, number = numberspec.split("=")
@@ -415,12 +441,22 @@ class AppMoney(Appbank):
                 balance_maxlength = max(balance_maxlength, len(balance))
 
                 # use the label if not already set
-                if self.config.get(id, 'label', default='') == '':
-                    self.config.set(id, 'label', label)
+                if self.config.get(id, "label", default="") == "":
+                    self.config.set(id, "label", label)
 
         # print columns
         self.print(Style.BRIGHT + "%d accounts:" % len(self.ids))
-        sepline = "-".ljust(id_maxlength, "-") + "-" + "-".ljust(number_maxlength, "-") + "-" + "-".ljust(balance_maxlength, "-") + "-" + "-".ljust(label_maxlength, "-") + "-" + "--------"
+        sepline = (
+            "-".ljust(id_maxlength, "-")
+            + "-"
+            + "-".ljust(number_maxlength, "-")
+            + "-"
+            + "-".ljust(balance_maxlength, "-")
+            + "-"
+            + "-".ljust(label_maxlength, "-")
+            + "-"
+            + "--------"
+        )
         self.print(sepline)
         for i in range(len(self.ids)):
             disabled = self.str2bool(self.config.get(self.ids[i], "disabled", default=False))
@@ -429,22 +465,27 @@ class AppMoney(Appbank):
                 self.numbers[i].ljust(number_maxlength),
                 balances[i].ljust(balance_maxlength),
                 labels[i].ljust(label_maxlength),
-                "Disabled" if disabled else "")
+                "Disabled" if disabled else "",
+            )
         self.print(sepline + Style.RESET_ALL)
         self.print()
 
     def get_history_from_thread(self, account, thread):
         now = datetime.datetime.now().strftime("%Y-%m-%d")
-        last_date = self.config.get(account, 'last_date', default='')
-        label = self.config.get(account, 'label', default='')
+        last_date = self.config.get(account, "last_date", default="")
+        label = self.config.get(account, "label", default="")
 
         ofxcontent, stderrcontent = thread.retrieve_history(account)
 
-        if ofxcontent == '':
+        if ofxcontent == "":
             self.write(stderrcontent)
             self.importIndex += 1
-            self.print(Style.BRIGHT + Fore.RED + "(%i/%i) %s (%s): Got error!" % (
-                self.importIndex, self.nb_accounts, account, label) + Style.RESET_ALL)
+            self.print(
+                Style.BRIGHT
+                + Fore.RED
+                + "(%i/%i) %s (%s): Got error!" % (self.importIndex, self.nb_accounts, account, label)
+                + Style.RESET_ALL
+            )
             return last_date
         else:
             self.handle_ofx_content(account, ofxcontent, stderrcontent)
@@ -452,20 +493,20 @@ class AppMoney(Appbank):
 
     def retrieve_history(self, account):
 
-        date_min = self.config.get(account, 'date_min', default='')
-        last_date = self.config.get(account, 'last_date', default='')
-        label = self.config.get(account, 'label', default='')
+        date_min = self.config.get(account, "date_min", default="")
+        last_date = self.config.get(account, "last_date", default="")
+        label = self.config.get(account, "label", default="")
 
         if self.options.force:
             from_date = date_min
         else:
-            if last_date != '':
+            if last_date != "":
                 from_date = datetime.date.fromisoformat(last_date).isoformat()
             else:
-                from_date = ''
+                from_date = ""
 
         if self.options.count:
-            from_date = ''
+            from_date = ""
         if self.options.until_date:
             from_date = self.options.until_date
 
@@ -479,7 +520,7 @@ class AppMoney(Appbank):
         MAX_RETRIES = 3
         count = 0
         found = False
-        content = ''
+        content = ""
         self.error = False
         while count <= MAX_RETRIES and not (found and not self.error):
             self.options.outfile = StringIO()
@@ -494,7 +535,13 @@ class AppMoney(Appbank):
 
             # For CARD accounts, let's also get coming transactions
             # We check number and string until MR!300 is merged. Can take a loooong time...
-            regexp = re.compile('\r\n<ACCTTYPE>(' + str(AccountType.CARD) + '|' + list(AccountType._keys)[int(AccountType.CARD)] + ')\r\n')
+            regexp = re.compile(
+                "\r\n<ACCTTYPE>("
+                + str(AccountType.CARD)
+                + "|"
+                + list(AccountType._keys)[int(AccountType.CARD)]
+                + ")\r\n"
+            )
             if regexp.search(self.options.outfile.getvalue()):
                 self.logger.info("coming " + account + " " + from_date)
                 self.onecmd("coming " + account + " " + from_date)
@@ -506,114 +553,112 @@ class AppMoney(Appbank):
 
             if count > 0:
                 self.logger.info("Retrying %s (%s)... %i/%i" % (account, label, count, MAX_RETRIES))
-            found = re.findall(r'OFXHEADER:100', historyContent)
+            found = re.findall(r"OFXHEADER:100", historyContent)
             nb_output = len(found)
             if found and nb_output == expected_outputs and not self.error:
                 content = historyContent
             count = count + 1
 
-        if content == '':
+        if content == "":
             # error occurred
             with numMutex:
                 self.importIndex = self.importIndex + 1
-            self.logger.error("%s (%s): %saborting after %i retries.%s" % (
-                account,
-                label,
-                Fore.RED + Style.BRIGHT,
-                MAX_RETRIES,
-                Style.RESET_ALL))
-            return '', self.stderr.getvalue()
+            self.logger.error(
+                "%s (%s): %saborting after %i retries.%s"
+                % (account, label, Fore.RED + Style.BRIGHT, MAX_RETRIES, Style.RESET_ALL)
+            )
+            return "", self.stderr.getvalue()
 
         # postprocessing of the ofx content to match MSMoney expectations
-        content = re.sub(r'<BALAMT>Not loaded', r'<BALAMT></BALAMT>', content)
+        content = re.sub(r"<BALAMT>Not loaded", r"<BALAMT></BALAMT>", content)
         input = StringIO(content)
         output = StringIO()
         field = {}
-        fields = ' '
-        transaction = ''
+        fields = " "
+        transaction = ""
         output_id = 1  # used because we have 2 commands, history and coming
         for line in input:
             if output_id != nb_output:
                 # skip trailer of first commands
-                if line.startswith('</BANKTRANLIST>'):
+                if line.startswith("</BANKTRANLIST>"):
                     continue
-                if line.startswith('<LEDGERBAL><BALAMT>'):
+                if line.startswith("<LEDGERBAL><BALAMT>"):
                     continue
-                if line.startswith('<DTASOF>'):
+                if line.startswith("<DTASOF>"):
                     continue
-                if line.startswith('</LEDGERBAL>'):
+                if line.startswith("</LEDGERBAL>"):
                     continue
-                if line.startswith('<AVAILBAL><BALAMT>'):
+                if line.startswith("<AVAILBAL><BALAMT>"):
                     continue
-                if line.startswith('<DTASOF>20200526</AVAILBAL>'):
+                if line.startswith("<DTASOF>20200526</AVAILBAL>"):
                     continue
-                if line.startswith('</STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>'):
+                if line.startswith("</STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>"):
                     output_id += 1
                     continue
             if output_id != 1:
                 # skip header of last commands
-                if line.startswith('OFXHEADER:100'):
+                if line.startswith("OFXHEADER:100"):
                     continue
-                if line.startswith('DATA:OFXSGML'):
+                if line.startswith("DATA:OFXSGML"):
                     continue
-                if line.startswith('VERSION:'):
+                if line.startswith("VERSION:"):
                     continue
-                if line.startswith('SECURITY:NONE'):
+                if line.startswith("SECURITY:NONE"):
                     continue
-                if line.startswith('ENCODING:'):
+                if line.startswith("ENCODING:"):
                     continue
-                if line.startswith('CHARSET:'):
+                if line.startswith("CHARSET:"):
                     continue
-                if line.startswith('COMPRESSION:'):
+                if line.startswith("COMPRESSION:"):
                     continue
-                if line.startswith('OLDFILEUID:'):
+                if line.startswith("OLDFILEUID:"):
                     continue
-                if line.startswith('NEWFILEUID:'):
+                if line.startswith("NEWFILEUID:"):
                     continue
-                if line.startswith('\r'):
+                if line.startswith("\r"):
                     continue
-                if line.startswith('<OFX><SIGNONMSGSRSV1><SONRS><STATUS><CODE>0<SEVERITY>INFO</STATUS>'):
+                if line.startswith("<OFX><SIGNONMSGSRSV1><SONRS><STATUS><CODE>0<SEVERITY>INFO</STATUS>"):
                     continue
-                if line.startswith('<DTSERVER>'):
+                if line.startswith("<DTSERVER>"):
                     continue
-                if line.startswith('<BANKMSGSRSV1><STMTTRNRS><TRNUID>'):
+                if line.startswith("<BANKMSGSRSV1><STMTTRNRS><TRNUID>"):
                     continue
-                if line.startswith('<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<STMTRS>'):
+                if line.startswith("<STATUS><CODE>0<SEVERITY>INFO</STATUS><CLTCOOKIE>null<STMTRS>"):
                     continue
-                if line.startswith('<CURDEF>'):
+                if line.startswith("<CURDEF>"):
                     continue
-                if line.startswith('<BANKID>'):
+                if line.startswith("<BANKID>"):
                     continue
-                if line.startswith('<BRANCHID>'):
+                if line.startswith("<BRANCHID>"):
                     continue
-                if line.startswith('<ACCTID>'):
+                if line.startswith("<ACCTID>"):
                     continue
-                if line.startswith('<ACCTTYPE>'):
+                if line.startswith("<ACCTTYPE>"):
                     continue
-                if line.startswith('<ACCTKEY>'):
+                if line.startswith("<ACCTKEY>"):
                     continue
-                if line.startswith('</BANKACCTFROM>'):
+                if line.startswith("</BANKACCTFROM>"):
                     continue
-                if line.startswith('<BANKTRANLIST>'):
+                if line.startswith("<BANKTRANLIST>"):
                     continue
-                if line.startswith('<DTSTART>'):
+                if line.startswith("<DTSTART>"):
                     continue
-                if line.startswith('<DTEND>'):
+                if line.startswith("<DTEND>"):
                     continue
 
-            if re.match(r'^OFXHEADER:100', line):
+            if re.match(r"^OFXHEADER:100", line):
                 inTransaction = False
-            if re.match(r'^<STMTTRN>', line):
+            if re.match(r"^<STMTTRN>", line):
                 inTransaction = True
             # MSMoney only supports CHECKING accounts
-            if re.match(r'^<ACCTTYPE>', line):
-                line = '<ACCTTYPE>CHECKING\r\n'
+            if re.match(r"^<ACCTTYPE>", line):
+                line = "<ACCTTYPE>CHECKING\r\n"
 
             if not inTransaction:
                 output.write(line)
             else:
                 transaction = transaction + line
-            if re.match(r'^</STMTTRN>', line):
+            if re.match(r"^</STMTTRN>", line):
                 # debug: display transaction:
                 # print(transaction, file=sys.stderr)
                 # if output_id == 2: print(transaction, file=sys.stderr)
@@ -623,7 +668,7 @@ class AppMoney(Appbank):
                     if "NAME" in field and str(field["NAME"]).isnumeric():
                         field["CHECKNUM"] = field["NAME"]
                         del field["NAME"]
-                        fields = fields.replace(' NAME ', ' CHECKNUM ')
+                        fields = fields.replace(" NAME ", " CHECKNUM ")
 
                 # go through specific backend process if any
                 IGNORE = False
@@ -636,30 +681,30 @@ class AppMoney(Appbank):
                     # field_MEMO=...
                     # field=...
 
-                    cmd = 'cmd /C '
+                    cmd = "cmd /C "
                     for f in field:
                         value = field[f]
-                        cmd = cmd + 'set field_%s=%s& ' % (f, value)
+                        cmd = cmd + "set field_%s=%s& " % (f, value)
                     cmd = cmd + '"' + moduleHandler + '"'
 
                     self.logger.info(cmd)
                     result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     (stdout, stderr) = result.communicate()
                     if result.returncode != 0:
-                        print(stderr.decode('CP850'), file=sys.stderr)
+                        print(stderr.decode("CP850"), file=sys.stderr)
                         raise subprocess.CalledProcessError(result.returncode, cmd)
-                    if stderr != b'' or self.options.verbose is True:
-                        if stderr != b'':
+                    if stderr != b"" or self.options.verbose is True:
+                        if stderr != b"":
                             self.logger.warning(cmd)
                         for f in field:
-                            self.print('field_%s=%s' % (f, field[f]))
-                        self.print('Output:')
-                        self.print(stdout.decode('CP850'), end='')
-                        self.print(stderr.decode('CP850'), end='')
+                            self.print("field_%s=%s" % (f, field[f]))
+                        self.print("Output:")
+                        self.print(stdout.decode("CP850"), end="")
+                        self.print(stderr.decode("CP850"), end="")
 
-                    result = stdout.decode('CP850')
+                    result = stdout.decode("CP850")
 
-                    for line in re.split(r'[\r\n]+', result):
+                    for line in re.split(r"[\r\n]+", result):
                         if not line == "":
                             f, value = line.split("=", 1)
 
@@ -667,8 +712,8 @@ class AppMoney(Appbank):
                                 IGNORE = True
                             elif f == "NEW":
                                 NEW = value
-                            elif f.startswith('field_'):
-                                f = re.sub(r'^field_', '', f)
+                            elif f.startswith("field_"):
+                                f = re.sub(r"^field_", "", f)
                                 if value == "":
                                     if f in field:
                                         del field[f]
@@ -689,7 +734,9 @@ class AppMoney(Appbank):
                     # as DTUSER
                     field["DTPOSTED"] = field["DTUSER"]
 
-                if not IGNORE and (from_date == '' or field["DTPOSTED"] >= from_date[0:4] + from_date[5:7] + from_date[8:10]):
+                if not IGNORE and (
+                    from_date == "" or field["DTPOSTED"] >= from_date[0:4] + from_date[5:7] + from_date[8:10]
+                ):
                     # dump transaction if not ignored and date matches
                     # (still needed because 'coming "date"' still returns older transactions - bug?
                     #  and anyway, because for CARDs all transactions are listed by 'history "date"' as registered at the payment date)
@@ -701,12 +748,12 @@ class AppMoney(Appbank):
                             fields = origfields
                             field = origfield.copy()
                             field["FITID"] = origfield["FITID"] + "_" + n
-                            for line in re.split(r'[\r\n]+', result):
+                            for line in re.split(r"[\r\n]+", result):
                                 if not line == "":
                                     f, value = line.split("=", 1)
 
-                                    if f.startswith(n + '_field_'):
-                                        f = re.sub(r'^.*_field_', '', f)
+                                    if f.startswith(n + "_field_"):
+                                        f = re.sub(r"^.*_field_", "", f)
                                         field[f] = value
                                         if f not in fields.strip().split(" "):
                                             fields = fields + f + " "
@@ -715,15 +762,15 @@ class AppMoney(Appbank):
 
                 inTransaction = False
             if inTransaction:
-                if re.match(r'^<STMTTRN>', line):
+                if re.match(r"^<STMTTRN>", line):
                     field = {}
-                    fields = ' '
-                    transaction = ''
+                    fields = " "
+                    transaction = ""
                 else:
                     t = line.split(">", 1)
-                    v = re.split(r'[\r\n]', t[1])
+                    v = re.split(r"[\r\n]", t[1])
                     field[t[0][1:]] = v[0]
-                    fields = fields + t[0][1:] + ' '
+                    fields = fields + t[0][1:] + " "
 
         ofxcontent = output.getvalue()
         stderrcontent = self.stderr.getvalue()
@@ -749,18 +796,20 @@ class AppMoney(Appbank):
 
     def handle_ofx_content(self, account, ofxcontent, stderrcontent):
 
-        label = self.config.get(account, 'label', default='')
+        label = self.config.get(account, "label", default="")
 
         if self.options.display:
             self.print(Style.BRIGHT + ofxcontent + Style.RESET_ALL)
 
-        nbTransactions = ofxcontent.count('<STMTTRN>')
+        nbTransactions = ofxcontent.count("<STMTTRN>")
 
         # create ofx file
-        fname = re.sub(r'[^\w@\. ]', '_', account + " " + label)
-        ofxfile = os.path.join(self.get_downloads_path(), fname + datetime.datetime.now().strftime("_%Y_%m_%d_%H%M%S") + ".ofx")
+        fname = re.sub(r"[^\w@\. ]", "_", account + " " + label)
+        ofxfile = os.path.join(
+            self.get_downloads_path(), fname + datetime.datetime.now().strftime("_%Y_%m_%d_%H%M%S") + ".ofx"
+        )
         with open(ofxfile, "w") as ofx_file:
-            ofx_file.write(re.sub(r'\r\n', r'\n', ofxcontent))
+            ofx_file.write(re.sub(r"\r\n", r"\n", ofxcontent))
 
         with numMutex:
             self.importIndex = self.importIndex + 1
@@ -773,30 +822,31 @@ class AppMoney(Appbank):
         with printMutex:
             if self.options.no_import or nbTransactions == 0:
                 if nbTransactions == 0:
-                    print(Style.BRIGHT + '(%i/%i) %s (%s) (no transaction).' % (
-                        index, self.nb_accounts,
-                        account,
-                        label
-                    ) + Style.RESET_ALL)
+                    print(
+                        Style.BRIGHT
+                        + "(%i/%i) %s (%s) (no transaction)." % (index, self.nb_accounts, account, label)
+                        + Style.RESET_ALL
+                    )
                 else:
-                    print(Fore.GREEN + Style.BRIGHT + '(%i/%i) %s (%s) (%i transaction(s)).' % (
-                        index, self.nb_accounts,
-                        account,
-                        label,
-                        nbTransactions
-                    ) + Style.RESET_ALL)
+                    print(
+                        Fore.GREEN
+                        + Style.BRIGHT
+                        + "(%i/%i) %s (%s) (%i transaction(s))."
+                        % (index, self.nb_accounts, account, label, nbTransactions)
+                        + Style.RESET_ALL
+                    )
             else:
                 # import into money
-                print(Fore.GREEN + Style.BRIGHT + '(%i/%i) Importing "%s" into MSMoney (%i transaction(s))...' % (
-                    index, self.nb_accounts,
-                    ofxfile,
-                    nbTransactions
-                ) + Style.RESET_ALL)
+                print(
+                    Fore.GREEN
+                    + Style.BRIGHT
+                    + '(%i/%i) Importing "%s" into MSMoney (%i transaction(s))...'
+                    % (index, self.nb_accounts, ofxfile, nbTransactions)
+                    + Style.RESET_ALL
+                )
         if not self.options.no_import:
             if nbTransactions > 0:
-                subprocess.check_call('"%s" %s' % (
-                    os.path.join(self.get_money_path(), "mnyimprt.exe"),
-                    ofxfile))
+                subprocess.check_call('"%s" %s' % (os.path.join(self.get_money_path(), "mnyimprt.exe"), ofxfile))
 
     def main(self, argv):
 
@@ -824,9 +874,11 @@ class AppMoney(Appbank):
             accounts = self.options.accounts.split(",")
 
         # take only enabled accounts
-        accounts = list(filter(
-            lambda account: self.str2bool(self.config.get(account, "disabled", default=False)) is False,
-            accounts))
+        accounts = list(
+            filter(
+                lambda account: self.str2bool(self.config.get(account, "disabled", default=False)) is False, accounts
+            )
+        )
         self.nb_accounts = len(accounts)
 
         # accounts.sort(key = lambda x: x.split("@")[1])
@@ -835,15 +887,11 @@ class AppMoney(Appbank):
         backends = list(set(map(lambda x: x.split("@")[1], accounts)))
 
         # order backends by number of accounts
-        backends.sort(key=lambda b: len(list(filter(
-                lambda x: x.split("@")[1] == b,
-                accounts))), reverse=True)
+        backends.sort(key=lambda b: len(list(filter(lambda x: x.split("@")[1] == b, accounts))), reverse=True)
 
         self.main_thread = None
         for backend in backends:
-            backend_accounts = list(filter(
-                lambda x: x.split("@")[1] == backend,
-                accounts))
+            backend_accounts = list(filter(lambda x: x.split("@")[1] == backend, accounts))
 
             if backend == backends[0]:
                 self.main_thread = HistoryThread(self, backend_accounts)

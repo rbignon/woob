@@ -21,4 +21,4 @@
 from .module import RazibusModule
 
 
-__all__ = ['RazibusModule']
+__all__ = ["RazibusModule"]

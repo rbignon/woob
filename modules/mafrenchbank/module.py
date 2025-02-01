@@ -24,21 +24,21 @@ from woob.tools.value import ValueBackendPassword, ValueTransient
 from .browser import MaFrenchBankBrowser
 
 
-__all__ = ['MaFrenchBankModule']
+__all__ = ["MaFrenchBankModule"]
 
 
 class MaFrenchBankModule(Module, CapBank):
-    NAME = 'mafrenchbank'
-    DESCRIPTION = 'Ma French Bank'
-    MAINTAINER = 'Powens'
-    EMAIL = 'dev@powens.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
+    NAME = "mafrenchbank"
+    DESCRIPTION = "Ma French Bank"
+    MAINTAINER = "Powens"
+    EMAIL = "dev@powens.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Alias', masked=False),
-        ValueBackendPassword('password', label='Mot de passe'),
-        ValueTransient('otp_app', regexp=r'\d{8}'),
+        ValueBackendPassword("login", label="Alias", masked=False),
+        ValueBackendPassword("password", label="Mot de passe"),
+        ValueTransient("otp_app", regexp=r"\d{8}"),
     )
 
     BROWSER = MaFrenchBankBrowser

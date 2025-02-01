@@ -19,4 +19,4 @@
 from .cinema import AppCinema
 
 
-__all__ = ['AppCinema']
+__all__ = ["AppCinema"]

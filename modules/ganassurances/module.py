@@ -23,24 +23,24 @@ from woob_modules.ganpatrimoine.module import GanPatrimoineModule
 from .browser import GanAssurancesBrowser
 
 
-__all__ = ['GanAssurancesModule']
+__all__ = ["GanAssurancesModule"]
 
 
 class GanAssurancesModule(GanPatrimoineModule, CapBank):
-    NAME = 'ganassurances'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DEPENDENCIES = ('ganpatrimoine',)
-    DESCRIPTION = 'Gan Assurances'
-    LICENSE = 'LGPLv3+'
+    NAME = "ganassurances"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DEPENDENCIES = ("ganpatrimoine",)
+    DESCRIPTION = "Gan Assurances"
+    LICENSE = "LGPLv3+"
 
     BROWSER = GanAssurancesBrowser
 
     def create_default_browser(self):
         return self.create_browser(
-            'ganassurances',
+            "ganassurances",
             self.config,
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )

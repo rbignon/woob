@@ -26,15 +26,16 @@ from .pages import PlacePage, ResultsPage
 
 
 class PagesjaunesBrowser(PagesBrowser):
-    BASEURL = 'https://www.pagesjaunes.fr'
+    BASEURL = "https://www.pagesjaunes.fr"
 
     search = URL(
-        r'/annuaire/chercherlespros\?quoiqui=(?P<pattern>[a-z0-9-]+)&ou=(?P<city>[a-z0-9-]+)&page=(?P<page>\d+)',
-        ResultsPage)
-    company = URL(r'/pros/\d+', PlacePage)
+        r"/annuaire/chercherlespros\?quoiqui=(?P<pattern>[a-z0-9-]+)&ou=(?P<city>[a-z0-9-]+)&page=(?P<page>\d+)",
+        ResultsPage,
+    )
+    company = URL(r"/pros/\d+", PlacePage)
 
     def simplify(self, name):
-        return re.sub(r'[^a-z0-9-]+', '-', name.lower())
+        return re.sub(r"[^a-z0-9-]+", "-", name.lower())
 
     def search_contacts(self, query):
         assert query.name

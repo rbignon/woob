@@ -22,8 +22,8 @@ from woob.tools.test import BackendTest
 
 
 class NectarineTest(BackendTest):
-    MODULE = 'nectarine'
+    MODULE = "nectarine"
 
     def test_nectarine(self):
-        l = list(self.backend.iter_radios_search(''))
+        l = list(self.backend.iter_radios_search(""))
         self.assertTrue(len(l) > 0)

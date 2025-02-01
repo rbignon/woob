@@ -23,30 +23,28 @@ from woob.tools.backend import Module
 from .browser import ParolesnetBrowser
 
 
-__all__ = ['ParolesnetModule']
+__all__ = ["ParolesnetModule"]
 
 
 class ParolesnetModule(Module, CapLyrics):
-    NAME = 'parolesnet'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'paroles.net lyrics website'
-    LICENSE = 'AGPLv3+'
+    NAME = "parolesnet"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "julien.veyssier@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "paroles.net lyrics website"
+    LICENSE = "AGPLv3+"
     BROWSER = ParolesnetBrowser
 
     def get_lyrics(self, id):
         return self.browser.get_lyrics(id)
 
     def iter_lyrics(self, criteria, pattern):
-        return self.browser.iter_lyrics(criteria, pattern.encode('utf-8'))
+        return self.browser.iter_lyrics(criteria, pattern.encode("utf-8"))
 
     def fill_songlyrics(self, songlyrics, fields):
-        if 'content' in fields:
+        if "content" in fields:
             sl = self.get_lyrics(songlyrics.id)
             songlyrics.content = sl.content
         return songlyrics
 
-    OBJECTS = {
-        SongLyrics: fill_songlyrics
-    }
+    OBJECTS = {SongLyrics: fill_songlyrics}

@@ -34,34 +34,35 @@ class TestRawText(TestCase):
     # Original RawText behaviour:
     # - the content of <p> is empty, we return the default value
     def test_first_node_is_element(self):
-        e = fromstring('<html><body><p></p></body></html>')
-        self.assertEqual("foo", RawText('//p', default="foo")(e))
+        e = fromstring("<html><body><p></p></body></html>")
+        self.assertEqual("foo", RawText("//p", default="foo")(e))
 
     # - the content of <p> starts with text, we retrieve only that text
     def test_first_node_is_text(self):
-        e = fromstring('<html><body><p>blah: <span>229,90</span> EUR</p></body></html>')
-        self.assertEqual("blah: ", RawText('//p', default="foo")(e))
+        e = fromstring("<html><body><p>blah: <span>229,90</span> EUR</p></body></html>")
+        self.assertEqual("blah: ", RawText("//p", default="foo")(e))
 
     # - the content of <p> starts with a sub-element, we retrieve the default value
     def test_first_node_has_no_recursion(self):
-        e = fromstring('<html><body><p><span>229,90</span> EUR</p></body></html>')
-        self.assertEqual("foo", RawText('//p', default="foo")(e))
+        e = fromstring("<html><body><p><span>229,90</span> EUR</p></body></html>")
+        self.assertEqual("foo", RawText("//p", default="foo")(e))
 
     # Recursive RawText behaviour
     # - the content of <p> starts with text, we retrieve all text, also the text from sub-elements
     def test_first_node_is_text_recursive(self):
-        e = fromstring('<html><body><p>blah: <span>229,90</span> EUR</p></body></html>')
-        self.assertEqual("blah: 229,90 EUR", RawText('//p', default="foo", children=True)(e))
+        e = fromstring("<html><body><p>blah: <span>229,90</span> EUR</p></body></html>")
+        self.assertEqual("blah: 229,90 EUR", RawText("//p", default="foo", children=True)(e))
 
     # - the content of <p> starts with a sub-element, we retrieve all text, also the text from sub-elements
     def test_first_node_is_element_recursive(self):
-        e = fromstring('<html><body><p><span>229,90</span> EUR</p></body></html>')
-        self.assertEqual("229,90 EUR", RawText('//p', default="foo", children=True)(e))
+        e = fromstring("<html><body><p><span>229,90</span> EUR</p></body></html>")
+        self.assertEqual("229,90 EUR", RawText("//p", default="foo", children=True)(e))
 
 
 class TestCleanTextNewlines(TestCase):
     def setUp(self):
-        self.e = fromstring('''
+        self.e = fromstring(
+            """
         <body>
             <div>
                 foo
@@ -69,7 +70,8 @@ class TestCleanTextNewlines(TestCase):
                 baz
             </div>
         </body>
-        ''')
+        """
+        )
 
     def test_value(self):
         self.assertEqual("foo bar baz", CleanText("//div")(self.e))
@@ -80,7 +82,8 @@ class TestCleanTextNewlines(TestCase):
 
 class TestFormValue(TestCase):
     def setUp(self):
-        self.e = fromstring('''
+        self.e = fromstring(
+            """
         <form>
             <input value="bonjour" name="test_text">
             <input type="number" value="5" name="test_number1">
@@ -93,56 +96,54 @@ class TestFormValue(TestCase):
             <input type="time" value="12:13" name="test_time">
             <input type="datetime-local" value="2010-11-12T13:14" name="test_datetime_local">
         </form>
-        ''')
+        """
+        )
 
     def test_value(self):
-        self.assertEqual('bonjour', FormValue('//form//input[@name="test_text"]')(self.e))
+        self.assertEqual("bonjour", FormValue('//form//input[@name="test_text"]')(self.e))
         self.assertEqual(5, FormValue('//form//input[@name="test_number1"]')(self.e))
-        self.assertEqual(Decimal('0.05'), FormValue('//form//input[@name="test_number2"]')(self.e))
+        self.assertEqual(Decimal("0.05"), FormValue('//form//input[@name="test_number2"]')(self.e))
         self.assertEqual(True, FormValue('//form//input[@name="test_checkbox1"]')(self.e))
         self.assertEqual(False, FormValue('//form//input[@name="test_checkbox2"]')(self.e))
         self.assertEqual(20, FormValue('//form//input[@name="test_range"]')(self.e))
-        self.assertEqual('#fff666', FormValue('//form//input[@name="test_color"]')(self.e))
+        self.assertEqual("#fff666", FormValue('//form//input[@name="test_color"]')(self.e))
         self.assertEqual(datetime.date(2010, 11, 12), FormValue('//form//input[@name="test_date"]')(self.e))
         self.assertEqual(datetime.time(12, 13), FormValue('//form//input[@name="test_time"]')(self.e))
-        self.assertEqual(datetime.datetime(2010, 11, 12, 13, 14), FormValue('//form//input[@name="test_datetime_local"]')(self.e))
+        self.assertEqual(
+            datetime.datetime(2010, 11, 12, 13, 14), FormValue('//form//input[@name="test_datetime_local"]')(self.e)
+        )
 
 
 class TestLink(TestCase):
     def test_link(self):
         e = fromstring('<a href="https://www.google.com/">Google</a>')
 
-        self.assertEqual('https://www.google.com/', Link('//a')(e))
-
+        self.assertEqual("https://www.google.com/", Link("//a")(e))
 
 
 class TestDateTime(TestCase):
     def test_tz(self):
+        self.assertEqual(DateTime().filter("2020-01-02 13:45:00"), datetime.datetime(2020, 1, 2, 13, 45))
         self.assertEqual(
-            DateTime().filter('2020-01-02 13:45:00'),
-            datetime.datetime(2020, 1, 2, 13, 45)
+            DateTime(tzinfo="Europe/Paris").filter("2020-01-02 13:45:00"),
+            datetime.datetime(2020, 1, 2, 13, 45, tzinfo=gettz("Europe/Paris")),
         )
-        self.assertEqual(
-            DateTime(tzinfo='Europe/Paris').filter('2020-01-02 13:45:00'),
-            datetime.datetime(2020, 1, 2, 13, 45, tzinfo=gettz('Europe/Paris'))
-        )
-
 
 
 def test_CleanText():
     # This test works poorly under a doctest, or would be hard to read
-    assert CleanText().filter(' coucou  \n\théhé') == 'coucou héhé'
-    assert CleanText().filter('coucou\xa0coucou') == CleanText().filter('coucou\xa0coucou') == 'coucou coucou'
+    assert CleanText().filter(" coucou  \n\théhé") == "coucou héhé"
+    assert CleanText().filter("coucou\xa0coucou") == CleanText().filter("coucou\xa0coucou") == "coucou coucou"
 
     # Unicode normalization
-    assert CleanText().filter('Éçã') == 'Éçã'
-    assert CleanText(normalize='NFKC').filter('…') == '...'
-    assert CleanText().filter('…') == '…'
+    assert CleanText().filter("Éçã") == "Éçã"
+    assert CleanText(normalize="NFKC").filter("…") == "..."
+    assert CleanText().filter("…") == "…"
     # Diacritical mark (dakuten)
-    assert CleanText().filter('\u3053\u3099') == '\u3054'
-    assert CleanText(normalize='NFD').filter('\u3053\u3099') == '\u3053\u3099'
-    assert CleanText(normalize='NFD').filter('\u3054') == '\u3053\u3099'
-    assert CleanText(normalize=False).filter('\u3053\u3099') == '\u3053\u3099'
+    assert CleanText().filter("\u3053\u3099") == "\u3054"
+    assert CleanText(normalize="NFD").filter("\u3053\u3099") == "\u3053\u3099"
+    assert CleanText(normalize="NFD").filter("\u3054") == "\u3053\u3099"
+    assert CleanText(normalize=False).filter("\u3053\u3099") == "\u3053\u3099"
     # None value
     assert_raises(FilterError, CleanText().filter, None)
 
@@ -153,127 +154,134 @@ def assert_raises(exc_class, func, *args, **kwargs):
     except exc_class:
         pass
     else:
-        assert False, 'did not raise %s' % exc_class
+        assert False, "did not raise %s" % exc_class
 
 
 def test_CleanDecimal_unicode():
-    assert CleanDecimal().filter('\u22123000') == Decimal('-3000')
+    assert CleanDecimal().filter("\u22123000") == Decimal("-3000")
 
 
 def test_CleanDecimal_sign():
-    assert CleanDecimal(sign='-').filter('42') == Decimal('-42')
-    assert CleanDecimal(sign='-').filter('-42') == Decimal('-42')
-    assert CleanDecimal(sign='+').filter('42') == Decimal('42')
-    assert CleanDecimal(sign='+').filter('-42') == Decimal('42')
+    assert CleanDecimal(sign="-").filter("42") == Decimal("-42")
+    assert CleanDecimal(sign="-").filter("-42") == Decimal("-42")
+    assert CleanDecimal(sign="+").filter("42") == Decimal("42")
+    assert CleanDecimal(sign="+").filter("-42") == Decimal("42")
 
 
 def test_CleanDecimal_strict():
-    assert CleanDecimal.US().filter('123') == Decimal('123')
-    assert CleanDecimal.US().filter('foo + 123 bar') == Decimal('123')
-    assert CleanDecimal.US().filter('foo +123 bar') == Decimal('123')
-    assert CleanDecimal.US().filter('foo 123.45 bar') == Decimal('123.45')
-    assert CleanDecimal.US().filter('foo 12,345.67 bar') == Decimal('12345.67')
-    assert CleanDecimal.US().filter('foo 123,456,789 bar') == Decimal('123456789')
-    assert CleanDecimal.US().filter('foo - 123,456,789.1 bar') == Decimal('-123456789.1')
-    assert CleanDecimal.US().filter('foo -123,456,789.1 bar') == Decimal('-123456789.1')
-    assert CleanDecimal.US().filter('foo - .1 bar') == Decimal('-0.1')
-    assert CleanDecimal.US().filter('foo -.1 bar') == Decimal('-0.1')
-    assert_raises(NumberFormatError, CleanDecimal.US().filter, 'foo 12 345.67 bar')
-    assert_raises(NumberFormatError, CleanDecimal.US().filter, 'foo 123 bar 456')
-    assert_raises(NumberFormatError, CleanDecimal.US().filter, 'foo 123.456.789 bar')
-    assert_raises(NumberFormatError, CleanDecimal.US().filter, 'foo 12,3456 bar')
-    assert_raises(NumberFormatError, CleanDecimal.US().filter, 'foo 123-456 bar')
+    assert CleanDecimal.US().filter("123") == Decimal("123")
+    assert CleanDecimal.US().filter("foo + 123 bar") == Decimal("123")
+    assert CleanDecimal.US().filter("foo +123 bar") == Decimal("123")
+    assert CleanDecimal.US().filter("foo 123.45 bar") == Decimal("123.45")
+    assert CleanDecimal.US().filter("foo 12,345.67 bar") == Decimal("12345.67")
+    assert CleanDecimal.US().filter("foo 123,456,789 bar") == Decimal("123456789")
+    assert CleanDecimal.US().filter("foo - 123,456,789.1 bar") == Decimal("-123456789.1")
+    assert CleanDecimal.US().filter("foo -123,456,789.1 bar") == Decimal("-123456789.1")
+    assert CleanDecimal.US().filter("foo - .1 bar") == Decimal("-0.1")
+    assert CleanDecimal.US().filter("foo -.1 bar") == Decimal("-0.1")
+    assert_raises(NumberFormatError, CleanDecimal.US().filter, "foo 12 345.67 bar")
+    assert_raises(NumberFormatError, CleanDecimal.US().filter, "foo 123 bar 456")
+    assert_raises(NumberFormatError, CleanDecimal.US().filter, "foo 123.456.789 bar")
+    assert_raises(NumberFormatError, CleanDecimal.US().filter, "foo 12,3456 bar")
+    assert_raises(NumberFormatError, CleanDecimal.US().filter, "foo 123-456 bar")
 
-    assert CleanDecimal.French().filter('123') == Decimal('123')
-    assert CleanDecimal.French().filter('foo + 123 bar') == Decimal('123')
-    assert CleanDecimal.French().filter('foo +123 bar') == Decimal('123')
-    assert CleanDecimal.French().filter('foo 123,45 bar') == Decimal('123.45')
-    assert CleanDecimal.French().filter('foo 12 345,67 bar') == Decimal('12345.67')
-    assert CleanDecimal.French().filter('foo - 123 456 789 bar') == Decimal('-123456789')
-    assert CleanDecimal.French().filter('foo -123 456 789 bar') == Decimal('-123456789')
-    assert_raises(NumberFormatError, CleanDecimal.French().filter, 'foo 123.45 bar')
-    assert_raises(NumberFormatError, CleanDecimal.French().filter, 'foo 123 bar 456')
-    assert_raises(NumberFormatError, CleanDecimal.French().filter, 'foo 123,456,789')
-    assert_raises(NumberFormatError, CleanDecimal.French().filter, 'foo 12 3456 bar')
-    assert_raises(NumberFormatError, CleanDecimal.French().filter, 'foo 123-456 bar')
+    assert CleanDecimal.French().filter("123") == Decimal("123")
+    assert CleanDecimal.French().filter("foo + 123 bar") == Decimal("123")
+    assert CleanDecimal.French().filter("foo +123 bar") == Decimal("123")
+    assert CleanDecimal.French().filter("foo 123,45 bar") == Decimal("123.45")
+    assert CleanDecimal.French().filter("foo 12 345,67 bar") == Decimal("12345.67")
+    assert CleanDecimal.French().filter("foo - 123 456 789 bar") == Decimal("-123456789")
+    assert CleanDecimal.French().filter("foo -123 456 789 bar") == Decimal("-123456789")
+    assert_raises(NumberFormatError, CleanDecimal.French().filter, "foo 123.45 bar")
+    assert_raises(NumberFormatError, CleanDecimal.French().filter, "foo 123 bar 456")
+    assert_raises(NumberFormatError, CleanDecimal.French().filter, "foo 123,456,789")
+    assert_raises(NumberFormatError, CleanDecimal.French().filter, "foo 12 3456 bar")
+    assert_raises(NumberFormatError, CleanDecimal.French().filter, "foo 123-456 bar")
 
-    assert CleanDecimal.SI().filter('123') == Decimal('123')
-    assert CleanDecimal.SI().filter('foo + 123 bar') == Decimal('123')
-    assert CleanDecimal.SI().filter('foo +123 bar') == Decimal('123')
-    assert CleanDecimal.SI().filter('foo 123.45 bar') == Decimal('123.45')
-    assert CleanDecimal.SI().filter('foo 12 345.67 bar') == Decimal('12345.67')
-    assert CleanDecimal.SI().filter('foo 123 456 789 bar') == Decimal('123456789')
-    assert CleanDecimal.SI().filter('foo - 123 456 789 bar') == Decimal('-123456789')
-    assert CleanDecimal.SI().filter('foo -123 456 789 bar') == Decimal('-123456789')
-    assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 123,45 bar')
-    assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 123 bar 456')
-    assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 123,456,789')
-    assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 12 3456 bar')
-    assert_raises(NumberFormatError, CleanDecimal.SI().filter, 'foo 123-456 bar')
+    assert CleanDecimal.SI().filter("123") == Decimal("123")
+    assert CleanDecimal.SI().filter("foo + 123 bar") == Decimal("123")
+    assert CleanDecimal.SI().filter("foo +123 bar") == Decimal("123")
+    assert CleanDecimal.SI().filter("foo 123.45 bar") == Decimal("123.45")
+    assert CleanDecimal.SI().filter("foo 12 345.67 bar") == Decimal("12345.67")
+    assert CleanDecimal.SI().filter("foo 123 456 789 bar") == Decimal("123456789")
+    assert CleanDecimal.SI().filter("foo - 123 456 789 bar") == Decimal("-123456789")
+    assert CleanDecimal.SI().filter("foo -123 456 789 bar") == Decimal("-123456789")
+    assert_raises(NumberFormatError, CleanDecimal.SI().filter, "foo 123,45 bar")
+    assert_raises(NumberFormatError, CleanDecimal.SI().filter, "foo 123 bar 456")
+    assert_raises(NumberFormatError, CleanDecimal.SI().filter, "foo 123,456,789")
+    assert_raises(NumberFormatError, CleanDecimal.SI().filter, "foo 12 3456 bar")
+    assert_raises(NumberFormatError, CleanDecimal.SI().filter, "foo 123-456 bar")
 
 
 @pytest.mark.parametrize(
-    'decimal_filter',
+    "decimal_filter",
     (CleanDecimal.SI(), CleanDecimal.French()),
 )
-@pytest.mark.parametrize('input_value, expected_output', (
-    ('4.1e05', Decimal('4.1e05')),
-    ('4.1E05', Decimal('4.1E05')),
-    ('4.1e5', Decimal('4.1e5')),
-    ('4.1E5', Decimal('4.1E5')),
-    ('4.1e+05', Decimal('4.1e+05')),
-    ('4.1E-05', Decimal('4.1E-05')),
-    ('-4.1e+5', Decimal('-4.1e+5')),
-    ('+4.1E-5', Decimal('+4.1E-5')),
-    ('foo 1e1 bar', Decimal('1e1')),
-    ('foo -0e+1 bar', Decimal('-0e+1')),
-    ('foo7719e+05bar', Decimal('7719e+05')),
-    ('foo-1e0bar', Decimal('-1e0')),
-))
+@pytest.mark.parametrize(
+    "input_value, expected_output",
+    (
+        ("4.1e05", Decimal("4.1e05")),
+        ("4.1E05", Decimal("4.1E05")),
+        ("4.1e5", Decimal("4.1e5")),
+        ("4.1E5", Decimal("4.1E5")),
+        ("4.1e+05", Decimal("4.1e+05")),
+        ("4.1E-05", Decimal("4.1E-05")),
+        ("-4.1e+5", Decimal("-4.1e+5")),
+        ("+4.1E-5", Decimal("+4.1E-5")),
+        ("foo 1e1 bar", Decimal("1e1")),
+        ("foo -0e+1 bar", Decimal("-0e+1")),
+        ("foo7719e+05bar", Decimal("7719e+05")),
+        ("foo-1e0bar", Decimal("-1e0")),
+    ),
+)
 def test_CleanDecimal_scientific_notation(decimal_filter, input_value, expected_output):
     assert decimal_filter.filter(input_value) == expected_output
 
 
 @pytest.mark.parametrize(
-    'decimal_filter',
+    "decimal_filter",
     (CleanDecimal.SI(), CleanDecimal.French()),
 )
-@pytest.mark.parametrize('input_value', (
-    ('4.1e--05'),
-    ('4.1e++05'),
-    ('4.1e+-05'),
-    ('4.1e-+05'),
-    ('4.1ee05'),
-    ('+e-'),
-    ('1+e-1'),
-))
+@pytest.mark.parametrize(
+    "input_value",
+    (
+        ("4.1e--05"),
+        ("4.1e++05"),
+        ("4.1e+-05"),
+        ("4.1e-+05"),
+        ("4.1ee05"),
+        ("+e-"),
+        ("1+e-1"),
+    ),
+)
 def test_error_CleanDecimal_scientific_notation(decimal_filter, input_value):
     with pytest.raises(NumberFormatError):
         decimal_filter.filter(input_value)
 
 
 def test_Currency():
-    assert Currency().filter('\u20AC') == 'EUR'
+    assert Currency().filter("\u20AC") == "EUR"
     assert Currency(default=NotAvailable).filter(None) == NotAvailable
     assert_raises(FilterError, Currency().filter, None)
 
+
 def test_DateTime():
     today = datetime.datetime.now()
-    assert_raises(FilterError, Date(strict=True).filter, '2019')
-    assert_raises(FilterError, Date(strict=True).filter, '1788-7')
-    assert_raises(FilterError, Date(strict=True).filter, 'June 1st')
+    assert_raises(FilterError, Date(strict=True).filter, "2019")
+    assert_raises(FilterError, Date(strict=True).filter, "1788-7")
+    assert_raises(FilterError, Date(strict=True).filter, "June 1st")
 
-    assert Date(strict=True).filter('1788-7-15') == datetime.date(1788, 7, 15)
+    assert Date(strict=True).filter("1788-7-15") == datetime.date(1788, 7, 15)
 
-    assert Date(strict=False).filter('1788-7-15') == datetime.date(1788, 7, 15)
-    assert Date(strict=False).filter('1945-7') == datetime.date(1945, 7, today.day)
-    assert Date(strict=False).filter('June 1st') == datetime.date(today.year, 6, 1)
+    assert Date(strict=False).filter("1788-7-15") == datetime.date(1788, 7, 15)
+    assert Date(strict=False).filter("1945-7") == datetime.date(1945, 7, today.day)
+    assert Date(strict=False).filter("June 1st") == datetime.date(today.year, 6, 1)
 
-    assert DateTime(strict=False).filter('1788-7') == datetime.datetime(1788, 7, today.day)
-    assert DateTime(strict=False).filter('1788') == datetime.datetime(1788, today.month, today.day)
-    assert DateTime(strict=False).filter('5-1') == datetime.datetime(today.year, 5, 1)
+    assert DateTime(strict=False).filter("1788-7") == datetime.datetime(1788, 7, today.day)
+    assert DateTime(strict=False).filter("1788") == datetime.datetime(1788, today.month, today.day)
+    assert DateTime(strict=False).filter("5-1") == datetime.datetime(today.year, 5, 1)
 
-    assert Date(yearfirst=True).filter('88-7-15') == datetime.date(1988, 7, 15)
-    assert Date(yearfirst=False).filter('20-7-15') == datetime.date(2015, 7, 20)
-    assert Date(yearfirst=True).filter('1789-7-15') == datetime.date(1789, 7, 15)
-    assert Date(yearfirst=True, strict=False).filter('7-15') == datetime.date(today.year, 7, 15)
+    assert Date(yearfirst=True).filter("88-7-15") == datetime.date(1988, 7, 15)
+    assert Date(yearfirst=False).filter("20-7-15") == datetime.date(2015, 7, 20)
+    assert Date(yearfirst=True).filter("1789-7-15") == datetime.date(1789, 7, 15)
+    assert Date(yearfirst=True, strict=False).filter("7-15") == datetime.date(today.year, 7, 15)

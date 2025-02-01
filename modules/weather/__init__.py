@@ -21,4 +21,4 @@
 from .module import WeatherModule
 
 
-__all__ = ['WeatherModule']
+__all__ = ["WeatherModule"]

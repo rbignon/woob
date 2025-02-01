@@ -21,4 +21,6 @@ from woob_modules.cmes.browser import CmesBrowser
 
 
 class CicesBrowser(CmesBrowser):
-    mfa = CmesBrowser.mfa.with_urls('https://www.cic-epargnesalariale.fr/fr/epargnants/premiers-pas/authentification-forte/index.html')
+    mfa = CmesBrowser.mfa.with_urls(
+        "https://www.cic-epargnesalariale.fr/fr/epargnants/premiers-pas/authentification-forte/index.html"
+    )

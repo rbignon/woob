@@ -23,16 +23,16 @@ from woob.tools.backend import Module
 from .browser import SevenFiftyGramsBrowser
 
 
-__all__ = ['SevenFiftyGramsModule']
+__all__ = ["SevenFiftyGramsModule"]
 
 
 class SevenFiftyGramsModule(Module, CapRecipe):
-    NAME = '750g'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = u'750g French recipe website'
-    LICENSE = 'AGPLv3+'
+    NAME = "750g"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "julien.veyssier@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "750g French recipe website"
+    LICENSE = "AGPLv3+"
     BROWSER = SevenFiftyGramsBrowser
 
     def get_recipe(self, id):
@@ -42,7 +42,7 @@ class SevenFiftyGramsModule(Module, CapRecipe):
         return self.browser.iter_recipes(pattern)
 
     def fill_recipe(self, recipe, fields):
-        if 'nb_person' in fields or 'instructions' in fields:
+        if "nb_person" in fields or "instructions" in fields:
             recipe = self.browser.get_recipe(recipe.id, recipe)
         return recipe
 

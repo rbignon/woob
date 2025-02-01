@@ -20,4 +20,4 @@
 from .module import BforbankModule
 
 
-__all__ = ['BforbankModule']
+__all__ = ["BforbankModule"]

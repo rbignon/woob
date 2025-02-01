@@ -20,4 +20,4 @@
 from .module import ImdbModule
 
 
-__all__ = ['ImdbModule']
+__all__ = ["ImdbModule"]

@@ -24,7 +24,7 @@ from woob.tools.test import BackendTest
 
 
 class InfomaniakTest(BackendTest):
-    MODULE = 'infomaniak'
+    MODULE = "infomaniak"
 
     def test_document(self):
         subscriptions = list(self.backend.iter_subscription())

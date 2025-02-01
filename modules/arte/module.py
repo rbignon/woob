@@ -30,49 +30,49 @@ from .browser import ArteBrowser
 from .video import FORMATS, LANG, QUALITY, SITE, VERSION_VIDEO, get_site_enum_by_id
 
 
-__all__ = ['ArteModule']
+__all__ = ["ArteModule"]
 
 
 class ArteModule(Module, CapVideo, CapCollection):
-    NAME = 'arte'
-    MAINTAINER = u'Bezleputh'
-    EMAIL = 'carton_ben@yahoo.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'Arte French and German TV'
-    LICENSE = 'AGPLv3+'
+    NAME = "arte"
+    MAINTAINER = "Bezleputh"
+    EMAIL = "carton_ben@yahoo.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Arte French and German TV"
+    LICENSE = "AGPLv3+"
 
-    order = {'AIRDATE_DESC': 'Date',
-             'VIEWS': 'Views',
-             'ALPHA': 'Alphabetic',
-             'LAST_CHANCE': 'Last chance'
-             }
+    order = {"AIRDATE_DESC": "Date", "VIEWS": "Views", "ALPHA": "Alphabetic", "LAST_CHANCE": "Last chance"}
 
-    versions_choice = OrderedDict([(k, u'%s' % (v.get('label'))) for k, v in VERSION_VIDEO.items])
-    format_choice = OrderedDict([(k, u'%s' % (v)) for k, v in FORMATS.items])
-    lang_choice = OrderedDict([(k, u'%s' % (v.get('label'))) for k, v in LANG.items])
-    quality_choice = [u'%s' % (k) for k, v in QUALITY.items]
+    versions_choice = OrderedDict([(k, "%s" % (v.get("label"))) for k, v in VERSION_VIDEO.items])
+    format_choice = OrderedDict([(k, "%s" % (v)) for k, v in FORMATS.items])
+    lang_choice = OrderedDict([(k, "%s" % (v.get("label"))) for k, v in LANG.items])
+    quality_choice = ["%s" % (k) for k, v in QUALITY.items]
 
-    CONFIG = BackendConfig(Value('lang', label='Lang of videos', choices=lang_choice, default='FRENCH'),
-                           Value('order', label='Sort order', choices=order, default='AIRDATE_DESC'),
-                           Value('quality', label='Quality of videos', choices=quality_choice, default='HD'),
-                           Value('format', label='Format of videos', choices=format_choice, default=FORMATS.HTTP_MP4),
-                           Value('version', label='Version of videos', choices=versions_choice))
+    CONFIG = BackendConfig(
+        Value("lang", label="Lang of videos", choices=lang_choice, default="FRENCH"),
+        Value("order", label="Sort order", choices=order, default="AIRDATE_DESC"),
+        Value("quality", label="Quality of videos", choices=quality_choice, default="HD"),
+        Value("format", label="Format of videos", choices=format_choice, default=FORMATS.HTTP_MP4),
+        Value("version", label="Version of videos", choices=versions_choice),
+    )
 
     BROWSER = ArteBrowser
 
     def create_default_browser(self):
-        return self.create_browser(lang=self.config['lang'].get(),
-                                   quality=self.config['quality'].get(),
-                                   order=self.config['order'].get(),
-                                   format=self.config['format'].get(),
-                                   version=self.config['version'].get())
+        return self.create_browser(
+            lang=self.config["lang"].get(),
+            quality=self.config["quality"].get(),
+            order=self.config["order"].get(),
+            format=self.config["format"].get(),
+            version=self.config["version"].get(),
+        )
 
     def parse_id(self, _id):
-        m = re.match(r'https?://www.arte.tv/\w+/videos/(?P<id>.+)/(.*)', _id)
+        m = re.match(r"https?://www.arte.tv/\w+/videos/(?P<id>.+)/(.*)", _id)
         if m:
             return m.group(1)
 
-        if not _id.startswith('http'):
+        if not _id.startswith("http"):
             return _id
 
         return None
@@ -89,10 +89,10 @@ class ArteModule(Module, CapVideo, CapCollection):
         return self.browser.search_videos(pattern)
 
     def fill_arte_video(self, video, fields):
-        if fields != ['thumbnail']:
+        if fields != ["thumbnail"]:
             video = self.browser.get_video(video.id, video)
 
-        if 'thumbnail' in fields and video and video.thumbnail:
+        if "thumbnail" in fields and video and video.thumbnail:
             video.thumbnail.data = self.browser.open(video.thumbnail.url).content
         return video
 
@@ -101,11 +101,11 @@ class ArteModule(Module, CapVideo, CapCollection):
 
         if BaseVideo in objs:
             if collection.path_level == 0:
-                return [Collection([site.get('id')], site.get('label')) for site in SITE.values]
+                return [Collection([site.get("id")], site.get("label")) for site in SITE.values]
 
             elif len(split_path) == 1:
                 site = get_site_enum_by_id(split_path[0])
-                subsite = site.get('enum', None)
+                subsite = site.get("enum", None)
 
                 if site == SITE.PROGRAM:
                     return self.browser.get_arte_programs(split_path)
@@ -122,19 +122,21 @@ class ArteModule(Module, CapVideo, CapCollection):
                 if site == SITE.GUIDE:
                     return self.browser.get_arte_guide_videos(split_path)
                 else:
-                    subsite = site.get('enum', {})
+                    subsite = site.get("enum", {})
                     if subsite:
                         subsite = dict(subsite.items)
 
-                    return self.browser.get_arte_navigation(split_path,
-                                                            subsite.get('COLLECTION', {}).get('id', r''),
-                                                            subsite.get('PLAYLIST', {}).get('id', r''),
-                                                            subsite.get('MAGAZINE', {}).get('id', r''))
+                    return self.browser.get_arte_navigation(
+                        split_path,
+                        subsite.get("COLLECTION", {}).get("id", r""),
+                        subsite.get("PLAYLIST", {}).get("id", r""),
+                        subsite.get("MAGAZINE", {}).get("id", r""),
+                    )
 
     def validate_collection(self, objs, collection):
         if collection.path_level == 0:
             return
-        if BaseVideo in objs and (collection.split_path[0] in [value.get('id') for value in SITE.values]):
+        if BaseVideo in objs and (collection.split_path[0] in [value.get("id") for value in SITE.values]):
             return
         raise CollectionNotFound(collection.split_path)
 

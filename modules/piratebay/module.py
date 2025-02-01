@@ -25,22 +25,23 @@ from woob.tools.value import Value
 from .browser import PiratebayBrowser
 
 
-__all__ = ['PiratebayModule']
+__all__ = ["PiratebayModule"]
 
 
 class PiratebayModule(Module, CapTorrent):
-    NAME = 'piratebay'
-    MAINTAINER = u'Laurent Bachelier'
-    EMAIL = 'laurent@bachelier.name'
-    VERSION = '3.7'
-    DESCRIPTION = 'The Pirate Bay BitTorrent tracker'
-    LICENSE = 'AGPLv3+'
+    NAME = "piratebay"
+    MAINTAINER = "Laurent Bachelier"
+    EMAIL = "laurent@bachelier.name"
+    VERSION = "3.7"
+    DESCRIPTION = "The Pirate Bay BitTorrent tracker"
+    LICENSE = "AGPLv3+"
     BROWSER = PiratebayBrowser
-    CONFIG = BackendConfig(Value('proxybay', label='Use a Proxy Bay',
-                                 regexp=r'https?://.*/', default='', required=False))
+    CONFIG = BackendConfig(
+        Value("proxybay", label="Use a Proxy Bay", regexp=r"https?://.*/", default="", required=False)
+    )
 
     def create_default_browser(self):
-        return self.create_browser(self.config['proxybay'].get() or None)
+        return self.create_browser(self.config["proxybay"].get() or None)
 
     def get_torrent(self, id):
         return self.browser.get_torrent(id)
@@ -55,10 +56,10 @@ class PiratebayModule(Module, CapTorrent):
         return self.browser.open(torrent.url).content
 
     def iter_torrents(self, pattern):
-        return self.browser.iter_torrents(pattern.replace(' ', '+'))
+        return self.browser.iter_torrents(pattern.replace(" ", "+"))
 
     def fill_torrent(self, torrent, fields):
-        if 'description' in fields or 'files' in fields:
+        if "description" in fields or "files" in fields:
             tor = self.get_torrent(torrent.id)
             torrent.description = tor.description
             torrent.magnet = tor.magnet

@@ -30,7 +30,7 @@ class LocationPage(HTMLPage):
     class get_location(ItemElement):
         klass = IpLocation
 
-        obj_id = Regexp(CleanText('//h1/strong[starts-with(.,"IP Address Information")]'), r'- ([.\d]+)')
+        obj_id = Regexp(CleanText('//h1/strong[starts-with(.,"IP Address Information")]'), r"- ([.\d]+)")
 
         obj_city = CleanText('//td[.//strong[text()="City"]]', children=False)
         obj_country = CleanText('//td[.//strong[text()="Country"]]', children=False)
@@ -38,5 +38,9 @@ class LocationPage(HTMLPage):
         obj_zipcode = CleanText('//td[.//strong[text()="Postcode"]]', children=False)
         obj_host = CleanText('//td[.//strong[text()="Domain Name"]]', children=False, default=NotAvailable)
         obj_isp = CleanText('//td[.//strong[text()="ISP"]]', children=False)
-        obj_lt = Regexp(CleanText('//td[.//strong[text()="Coordinates of City"]]', children=False), r'\(([\d.-]+), [\d.-]+\)') & Type(type=float)
-        obj_lg = Regexp(CleanText('//td[.//strong[text()="Coordinates of City"]]', children=False), r'\([\d.-]+, ([\d.-]+)\)') & Type(type=float)
+        obj_lt = Regexp(
+            CleanText('//td[.//strong[text()="Coordinates of City"]]', children=False), r"\(([\d.-]+), [\d.-]+\)"
+        ) & Type(type=float)
+        obj_lg = Regexp(
+            CleanText('//td[.//strong[text()="Coordinates of City"]]', children=False), r"\([\d.-]+, ([\d.-]+)\)"
+        ) & Type(type=float)

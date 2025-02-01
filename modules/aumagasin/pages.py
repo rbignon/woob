@@ -32,8 +32,8 @@ class EnseignesListPage(HTMLPage):
         class item(ItemElement):
             klass = BaseObject
 
-            obj_id = CleanText('./h2')
-            obj_url = CleanText('./@href')
+            obj_id = CleanText("./h2")
+            obj_url = CleanText("./@href")
 
 
 class MagasinPage(HTMLPage):
@@ -51,23 +51,24 @@ class MagasinPage(HTMLPage):
         class item(ItemElement):
             klass = Place
 
-            obj_id = CleanText('./@data-id')
-            obj_name = CleanText('./div/div/a/h2')
+            obj_id = CleanText("./@data-id")
+            obj_name = CleanText("./div/div/a/h2")
             obj_address = CleanText('./div/div/div[@class="font-weight-light"]')
-            obj_url = CleanText('./div/div/a/@href')
+            obj_url = CleanText("./div/div/a/@href")
 
             def obj_postal_address(self):
-                address = Field('address')(self)
+                address = Field("address")(self)
                 p = PostalAddress()
 
                 m = re.search(
                     r"(?P<street>[\w\s\-]*) - (?P<postal_code>(?:0[1-9]|[1-8]\d|9[0-8])\d{3}) (?P<city>[\w\s\-]*)",
-                    address)
+                    address,
+                )
 
                 if m:
-                    p.street = m.group('street')
-                    p.postal_code = m.group('postal_code')
-                    p.city = m.group('city')
+                    p.street = m.group("street")
+                    p.postal_code = m.group("postal_code")
+                    p.city = m.group("city")
 
                 p.full_address = address
 

@@ -27,12 +27,12 @@ from woob.tools.date import parse_french_date
 
 
 class TrackPage(JsonPage):
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
 
     def build_doc(self, text):
         doc = super(TrackPage, self).build_doc(text)
 
-        content = ''.join([doc['top'], doc['tab']])
+        content = "".join([doc["top"], doc["tab"]])
         html_page = HTMLPage(self.browser, self.response)
         return html_page.build_doc(content.encode(self.encoding))
 
@@ -45,17 +45,21 @@ class TrackPage(JsonPage):
             if "pas d'information" in error:
                 raise ParcelNotFound(error)
 
-        obj_id = Env('id')
-        obj_info = CleanText('//div[has-class("ch-block-subtitle-content")]//div[has-class("ch-colis-information")]/text()')
-        obj_arrival = CleanText('//div[has-class("ch-block-subtitle-content")]//div[has-class("ch-colis-information")]/text()[3]',
-                                replace=[(u'\xe0', '')], default=NotAvailable) \
-                      & DateTime(dayfirst=True, parse_func=parse_french_date, default=NotAvailable, strict=False)
+        obj_id = Env("id")
+        obj_info = CleanText(
+            '//div[has-class("ch-block-subtitle-content")]//div[has-class("ch-colis-information")]/text()'
+        )
+        obj_arrival = CleanText(
+            '//div[has-class("ch-block-subtitle-content")]//div[has-class("ch-colis-information")]/text()[3]',
+            replace=[("\xe0", "")],
+            default=NotAvailable,
+        ) & DateTime(dayfirst=True, parse_func=parse_french_date, default=NotAvailable, strict=False)
 
         def obj_status(self):
             el = self.el.xpath('//div[has-class("ch-suivi-colis-light-info") and has-class("active")]')[0]
-            if 'last' in el.attrib['class']:
+            if "last" in el.attrib["class"]:
                 return Parcel.STATUS_ARRIVED
-            if 'first' in el.attrib['class']:
+            if "first" in el.attrib["class"]:
                 return Parcel.STATUS_PLANNED
 
             return Parcel.STATUS_IN_TRANSIT
@@ -66,6 +70,6 @@ class TrackPage(JsonPage):
             class item(ItemElement):
                 klass = Event
 
-                obj_date = CleanText('.//td[1]') & DateTime(dayfirst=True, parse_func=parse_french_date, strict=False)
-                obj_location = CleanText('.//td[2]/text()[following-sibling::br]')
-                obj_activity = CleanText('.//td[2]/text()[preceding-sibling::br]')
+                obj_date = CleanText(".//td[1]") & DateTime(dayfirst=True, parse_func=parse_french_date, strict=False)
+                obj_location = CleanText(".//td[2]/text()[following-sibling::br]")
+                obj_activity = CleanText(".//td[2]/text()[preceding-sibling::br]")

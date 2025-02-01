@@ -25,15 +25,15 @@ from .pages.index import IndexPage
 from .pages.video import VideoPage
 
 
-__all__ = ['YoupornBrowser']
+__all__ = ["YoupornBrowser"]
 
 
 class YoupornBrowser(PagesBrowser):
-    BASEURL = 'https://www.youporn.com'
+    BASEURL = "https://www.youporn.com"
 
-    home = URL(r'/$', IndexPage)
-    search = URL(r'/search/\?query=(?P<query>.*)', IndexPage)
-    video = URL(r'/watch/(?P<id>[0-9]+)/.*', VideoPage)
+    home = URL(r"/$", IndexPage)
+    search = URL(r"/search/\?query=(?P<query>.*)", IndexPage)
+    video = URL(r"/watch/(?P<id>[0-9]+)/.*", VideoPage)
 
     def get_video(self, _id):
         self.video.go(id=_id)
@@ -41,8 +41,8 @@ class YoupornBrowser(PagesBrowser):
         return self.page.get_video()
 
     def search_videos(self, pattern, sortby):
-        if pattern == 'a' or pattern == 'i':
-            raise UserError('this pattern is not supported');
+        if pattern == "a" or pattern == "i":
+            raise UserError("this pattern is not supported")
 
         self.search.go(query=pattern)
         assert self.search.is_here()

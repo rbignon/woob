@@ -32,34 +32,36 @@ from .job import APEC_CONTRATS, APEC_EXPERIENCE
 class IdsPage(JsonPage):
 
     def get_adverts_number(self):
-        return self.doc['totalCount']
+        return self.doc["totalCount"]
 
     @pagination
     @method
     class iter_job_adverts(DictElement):
-        item_xpath = 'resultats'
+        item_xpath = "resultats"
 
         def next_page(self):
-            self.page.browser.start += self.env['range']
-            if self.page.browser.start <= self.env['count']:
-                data = self.page.browser.create_parameters(pattern=self.env['pattern'],
-                                                           fonctions=self.env['fonctions'],
-                                                           lieux=self.env['lieux'],
-                                                           secteursActivite=self.env['secteursActivite'],
-                                                           typesContrat=self.env['typesContrat'],
-                                                           typesConvention=self.env['typesConvention'],
-                                                           niveauxExperience=self.env['niveauxExperience'],
-                                                           salaire_min=self.env['salaire_min'],
-                                                           salaire_max=self.env['salaire_max'],
-                                                           date_publication=self.env['date_publication'],
-                                                           start=self.page.browser.start,
-                                                           range=self.env['range'])
+            self.page.browser.start += self.env["range"]
+            if self.page.browser.start <= self.env["count"]:
+                data = self.page.browser.create_parameters(
+                    pattern=self.env["pattern"],
+                    fonctions=self.env["fonctions"],
+                    lieux=self.env["lieux"],
+                    secteursActivite=self.env["secteursActivite"],
+                    typesContrat=self.env["typesContrat"],
+                    typesConvention=self.env["typesConvention"],
+                    niveauxExperience=self.env["niveauxExperience"],
+                    salaire_min=self.env["salaire_min"],
+                    salaire_max=self.env["salaire_max"],
+                    date_publication=self.env["date_publication"],
+                    start=self.page.browser.start,
+                    range=self.env["range"],
+                )
 
                 return requests.Request("POST", self.page.url, data=data)
 
         class item(ItemElement):
             klass = BaseJobAdvert
-            obj_id = Regexp(Dict('@uriOffre'), '.*=(.*)')
+            obj_id = Regexp(Dict("@uriOffre"), ".*=(.*)")
 
 
 class OffrePage(JsonPage):
@@ -67,22 +69,25 @@ class OffrePage(JsonPage):
     class get_job_advert(ItemElement):
         klass = BaseJobAdvert
 
-        obj_id = Dict('numeroOffre')
-        obj_title = Dict('intitule')
-        obj_description = CleanHTML(Dict('texteHtml'))
-        obj_job_name = Dict('intitule')
-        obj_publication_date = DateTime(Dict('datePublication'))
-        obj_society_name = Dict('nomCommercialEtablissement', default=NotAvailable)
+        obj_id = Dict("numeroOffre")
+        obj_title = Dict("intitule")
+        obj_description = CleanHTML(Dict("texteHtml"))
+        obj_job_name = Dict("intitule")
+        obj_publication_date = DateTime(Dict("datePublication"))
+        obj_society_name = Dict("nomCommercialEtablissement", default=NotAvailable)
 
         def obj_contract_type(self):
-            ctr = '%s' % Dict('idNomTypeContrat')(self)
+            ctr = "%s" % Dict("idNomTypeContrat")(self)
             return APEC_CONTRATS.get(ctr) if ctr in APEC_CONTRATS else NotAvailable
 
-        obj_place = Dict('lieux/0/libelleLieu')
-        obj_pay = Dict('salaireTexte')
+        obj_place = Dict("lieux/0/libelleLieu")
+        obj_pay = Dict("salaireTexte")
 
         def obj_experience(self):
-            exp = u'%s' % Dict('idNomNiveauExperience')(self)
+            exp = "%s" % Dict("idNomNiveauExperience")(self)
             return APEC_EXPERIENCE.get(exp) if exp in APEC_EXPERIENCE else NotAvailable
 
-        obj_url = Format('https://cadres.apec.fr/home/mes-offres/recherche-des-offres-demploi/liste-des-offres-demploi/detail-de-loffre-demploi.html?numIdOffre=%s', Dict('numeroOffre'))
+        obj_url = Format(
+            "https://cadres.apec.fr/home/mes-offres/recherche-des-offres-demploi/liste-des-offres-demploi/detail-de-loffre-demploi.html?numIdOffre=%s",
+            Dict("numeroOffre"),
+        )

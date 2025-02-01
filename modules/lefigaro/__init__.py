@@ -21,4 +21,4 @@
 from .module import NewspaperFigaroModule
 
 
-__all__ = ['NewspaperFigaroModule']
+__all__ = ["NewspaperFigaroModule"]

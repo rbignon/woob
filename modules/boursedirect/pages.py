@@ -23,12 +23,28 @@ from woob.browser.elements import ItemElement, ListElement, TableElement, method
 from woob.browser.filters.html import Attr, Link, ReplaceEntities, TableCell
 from woob.browser.filters.json import Dict
 from woob.browser.filters.standard import (
-    Base, CleanDecimal, CleanText, Coalesce, Currency, Date, Eval, Field, Format, Lower, MapIn, QueryValue, Regexp,
+    Base,
+    CleanDecimal,
+    CleanText,
+    Coalesce,
+    Currency,
+    Date,
+    Eval,
+    Field,
+    Format,
+    Lower,
+    MapIn,
+    QueryValue,
+    Regexp,
 )
 from woob.browser.pages import HTMLPage, JsonPage, RawPage
 from woob.capabilities.bank import Account, Transaction
 from woob.capabilities.bank.wealth import (
-    Investment, MarketOrder, MarketOrderDirection, MarketOrderPayment, MarketOrderType,
+    Investment,
+    MarketOrder,
+    MarketOrderDirection,
+    MarketOrderPayment,
+    MarketOrderType,
 )
 from woob.capabilities.base import NotAvailable
 from woob.exceptions import BrowserHTTPNotFound
@@ -40,19 +56,15 @@ class LoginPage(JsonPage):
         # Detailed error message that allows us to filter out the error
         # should be in 'fields/errors/1' but this key sometimes does not
         # exist and value is in 0 instead.
-        return Coalesce(
-            Dict('fields/errors/1', default=''),
-            Dict('fields/errors/0', default=''),
-            default=''
-        )(self.doc)
+        return Coalesce(Dict("fields/errors/1", default=""), Dict("fields/errors/0", default=""), default="")(self.doc)
 
     def get_error_403_message(self):
-        return Dict('error')(self.doc)
+        return Dict("error")(self.doc)
 
 
 class TwofaStatePage(JsonPage):
     def is_device_trusted(self):
-        return Dict('device_state')(self.doc) == 'trusted'
+        return Dict("device_state")(self.doc) == "trusted"
 
     def is_totp_twofa(self):
         # Available twfo methods are TOTP or SMS OTP.
@@ -63,19 +75,19 @@ class TwofaStatePage(JsonPage):
         # the same rule. Plus, chosing TOTP first exempts
         # us from using the request to generate and send
         # the OTP, unlike the SMS method.
-        for twofa in self.doc['systems']:
-            if twofa['enabled'] is True and twofa['type'] == 'totp':
+        for twofa in self.doc["systems"]:
+            if twofa["enabled"] is True and twofa["type"] == "totp":
                 return True
 
     def get_mobile_number(self):
-        for twofa in self.doc['systems']:
-            if twofa['type'] == 'sms':
-                return twofa['mobile']
+        for twofa in self.doc["systems"]:
+            if twofa["type"] == "sms":
+                return twofa["mobile"]
 
 
 class ValidateTOTPPage(JsonPage):
     def get_error_message(self):
-        return Dict('error')(self.doc)
+        return Dict("error")(self.doc)
 
 
 class SendOTPSMSPage(JsonPage):
@@ -94,10 +106,7 @@ class PasswordRenewalPage(HTMLPage):
 class BasePage(HTMLPage):
     @property
     def logged(self):
-        return (
-            'function setTop(){top.location="/fr/actualites"}' not in self.text
-            or CleanText('//body')(self.doc)
-        )
+        return 'function setTop(){top.location="/fr/actualites"}' not in self.text or CleanText("//body")(self.doc)
 
     def detect_encoding(self):
         """
@@ -106,8 +115,8 @@ class BasePage(HTMLPage):
         """
         encoding = self.encoding
 
-        if encoding == u'iso-8859-1' or not encoding:
-            encoding = u'windows-1252'
+        if encoding == "iso-8859-1" or not encoding:
+            encoding = "windows-1252"
 
         return encoding
 
@@ -138,18 +147,18 @@ class AccountsPage(BasePage):
         class item(ItemElement):
             klass = Account
 
-            text = CleanText('.')
+            text = CleanText(".")
 
-            obj_id = obj_number = Regexp(text, r'^(\w+)')
-            obj_label = Regexp(text, r'^\w+ (.*)')
-            obj_currency = 'EUR'
-            obj__select = Attr('.', 'value')
+            obj_id = obj_number = Regexp(text, r"^(\w+)")
+            obj_label = Regexp(text, r"^\w+ (.*)")
+            obj_currency = "EUR"
+            obj__select = Attr(".", "value")
 
             def obj_type(self):
-                label = Field('label')(self).lower()
-                if 'compte titre' in label:
+                label = Field("label")(self).lower()
+                if "compte titre" in label:
                     return Account.TYPE_MARKET
-                elif 'pea' in label:
+                elif "pea" in label:
                     return Account.TYPE_PEA
                 return Account.TYPE_UNKNOWN
 
@@ -160,28 +169,28 @@ class AccountsPage(BasePage):
 
 class InvestPage(RawPage):
     def build_doc(self, content):
-        return content.decode('latin-1')
+        return content.decode("latin-1")
 
     @property
     def logged(self):
         # if it's html, then we're not logged
-        return not self.doc.lstrip().startswith('<')
+        return not self.doc.lstrip().startswith("<")
 
     def iter_investment(self):
-        assert self.doc.startswith('message=')
+        assert self.doc.startswith("message=")
 
-        invests = self.doc.split('|')[1:]
+        invests = self.doc.split("|")[1:]
 
         for part in invests:
-            if part == '1':
+            if part == "1":
                 continue  # separator line
 
-            info = part.split('#')
-            if 'Vente transmise au marché' in info:
+            info = part.split("#")
+            if "Vente transmise au marché" in info:
                 # invest sold or not available yet
                 continue
 
-            if info[2] == '&nbsp;':
+            if info[2] == "&nbsp;":
                 # space info[2]: not possessed yet, buy is pending
                 # "Achat en liq" means that user is using SRD
                 if "Achat en liq" in info[0]:
@@ -215,8 +224,8 @@ class InvestPage(RawPage):
                 currency = unitvalue_currency[1]
                 # we check if the currency notation match the Penny Sterling(GBX)
                 # example : 1234,5 p
-                if currency == 'p':
-                    inv.original_currency = 'GBP'
+                if currency == "p":
+                    inv.original_currency = "GBP"
                 # if not, we can use the regular Currency filter
                 else:
                     inv.original_currency = Currency().filter(info[4])
@@ -225,13 +234,13 @@ class InvestPage(RawPage):
             if inv.original_currency:
                 # if the currency string is Penny Sterling
                 # we need to adjust the unitvalue to convert it to GBP
-                if currency == 'p':
+                if currency == "p":
                     inv.original_unitvalue = CleanDecimal.French().filter(info[4]) / 100
                 else:
                     inv.original_unitvalue = CleanDecimal.French().filter(info[4])
             else:
                 # if the unitvalue is a percentage we don't fetch it
-                if '%' in info[4]:
+                if "%" in info[4]:
                     inv.unitvalue = NotAvailable
                 else:
                     # info[4] may be empty so we must handle the default value
@@ -252,13 +261,13 @@ class InvestPage(RawPage):
     def get_isin(self, info):
         raw = ReplaceEntities().filter(info[1])
         # Sometimes the ISIN code is already available in the info:
-        val = re.search(r'val=([^&]+)', raw)
+        val = re.search(r"val=([^&]+)", raw)
         code = NotAvailable
         if val and "val=" in raw and is_isin_valid(val.group(1)):
             code = val.group(1)
         else:
             # Otherwise we need another request to get the ISIN:
-            m = re.search(r'php([^{]+)', raw)
+            m = re.search(r"php([^{]+)", raw)
             if m:
                 url = "/priv/fiche-valeur.php" + m.group(1)
                 try:
@@ -267,7 +276,7 @@ class InvestPage(RawPage):
                     # Sometimes the 301 redirection leads to a 404
                     return code
                 # Checking that we were correctly redirected:
-                if hasattr(isin_page, 'next_url'):
+                if hasattr(isin_page, "next_url"):
                     isin_page = self.browser.open(isin_page.next_url()).page
 
                 if "/fr/marche/" in isin_page.url:
@@ -277,7 +286,7 @@ class InvestPage(RawPage):
         return code
 
     def get_liquidity(self):
-        parts = self.doc.split('{')
+        parts = self.doc.split("{")
         valuation = CleanDecimal.French().filter(parts[3])
         return create_french_liquidity(valuation)
 
@@ -288,20 +297,20 @@ class JsRedirectPage(HTMLPage):
 
 
 MARKET_ORDER_DIRECTIONS = {
-    'Achat': MarketOrderDirection.BUY,
-    'Vente': MarketOrderDirection.SALE,
+    "Achat": MarketOrderDirection.BUY,
+    "Vente": MarketOrderDirection.SALE,
 }
 
 MARKET_ORDER_TYPES = {
-    'au marché': MarketOrderType.MARKET,
-    'cours limité': MarketOrderType.LIMIT,
-    'seuil de declcht': MarketOrderType.TRIGGER,
-    'plage de declcht': MarketOrderType.TRIGGER,
+    "au marché": MarketOrderType.MARKET,
+    "cours limité": MarketOrderType.LIMIT,
+    "seuil de declcht": MarketOrderType.TRIGGER,
+    "plage de declcht": MarketOrderType.TRIGGER,
 }
 
 MARKET_ORDER_PAYMENTS = {
-    'Cpt': MarketOrderPayment.CASH,
-    'SRD': MarketOrderPayment.DEFERRED,
+    "Cpt": MarketOrderPayment.CASH,
+    "SRD": MarketOrderPayment.DEFERRED,
 }
 
 
@@ -313,55 +322,41 @@ class MarketOrdersPage(BasePage):
         # <div> is for boursedirect, <td> is for ing
         empty_xpath = '//div|td[text()="Pas d\'ordre pour ce compte"]'
 
-        col_direction = 'Sens'
-        col_label = 'Valeur'
-        col_quantity = 'Quantité'
-        col_ordervalue = 'Limite'
-        col_state = 'Etat'
-        col_unitvalue = 'Cours Exec'
-        col_validity_date = 'Validité'
-        col_url = 'Détail'
+        col_direction = "Sens"
+        col_label = "Valeur"
+        col_quantity = "Quantité"
+        col_ordervalue = "Limite"
+        col_state = "Etat"
+        col_unitvalue = "Cours Exec"
+        col_validity_date = "Validité"
+        col_url = "Détail"
 
         class item(ItemElement):
             klass = MarketOrder
 
             # Extract the ID from the URL (for example detailOrdre.php?cn=<account_id>&ref=<order_id>&...)
-            obj_id = QueryValue(Base(TableCell('url'), Link('.//a', default=NotAvailable)), 'ref', default=NotAvailable)
-            obj_label = CleanText(TableCell('label'))
+            obj_id = QueryValue(Base(TableCell("url"), Link(".//a", default=NotAvailable)), "ref", default=NotAvailable)
+            obj_label = CleanText(TableCell("label"))
             # Catch everything until "( )"
-            obj_state = Regexp(
-                CleanText(TableCell('state')),
-                r'(.*?)(?: \(|$)',
-                default=NotAvailable
-            )
-            obj_quantity = Eval(abs, CleanDecimal.French(TableCell('quantity')))
-            obj_ordervalue = CleanDecimal.French(TableCell('ordervalue'), default=NotAvailable)
-            obj_unitvalue = CleanDecimal.French(TableCell('unitvalue'), default=NotAvailable)
-            obj_validity_date = Date(CleanText(TableCell('validity_date')), dayfirst=True)
+            obj_state = Regexp(CleanText(TableCell("state")), r"(.*?)(?: \(|$)", default=NotAvailable)
+            obj_quantity = Eval(abs, CleanDecimal.French(TableCell("quantity")))
+            obj_ordervalue = CleanDecimal.French(TableCell("ordervalue"), default=NotAvailable)
+            obj_unitvalue = CleanDecimal.French(TableCell("unitvalue"), default=NotAvailable)
+            obj_validity_date = Date(CleanText(TableCell("validity_date")), dayfirst=True)
             obj_direction = MapIn(
-                CleanText(TableCell('direction')),
-                MARKET_ORDER_DIRECTIONS,
-                MarketOrderDirection.UNKNOWN
+                CleanText(TableCell("direction")), MARKET_ORDER_DIRECTIONS, MarketOrderDirection.UNKNOWN
             )
             obj_url = Regexp(
-                Base(TableCell('url'), Link('.//a', default=NotAvailable)),
+                Base(TableCell("url"), Link(".//a", default=NotAvailable)),
                 r"ouvrePopup\('([^']+)",
-                default=NotAvailable
+                default=NotAvailable,
             )
             # State column also contains stock_market & payment_method (e.g. "(Cpt NYX)")
-            obj_stock_market = Regexp(
-                CleanText(TableCell('state')),
-                r'\((?:Cpt|SRD) (.*)\)',
-                default=NotAvailable
-            )
+            obj_stock_market = Regexp(CleanText(TableCell("state")), r"\((?:Cpt|SRD) (.*)\)", default=NotAvailable)
             obj_payment_method = MapIn(
-                Regexp(
-                    CleanText(TableCell('state')),
-                    r'\((.*)\)',
-                    default=''
-                ),
+                Regexp(CleanText(TableCell("state")), r"\((.*)\)", default=""),
                 MARKET_ORDER_PAYMENTS,
-                MarketOrderPayment.UNKNOWN
+                MarketOrderPayment.UNKNOWN,
             )
 
 
@@ -369,28 +364,20 @@ class MarketOrderDetailsPage(BasePage):
     @method
     class fill_market_order(ItemElement):
         obj_date = Date(
-            CleanText('//td[text()="Création"]/following-sibling::td[1]'),
-            dayfirst=True,
-            default=NotAvailable
+            CleanText('//td[text()="Création"]/following-sibling::td[1]'), dayfirst=True, default=NotAvailable
         )
         obj_execution_date = Date(
-            CleanText('//td[text()="Date exécuté"]/following-sibling::td[1]'),
-            dayfirst=True,
-            default=NotAvailable
+            CleanText('//td[text()="Date exécuté"]/following-sibling::td[1]'), dayfirst=True, default=NotAvailable
         )
         obj_order_type = MapIn(
             Lower(CleanText('//td[text()="Limite"]/following-sibling::td[1]')),
             MARKET_ORDER_TYPES,
-            MarketOrderType.UNKNOWN
+            MarketOrderType.UNKNOWN,
         )
 
         obj_code = IsinCode(
-            Regexp(
-                CleanText('//td[text()="Valeur"]/following-sibling::td[1]'),
-                r"\(([^)]+)",
-                default=NotAvailable
-            ),
-            default=NotAvailable
+            Regexp(CleanText('//td[text()="Valeur"]/following-sibling::td[1]'), r"\(([^)]+)", default=NotAvailable),
+            default=NotAvailable,
         )
 
 
@@ -400,47 +387,42 @@ class HistoryPage(BasePage):
         item_xpath = '//table[contains(@class,"datas retour")]//tr[@class="row1" or @class="row2"]'
         head_xpath = '//table[contains(@class,"datas retour")]//th'
 
-        col_rdate = 'Date opération'
-        col_date = 'Date affectation'
-        col_investment_label = 'Libellé'
-        col_label = 'Opération'
-        col_investment_quantity = 'Qté'
-        col_investment_unitvalue = 'Cours'
-        col_amount = 'Montant net'
+        col_rdate = "Date opération"
+        col_date = "Date affectation"
+        col_investment_label = "Libellé"
+        col_label = "Opération"
+        col_investment_quantity = "Qté"
+        col_investment_unitvalue = "Cours"
+        col_amount = "Montant net"
 
         class item(ItemElement):
             klass = Transaction
 
-            obj_date = Date(CleanText(TableCell('date')), dayfirst=True)  # Date affectation
-            obj_rdate = Date(CleanText(TableCell('rdate')), dayfirst=True)  # Date opération
-            obj_label = Format('%s - %s', CleanText(TableCell('investment_label')), CleanText(TableCell('label')))
-            obj_amount = CleanDecimal.French(TableCell('amount'))
+            obj_date = Date(CleanText(TableCell("date")), dayfirst=True)  # Date affectation
+            obj_rdate = Date(CleanText(TableCell("rdate")), dayfirst=True)  # Date opération
+            obj_label = Format("%s - %s", CleanText(TableCell("investment_label")), CleanText(TableCell("label")))
+            obj_amount = CleanDecimal.French(TableCell("amount"))
 
             def obj_investments(self):
-                if CleanDecimal.French(TableCell('unitvalue'), default=None) is None:
+                if CleanDecimal.French(TableCell("unitvalue"), default=None) is None:
                     return NotAvailable
 
                 investment = Investment()
-                investment.label = CleanText(TableCell('investment_label'))(self)
-                investment.valuation = CleanDecimal.French(TableCell('amount'))(self)
-                investment.unitvalue = CleanDecimal.French(
-                    TableCell('investment_unitvalue'),
-                    default=NotAvailable
-                )(self)
-                investment.quantity = CleanDecimal.French(TableCell('investment_quantity'), default=NotAvailable)(self)
+                investment.label = CleanText(TableCell("investment_label"))(self)
+                investment.valuation = CleanDecimal.French(TableCell("amount"))(self)
+                investment.unitvalue = CleanDecimal.French(TableCell("investment_unitvalue"), default=NotAvailable)(
+                    self
+                )
+                investment.quantity = CleanDecimal.French(TableCell("investment_quantity"), default=NotAvailable)(self)
                 return [investment]
 
 
 class IsinPage(HTMLPage):
     def get_isin(self):
         # For american funds, the ISIN code is hidden somewhere else in the page:
-        return (
-            CleanText('//div[@class="instrument-isin"]/span')(self.doc)
-            or Regexp(
-                CleanText('//div[contains(@class, "visible-lg")]//a[contains(@href, "?isin=")]/@href'),
-                r'isin=([^&]*)'
-            )(self.doc)
-        )
+        return CleanText('//div[@class="instrument-isin"]/span')(self.doc) or Regexp(
+            CleanText('//div[contains(@class, "visible-lg")]//a[contains(@href, "?isin=")]/@href'), r"isin=([^&]*)"
+        )(self.doc)
 
 
 class PortfolioPage(BasePage):

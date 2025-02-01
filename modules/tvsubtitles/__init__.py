@@ -20,4 +20,4 @@
 from .module import TvsubtitlesModule
 
 
-__all__ = ['TvsubtitlesModule']
+__all__ = ["TvsubtitlesModule"]

@@ -25,16 +25,16 @@ from woob.tools.backend import Module
 from .browser import CpasbienBrowser
 
 
-__all__ = ['CpasbienModule']
+__all__ = ["CpasbienModule"]
 
 
 class CpasbienModule(Module, CapTorrent):
-    NAME = 'cpasbien'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'eneiluj@gmx.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'Cpasbien Torrents BitTorrent tracker'
-    LICENSE = 'AGPLv3+'
+    NAME = "cpasbien"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "eneiluj@gmx.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Cpasbien Torrents BitTorrent tracker"
+    LICENSE = "AGPLv3+"
     BROWSER = CpasbienBrowser
 
     def get_torrent(self, id):
@@ -49,13 +49,11 @@ class CpasbienModule(Module, CapTorrent):
         return resp.content
 
     def iter_torrents(self, pattern):
-        return self.browser.iter_torrents(quote_plus(pattern.encode('utf-8')))
+        return self.browser.iter_torrents(quote_plus(pattern.encode("utf-8")))
 
     def fill_torrent(self, torrent, fields):
-        if 'description' in fields or 'files' in fields:
+        if "description" in fields or "files" in fields:
             torrent = self.browser.get_torrent(torrent.id)
         return torrent
 
-    OBJECTS = {
-        Torrent: fill_torrent
-    }
+    OBJECTS = {Torrent: fill_torrent}

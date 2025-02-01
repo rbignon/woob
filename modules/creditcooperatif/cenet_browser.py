@@ -21,32 +21,32 @@ from woob_modules.caissedepargne.cenet.browser import CenetBrowser as _CenetBrow
 from woob_modules.linebourse.browser import LinebourseAPIBrowser
 
 
-__all__ = ['CenetBrowser']
+__all__ = ["CenetBrowser"]
 
 
 class CenetBrowser(_CenetBrowser):
-    BASEURL = CENET_URL = 'https://www.espaceclient.credit-cooperatif.coop/'
-    enseigne = 'ccoop'
+    BASEURL = CENET_URL = "https://www.espaceclient.credit-cooperatif.coop/"
+    enseigne = "ccoop"
 
-    login = CaisseEpargne.login.with_urls(
-        r'https://www.credit-cooperatif.coop/se-connecter/sso'
-    )
+    login = CaisseEpargne.login.with_urls(r"https://www.credit-cooperatif.coop/se-connecter/sso")
 
     home_page = CaisseEpargne.home_page.with_urls(
-        r'https://www.credit-cooperatif.coop/espace-entreprise/web-b2b/callback'
+        r"https://www.credit-cooperatif.coop/espace-entreprise/web-b2b/callback"
     )
 
     js_file = CaisseEpargne.js_file.with_urls(
-        r'https://www.credit-cooperatif.coop/espace-entreprise/web-b2b/(?P<js_file_name>[^/]+)',
-        r'https://www.credit-cooperatif.coop/se-connecter/main\..*.js$',
-        r'https://www.caisse-epargne.fr/espace-client/main\..*\.js',
-        r'https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js',
-        r'https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js',
+        r"https://www.credit-cooperatif.coop/espace-entreprise/web-b2b/(?P<js_file_name>[^/]+)",
+        r"https://www.credit-cooperatif.coop/se-connecter/main\..*.js$",
+        r"https://www.caisse-epargne.fr/espace-client/main\..*\.js",
+        r"https://www.caisse-epargne.fr/gestion-client/credit-immobilier/main\..*\.js",
+        r"https://www.caisse-epargne.fr/espace-gestion/pret-personnel/main\..*\.js",
     )
-    config_page = CaisseEpargne.config_page.with_urls(r'https://www.credit-cooperatif.coop/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)')
+    config_page = CaisseEpargne.config_page.with_urls(
+        r"https://www.credit-cooperatif.coop/ria/pas/configuration/config.json\?ts=(?P<timestamp>.*)"
+    )
 
     LINEBOURSE_BROWSER = LinebourseAPIBrowser
-    MARKET_URL = 'https://www.offrebourse.com'
+    MARKET_URL = "https://www.offrebourse.com"
 
     def has_no_history(self, account):
         return account.type == Account.TYPE_LOAN

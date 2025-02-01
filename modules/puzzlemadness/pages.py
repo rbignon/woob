@@ -57,21 +57,21 @@ class PicrossListPage(HTMLPage):
         head_xpath = '//th[@class="picross-puzzle-list__table-heading"]'
         item_xpath = '//tr[./td[@class="picross-puzzle-list__puzzle-title"]]'
 
-        col_title = 'Title'
-        col_size = 'Size'
-        col_rating = 'Rating'
+        col_title = "Title"
+        col_size = "Size"
+        col_rating = "Rating"
 
         class item(ItemElement):
             klass = Picross
 
             obj_id = Format(
-                'p%s',
+                "p%s",
                 Regexp(
-                    Link(SubXPath(TableCell('title'), './a')),
-                    r'picross/(\d+)',
+                    Link(SubXPath(TableCell("title"), "./a")),
+                    r"picross/(\d+)",
                 ),
             )
-            obj_name = CleanText(TableCell('title'))
+            obj_name = CleanText(TableCell("title"))
             obj_solved_status = PicrossSolvedStatus.UNSOLVED
 
 
@@ -84,21 +84,17 @@ class PicrossPage(HTMLPage):
             puzzledata = json.loads(
                 Regexp(
                     CleanText('//script[contains(., "var puzzledata")]'),
-                    r'var puzzledata = ({.+?});',
+                    r"var puzzledata = ({.+?});",
                 )(el),
             )
 
-            self.env['id'] = puzzledata['data']['index']
-            self.env['lines'] = [
-                tuple(line) for line in puzzledata['data']['horizontalClues']
-            ]
-            self.env['columns'] = [
-                tuple(col) for col in puzzledata['data']['verticalClues']
-            ]
+            self.env["id"] = puzzledata["data"]["index"]
+            self.env["lines"] = [tuple(line) for line in puzzledata["data"]["horizontalClues"]]
+            self.env["columns"] = [tuple(col) for col in puzzledata["data"]["verticalClues"]]
 
-        obj_id = Format('p%s', Env('id'))
-        obj_url = BrowserURL('picross', picross_id=Field('id'))
-        obj_name = Regexp(CleanText('//head/title'), r'Picross: (.+)')
-        obj_lines = Env('lines')
-        obj_columns = Env('columns')
+        obj_id = Format("p%s", Env("id"))
+        obj_url = BrowserURL("picross", picross_id=Field("id"))
+        obj_name = Regexp(CleanText("//head/title"), r"Picross: (.+)")
+        obj_lines = Env("lines")
+        obj_columns = Env("columns")
         obj_solved_status = PicrossSolvedStatus.UNSOLVED

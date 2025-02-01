@@ -28,23 +28,23 @@ from .pages import AccountsPage, HistoryPage, LoginPage, PreLoginPage
 
 
 class SogecarteTitulaireBrowser(SeleniumBrowser):
-    BASEURL = 'https://www.sogecartenet.fr'
+    BASEURL = "https://www.sogecartenet.fr"
 
     # False for debug / True for production
     HEADLESS = True
 
     DRIVER = webdriver.Chrome
 
-    pre_login = URL(r'/ih3m-ihm/SOCGEN/FRA', PreLoginPage)
-    login = URL(r'/ih3m-ihm/SOCGEN/FRA', LoginPage)
-    accueil = URL(r'/ih3m-ihm/SOCGEN/FRA#!ACCUEIL', AccueilPage)
-    accounts = URL(r'/ih3m-ihm/SOCGEN/FRA#!INFORMATION', AccountsPage)
-    history = URL(r'/ih3m-ihm/SOCGEN/FRA#!COMPTE', HistoryPage)
+    pre_login = URL(r"/ih3m-ihm/SOCGEN/FRA", PreLoginPage)
+    login = URL(r"/ih3m-ihm/SOCGEN/FRA", LoginPage)
+    accueil = URL(r"/ih3m-ihm/SOCGEN/FRA#!ACCUEIL", AccueilPage)
+    accounts = URL(r"/ih3m-ihm/SOCGEN/FRA#!INFORMATION", AccountsPage)
+    history = URL(r"/ih3m-ihm/SOCGEN/FRA#!COMPTE", HistoryPage)
 
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        self.username = self.config['login'].get()
-        self.password = self.config['password'].get()
+        self.username = self.config["login"].get()
+        self.password = self.config["password"].get()
         super(SogecarteTitulaireBrowser, self).__init__(*args, **kwargs)
 
     def do_login(self):
@@ -55,21 +55,25 @@ class SogecarteTitulaireBrowser(SeleniumBrowser):
         self.wait_until_is_here(self.login)
         self.page.login(self.username, self.password)
 
-        self.wait_until(AnyCondition(
-            IsHereCondition(self.accueil),
-            VisibleXPath('//div[@id="labelQuestion"]'),
-            VisibleXPath('//div[contains(@class, "Notification-error-message")]'),
-            VisibleXPath('//div[contains(@class, "new-password")]'),
-        ))
+        self.wait_until(
+            AnyCondition(
+                IsHereCondition(self.accueil),
+                VisibleXPath('//div[@id="labelQuestion"]'),
+                VisibleXPath('//div[contains(@class, "Notification-error-message")]'),
+                VisibleXPath('//div[contains(@class, "new-password")]'),
+            )
+        )
 
         if not self.accueil.is_here():
-            assert self.login.is_here(), 'We landed on an unknown page'
+            assert self.login.is_here(), "We landed on an unknown page"
             error = self.page.get_error()
-            if any((
-                'Votre compte a été désactivé' in error,
-                'Votre compte est bloqué' in error,
-                'renseigner votre email professionnel' in error,
-            )):
+            if any(
+                (
+                    "Votre compte a été désactivé" in error,
+                    "Votre compte est bloqué" in error,
+                    "renseigner votre email professionnel" in error,
+                )
+            ):
                 raise ActionNeeded(error)
             raise BrowserIncorrectPassword(error)
 

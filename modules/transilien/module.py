@@ -25,19 +25,19 @@ from .browser import Transilien
 
 
 class TransilienModule(Module, CapTravel):
-    NAME = 'transilien'
-    MAINTAINER = u'Julien Hébert'
-    EMAIL = 'juke@free.fr'
-    VERSION = '3.7'
-    LICENSE = 'AGPLv3+'
-    DESCRIPTION = u"Public transportation in the Paris area"
+    NAME = "transilien"
+    MAINTAINER = "Julien Hébert"
+    EMAIL = "juke@free.fr"
+    VERSION = "3.7"
+    LICENSE = "AGPLv3+"
+    DESCRIPTION = "Public transportation in the Paris area"
     BROWSER = Transilien
 
     def iter_station_search(self, pattern):
         return self.browser.get_stations(pattern)
 
     def iter_station_departures(self, station_id, arrival_id=None, date=None):
-        return self.browser.get_station_departues(station_id.replace('-', ' '), arrival_id, date)
+        return self.browser.get_station_departues(station_id.replace("-", " "), arrival_id, date)
 
     def iter_roadmap(self, departure, arrival, filters):
         return self.browser.get_roadmap(departure, arrival, filters)

@@ -20,4 +20,4 @@
 from .module import FranceConnectModule
 
 
-__all__ = ['FranceConnectModule']
+__all__ = ["FranceConnectModule"]

@@ -25,22 +25,22 @@ from woob.tools.value import Value
 from .browser import BlogspotBrowser
 
 
-__all__ = ['BlogspotModule']
+__all__ = ["BlogspotModule"]
 
 
 class BlogspotModule(Module, CapMessages):
-    NAME = 'blogspot'
-    DESCRIPTION = u'Blog reader for blogspot. Read-only and without comments.'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
-    CONFIG = BackendConfig(Value('url', label='URL of the blogspot', regexp='https://[^.]+.blogspot.[^.]+/?'))
+    NAME = "blogspot"
+    DESCRIPTION = "Blog reader for blogspot. Read-only and without comments."
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
+    CONFIG = BackendConfig(Value("url", label="URL of the blogspot", regexp="https://[^.]+.blogspot.[^.]+/?"))
 
     BROWSER = BlogspotBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['url'].get())
+        return self.create_browser(self.config["url"].get())
 
     def get_thread(self, id):
         for thread in self.iter_threads():
@@ -57,14 +57,14 @@ class BlogspotModule(Module, CapMessages):
             yield thread
 
     def fill_message(self, msg, fields):
-        if 'content' in fields:
-            assert msg._type == 'article'
+        if "content" in fields:
+            assert msg._type == "article"
             other = self.browser.get_article(msg.url)
             msg.content = other.content
             msg.sender = other.sender or NotAvailable
             msg.title = other.title or msg.title
-        if 'children' in fields:
-            assert msg._type == 'date'
+        if "children" in fields:
+            assert msg._type == "date"
             msg.children = list(self.browser.iter_articles(msg._key))
             for sub in msg.children:
                 sub.parent = msg

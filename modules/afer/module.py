@@ -23,22 +23,22 @@ from woob_modules.abeilleassurances.module import AbeilleAssurancesModule
 from .browser import AferBrowser
 
 
-__all__ = ['AferModule']
+__all__ = ["AferModule"]
 
 
 class AferModule(AbeilleAssurancesModule, CapBankWealth):
-    NAME = 'afer'
+    NAME = "afer"
     DESCRIPTION = "Association française d'épargne et de retraite"
-    MAINTAINER = 'Quentin Defenouillère'
-    EMAIL = 'quentin.defenouillere@powens.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('abeilleassurances',)
+    MAINTAINER = "Quentin Defenouillère"
+    EMAIL = "quentin.defenouillere@powens.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("abeilleassurances",)
 
     BROWSER = AferBrowser
 
     def create_default_browser(self):
         return self.create_browser(
-            self.config['login'].get(),
-            self.config['password'].get(),
+            self.config["login"].get(),
+            self.config["password"].get(),
         )

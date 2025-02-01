@@ -28,23 +28,23 @@ from woob_modules.s2e.module import S2eModule
 from .browser import CreditdunordpeeBrowser
 
 
-__all__ = ['CreditdunordpeeModule']
+__all__ = ["CreditdunordpeeModule"]
 
 
 class CreditdunordpeeModule(S2eModule, CapBankWealth, CapDocument, CapProfile):
-    NAME = 'creditdunordpee'
-    DESCRIPTION = 'Crédit du Nord Épargne Salariale'
-    MAINTAINER = 'Ludovic LANGE'
-    EMAIL = 'llange@users.noreply.github.com'
-    LICENSE = 'LGPLv3+'
-    VERSION = '3.7'
-    DEPENDENCIES = ('s2e',)
+    NAME = "creditdunordpee"
+    DESCRIPTION = "Crédit du Nord Épargne Salariale"
+    MAINTAINER = "Ludovic LANGE"
+    EMAIL = "llange@users.noreply.github.com"
+    LICENSE = "LGPLv3+"
+    VERSION = "3.7"
+    DEPENDENCIES = ("s2e",)
 
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False),
-        ValueBackendPassword('password', label='Code secret', regexp=r'^(\d{6})$'),
-        Value('otp', label='Code unique temporaire', default=''),
-        ValueTransient('request_information'),
+        ValueBackendPassword("login", label="Identifiant", masked=False),
+        ValueBackendPassword("password", label="Code secret", regexp=r"^(\d{6})$"),
+        Value("otp", label="Code unique temporaire", default=""),
+        ValueTransient("request_information"),
     )
 
     BROWSER = CreditdunordpeeBrowser

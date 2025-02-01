@@ -51,7 +51,7 @@ class FieldBool(FieldBase):
 
 class FieldDist(FieldBase):
     def get_value(self, profile, consts):
-        return '%.2f km' % float(profile[self.key])
+        return "%.2f km" % float(profile[self.key])
 
 
 class FieldIP(FieldBase):
@@ -64,7 +64,7 @@ class FieldIP(FieldBase):
     def get_value(self, profile, consts):
         s = self.get_hostname(profile[self.key])
         if profile[self.key] != profile[self.key2]:
-            s += ' (first %s)' % self.get_hostname(profile[self.key2])
+            s += " (first %s)" % self.get_hostname(profile[self.key2])
         return s
 
 
@@ -72,24 +72,24 @@ class FieldProfileURL(FieldBase):
     def get_value(self, profile, consts):
         id = int(profile[self.key])
         if id > 0:
-            return 'http://www.adopteunmec.com/index.php/profile/%d' % id
+            return "http://www.adopteunmec.com/index.php/profile/%d" % id
         else:
-            return ''
+            return ""
 
 
 class FieldPopu(FieldBase):
     def get_value(self, profile, consts):
-        return str(profile['popu'][self.key])
+        return str(profile["popu"][self.key])
 
 
 class FieldPopuRatio(FieldBase):
     def get_value(self, profile, consts):
-        v1 = float(profile['popu'][self.key])
-        v2 = float(profile['popu'][self.key2])
+        v1 = float(profile["popu"][self.key])
+        v2 = float(profile["popu"][self.key2])
         if v2 == 0.0:
-            return 'NaN'
+            return "NaN"
         else:
-            return '%.2f' % (v1 / v2)
+            return "%.2f" % (v1 / v2)
 
 
 class FieldOld(FieldBase):
@@ -112,21 +112,21 @@ class FieldBMI(FieldBase):
         height = int(profile[self.key])
         weight = int(profile[self.key2])
         if height == 0 or weight == 0:
-            return ''
+            return ""
 
-        bmi = (weight / float(pow(height / 100.0, 2)))
+        bmi = weight / float(pow(height / 100.0, 2))
         if not self.fat:
             return bmi
         elif bmi < 15.5:
-            return 'severely underweight'
+            return "severely underweight"
         elif bmi < 18.4:
-            return 'underweight'
+            return "underweight"
         elif bmi < 24.9:
-            return 'normal'
+            return "normal"
         elif bmi < 30:
-            return 'overweight'
+            return "overweight"
         else:
-            return 'obese'
+            return "obese"
 
 
 class FieldConst(FieldBase):
@@ -136,8 +136,8 @@ class FieldConst(FieldBase):
             try:
                 return consts[self.key][str(v)]
             except KeyError:
-                return ''
-        elif isinstance(v, (tuple,list)):
+                return ""
+        elif isinstance(v, (tuple, list)):
             labels = []
             for i in v:
                 labels.append(consts[self.key][i])
@@ -145,124 +145,159 @@ class FieldConst(FieldBase):
 
 
 class Contact(_Contact):
-    TABLE = OrderedDict((
-                 ('_info',        OrderedDict((
-                                    ('title',               FieldStr('title')),
-                                    # ipaddr is not available anymore.
-                                    #('IPaddr',              FieldIP('last_ip', 'first_ip')),
-                                    ('admin',               FieldBool('admin')),
-                                    ('ban',                 FieldBool('isBan')),
-                                    ('first',               FieldStr('first_cnx')),
-                                    ('godfather',           FieldProfileURL('godfather')),
-                                  ))),
-                 ('_stats',       OrderedDict((
-                                    ('mails',               FieldPopu('mails')),
-                                    ('charms',              FieldPopu('charmes')),
-                                    ('visites',             FieldPopu('visites')),
-                                    ('baskets',             FieldPopu('panier')),
-                                    ('invits',              FieldPopu('invits')),
-                                    ('bonus',               FieldPopu('bonus')),
-                                    ('score',               FieldStr('points')),
-                                    ('ratio',               FieldPopuRatio('mails', 'charmes')),
-                                    ('mailable',            FieldBool('can_mail')),
-                                  ))),
-                 ('details',      OrderedDict((
-                                    #('old',                 FieldStr('age')),
-                                    ('old',                 FieldOld('birthdate')),
-                                    ('birthday',            FieldStr('birthdate')),
-                                    ('zipcode',             FieldStr('zip')),
-                                    ('location',            FieldStr('city')),
-                                    ('distance',            FieldDist('dist')),
-                                    ('country',             FieldStr('country')),
-                                    ('phone',               FieldStr('phone')),
-                                    ('eyes',                FieldConst('eyes_color')),
-                                    ('hair_color',          FieldConst('hair_color')),
-                                    ('hair_size',           FieldConst('hair_size')),
-                                    ('height',              FieldConst('size')),
-                                    ('weight',              FieldConst('weight')),
-                                    ('BMI',                 FieldBMI('size', 'weight')),
-                                    ('fat',                 FieldBMI('size', 'weight', fat=True)),
-                                    ('shape',               FieldConst('shape')),
-                                    ('origins',             FieldConst('origins')),
-                                    ('signs',               FieldConst('features')),
-                                    ('job',                 FieldStr('job')),
-                                    ('style',               FieldConst('styles')),
-                                    ('food',                FieldConst('diet')),
-                                    ('favorite_food',       FieldConst('favourite_food')),
-                                    ('drink',               FieldConst('alcohol')),
-                                    ('smoke',               FieldConst('tobacco')),
-                                  ))),
-                ('tastes',        OrderedDict((
-                                    ('hobbies',             FieldStr('hobbies')),
-                                    ('music',               FieldList('music')),
-                                    ('cinema',              FieldList('cinema')),
-                                    ('books',               FieldList('books')),
-                                    ('tv',                  FieldList('tvs')),
-                                  ))),
-                ('+sex',          OrderedDict((
-                                    ('underwear',           FieldConst('underwear')),
-                                    ('practices',           FieldConst('sexgames')),
-                                    ('favorite',            FieldConst('arousing')),
-                                    ('toys',                FieldConst('sextoys')),
-                                  ))),
-                ('+personality',  OrderedDict((
-                                    ('snap',                FieldStr('fall_for')),
-                                    ('exciting',            FieldStr('turned_on_by')),
-                                    ('hate',                FieldStr('cant_stand')),
-                                    ('vices',               FieldStr('vices')),
-                                    ('assets',              FieldStr('assets')),
-                                    ('fantasies',           FieldStr('fantasies')),
-                                    ('is',                  FieldConst('character')),
-                                  ))),
-                ('-personality',  OrderedDict((
-                                    ('accessories',         FieldConst('accessories')),
-                                    ('skills',              FieldConst('skills')),
-                                    ('socios',              FieldConst('socios')),
-                                    ('family',              FieldConst('family')),
-                                    ('pets',                FieldConst('pets')),
-                                  )))
-        ))
+    TABLE = OrderedDict(
+        (
+            (
+                "_info",
+                OrderedDict(
+                    (
+                        ("title", FieldStr("title")),
+                        # ipaddr is not available anymore.
+                        # ('IPaddr',              FieldIP('last_ip', 'first_ip')),
+                        ("admin", FieldBool("admin")),
+                        ("ban", FieldBool("isBan")),
+                        ("first", FieldStr("first_cnx")),
+                        ("godfather", FieldProfileURL("godfather")),
+                    )
+                ),
+            ),
+            (
+                "_stats",
+                OrderedDict(
+                    (
+                        ("mails", FieldPopu("mails")),
+                        ("charms", FieldPopu("charmes")),
+                        ("visites", FieldPopu("visites")),
+                        ("baskets", FieldPopu("panier")),
+                        ("invits", FieldPopu("invits")),
+                        ("bonus", FieldPopu("bonus")),
+                        ("score", FieldStr("points")),
+                        ("ratio", FieldPopuRatio("mails", "charmes")),
+                        ("mailable", FieldBool("can_mail")),
+                    )
+                ),
+            ),
+            (
+                "details",
+                OrderedDict(
+                    (
+                        # ('old',                 FieldStr('age')),
+                        ("old", FieldOld("birthdate")),
+                        ("birthday", FieldStr("birthdate")),
+                        ("zipcode", FieldStr("zip")),
+                        ("location", FieldStr("city")),
+                        ("distance", FieldDist("dist")),
+                        ("country", FieldStr("country")),
+                        ("phone", FieldStr("phone")),
+                        ("eyes", FieldConst("eyes_color")),
+                        ("hair_color", FieldConst("hair_color")),
+                        ("hair_size", FieldConst("hair_size")),
+                        ("height", FieldConst("size")),
+                        ("weight", FieldConst("weight")),
+                        ("BMI", FieldBMI("size", "weight")),
+                        ("fat", FieldBMI("size", "weight", fat=True)),
+                        ("shape", FieldConst("shape")),
+                        ("origins", FieldConst("origins")),
+                        ("signs", FieldConst("features")),
+                        ("job", FieldStr("job")),
+                        ("style", FieldConst("styles")),
+                        ("food", FieldConst("diet")),
+                        ("favorite_food", FieldConst("favourite_food")),
+                        ("drink", FieldConst("alcohol")),
+                        ("smoke", FieldConst("tobacco")),
+                    )
+                ),
+            ),
+            (
+                "tastes",
+                OrderedDict(
+                    (
+                        ("hobbies", FieldStr("hobbies")),
+                        ("music", FieldList("music")),
+                        ("cinema", FieldList("cinema")),
+                        ("books", FieldList("books")),
+                        ("tv", FieldList("tvs")),
+                    )
+                ),
+            ),
+            (
+                "+sex",
+                OrderedDict(
+                    (
+                        ("underwear", FieldConst("underwear")),
+                        ("practices", FieldConst("sexgames")),
+                        ("favorite", FieldConst("arousing")),
+                        ("toys", FieldConst("sextoys")),
+                    )
+                ),
+            ),
+            (
+                "+personality",
+                OrderedDict(
+                    (
+                        ("snap", FieldStr("fall_for")),
+                        ("exciting", FieldStr("turned_on_by")),
+                        ("hate", FieldStr("cant_stand")),
+                        ("vices", FieldStr("vices")),
+                        ("assets", FieldStr("assets")),
+                        ("fantasies", FieldStr("fantasies")),
+                        ("is", FieldConst("character")),
+                    )
+                ),
+            ),
+            (
+                "-personality",
+                OrderedDict(
+                    (
+                        ("accessories", FieldConst("accessories")),
+                        ("skills", FieldConst("skills")),
+                        ("socios", FieldConst("socios")),
+                        ("family", FieldConst("family")),
+                        ("pets", FieldConst("pets")),
+                    )
+                ),
+            ),
+        )
+    )
 
     def parse_profile(self, profile, consts):
-        if profile['online']:
+        if profile["online"]:
             self.status = Contact.STATUS_ONLINE
-            self.status_msg = u'online'
-            self.status_msg = u'since %s' % profile['last_cnx']
+            self.status_msg = "online"
+            self.status_msg = "since %s" % profile["last_cnx"]
         else:
             self.status = Contact.STATUS_OFFLINE
-            self.status_msg = u'last connection %s' % profile['last_cnx']
+            self.status_msg = "last connection %s" % profile["last_cnx"]
 
-        self.summary = str(HTMLParser().unescape(profile.get('announce', '').strip()))
-        if len(profile.get('shopping_list', '')) > 0:
-            self.summary += u'\n\nLooking for:\n%s' % HTMLParser().unescape(profile['shopping_list'].strip())
+        self.summary = str(HTMLParser().unescape(profile.get("announce", "").strip()))
+        if len(profile.get("shopping_list", "")) > 0:
+            self.summary += "\n\nLooking for:\n%s" % HTMLParser().unescape(profile["shopping_list"].strip())
 
-        for photo in profile['pics']:
-            self.set_photo(photo.split('/')[-1],
-                              url=photo + '/full',
-                              thumbnail_url=photo + '/small',
-                              hidden=False)
+        for photo in profile["pics"]:
+            self.set_photo(photo.split("/")[-1], url=photo + "/full", thumbnail_url=photo + "/small", hidden=False)
         self.profile = OrderedDict()
 
-        if 'sex' in profile:
+        if "sex" in profile:
             for section, d in self.TABLE.items():
                 flags = ProfileNode.SECTION
-                if section.startswith('_'):
+                if section.startswith("_"):
                     flags |= ProfileNode.HEAD
-                if (section.startswith('+') and int(profile['sex']) != 1) or \
-                   (section.startswith('-') and int(profile['sex']) != 0):
+                if (section.startswith("+") and int(profile["sex"]) != 1) or (
+                    section.startswith("-") and int(profile["sex"]) != 0
+                ):
                     continue
 
-                section = section.lstrip('_+-')
+                section = section.lstrip("_+-")
 
                 s = ProfileNode(section, section.capitalize(), OrderedDict(), flags=flags)
 
                 for key, builder in d.items():
                     try:
-                        value = builder.get_value(profile, consts[int(profile['sex'])])
+                        value = builder.get_value(profile, consts[int(profile["sex"])])
                     except KeyError:
                         pass
                     else:
-                        s.value[key] = ProfileNode(key, key.capitalize().replace('_', ' '), value)
+                        s.value[key] = ProfileNode(key, key.capitalize().replace("_", " "), value)
 
                 self.profile[section] = s
 

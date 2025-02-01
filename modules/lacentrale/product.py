@@ -23,4 +23,4 @@ from woob.capabilities.pricecomparison import Product
 class LaCentraleProduct(Product):
     def __init__(self):
         self.id = 1
-        self.name = 'Voiture'
+        self.name = "Voiture"

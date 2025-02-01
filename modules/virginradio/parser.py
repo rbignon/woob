@@ -24,42 +24,44 @@ from lxml import html
 
 def radios(webradios, radiosjs):
     radiosjs_re = (
-            r'{id:(?P<id>\d+),'
-            r'id_radio:(?P<id_radio>\d+),'
-            r'type:"[^"]*",'
-            r'name:"(?P<name>[^"]*)",'
-            r'hls_source:"(?P<hls_source>[^"]*)",'
-            r'source:"(?P<source>[^"]*)"'
-            )
+        r"{id:(?P<id>\d+),"
+        r"id_radio:(?P<id_radio>\d+),"
+        r'type:"[^"]*",'
+        r'name:"(?P<name>[^"]*)",'
+        r'hls_source:"(?P<hls_source>[^"]*)",'
+        r'source:"(?P<source>[^"]*)"'
+    )
     webradios_xpath = '//ul/li[@class="brick"]/div/div[@data-id="%s"]/ancestor::li/div/h3/text()'
 
     radios = {}
     tree = html.fromstring(webradios.content)
     for m in re.finditer(radiosjs_re, radiosjs.text):
-        radios[m.group('name')] = {'radio_id': m.group('id_radio'),
-                                   'name': m.group('name'),
-                                   'hls_source': m.group('hls_source'),
-                                   'source': m.group('source'),
-                                   'title': tree.xpath(webradios_xpath % (m.group('id_radio')))[0]}
+        radios[m.group("name")] = {
+            "radio_id": m.group("id_radio"),
+            "name": m.group("name"),
+            "hls_source": m.group("hls_source"),
+            "source": m.group("source"),
+            "title": tree.xpath(webradios_xpath % (m.group("id_radio")))[0],
+        }
 
     return radios
 
 
 def current(r):
-    artist = ''
-    title = ''
-    info = r.json()['root_tab']['event']
+    artist = ""
+    title = ""
+    info = r.json()["root_tab"]["event"]
     if len(info) > 0:
-        artist = info[0]['artist']
-        title = info[0]['title']
+        artist = info[0]["artist"]
+        title = info[0]["title"]
 
     return artist, title
 
 
 def description(r):
-    description = ''
-    info = r.json()['root_tab']['events']
+    description = ""
+    info = r.json()["root_tab"]["events"]
     if len(info) > 0:
-        description = "%s - %s" % (info[0]['title'], info[0]['tab_foreign_type']['resum'])
+        description = "%s - %s" % (info[0]["title"], info[0]["tab_foreign_type"]["resum"])
 
     return description

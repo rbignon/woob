@@ -25,9 +25,9 @@ from typing import TypeVar
 from .misc import to_unicode
 
 
-__all__ = ['ValuesDict', 'Value', 'ValueBackendPassword', 'ValueInt', 'ValueFloat', 'ValueBool']
+__all__ = ["ValuesDict", "Value", "ValueBackendPassword", "ValueInt", "ValueFloat", "ValueBool"]
 
-ValuesDictType = TypeVar('ValuesDictType', bound='ValuesDict')
+ValuesDictType = TypeVar("ValuesDictType", bound="ValuesDict")
 
 
 class ValuesDict(OrderedDict):
@@ -106,38 +106,38 @@ class Value:
         if len(args) > 0:
             self.id = args[0]
         else:
-            self.id = ''
-        self.label = kwargs.get('label', kwargs.get('description', None))
-        self.description = kwargs.get('description', kwargs.get('label', None))
-        self.default = kwargs.get('default', None)
+            self.id = ""
+        self.label = kwargs.get("label", kwargs.get("description", None))
+        self.description = kwargs.get("description", kwargs.get("label", None))
+        self.default = kwargs.get("default", None)
         if isinstance(self.default, str):
             self.default = to_unicode(self.default)
-        self.regexp = self.get_normalized_regexp(kwargs.get('regexp', None))
-        self.choices = kwargs.get('choices', None)
-        self.aliases = kwargs.get('aliases')
+        self.regexp = self.get_normalized_regexp(kwargs.get("regexp", None))
+        self.choices = kwargs.get("choices", None)
+        self.aliases = kwargs.get("aliases")
         if isinstance(self.choices, (list, tuple)):
             self.choices = OrderedDict(((v, v) for v in self.choices))
-        self.tiny = kwargs.get('tiny', None)
-        self.transient = kwargs.get('transient', None)
-        self.masked = kwargs.get('masked', False)
-        self.required = kwargs.get('required', self.default is None)
-        self._value = kwargs.get('value', None)
+        self.tiny = kwargs.get("tiny", None)
+        self.transient = kwargs.get("transient", None)
+        self.masked = kwargs.get("masked", False)
+        self.required = kwargs.get("required", self.default is None)
+        self._value = kwargs.get("value", None)
 
     @staticmethod
     def get_normalized_regexp(regexp):
-        """ Return normalized regexp adding missing anchors """
+        """Return normalized regexp adding missing anchors"""
 
         if not regexp:
             return regexp
-        if not regexp.startswith('^'):
-            regexp = '^' + regexp
-        if not regexp.endswith('$'):
-            regexp += '$'
+        if not regexp.startswith("^"):
+            regexp = "^" + regexp
+        if not regexp.endswith("$"):
+            regexp += "$"
         return regexp
 
     def show_value(self, v):
         if self.masked:
-            return ''
+            return ""
         else:
             return v
 
@@ -148,20 +148,16 @@ class Value:
         :raises: ValueError
         """
         if self.required and v is None:
-            raise ValueError('Value is required and thus must be set')
+            raise ValueError("Value is required and thus must be set")
         if v == self.default:
             return
-        if v == '' and self.default != '' and (self.choices is None or v not in self.choices):
-            raise ValueError('Value can\'t be empty')
-        if self.regexp is not None and not re.match(self.regexp, str(v) if v is not None else ''):
+        if v == "" and self.default != "" and (self.choices is None or v not in self.choices):
+            raise ValueError("Value can't be empty")
+        if self.regexp is not None and not re.match(self.regexp, str(v) if v is not None else ""):
             raise ValueError('Value does not match regexp "%s"' % self.regexp)
         if self.choices is not None and v not in self.choices:
             if not self.aliases or v not in self.aliases:
-                raise ValueError(
-                    'Value is not in list: %s' % (
-                        ', '.join(str(s) for s in self.choices)
-                    )
-                )
+                raise ValueError("Value is not in list: %s" % (", ".join(str(s) for s in self.choices)))
 
     def load(self, domain, v, requests):
         """
@@ -199,13 +195,13 @@ class Value:
 
 class ValueTransient(Value):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('transient', True)
-        kwargs.setdefault('default', None)
-        kwargs.setdefault('required', False)
+        kwargs.setdefault("transient", True)
+        kwargs.setdefault("default", None)
+        kwargs.setdefault("required", False)
         super(ValueTransient, self).__init__(*args, **kwargs)
 
     def dump(self):
-        return ''
+        return ""
 
 
 class ValueBackendPassword(Value):
@@ -214,10 +210,10 @@ class ValueBackendPassword(Value):
     _stored = True
 
     def __init__(self, *args, **kwargs):
-        kwargs['masked'] = kwargs.pop('masked', True)
-        self.noprompt = kwargs.pop('noprompt', False)
+        kwargs["masked"] = kwargs.pop("masked", True)
+        self.noprompt = kwargs.pop("noprompt", False)
         super(ValueBackendPassword, self).__init__(*args, **kwargs)
-        self.default = kwargs.get('default', '')
+        self.default = kwargs.get("default", "")
 
     def load(self, domain, password, requests):
         self.check_valid(password)
@@ -226,7 +222,7 @@ class ValueBackendPassword(Value):
         self._requests = requests
 
     def check_valid(self, passwd):
-        if passwd == '':
+        if passwd == "":
             # always allow empty passwords
             return True
         return super(ValueBackendPassword, self).check_valid(passwd)
@@ -236,8 +232,8 @@ class ValueBackendPassword(Value):
         if passwd is None:
             # no change
             return
-        self._value = ''
-        if passwd == '':
+        self._value = ""
+        if passwd == "":
             return
         if self._domain is None:
             self._value = to_unicode(passwd)
@@ -249,10 +245,10 @@ class ValueBackendPassword(Value):
         if self._stored:
             return self._value
         else:
-            return ''
+            return ""
 
     def get(self):
-        if self._value != '' or self._domain is None:
+        if self._value != "" or self._domain is None:
             return self._value
 
         passwd = None
@@ -263,9 +259,9 @@ class ValueBackendPassword(Value):
 
         # Prompt user to enter password by hand.
         if not self.noprompt and self._requests:
-            self._value = self._requests.request('login', self._domain, self)
+            self._value = self._requests.request("login", self._domain, self)
             if self._value is None:
-                self._value = ''
+                self._value = ""
             else:
                 self._value = to_unicode(self._value)
                 self._stored = False
@@ -274,9 +270,9 @@ class ValueBackendPassword(Value):
 
 class ValueInt(Value):
     def __init__(self, *args, **kwargs):
-        kwargs['regexp'] = r'^\d+$'
+        kwargs["regexp"] = r"^\d+$"
         super(ValueInt, self).__init__(*args, **kwargs)
-        self.default = kwargs.get('default', 0)
+        self.default = kwargs.get("default", 0)
 
     def get(self):
         return int(self._value)
@@ -284,15 +280,15 @@ class ValueInt(Value):
 
 class ValueFloat(Value):
     def __init__(self, *args, **kwargs):
-        kwargs['regexp'] = r'^[\d\.]+$'
+        kwargs["regexp"] = r"^[\d\.]+$"
         super(ValueFloat, self).__init__(*args, **kwargs)
-        self.default = kwargs.get('default', 0.0)
+        self.default = kwargs.get("default", 0.0)
 
     def check_valid(self, v):
         try:
             float(v)
         except ValueError:
-            raise ValueError('Value is not a float value')
+            raise ValueError("Value is not a float value")
 
     def get(self):
         return float(self._value)
@@ -300,29 +296,41 @@ class ValueFloat(Value):
 
 class ValueBool(Value):
     def __init__(self, *args, **kwargs):
-        kwargs['choices'] = {'y': 'True', 'n': 'False'}
+        kwargs["choices"] = {"y": "True", "n": "False"}
         super(ValueBool, self).__init__(*args, **kwargs)
-        self.default = kwargs.get('default', False)
+        self.default = kwargs.get("default", False)
 
     def check_valid(self, v):
-        if not isinstance(v, bool) and \
-            str(v).lower() not in {
-                'y', 'yes', '1', 'true',  'on',
-                'n', 'no',  '0', 'false', 'off',
-            }:
+        if not isinstance(v, bool) and str(v).lower() not in {
+            "y",
+            "yes",
+            "1",
+            "true",
+            "on",
+            "n",
+            "no",
+            "0",
+            "false",
+            "off",
+        }:
 
-            raise ValueError('Value is not a boolean (y/n)')
+            raise ValueError("Value is not a boolean (y/n)")
 
     def get(self):
-        return (isinstance(self._value, bool) and self._value) or \
-                str(self._value).lower() in {'y', 'yes', '1', 'true', 'on'}
+        return (isinstance(self._value, bool) and self._value) or str(self._value).lower() in {
+            "y",
+            "yes",
+            "1",
+            "true",
+            "on",
+        }
 
 
 class ValueDate(Value):
-    DEFAULT_FORMAT = '%Y-%m-%d'
+    DEFAULT_FORMAT = "%Y-%m-%d"
 
     def __init__(self, *args, **kwargs):
-        formats = tuple(kwargs.pop('formats', ()))
+        formats = tuple(kwargs.pop("formats", ()))
         super(ValueDate, self).__init__(*args, **kwargs)
 
         if formats:
@@ -339,11 +347,11 @@ class ValueDate(Value):
                 continue
             return dateval
 
-        raise ValueError('Value does not match format in %s' % self.accepted_formats)
+        raise ValueError("Value does not match format in %s" % self.accepted_formats)
 
     def check_valid(self, v):
         if self.required and not v:
-            raise ValueError('Value is required and thus must be set')
+            raise ValueError("Value is required and thus must be set")
 
     def load(self, domain, v, requests):
         self.check_valid(v)
@@ -355,7 +363,7 @@ class ValueDate(Value):
         if isinstance(v, datetime.date):
             self._value = v
         else:
-            raise ValueError('Value is not of the proper type')
+            raise ValueError("Value is not of the proper type")
 
     def dump(self):
         if self._value:

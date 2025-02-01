@@ -21,10 +21,10 @@ from woob.tools.test import BackendTest
 
 
 class YoutubeTest(BackendTest):
-    MODULE = 'youtube'
+    MODULE = "youtube"
 
     def test_search(self):
-        l = list(self.backend.search_videos('lol'))
+        l = list(self.backend.search_videos("lol"))
         self.assertTrue(len(l) > 0)
 
         v = l[0]
@@ -35,13 +35,13 @@ class YoutubeTest(BackendTest):
         self.assertTrue(any(el.duration for el in l))
         self.assertTrue(any(el.thumbnail.url.startswith("https://") for el in l))
 
-        self.backend.fillobj(v, ('url',))
-        self.assertTrue(v.url and v.url.startswith('https://'), f'URL for video "{v.id}" not found: {v.url}')
+        self.backend.fillobj(v, ("url",))
+        self.assertTrue(v.url and v.url.startswith("https://"), f'URL for video "{v.id}" not found: {v.url}')
         requests.get(v.url, stream=True, timeout=30)
 
     def test_drm(self):
-        v = self.backend.get_video('http://youtu.be/UxxajLWwzqY')
-        self.backend.fillobj(v, ('url',))
+        v = self.backend.get_video("http://youtu.be/UxxajLWwzqY")
+        self.backend.fillobj(v, ("url",))
         assert len(v.url)
 
         try:
@@ -50,6 +50,12 @@ class YoutubeTest(BackendTest):
             self.fail(f"can't open url {v.url}")
 
     def test_weirdchars(self):
-        v = self.backend.get_video('https://www.youtube.com/watch?v=BaW_jenozKc')
-        self.backend.fillobj(v, ('title', 'url',))
+        v = self.backend.get_video("https://www.youtube.com/watch?v=BaW_jenozKc")
+        self.backend.fillobj(
+            v,
+            (
+                "title",
+                "url",
+            ),
+        )
         assert v.title

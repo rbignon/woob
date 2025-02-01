@@ -31,22 +31,18 @@ from woob.exceptions import BrowserIncorrectPassword
 from .pages import ActivityPage, SomePage, StatementPage, StatementsPage, SummaryPage
 
 
-__all__ = ['AmazonStoreCard']
+__all__ = ["AmazonStoreCard"]
 
 
 class AmazonStoreCard(LoginBrowser):
-    BASEURL = 'https://www.synchronycredit.com'
+    BASEURL = "https://www.synchronycredit.com"
     MAX_RETRIES = 10
     TIMEOUT = 120.0
-    stmts = URL('/eService/EBill/eBillAction.action$', StatementsPage)
-    statement = URL('eService/EBill/eBillViewPDFAction.action.*$',
-                    StatementPage)
-    summary = URL('/eService/AccountSummary/initiateAccSummaryAction.action$',
-                  SummaryPage)
-    activity = URL('/eService/BillingActivity'
-                   '/initiateBillingActivityAction.action$',
-                   ActivityPage)
-    unknown = URL('.*', SomePage)
+    stmts = URL("/eService/EBill/eBillAction.action$", StatementsPage)
+    statement = URL("eService/EBill/eBillViewPDFAction.action.*$", StatementPage)
+    summary = URL("/eService/AccountSummary/initiateAccSummaryAction.action$", SummaryPage)
+    activity = URL("/eService/BillingActivity" "/initiateBillingActivityAction.action$", ActivityPage)
+    unknown = URL(".*", SomePage)
 
     def __init__(self, phone, code_file, *args, **kwargs):
         super(AmazonStoreCard, self).__init__(*args, **kwargs)
@@ -54,16 +50,21 @@ class AmazonStoreCard(LoginBrowser):
         self.code_file = code_file
 
     def do_login(self):
-        scrf, scrn = mkstemp('.js')
-        cookf, cookn = mkstemp('.json')
-        os.write(scrf, LOGIN_JS % {
-            'timeout': 300,
-            'username': self.username,
-            'password': self.password,
-            'output': cookn,
-            'code': self.code_file,
-            'phone': self.phone[-4:],
-            'agent': self.session.headers['User-Agent']})
+        scrf, scrn = mkstemp(".js")
+        cookf, cookn = mkstemp(".json")
+        os.write(
+            scrf,
+            LOGIN_JS
+            % {
+                "timeout": 300,
+                "username": self.username,
+                "password": self.password,
+                "output": cookn,
+                "code": self.code_file,
+                "phone": self.phone[-4:],
+                "agent": self.session.headers["User-Agent"],
+            },
+        )
         os.close(scrf)
         os.close(cookf)
         for i in range(self.MAX_RETRIES):
@@ -80,9 +81,9 @@ class AmazonStoreCard(LoginBrowser):
         os.remove(cookn)
         self.session.cookies.clear()
         for c in cookies:
-            for k in ['expiry', 'expires', 'httponly']:
+            for k in ["expiry", "expires", "httponly"]:
                 c.pop(k, None)
-            c['value'] = unquote(c['value'])
+            c["value"] = unquote(c["value"])
             self.session.cookies.set(**c)
         if not self.summary.go().logged:
             raise BrowserIncorrectPassword()
@@ -90,7 +91,7 @@ class AmazonStoreCard(LoginBrowser):
     @need_login
     def get_account(self, id_):
         a = next(self.iter_accounts())
-        if (a.id != id_):
+        if a.id != id_:
             raise AccountNotFound()
         return a
 
@@ -107,7 +108,7 @@ class AmazonStoreCard(LoginBrowser):
                 yield t
 
 
-LOGIN_JS = u'''\
+LOGIN_JS = """\
 var TIMEOUT = %(timeout)s*1000; // milliseconds
 var page = require('webpage').create();
 page.settings.userAgent = "%(agent)s";
@@ -194,4 +195,4 @@ waitForLogin();
 waitForSendCode();
 waitForEnterCode();
 setTimeout(function(){phantom.exit(-1);}, TIMEOUT);
-'''
+"""

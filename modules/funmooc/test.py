@@ -23,11 +23,11 @@ from woob.tools.test import BackendTest, skip_without_config
 
 
 class FunmoocTest(BackendTest):
-    MODULE = 'funmooc'
+    MODULE = "funmooc"
 
-    @skip_without_config('email', 'password')
+    @skip_without_config("email", "password")
     def test_basic(self):
-        basic_id = 'FUN-00101-Trimestre_3_2014'
+        basic_id = "FUN-00101-Trimestre_3_2014"
 
         courses = list(self.backend.iter_resources([BaseVideo], []))
         for course in courses:
@@ -35,7 +35,7 @@ class FunmoocTest(BackendTest):
             if course.split_path == [basic_id]:
                 break
         else:
-            assert False, 'The default course was not found'
+            assert False, "The default course was not found"
 
         videos = list(self.backend.iter_resources_flat([BaseVideo], [basic_id]))
         for video in videos:
@@ -45,18 +45,18 @@ class FunmoocTest(BackendTest):
             self.assertTrue(video.url)
             self.assertTrue(video.title)
 
-        self.assertTrue(self.backend.browser.open(video.url, method='HEAD'))
+        self.assertTrue(self.backend.browser.open(video.url, method="HEAD"))
 
-    @skip_without_config('email', 'password')
+    @skip_without_config("email", "password")
     def test_search(self):
-        video = next(self.backend.search_videos('Tester le lecteur HTML 5'))
+        video = next(self.backend.search_videos("Tester le lecteur HTML 5"))
         self.assertTrue(video)
         self.assertIsInstance(video, BaseVideo)
         self.assertTrue(video.id)
         self.assertTrue(video.url)
         self.assertTrue(video.title)
 
-        videos = list(self.backend.search_videos('Bienvenue sur FUN'))
+        videos = list(self.backend.search_videos("Bienvenue sur FUN"))
         self.assertTrue(videos)
         for video in videos:
             self.assertTrue(video)

@@ -31,48 +31,60 @@ from woob.browser.mfa import TwoFactorBrowser
 from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, OTPSentType, ScrapingBlocked, SentOTPQuestion
 
 from .pages import (
-    AccountPage, CallbackPage, DocumentDownloadPage, DocumentFilePage, DocumentPage, ForgottenPasswordPage, HomePage,
-    LoginPage, MaintenancePage, OauthPage, ProfilePage, SendSMSPage, SubscriberPage, SubscriptionDetail,
+    AccountPage,
+    CallbackPage,
+    DocumentDownloadPage,
+    DocumentFilePage,
+    DocumentPage,
+    ForgottenPasswordPage,
+    HomePage,
+    LoginPage,
+    MaintenancePage,
+    OauthPage,
+    ProfilePage,
+    SendSMSPage,
+    SubscriberPage,
+    SubscriptionDetail,
     SubscriptionPage,
 )
 
 
 class MyURL(URL):
     def go(self, *args, **kwargs):
-        kwargs['id_personne'] = self.browser.id_personne
+        kwargs["id_personne"] = self.browser.id_personne
         return super(MyURL, self).go(*args, **kwargs)
 
 
 class BouyguesBrowser(TwoFactorBrowser):
-    BASEURL = 'https://api.bouyguestelecom.fr'
+    BASEURL = "https://api.bouyguestelecom.fr"
 
-    home_page = URL(r'https://www.bouyguestelecom.fr/?$', HomePage)
-    oauth_page = URL(r'https://oauth2.bouyguestelecom.fr/authorize', OauthPage)
-    login_page = URL(r'https://www.mon-compte.bouyguestelecom.fr/cas/login', LoginPage)
+    home_page = URL(r"https://www.bouyguestelecom.fr/?$", HomePage)
+    oauth_page = URL(r"https://oauth2.bouyguestelecom.fr/authorize", OauthPage)
+    login_page = URL(r"https://www.mon-compte.bouyguestelecom.fr/cas/login", LoginPage)
     # used with oauth_page as a redirect_uri param
     callback = URL(
-        r'https://assets.bouyguestelecom.fr/PICASSO-FRONT/main@0.19.1/bouyguestelecom.fr/callback.html',
+        r"https://assets.bouyguestelecom.fr/PICASSO-FRONT/main@0.19.1/bouyguestelecom.fr/callback.html",
         CallbackPage,
     )
-    maintenance = URL(r'https://www.bouyguestelecom.fr/static/maintenance.html', MaintenancePage)
+    maintenance = URL(r"https://www.bouyguestelecom.fr/static/maintenance.html", MaintenancePage)
     forgotten_password_page = URL(
-        r'https://www.mon-compte.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
-        r'https://www.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie',
-        ForgottenPasswordPage
+        r"https://www.mon-compte.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie",
+        r"https://www.bouyguestelecom.fr/mon-compte/mot-de-passe-oublie",
+        ForgottenPasswordPage,
     )
-    account_page = URL(r'https://www.bouyguestelecom.fr/mon-compte/?$', AccountPage)
-    subscriber_page = MyURL(r'/personnes/(?P<id_personne>\d+)$', SubscriberPage)
-    subscriptions_page = MyURL(r'/personnes/(?P<id_personne>\d+)/comptes-facturation', SubscriptionPage)
-    subscription_detail_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/contrats-payes', SubscriptionDetail)
-    document_file_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures/.*/documents/.*', DocumentFilePage)
-    documents_page = URL(r'/graphql', DocumentPage)
-    document_download_page = URL(r'/comptes-facturation/(?P<id_account>\d+)/factures/.*(\?|$)', DocumentDownloadPage)
-    profile_page = MyURL(r'/personnes/(?P<id_personne>\d+)/coordonnees', ProfilePage)
+    account_page = URL(r"https://www.bouyguestelecom.fr/mon-compte/?$", AccountPage)
+    subscriber_page = MyURL(r"/personnes/(?P<id_personne>\d+)$", SubscriberPage)
+    subscriptions_page = MyURL(r"/personnes/(?P<id_personne>\d+)/comptes-facturation", SubscriptionPage)
+    subscription_detail_page = URL(r"/comptes-facturation/(?P<id_account>\d+)/contrats-payes", SubscriptionDetail)
+    document_file_page = URL(r"/comptes-facturation/(?P<id_account>\d+)/factures/.*/documents/.*", DocumentFilePage)
+    documents_page = URL(r"/graphql", DocumentPage)
+    document_download_page = URL(r"/comptes-facturation/(?P<id_account>\d+)/factures/.*(\?|$)", DocumentDownloadPage)
+    profile_page = MyURL(r"/personnes/(?P<id_personne>\d+)/coordonnees", ProfilePage)
 
-    send_sms = URL(r'https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/sendSMS.phtml', SendSMSPage)
-    confirm_sms = URL(r'https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/resultSendSMS.phtml')
+    send_sms = URL(r"https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/sendSMS.phtml", SendSMSPage)
+    confirm_sms = URL(r"https://www.secure.bbox.bouyguestelecom.fr/services/SMSIHD/resultSendSMS.phtml")
 
-    __states__ = ('execution', 'otp_url', 'access_token', 'id_personne', 'conversation_id')
+    __states__ = ("execution", "otp_url", "access_token", "id_personne", "conversation_id")
     # We can do the login with session data only, and check if we require
     # interactive ourselves.
     HAS_CREDENTIALS_ONLY = True
@@ -88,27 +100,27 @@ class BouyguesBrowser(TwoFactorBrowser):
         self.conversation_id = None
 
         self.AUTHENTICATION_METHODS = {
-            'otp_sms': self.handle_otp,
-            'otp_email': self.handle_otp,
+            "otp_sms": self.handle_otp,
+            "otp_email": self.handle_otp,
         }
 
     def set_session_data_from_current_url(self):
         fragments = dict(parse_qsl(urlparse(self.url).fragment))
-        self.id_personne = jwt.get_unverified_claims(fragments['id_token'])['id_personne']
-        self.access_token = fragments['access_token']
-        authorization = 'Bearer ' + self.access_token
-        self.session.headers['Authorization'] = authorization
+        self.id_personne = jwt.get_unverified_claims(fragments["id_token"])["id_personne"]
+        self.access_token = fragments["access_token"]
+        authorization = "Bearer " + self.access_token
+        self.session.headers["Authorization"] = authorization
 
-    def build_oauth_param(self, redirect_uri, tmpl=True, client_id='ec.nav.bouyguestelecom.fr'):
+    def build_oauth_param(self, redirect_uri, tmpl=True, client_id="ec.nav.bouyguestelecom.fr"):
         params = {
-            'redirect_uri': redirect_uri,
-            'client_id': client_id,
-            'nonce': self.create_random_string(),
-            'state': self.create_random_string(),
-            'response_type': 'id_token token',
+            "redirect_uri": redirect_uri,
+            "client_id": client_id,
+            "nonce": self.create_random_string(),
+            "state": self.create_random_string(),
+            "response_type": "id_token token",
         }
         if tmpl is True:
-            params['tmpl'] = 'bytelConnect'
+            params["tmpl"] = "bytelConnect"
         return params
 
     def login_with_session_data(self):
@@ -121,7 +133,7 @@ class BouyguesBrowser(TwoFactorBrowser):
         self.account_page.go()
         # We can get one with more privileges on the same url but with
         # different parameters.
-        params = self.build_oauth_param(self.account_page.build(), tmpl=False, client_id='a360.bouyguestelecom.fr')
+        params = self.build_oauth_param(self.account_page.build(), tmpl=False, client_id="a360.bouyguestelecom.fr")
         self.oauth_page.go(params=params)
         self.set_session_data_from_current_url()
         self.profile_page.go()
@@ -132,23 +144,22 @@ class BouyguesBrowser(TwoFactorBrowser):
         pass
 
     def locate_browser(self, state):
-        if self.config['otp_sms'].get() or self.config['otp_email'].get():
+        if self.config["otp_sms"].get() or self.config["otp_email"].get():
             # We have an sms value we don't want to go to the
             # last visited page (OTP page).
             return
         # set the acces token to the headers
         if self.access_token:
-            self.session.headers['Authorization'] = 'Bearer ' + self.access_token
+            self.session.headers["Authorization"] = "Bearer " + self.access_token
 
-        if 'url' in state and self.documents_page.match(state['url']):
+        if "url" in state and self.documents_page.match(state["url"]):
             # documents_page need a POST request and it's not like the result
             # will be used after locate_browser so it's better to keep it simple
             try:
                 self.subscriptions_page.go()
             except ClientError as er:
-                if (
-                    er.response.status_code == 401
-                    and 'A valid Bearer token is required' in er.response.json().get('error_description')
+                if er.response.status_code == 401 and "A valid Bearer token is required" in er.response.json().get(
+                    "error_description"
                 ):
                     # need to login again
                     return
@@ -159,7 +170,7 @@ class BouyguesBrowser(TwoFactorBrowser):
     @staticmethod
     def create_random_string(n=32):
         chars = string.ascii_letters + string.digits
-        rnd_str = ''
+        rnd_str = ""
         for _ in range(n):
             rnd_str += chars[floor(random.random() * len(chars))]
         return rnd_str
@@ -191,7 +202,7 @@ class BouyguesBrowser(TwoFactorBrowser):
                 raise BrowserUnavailable()
 
             if not self.login_page.is_here():
-                raise AssertionError('We should be on the login page.')
+                raise AssertionError("We should be on the login page.")
             # check for interactive login will send otp.
             self.check_interactive()
             try:
@@ -221,9 +232,9 @@ class BouyguesBrowser(TwoFactorBrowser):
             self.login_with_session_data()
 
             if not self.page.logged:
-                raise AssertionError('We should be logged at this point')
+                raise AssertionError("We should be logged at this point")
         else:
-            raise AssertionError('Unexpected redirection to callback page at login')
+            raise AssertionError("Unexpected redirection to callback page at login")
 
     def handle_otp_question(self):
         self.page.send_2fa_code()
@@ -233,17 +244,17 @@ class BouyguesBrowser(TwoFactorBrowser):
         self.otp_url = self.page.url
 
         otp_question = {
-            'medium_label': self.contact,
-            'message': f"Saisir le code d'authentification. Code envoyé au: {self.contact}",
+            "medium_label": self.contact,
+            "message": f"Saisir le code d'authentification. Code envoyé au: {self.contact}",
         }
-        if not self.contact and re.match(r'.+?@.+?', self.contact):
-            otp_question['field_name'] = 'otp_email'
-            otp_question['medium_type'] = OTPSentType.EMAIL
+        if not self.contact and re.match(r".+?@.+?", self.contact):
+            otp_question["field_name"] = "otp_email"
+            otp_question["medium_type"] = OTPSentType.EMAIL
         elif self.contact:
-            otp_question['field_name'] = 'otp_sms'
-            otp_question['medium_type'] = OTPSentType.SMS
+            otp_question["field_name"] = "otp_sms"
+            otp_question["medium_type"] = OTPSentType.SMS
 
-        if 'medium_type' not in otp_question:
+        if "medium_type" not in otp_question:
             raise AssertionError("Unexpected SCA method, neither sms nor email found")
 
         raise SentOTPQuestion(**otp_question)
@@ -253,22 +264,22 @@ class BouyguesBrowser(TwoFactorBrowser):
             self.location(
                 self.otp_url,
                 data={
-                    'token': self.otp_sms or self.otp_email,
-                    '_eventId_submit': 'Envoyer',
-                    'execution': self.execution,
-                    'conversationId': self.conversation_id,
-                    'geolocation': '',
-                }
+                    "token": self.otp_sms or self.otp_email,
+                    "_eventId_submit": "Envoyer",
+                    "execution": self.execution,
+                    "conversationId": self.conversation_id,
+                    "geolocation": "",
+                },
             )
         except ClientError as e:
             if e.response.status_code == 401:
                 otp_data = LoginPage(self, e.response).get_otp_config()
 
-                if otp_data['expired'] == 'true':
+                if otp_data["expired"] == "true":
                     raise BrowserIncorrectPassword(
-                        'Code de vérification expiré. Pour votre sécurité, merci de générer un nouveau code.'
+                        "Code de vérification expiré. Pour votre sécurité, merci de générer un nouveau code."
                     )
-                if int(otp_data['remaining_attempts']) > 0:
+                if int(otp_data["remaining_attempts"]) > 0:
                     raise BrowserIncorrectPassword(
                         f"Code erroné, Il vous reste {otp_data['remaining_attempts']} tentatives. Merci de réessayer"
                     )
@@ -281,11 +292,11 @@ class BouyguesBrowser(TwoFactorBrowser):
         self.location(
             self.otp_url,
             data={
-                'execution': self.page.get_execution(),
-                '_eventId_proceed': '',
-                'conversationId': self.conversation_id,
-                'geolocation': '',
-            }
+                "execution": self.page.get_execution(),
+                "_eventId_proceed": "",
+                "conversationId": self.conversation_id,
+                "geolocation": "",
+            },
         )
 
         # after sending otp data we should get a token.
@@ -315,23 +326,23 @@ class BouyguesBrowser(TwoFactorBrowser):
             yield sub
 
     def request_invoices(self, invoice_number):
-        with open(self.asset('invoices_query.txt'), 'r') as rf:
+        with open(self.asset("invoices_query.txt"), "r") as rf:
             query = rf.read()
 
         payload = {
-            'operationName': 'GetInvoices',
-            'variables': {
-                'n': invoice_number,
-                'personId': self.id_personne,
+            "operationName": "GetInvoices",
+            "variables": {
+                "n": invoice_number,
+                "personId": self.id_personne,
             },
-            'query': query,
+            "query": query,
         }
         headers = {
-            'Accept': '*/*',
-            'Referer': 'https://www.bouyguestelecom.fr/',
-            'X-Graphql-Scope': 'SWAP_CARE@0.0.46',
-            'X-Process': 'invoicesV8',
-            'X-Source': 'ACO',
+            "Accept": "*/*",
+            "Referer": "https://www.bouyguestelecom.fr/",
+            "X-Graphql-Scope": "SWAP_CARE@0.0.46",
+            "X-Process": "invoicesV8",
+            "X-Source": "ACO",
         }
         self.documents_page.go(json=payload, headers=headers)
 

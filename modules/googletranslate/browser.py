@@ -27,7 +27,7 @@ from woob.tools.json import json
 from .pages import SupportedLanguagesPage, TranslatePage
 
 
-__all__ = ['GoogleTranslateBrowser']
+__all__ = ["GoogleTranslateBrowser"]
 
 
 class RPCS:
@@ -53,19 +53,18 @@ class RPCS:
         def result_handler(d):
             return d[1][0][0][5][0][0]
 
-
     values = [AVdN8, MkEWBc]
     names = [cls.name for cls in values]
 
 
 class GoogleTranslateBrowser(PagesBrowser):
 
-    BASEURL = 'https://translate.google.com'
+    BASEURL = "https://translate.google.com"
 
     translate_page = URL(
-        fr'/_/TranslateWebserverUi/data/batchexecute\?rpcids=(?P<rpcid>({"|".join(RPCS.names)}))',
-        TranslatePage)
-    languages_page = URL('https://ssl.gstatic.com/inputtools/js/ln/17/en.js', SupportedLanguagesPage)
+        rf'/_/TranslateWebserverUi/data/batchexecute\?rpcids=(?P<rpcid>({"|".join(RPCS.names)}))', TranslatePage
+    )
+    languages_page = URL("https://ssl.gstatic.com/inputtools/js/ln/17/en.js", SupportedLanguagesPage)
 
     def get_supported_languages(self):
         return self.languages_page.go().get_supported_languages()
@@ -73,10 +72,10 @@ class GoogleTranslateBrowser(PagesBrowser):
     def _gtranslate(self, source, to, text):
         for grpc in RPCS.values:
             parameter = grpc.parameter(text, source, to)
-            escaped_parameter = json.dumps(parameter, separators=(',', ':'))
+            escaped_parameter = json.dumps(parameter, separators=(",", ":"))
 
             rpc = [[[grpc.name, escaped_parameter, None, "generic"]]]
-            espaced_rpc = json.dumps(rpc, separators=(',', ':'))
+            espaced_rpc = json.dumps(rpc, separators=(",", ":"))
 
             self.translate_page.go(data="f.req={}&".format(quote(espaced_rpc)), rpcid=grpc.name)
             res = self.page.get_translation(grpc.result_handler)
@@ -92,10 +91,10 @@ class GoogleTranslateBrowser(PagesBrowser):
         translation = []
         self.session.headers["Content-Type"] = "application/x-www-form-urlencoded;charset=utf-8"
 
-        tokenized_text = re.split(r'([.!?]+)', " ".join([el.strip() for el in text.splitlines() if el]))
+        tokenized_text = re.split(r"([.!?]+)", " ".join([el.strip() for el in text.splitlines() if el]))
         _ = []
         for el in tokenized_text:
-            if re.match(r'([.!?]+)', el) and len(_) > 0:
+            if re.match(r"([.!?]+)", el) and len(_) > 0:
                 _[-1] = f"{_[-1]}{el}"
             else:
                 _.append(el.strip())

@@ -23,7 +23,7 @@ from woob.capabilities.base import empty
 from woob.core import Woob
 
 
-__all__ = ['BackendTest', 'SkipTest', 'skip_without_config']
+__all__ = ["BackendTest", "SkipTest", "skip_without_config"]
 
 
 class BackendTest(TestCase):
@@ -38,14 +38,14 @@ class BackendTest(TestCase):
         self.woob = Woob()
 
         # Skip tests when passwords are missing
-        self.woob.requests.register('login', self.login_cb)
+        self.woob.requests.register("login", self.login_cb)
 
         if self.woob.load_backends(modules=[self.MODULE]):
             # provide the tests with all available backends
             self.backends = self.woob.backend_instances
 
     def login_cb(self, backend_name, value):
-        raise SkipTest('missing config \'%s\' is required for this test' % value.label)
+        raise SkipTest("missing config '%s' is required for this test" % value.label)
 
     def run(self, result):
         """
@@ -70,7 +70,7 @@ class BackendTest(TestCase):
         Generate a description with the backend instance name.
         """
         # do not use TestCase.shortDescription as it returns None
-        return '%s [%s]' % (str(self), self.backend_instance)
+        return "%s [%s]" % (str(self), self.backend_instance)
 
     def is_backend_configured(self):
         """
@@ -95,19 +95,20 @@ def skip_without_config(*keys):
 
     for key in keys:
         if callable(key):
-            raise TypeError('skip_without_config() must be called with arguments')
+            raise TypeError("skip_without_config() must be called with arguments")
 
     def decorator(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             config = self.backend.config
             if not self.is_backend_configured():
-                raise SkipTest('a backend must be declared in configuration for this test')
+                raise SkipTest("a backend must be declared in configuration for this test")
             for key in keys:
                 if not config[key].get():
-                    raise SkipTest('config key %r is required for this test' %
-                                   key)
+                    raise SkipTest("config key %r is required for this test" % key)
 
             return func(self, *args, **kwargs)
+
         return wrapper
+
     return decorator

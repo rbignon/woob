@@ -20,4 +20,4 @@
 from .module import RobloxModule
 
 
-__all__ = ['RobloxModule']
+__all__ = ["RobloxModule"]

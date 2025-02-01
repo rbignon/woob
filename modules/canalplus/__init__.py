@@ -20,4 +20,4 @@
 from .module import CanalplusModule
 
 
-__all__ = ['CanalplusModule']
+__all__ = ["CanalplusModule"]

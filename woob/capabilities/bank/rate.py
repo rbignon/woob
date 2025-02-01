@@ -22,7 +22,8 @@ from woob.capabilities.date import DateField
 
 
 __all__ = [
-    'Rate', 'CapCurrencyRate',
+    "Rate",
+    "CapCurrencyRate",
 ]
 
 
@@ -31,14 +32,17 @@ class Rate(BaseObject, Currency):
     Currency exchange rate.
     """
 
-    currency_from = StringField('The currency to which exchange rates are relative to')
-    currency_to = StringField('The currency is converted to')
-    value = DecimalField('Exchange rate')
-    datetime = DateField('Collection date and time')
+    currency_from = StringField("The currency to which exchange rates are relative to")
+    currency_to = StringField("The currency is converted to")
+    value = DecimalField("Exchange rate")
+    datetime = DateField("Collection date and time")
 
     def __repr__(self):
         return "<%s from=%r to=%r value=%r>" % (
-            type(self).__name__, self.currency_from, self.currency_to, self.value,
+            type(self).__name__,
+            self.currency_from,
+            self.currency_to,
+            self.value,
         )
 
     def convert(self, amount):

@@ -37,12 +37,12 @@ class Content(object):
 
     def __init__(self, browser):
         self.browser = browser
-        self.url = u''
-        self.id = u''
-        self.title = u''
-        self.author = u''
-        self.username = u''
-        self.body = u''
+        self.url = ""
+        self.id = ""
+        self.title = ""
+        self.author = ""
+        self.username = ""
+        self.body = ""
         self.date = None
         self.score = 0
         self.comments = []
@@ -57,32 +57,33 @@ class Comment(Content):
     def __init__(self, article, div, reply_id):
         super(Comment, self).__init__(article.browser)
         self.reply_id = reply_id
-        self.signature = u''
+        self.signature = ""
         self.preurl = article.url
         self.div = div
-        self.id = div.attrib['id'].split('-')[1]
-        subs = div.find('ul')
+        self.id = div.attrib["id"].split("-")[1]
+        subs = div.find("ul")
         if subs is not None:
-            for sub in subs.findall('li'):
+            for sub in subs.findall("li"):
                 comment = Comment(article, sub, self.id)
                 self.comments.append(comment)
 
     def parse(self):
-        self.url = '%s#%s' % (self.preurl, self.div.attrib['id'])
-        self.title = self.div.find('h2').xpath('.//a[has-class("title")]')[0].text
+        self.url = "%s#%s" % (self.preurl, self.div.attrib["id"])
+        self.title = self.div.find("h2").xpath('.//a[has-class("title")]')[0].text
         try:
-            a = self.div.find('p').xpath('.//a[@rel="author"]')[0]
+            a = self.div.find("p").xpath('.//a[@rel="author"]')[0]
         except IndexError:
-            self.author = 'Anonyme'
+            self.author = "Anonyme"
             self.username = None
         else:
             self.author = a.text
-            self.username = a.attrib['href'].split('/')[2]
-        self.date = datetime.strptime(self.div.find('p').xpath('.//time')[0].attrib['datetime'].split('+')[0],
-                                      '%Y-%m-%dT%H:%M:%S')
+            self.username = a.attrib["href"].split("/")[2]
+        self.date = datetime.strptime(
+            self.div.find("p").xpath(".//time")[0].attrib["datetime"].split("+")[0], "%Y-%m-%dT%H:%M:%S"
+        )
         self.date = local2utc(self.date)
 
-        content = self.div.find('div')
+        content = self.div.find("div")
         try:
             signature = content.xpath('.//p[has-class("signature")]')[0]
         except IndexError:
@@ -90,14 +91,14 @@ class Comment(Content):
             pass
         else:
             content.remove(signature)
-            self.signature = lxml.html.tostring(signature).decode('utf-8')
-        self.body = lxml.html.tostring(content).decode('utf-8')
+            self.signature = lxml.html.tostring(signature).decode("utf-8")
+        self.body = lxml.html.tostring(content).decode("utf-8")
 
-        self.score = int(self.div.find('p').xpath('.//span[has-class("score")]')[0].text)
-        forms = self.div.find('footer').xpath('.//form[has-class("button_to")]')
+        self.score = int(self.div.find("p").xpath('.//span[has-class("score")]')[0].text)
+        forms = self.div.find("footer").xpath('.//form[has-class("button_to")]')
         if len(forms) > 0:
-            self.relevance_url = forms[0].attrib['action'].rstrip('for').rstrip('against')
-            self.relevance_token = forms[0].xpath('.//input[@name="authenticity_token"]')[0].attrib['value']
+            self.relevance_url = forms[0].attrib["action"].rstrip("for").rstrip("against")
+            self.relevance_token = forms[0].xpath('.//input[@name="authenticity_token"]')[0].attrib["value"]
 
     def iter_all_comments(self):
         for comment in self.comments:
@@ -120,27 +121,28 @@ class Article(Content):
         if tree is None:
             return
 
-        header = tree.find('header')
-        self.title = u' — '.join([a.text for a in header.find('h1').xpath('.//a')])
+        header = tree.find("header")
+        self.title = " — ".join([a.text for a in header.find("h1").xpath(".//a")])
         try:
             a = header.xpath('.//a[@rel="author"]')[0]
         except IndexError:
-            self.author = 'Anonyme'
+            self.author = "Anonyme"
             self.username = None
         else:
             self.author = a.text
-            self.username = a.attrib['href'].split('/')[2]
-        self.body = lxml.html.tostring(tree.xpath('.//div[has-class("content")]')[0]).decode('utf-8')
+            self.username = a.attrib["href"].split("/")[2]
+        self.body = lxml.html.tostring(tree.xpath('.//div[has-class("content")]')[0]).decode("utf-8")
         try:
-            self.date = datetime.strptime(header.xpath('.//time')[0].attrib['datetime'].split('+')[0],
-                                          '%Y-%m-%dT%H:%M:%S')
+            self.date = datetime.strptime(
+                header.xpath(".//time")[0].attrib["datetime"].split("+")[0], "%Y-%m-%dT%H:%M:%S"
+            )
             self.date = local2utc(self.date)
         except IndexError:
             pass
-        for form in tree.find('footer').xpath('//form[has-class("button_to")]'):
-            if form.attrib['action'].endswith('/for'):
-                self.relevance_url = form.attrib['action'].rstrip('for').rstrip('against')
-                self.relevance_token = form.xpath('.//input[@name="authenticity_token"]')[0].attrib['value']
+        for form in tree.find("footer").xpath('//form[has-class("button_to")]'):
+            if form.attrib["action"].endswith("/for"):
+                self.relevance_url = form.attrib["action"].rstrip("for").rstrip("against")
+                self.relevance_token = form.xpath('.//input[@name="authenticity_token"]')[0].attrib["value"]
 
         self.score = int(tree.xpath('.//div[has-class("figures")]//figure[has-class("score")]')[0].text)
 
@@ -177,25 +179,23 @@ class ContentPage(DLFPPage):
 
     def get_article(self):
         if not self.article:
-            self.article = Article(self.browser,
-                                   self.url,
-                                   self.doc.xpath('//main[@id="contents"]//article')[0])
+            self.article = Article(self.browser, self.url, self.doc.xpath('//main[@id="contents"]//article')[0])
 
             try:
                 threads = self.doc.xpath('//ul[has-class("threads")]')[0]
             except IndexError:
-                pass # no comments
+                pass  # no comments
             else:
-                for comment in threads.findall('li'):
+                for comment in threads.findall("li"):
                     self.article.append_comment(Comment(self.article, comment, 0))
 
         return self.article
 
     def get_post_comment_url(self):
-        return self.doc.xpath('//p[@id="send-comment"]')[0].find('a').attrib['href']
+        return self.doc.xpath('//p[@id="send-comment"]')[0].find("a").attrib["href"]
 
     def get_tag_url(self):
-        return self.doc.xpath('//div[has-class("tag_in_place")]')[0].find('a').attrib['href']
+        return self.doc.xpath('//div[has-class("tag_in_place")]')[0].find("a").attrib["href"]
 
 
 class NewCommentPage(DLFPPage):
@@ -205,7 +205,7 @@ class NewCommentPage(DLFPPage):
 class NewTagPage(DLFPPage):
     def tag(self, tag):
         form = self.get_form(xpath='//form[ends-with(@action,"/tags")]')
-        form['tags'] = tag
+        form["tags"] = tag
         form.submit()
 
 
@@ -217,6 +217,6 @@ class NodePage(DLFPPage):
             return []
 
         l = []
-        for li in div.find('ul').findall('li'):
+        for li in div.find("ul").findall("li"):
             l.append(li.text)
         return l

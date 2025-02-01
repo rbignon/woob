@@ -23,12 +23,12 @@ from woob.tools.test import BackendTest
 
 
 class SevenFiftyGramsTest(BackendTest):
-    MODULE = '750g'
+    MODULE = "750g"
 
     def test_recipe(self):
-        recipes = list(itertools.islice(self.backend.iter_recipes('fondue'), 0, 20))
+        recipes = list(itertools.islice(self.backend.iter_recipes("fondue"), 0, 20))
         for recipe in recipes:
             full_recipe = self.backend.get_recipe(recipe.id)
-            self.assertTrue(full_recipe.instructions, 'No instructions for %s' % recipe.id)
-            self.assertTrue(full_recipe.ingredients, 'No ingredients for %s' % recipe.id)
-            self.assertTrue(full_recipe.title, 'No title for %s' % recipe.id)
+            self.assertTrue(full_recipe.instructions, "No instructions for %s" % recipe.id)
+            self.assertTrue(full_recipe.ingredients, "No ingredients for %s" % recipe.id)
+            self.assertTrue(full_recipe.title, "No title for %s" % recipe.id)

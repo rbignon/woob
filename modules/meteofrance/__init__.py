@@ -21,4 +21,4 @@
 from .module import MeteofranceModule
 
 
-__all__ = ['MeteofranceModule']
+__all__ = ["MeteofranceModule"]

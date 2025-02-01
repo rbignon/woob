@@ -1,4 +1,4 @@
 from .module import PluzzModule
 
 
-__all__ = ['PluzzModule']
+__all__ = ["PluzzModule"]

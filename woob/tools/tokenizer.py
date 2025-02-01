@@ -18,7 +18,7 @@
 import re
 
 
-__all__ = ['ReTokenizer']
+__all__ = ["ReTokenizer"]
 
 
 class ReTokenizer:
@@ -46,8 +46,8 @@ class ReTokenizer:
 
     def simple_read(self, token_type, pos, transform=lambda v: v):
         t = self.tok(pos)
-        is_type = getattr(t, 'is_%s' % token_type)()
-        return (pos+1, transform(t.value())) if is_type else (pos, None)
+        is_type = getattr(t, "is_%s" % token_type)()
+        return (pos + 1, transform(t.value())) if is_type else (pos, None)
 
 
 class ReToken:
@@ -76,6 +76,6 @@ class ReToken:
         return self._value
 
     def __getattr__(self, name):
-        if name.startswith('is_'):
+        if name.startswith("is_"):
             return lambda: self._type == name[3:]
         raise AttributeError()

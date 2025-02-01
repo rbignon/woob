@@ -21,4 +21,4 @@ from .browser import BnppereBrowser, CapeasiBrowser, CreditdunordpeeBrowser
 from .module import S2eModule
 
 
-__all__ = ['S2eModule', 'CapeasiBrowser', 'BnppereBrowser', 'CreditdunordpeeBrowser']
+__all__ = ["S2eModule", "CapeasiBrowser", "BnppereBrowser", "CreditdunordpeeBrowser"]

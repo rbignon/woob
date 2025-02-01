@@ -25,12 +25,12 @@ from woob.tools.test import BackendTest
 
 
 class LameteoagricoleTest(BackendTest):
-    MODULE = 'lameteoagricole'
+    MODULE = "lameteoagricole"
 
     def test_base(self):
         start = date.today()
 
-        cities = list(self.backend.iter_city_search('paris'))
+        cities = list(self.backend.iter_city_search("paris"))
         assert cities
 
         for c in cities:
@@ -54,5 +54,5 @@ class LameteoagricoleTest(BackendTest):
             assert new_datetime(f.date) >= new_datetime(start)
             assert f.text
             assert -20 < f.low.value <= f.high.value < 40
-            assert f.low.unit == 'C'
-            assert f.high.unit == 'C'
+            assert f.low.unit == "C"
+            assert f.high.unit == "C"

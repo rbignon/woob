@@ -20,7 +20,11 @@
 import re
 
 from woob.capabilities.bank import (
-    Account, AccountNotFound, CapBankTransferAddRecipient, RecipientInvalidLabel, RecipientNotFound,
+    Account,
+    AccountNotFound,
+    CapBankTransferAddRecipient,
+    RecipientInvalidLabel,
+    RecipientNotFound,
     TransferInvalidLabel,
 )
 from woob.capabilities.bank.wealth import CapBankWealth
@@ -32,35 +36,44 @@ from woob.tools.value import Value, ValueBackendPassword, ValueTransient
 from .bred import BredBrowser
 
 
-__all__ = ['BredModule']
+__all__ = ["BredModule"]
 
 
 class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient):
-    NAME = 'bred'
-    MAINTAINER = 'Romain Bignon'
-    EMAIL = 'romain@weboob.org'
-    VERSION = '3.7'
-    DEPENDENCIES = ('linebourse',)
-    DESCRIPTION = u'Bred'
-    LICENSE = 'LGPLv3+'
+    NAME = "bred"
+    MAINTAINER = "Romain Bignon"
+    EMAIL = "romain@weboob.org"
+    VERSION = "3.7"
+    DEPENDENCIES = ("linebourse",)
+    DESCRIPTION = "Bred"
+    LICENSE = "LGPLv3+"
     CONFIG = BackendConfig(
-        ValueBackendPassword('login', label='Identifiant', masked=False, regexp=r'.{1,32}'),
-        ValueBackendPassword('password', label='Mot de passe'),
-        Value('accnum', label='Numéro du compte bancaire (optionnel)', default='', masked=False),
-        Value('preferred_sca', label='Mécanisme(s) d\'authentification forte préferrés (optionnel, un ou plusieurs (séparés par des espaces) parmi: elcard usb sms otp mail password svi notification whatsApp)', default='', masked=False),
-        Value('device_name', label='Nom du device qui sera autorisé pour 90j suite à l\'authentication forte', default='', masked=False),
-        ValueTransient('request_information'),
-        ValueTransient('resume'),
-        ValueTransient('otp_sms'),
-        ValueTransient('otp_app'),
+        ValueBackendPassword("login", label="Identifiant", masked=False, regexp=r".{1,32}"),
+        ValueBackendPassword("password", label="Mot de passe"),
+        Value("accnum", label="Numéro du compte bancaire (optionnel)", default="", masked=False),
+        Value(
+            "preferred_sca",
+            label="Mécanisme(s) d'authentification forte préferrés (optionnel, un ou plusieurs (séparés par des espaces) parmi: elcard usb sms otp mail password svi notification whatsApp)",
+            default="",
+            masked=False,
+        ),
+        Value(
+            "device_name",
+            label="Nom du device qui sera autorisé pour 90j suite à l'authentication forte",
+            default="",
+            masked=False,
+        ),
+        ValueTransient("request_information"),
+        ValueTransient("resume"),
+        ValueTransient("otp_sms"),
+        ValueTransient("otp_app"),
     )
 
     BROWSER = BredBrowser
 
-
     def create_default_browser(self):
         return self.create_browser(
-            self.config['accnum'].get().replace(' ', '').zfill(11),
+            self.config["accnum"].get().replace(" ", "").zfill(11),
             self.config,
         )
 
@@ -92,7 +105,7 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
     def iter_transfer_recipients(self, account):
         if not isinstance(account, Account):
             account = find_object(self.iter_accounts(), id=account, error=AccountNotFound)
-        elif not hasattr(account, '_univers'):
+        elif not hasattr(account, "_univers"):
             # We need a Bred filled Account to know the "univers" associated with the account
             account = find_object(self.iter_accounts(), id=account.id, error=AccountNotFound)
 
@@ -101,12 +114,11 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
     def new_recipient(self, recipient, **params):
         recipient.label = recipient.label[:32].strip()
 
-        regex = r'[-a-z0-9A-Z ,.]+'
-        if not re.match(r'(?:%s)\Z' % regex, recipient.label, re.UNICODE):
-            invalid_chars = re.sub(regex, '', recipient.label, flags=re.UNICODE)
+        regex = r"[-a-z0-9A-Z ,.]+"
+        if not re.match(r"(?:%s)\Z" % regex, recipient.label, re.UNICODE):
+            invalid_chars = re.sub(regex, "", recipient.label, flags=re.UNICODE)
             raise RecipientInvalidLabel(
-                message='Le nom du bénéficiaire contient des caractères non autorisés : '
-                + invalid_chars
+                message="Le nom du bénéficiaire contient des caractères non autorisés : " + invalid_chars
             )
 
         return self.browser.new_recipient(recipient, **params)
@@ -114,22 +126,25 @@ class BredModule(Module, CapBankWealth, CapProfile, CapBankTransferAddRecipient)
     def init_transfer(self, transfer, **params):
         transfer.label = transfer.label[:140].strip()
 
-        regex = r'[-a-z0-9A-Z ,.]+'
-        if not re.match(r'(?:%s)\Z' % regex, transfer.label, re.UNICODE):
-            invalid_chars = re.sub(regex, '', transfer.label, flags=re.UNICODE)
+        regex = r"[-a-z0-9A-Z ,.]+"
+        if not re.match(r"(?:%s)\Z" % regex, transfer.label, re.UNICODE):
+            invalid_chars = re.sub(regex, "", transfer.label, flags=re.UNICODE)
             # Remove duplicate characters to avoid displaying them multiple times
-            invalid_chars = ''.join(set(invalid_chars))
+            invalid_chars = "".join(set(invalid_chars))
             raise TransferInvalidLabel(
-                message='Le libellé du virement contient des caractères non autorisés : '
-                + invalid_chars
+                message="Le libellé du virement contient des caractères non autorisés : " + invalid_chars
             )
 
         account = find_object(self.iter_accounts(), id=transfer.account_id, error=AccountNotFound)
 
         if transfer.recipient_iban:
-            recipient = find_object(self.iter_transfer_recipients(account), iban=transfer.recipient_iban, error=RecipientNotFound)
+            recipient = find_object(
+                self.iter_transfer_recipients(account), iban=transfer.recipient_iban, error=RecipientNotFound
+            )
         else:
-            recipient = find_object(self.iter_transfer_recipients(account), id=transfer.recipient_id, error=RecipientNotFound)
+            recipient = find_object(
+                self.iter_transfer_recipients(account), id=transfer.recipient_id, error=RecipientNotFound
+            )
 
         return self.browser.init_transfer(transfer, account, recipient, **params)
 

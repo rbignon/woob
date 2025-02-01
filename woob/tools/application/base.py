@@ -36,7 +36,7 @@ from woob.tools.misc import guess_encoding
 from .results import ResultsConditionError
 
 
-__all__ = ['Application']
+__all__ = ["Application"]
 
 
 class MoreResultsAvailable(Exception):
@@ -50,25 +50,25 @@ class ApplicationStorage:
 
     def set(self, *args):
         if self.storage:
-            return self.storage.set('applications', self.name, *args)
+            return self.storage.set("applications", self.name, *args)
 
     def delete(self, *args):
         if self.storage:
-            return self.storage.delete('applications', self.name, *args)
+            return self.storage.delete("applications", self.name, *args)
 
     def get(self, *args, **kwargs):
         if self.storage:
-            return self.storage.get('applications', self.name, *args, **kwargs)
+            return self.storage.get("applications", self.name, *args, **kwargs)
         else:
-            return kwargs.get('default', None)
+            return kwargs.get("default", None)
 
     def load(self, default):
         if self.storage:
-            return self.storage.load('applications', self.name, default)
+            return self.storage.load("applications", self.name, default)
 
     def save(self):
         if self.storage:
-            return self.storage.save('applications', self.name)
+            return self.storage.save("applications", self.name)
 
 
 class Application:
@@ -81,7 +81,7 @@ class Application:
 
     # ------ Class attributes --------------------------------------
 
-    APPNAME = ''
+    APPNAME = ""
     """Application name"""
 
     OLD_APPNAME = ""
@@ -95,8 +95,8 @@ class Application:
     STORAGE = {}
     """Default storage tree"""
 
-    SYNOPSIS = 'Usage: %prog [-h] [-dqv] [-b backends] ...\n'
-    SYNOPSIS += '       %prog [--help] [--version]'
+    SYNOPSIS = "Usage: %prog [-h] [-dqv] [-b backends] ...\n"
+    SYNOPSIS += "       %prog [--help] [--version]"
     """Synopsis"""
 
     DESCRIPTION = None
@@ -166,27 +166,33 @@ class Application:
             self._parser = option_parser
         if self.DESCRIPTION:
             self._parser.description = self.DESCRIPTION
-        app_options = OptionGroup(self._parser, '%s Options' % self.APPNAME.capitalize())
+        app_options = OptionGroup(self._parser, "%s Options" % self.APPNAME.capitalize())
         self.add_application_options(app_options)
         if len(app_options.option_list) > 0:
             self._parser.add_option_group(app_options)
-        self._parser.add_option('-b', '--backends', help='what backend(s) to enable (comma separated)')
-        self._parser.add_option('-e', '--exclude-backends', help='what backend(s) to exclude (comma separated)')
+        self._parser.add_option("-b", "--backends", help="what backend(s) to enable (comma separated)")
+        self._parser.add_option("-e", "--exclude-backends", help="what backend(s) to exclude (comma separated)")
 
-        self._parser.add_option('-I', '--insecure', action='store_true', help='do not validate SSL')
-        self._parser.add_option('--nss', action='store_true', help='Use NSS instead of OpenSSL')
-        self._parser.add_option('--force-ipv4', action='store_const', help='Force IPv4', const=4, dest="ipversion")
-        self._parser.add_option('--force-ipv6', action='store_const', help='Force IPv6', const=6, dest="ipversion")
+        self._parser.add_option("-I", "--insecure", action="store_true", help="do not validate SSL")
+        self._parser.add_option("--nss", action="store_true", help="Use NSS instead of OpenSSL")
+        self._parser.add_option("--force-ipv4", action="store_const", help="Force IPv4", const=4, dest="ipversion")
+        self._parser.add_option("--force-ipv6", action="store_const", help="Force IPv6", const=6, dest="ipversion")
 
-        logging_options = OptionGroup(self._parser, 'Logging Options')
-        logging_options.add_option('-d', '--debug', action='count', help='display debug messages. Set up it twice to more verbosity', default=0)
-        logging_options.add_option('-q', '--quiet', action='store_true', help='display only error messages')
-        logging_options.add_option('-v', '--verbose', action='store_true', help='display info messages')
-        logging_options.add_option('--logging-file', action='store', type='string', dest='logging_file', help='file to save logs')
-        logging_options.add_option('-a', '--save-responses', action='store_true', help='save every response')
-        logging_options.add_option('--export-session', action='store_true', help='log browser session cookies after login')
+        logging_options = OptionGroup(self._parser, "Logging Options")
+        logging_options.add_option(
+            "-d", "--debug", action="count", help="display debug messages. Set up it twice to more verbosity", default=0
+        )
+        logging_options.add_option("-q", "--quiet", action="store_true", help="display only error messages")
+        logging_options.add_option("-v", "--verbose", action="store_true", help="display info messages")
+        logging_options.add_option(
+            "--logging-file", action="store", type="string", dest="logging_file", help="file to save logs"
+        )
+        logging_options.add_option("-a", "--save-responses", action="store_true", help="save every response")
+        logging_options.add_option(
+            "--export-session", action="store_true", help="log browser session cookies after login"
+        )
         self._parser.add_option_group(logging_options)
-        self._parser.add_option('--shell-completion', action='store_true', help=optparse.SUPPRESS_HELP)
+        self._parser.add_option("--shell-completion", action="store_true", help=optparse.SUPPRESS_HELP)
         self._is_default_count = True
 
     def guess_encoding(self, stdio=None):
@@ -229,15 +235,14 @@ class Application:
         """
         if klass is None:
             from woob.tools.storage import StandardStorage
+
             klass = StandardStorage
 
         if path is None:
-            path = os.path.join(self.CONFDIR, self.APPNAME + '.storage')
+            path = os.path.join(self.CONFDIR, self.APPNAME + ".storage")
             if self.OLD_APPNAME:
                 # compatibility for old, non-woob names
-                path = self._get_preferred_path(
-                    path, os.path.join(self.CONFDIR, self.OLD_APPNAME + '.storage')
-                )
+                path = self._get_preferred_path(path, os.path.join(self.CONFDIR, self.OLD_APPNAME + ".storage"))
         elif os.path.sep not in path:
             path = os.path.join(self.CONFDIR, path)
 
@@ -262,27 +267,26 @@ class Application:
         """
         if klass is None:
             from woob.tools.config.iniconfig import INIConfig
+
             klass = INIConfig
 
         if path is None:
             path = os.path.join(self.CONFDIR, self.APPNAME)
             if self.OLD_APPNAME:
                 # compatibility for old, non-woob names
-                path = self._get_preferred_path(
-                    path, os.path.join(self.CONFDIR, self.OLD_APPNAME)
-                )
+                path = self._get_preferred_path(path, os.path.join(self.CONFDIR, self.OLD_APPNAME))
         elif os.path.sep not in path:
             path = os.path.join(self.CONFDIR, path)
 
         self.config = klass(path)
         self.config.load(self.CONFIG)
 
-        if int(self.config.get('use_nss', default=0)):
+        if int(self.config.get("use_nss", default=0)):
             # TODO Deprecated
             print('Key "use_nss" is deprecated and will be ignored', file=sys.stderr)
 
-        if int(self.config.get('export_session', default=0)):
-            log_settings['export_session'] = True
+        if int(self.config.get("export_session", default=0)):
+            log_settings["export_session"] = True
 
     def main(self, argv):
         """
@@ -294,22 +298,22 @@ class Application:
 
     def load_backends(self, caps=None, names=None, exclude=None, *args, **kwargs):
         if names is None and self.options.backends:
-            names = self.options.backends.split(',')
+            names = self.options.backends.split(",")
         if exclude is None and self.options.exclude_backends:
-            exclude = self.options.exclude_backends.split(',')
+            exclude = self.options.exclude_backends.split(",")
         loaded = self.woob.load_backends(caps, names, exclude=exclude, *args, **kwargs)
         if not loaded:
-            logging.info('No backend loaded')
+            logging.info("No backend loaded")
         return loaded
 
     def _get_optparse_version(self):
         version = None
         if self.VERSION:
             if self.COPYRIGHT:
-                copyright = self.COPYRIGHT.replace('YEAR', '%d' % datetime.today().year)
-                version = 'Woob %s v%s %s' % (self.APPNAME, self.VERSION, copyright)
+                copyright = self.COPYRIGHT.replace("YEAR", "%d" % datetime.today().year)
+                version = "Woob %s v%s %s" % (self.APPNAME, self.VERSION, copyright)
             else:
-                version = 'Woob %s v%s' % (self.APPNAME, self.VERSION)
+                version = "Woob %s v%s" % (self.APPNAME, self.VERSION)
         return version
 
     def _do_complete_obj(self, backend, fields, obj):
@@ -328,8 +332,7 @@ class Application:
 
         for i, sub in enumerate(res):
             sub = self._do_complete_obj(backend, fields, sub)
-            if self.condition and self.condition.limit and \
-               self.condition.limit == i:
+            if self.condition and self.condition.limit and self.condition.limit == i:
                 return
 
             if self.condition and not self.condition.is_valid(sub):
@@ -349,7 +352,7 @@ class Application:
         else:
             res = getattr(backend, function)(*args, **kwargs)
 
-        if hasattr(res, '__iter__') and not isinstance(res, (bytes, str)):
+        if hasattr(res, "__iter__") and not isinstance(res, (bytes, str)):
             return self._do_complete_iter(backend, count, selected_fields, res)
         else:
             return self._do_complete_obj(backend, selected_fields, res)
@@ -365,13 +368,13 @@ class Application:
         if isinstance(error, MoreResultsAvailable):
             return False
 
-        print('Error(%s): %s' % (backend.name, error), file=self.stderr)
+        print("Error(%s): %s" % (backend.name, error), file=self.stderr)
         if logging.root.level <= logging.DEBUG:
             print(backtrace, file=self.stderr)
         else:
             return True
 
-    def bcall_errors_handler(self, errors, debugmsg='Use --debug option to print backtraces', ignore=()):
+    def bcall_errors_handler(self, errors, debugmsg="Use --debug option to print backtraces", ignore=()):
         """
         Handler for the CallErrors exception.
 
@@ -406,7 +409,7 @@ class Application:
         for ol in [self._parser.option_list] + [og.option_list for og in self._parser.option_groups]:
             for option in ol:
                 if option.help is not optparse.SUPPRESS_HELP:
-                    items.update(str(option).split('/'))
+                    items.update(str(option).split("/"))
         items.update(self._get_completions())
         return items
 
@@ -415,7 +418,7 @@ class Application:
 
         if self.options.shell_completion:
             items = self._shell_completion_items()
-            print(' '.join(items))
+            print(" ".join(items))
             sys.exit(0)
 
         if self.options.debug >= self.DEBUG_FILTER:
@@ -429,30 +432,31 @@ class Application:
         else:
             level = logging.WARNING
         if self.options.insecure:
-            log_settings['ssl_insecure'] = True
+            log_settings["ssl_insecure"] = True
         if self.options.nss:
-            print('--nss is deprecated and will be removed', file=sys.stderr)
+            print("--nss is deprecated and will be removed", file=sys.stderr)
         if self.options.ipversion:
             self.setup_ipversion()
 
         # this only matters to developers
         if not self.options.debug and not self.options.save_responses:
-            warnings.simplefilter('ignore', category=ConversionWarning)
-            warnings.simplefilter('ignore', category=FormFieldConversionWarning)
+            warnings.simplefilter("ignore", category=ConversionWarning)
+            warnings.simplefilter("ignore", category=FormFieldConversionWarning)
         else:
-            warnings.simplefilter('default')
+            warnings.simplefilter("default")
 
         handlers = []
 
         if self.options.save_responses:
             import tempfile
-            responses_dirname = tempfile.mkdtemp(prefix='woob_session_')
-            print('Debug data will be saved in this directory: %s' % responses_dirname, file=self.stderr)
-            log_settings['responses_dirname'] = responses_dirname
-            handlers.append(self.create_logging_file_handler(os.path.join(responses_dirname, 'debug.log')))
+
+            responses_dirname = tempfile.mkdtemp(prefix="woob_session_")
+            print("Debug data will be saved in this directory: %s" % responses_dirname, file=self.stderr)
+            log_settings["responses_dirname"] = responses_dirname
+            handlers.append(self.create_logging_file_handler(os.path.join(responses_dirname, "debug.log")))
 
         if self.options.export_session:
-            log_settings['export_session'] = True
+            log_settings["export_session"] = True
 
         # file logger
         if self.options.logging_file:
@@ -470,8 +474,9 @@ class Application:
     @classmethod
     def create_default_logger(cls):
         # stderr logger
-        format = '%(asctime)s:%(levelname)s:%(name)s:' + cls.VERSION +\
-                 ':%(filename)s:%(lineno)d:%(funcName)s %(message)s'
+        format = (
+            "%(asctime)s:%(levelname)s:%(name)s:" + cls.VERSION + ":%(filename)s:%(lineno)d:%(funcName)s %(message)s"
+        )
         handler = logging.StreamHandler(cls.stderr)
         if os.getenv("NO_COLOR") is None:
             handler.setFormatter(createColoredFormatter(cls.stderr, format))
@@ -502,13 +507,16 @@ class Application:
 
     def create_logging_file_handler(self, filename):
         try:
-            stream = open(os.path.expanduser(filename), 'w')
+            stream = open(os.path.expanduser(filename), "w")
         except IOError as e:
-            self.logger.error('Unable to create the logging file: %s' % e)
+            self.logger.error("Unable to create the logging file: %s" % e)
             sys.exit(1)
         else:
-            format = '%(asctime)s:%(levelname)s:%(name)s:' + self.VERSION +\
-                     ':%(filename)s:%(lineno)d:%(funcName)s %(message)s'
+            format = (
+                "%(asctime)s:%(levelname)s:%(name)s:"
+                + self.VERSION
+                + ":%(filename)s:%(lineno)d:%(funcName)s %(message)s"
+            )
             handler = logging.StreamHandler(stream)
             handler.setFormatter(logging.Formatter(format))
             return handler
@@ -546,12 +554,12 @@ class Application:
                 args = app.parse_args(args)
                 sys.exit(app.main(args))
             except KeyboardInterrupt:
-                print('Program killed by SIGINT', file=cls.stderr)
+                print("Program killed by SIGINT", file=cls.stderr)
                 sys.exit(0)
             except EOFError:
                 sys.exit(0)
             except ConfigError as e:
-                print('Configuration error: %s' % e, file=cls.stderr)
+                print("Configuration error: %s" % e, file=cls.stderr)
                 sys.exit(1)
             except CallErrors as e:
                 try:
@@ -562,7 +570,7 @@ class Application:
                     sys.exit(ret)
                 sys.exit(1)
             except ResultsConditionError as e:
-                print('%s' % e, file=cls.stderr)
+                print("%s" % e, file=cls.stderr)
                 sys.exit(1)
         finally:
             app.deinit()

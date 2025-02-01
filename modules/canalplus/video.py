@@ -26,4 +26,4 @@ class CanalplusVideo(BaseVideo):
 
     @classmethod
     def id2url(cls, _id):
-        return 'http://service.canal-plus.com/video/rest/getVideosLiees/cplus/%s' % _id
+        return "http://service.canal-plus.com/video/rest/getVideosLiees/cplus/%s" % _id

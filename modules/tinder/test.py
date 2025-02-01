@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class TinderTest(BackendTest):
-    MODULE = 'tinder'
+    MODULE = "tinder"
 
     def test_tinder(self):
         self.backend.browser.like_profile()

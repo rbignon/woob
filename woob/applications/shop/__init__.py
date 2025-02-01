@@ -19,4 +19,4 @@
 from .shop import AppShop
 
 
-__all__ = ['AppShop']
+__all__ = ["AppShop"]

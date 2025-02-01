@@ -32,23 +32,23 @@ class CollectionSearch(JsonPage):
 
 class ImageSearch(JsonPage):
     def nb_pages(self):
-        return self.doc['total_pages']
+        return self.doc["total_pages"]
 
     @method
     class iter_images(DictElement):
-        item_xpath = 'results'
+        item_xpath = "results"
 
         class item(ItemElement):
             klass = BaseImage
 
-            obj_id = Dict('id')
+            obj_id = Dict("id")
             obj_nsfw = False
             obj_license = LICENSES.COPYRIGHT
-            obj_author = Dict('user/name')
-            obj_url = Dict('urls/full')
-            obj_date = DateTime(Dict('created_at'))
-            obj_title = Format('%s (%s)', Field('id'), Field('author'))
-            obj_ext = 'jpg'
+            obj_author = Dict("user/name")
+            obj_url = Dict("urls/full")
+            obj_date = DateTime(Dict("created_at"))
+            obj_title = Format("%s (%s)", Field("id"), Field("author"))
+            obj_ext = "jpg"
 
             def obj_thumbnail(self):
-                return Thumbnail(Dict('urls/thumb')(self))
+                return Thumbnail(Dict("urls/thumb")(self))

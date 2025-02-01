@@ -22,7 +22,7 @@ from woob.tools.test import BackendTest
 
 
 class CreditMutuelTest(BackendTest):
-    MODULE = 'creditmutuel'
+    MODULE = "creditmutuel"
 
     def test_crmut(self):
         l = list(self.backend.iter_accounts())

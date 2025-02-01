@@ -27,7 +27,7 @@ from woob.tools.value import Value
 from .browser import JirafeauBrowser
 
 
-__all__ = ['JirafeauModule']
+__all__ = ["JirafeauModule"]
 
 
 class JirafeauPaste(BasePaste):
@@ -37,22 +37,27 @@ class JirafeauPaste(BasePaste):
 
 
 class JirafeauModule(Module, CapPaste):
-    NAME = 'jirafeau'
-    DESCRIPTION = u'Jirafeau-based file upload website'
-    MAINTAINER = u'Vincent A'
-    EMAIL = 'dev@indigo.re'
-    LICENSE = 'AGPLv3+'
-    VERSION = '3.7'
+    NAME = "jirafeau"
+    DESCRIPTION = "Jirafeau-based file upload website"
+    MAINTAINER = "Vincent A"
+    EMAIL = "dev@indigo.re"
+    LICENSE = "AGPLv3+"
+    VERSION = "3.7"
 
-    CONFIG = BackendConfig(Value('base_url', label='Base Jirafeau URL',
-                                 description='URL of the Jirafeau-based site to use',
-                                 regexp=r'https?://.*',
-                                 default='https://jirafeau.net/'))
+    CONFIG = BackendConfig(
+        Value(
+            "base_url",
+            label="Base Jirafeau URL",
+            description="URL of the Jirafeau-based site to use",
+            regexp=r"https?://.*",
+            default="https://jirafeau.net/",
+        )
+    )
 
     BROWSER = JirafeauBrowser
 
     def create_default_browser(self):
-        return self.create_browser(self.config['base_url'].get())
+        return self.create_browser(self.config["base_url"].get())
 
     def can_post(self, contents, title=None, public=None, max_age=None):
         if public or max_age not in self.browser.age_keyword:
@@ -67,11 +72,11 @@ class JirafeauModule(Module, CapPaste):
         d = self.browser.recognize(url)
         if not d:
             return
-        if self.browser.exists(d['id']):
+        if self.browser.exists(d["id"]):
             return
 
-        ret = JirafeauPaste(d['id'])
-        ret.url = d['url']
+        ret = JirafeauPaste(d["id"])
+        ret.url = d["url"]
         return ret
 
     def new_paste(self, *args, **kwargs):
@@ -79,12 +84,12 @@ class JirafeauModule(Module, CapPaste):
 
     def post_paste(self, paste, max_age=None):
         d = self.browser.post(b64decode(paste.contents), paste.title, max_age)
-        paste.id = d['id']
-        paste.url = d['page_url']
+        paste.id = d["id"]
+        paste.url = d["page_url"]
         return paste
 
     def fill_paste(self, obj, fields):
-        if 'contents' in fields:
+        if "contents" in fields:
             data = self.browser.download(obj.id)
             obj.contents = bin_to_b64(data)
 

@@ -25,21 +25,17 @@ from woob.exceptions import BrowserIncorrectPassword, BrowserPasswordExpired
 from .pages import DashboardPage, LoginPage, PasswordExpiredPage, TransactionCSV, TransactionPage
 
 
-__all__ = ['BnpcartesentreprisePhenixBrowser']
+__all__ = ["BnpcartesentreprisePhenixBrowser"]
 
 
 class BnpcartesentreprisePhenixBrowser(LoginBrowser):
-    BASEURL = 'https://corporatecards.bnpparibas.com'
+    BASEURL = "https://corporatecards.bnpparibas.com"
 
-    login = URL(
-        r'/c/portal/login',
-        r'https://connect.corporatecards.bnpparibas/login',
-        LoginPage
-    )
-    dashboard = URL(r'/group/bddf/dashboard', DashboardPage)
-    transactions_page = URL(r'/group/bddf/transactions', TransactionPage)
-    transaction_csv = URL(r'/group/bddf/transactions', TransactionCSV)
-    password_expired = URL(r'https://corporatecards.bnpparibas.com/group/bddf/mot-de-passe-expire', PasswordExpiredPage)
+    login = URL(r"/c/portal/login", r"https://connect.corporatecards.bnpparibas/login", LoginPage)
+    dashboard = URL(r"/group/bddf/dashboard", DashboardPage)
+    transactions_page = URL(r"/group/bddf/transactions", TransactionPage)
+    transaction_csv = URL(r"/group/bddf/transactions", TransactionCSV)
+    password_expired = URL(r"https://corporatecards.bnpparibas.com/group/bddf/mot-de-passe-expire", PasswordExpiredPage)
 
     def __init__(self, website, *args, **kwargs):
         super(BnpcartesentreprisePhenixBrowser, self).__init__(*args, **kwargs)
@@ -49,7 +45,7 @@ class BnpcartesentreprisePhenixBrowser(LoginBrowser):
     def do_login(self):
         # these parameters are useful to get to the login area
         # if we don't use them we land in a page that has no form
-        self.login.go(params={'user_type': 'holder'})
+        self.login.go(params={"user_type": "holder"})
         # sometimes when we switch from main to the phenix we are already in dashboard page
         # also we can be in the PasswordExpiredPage we have to change our password
         if self.login.is_here():
@@ -78,21 +74,23 @@ class BnpcartesentreprisePhenixBrowser(LoginBrowser):
         self.location(account.url)
         self.transactions_page.go()
         params = {
-            'p_p_id': 'Phenix_Transactions_v2_Portlet',
-            'p_p_lifecycle': '2',
-            'p_p_state': 'normal',
-            'p_p_mode': 'view',
-            'p_p_resource_id': '/transactions/export',
-            'p_p_cacheability': 'cacheLevelPage',
+            "p_p_id": "Phenix_Transactions_v2_Portlet",
+            "p_p_lifecycle": "2",
+            "p_p_state": "normal",
+            "p_p_mode": "view",
+            "p_p_resource_id": "/transactions/export",
+            "p_p_cacheability": "cacheLevelPage",
         }
         instance_id = self.page.get_instance_id()
         if instance_id:
             # This part seems to be obsolete
-            self.logger.warning('InstanceId url is still used')
-            params.update({
-                'p_p_id': 'Phenix_Transactions_Portlet_INSTANCE_' + instance_id,
-                '_Phenix_Transactions_Portlet_INSTANCE_%s_MVCResourceCommand=' % instance_id: '/transaction/export',
-            })
+            self.logger.warning("InstanceId url is still used")
+            params.update(
+                {
+                    "p_p_id": "Phenix_Transactions_Portlet_INSTANCE_" + instance_id,
+                    "_Phenix_Transactions_Portlet_INSTANCE_%s_MVCResourceCommand=" % instance_id: "/transaction/export",
+                }
+            )
             page_csv = self.transaction_csv.open(method="POST", params=params)
         else:
             data = self.page.get_form()

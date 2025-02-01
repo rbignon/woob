@@ -27,13 +27,13 @@ class AdvisorPage(LoggedPage, HTMLPage):
     @method
     class update_advisor(ItemElement):
         obj_email = CleanText('//table//*[@itemprop="email"]')
-        obj_phone = CleanText('//table//*[@itemprop="telephone"]', replace=[(' ', '')])
+        obj_phone = CleanText('//table//*[@itemprop="telephone"]', replace=[(" ", "")])
         obj_mobile = NotAvailable
-        obj_fax = CleanText('//table//*[@itemprop="faxNumber"]', replace=[(' ', '')])
+        obj_fax = CleanText('//table//*[@itemprop="faxNumber"]', replace=[(" ", "")])
         obj_agency = CleanText('//div/*[@itemprop="name"]')
         obj_address = Format(
-            '%s %s %s',
+            "%s %s %s",
             CleanText('//table//*[@itemprop="streetAddress"]'),
             CleanText('//table//*[@itemprop="postalCode"]'),
-            CleanText('//table//*[@itemprop="addressLocality"]')
+            CleanText('//table//*[@itemprop="addressLocality"]'),
         )

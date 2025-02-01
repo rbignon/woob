@@ -67,12 +67,12 @@ SENSOR_DATA = (
 
 
 class TrainlineBrowser(LoginBrowser, AkamaiMixin):
-    BASEURL = 'https://www.thetrainline.com'
+    BASEURL = "https://www.thetrainline.com"
 
-    home = URL(r'/$', HomePage)
-    signin = URL(r'/login-service/api/login', SigninPage)
-    user_page = URL(r'/login-service/v5/user', UserPage)
-    documents_page = URL(r'/my-account/api/bookings/past', DocumentsPage)
+    home = URL(r"/$", HomePage)
+    signin = URL(r"/login-service/api/login", SigninPage)
+    user_page = URL(r"/login-service/v5/user", UserPage)
+    documents_page = URL(r"/my-account/api/bookings/past", DocumentsPage)
 
     @retry(ReadTimeout)
     def do_login(self):
@@ -82,27 +82,25 @@ class TrainlineBrowser(LoginBrowser, AkamaiMixin):
         # set X-Requested-With AFTER go_home(), to get the akamai url in html
         # else it is missing
         # this url is used by AkamaiMixin to resolve challenge
-        self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
+        self.session.headers["X-Requested-With"] = "XMLHttpRequest"
 
-        if self.session.cookies.get('_abck'):
+        if self.session.cookies.get("_abck"):
             akamai_url = self.page.get_akamai_url()
             if akamai_url:
                 # because sometimes this url is missing
                 # in that case, we simply don't resolve challenge
                 self.open(akamai_url)  # call this url to let akamai think we have resolved its challenge
-                sensor_data = SENSOR_DATA.replace('{user_agent}', self.session.headers['User-Agent'])
-                sensor_data = sensor_data.replace('{_abck}', self.session.cookies['_abck'])
-                data = {
-                    "sensor_data": sensor_data
-                }
+                sensor_data = SENSOR_DATA.replace("{user_agent}", self.session.headers["User-Agent"])
+                sensor_data = sensor_data.replace("{_abck}", self.session.cookies["_abck"])
+                data = {"sensor_data": sensor_data}
                 self.open(akamai_url, json=data)
 
         try:
-            self.signin.go(json={'email': self.username, 'password': self.password})
+            self.signin.go(json={"email": self.username, "password": self.password})
         except ClientError as e:
             if e.response.status_code in (400, 403):
-                error = e.response.json().get('message')
-                if 'invalid_grant' in error:
+                error = e.response.json().get("message")
+                if "invalid_grant" in error:
                     raise BrowserIncorrectPassword(error)
             raise
 

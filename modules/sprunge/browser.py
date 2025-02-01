@@ -42,36 +42,36 @@ class PastePage(HTMLPage):
     class fill_paste(ItemElement):
         klass = SprungePaste
 
-        obj_id = Env('id')
+        obj_id = Env("id")
         obj_title = NotAvailable
 
         def obj_contents(self):
             text = self.page.response.text
             # Sprunge seems to add a newline to our original text
-            if text.endswith(u'\n'):
+            if text.endswith("\n"):
                 text = text[:-1]
             return text
 
-        obj_url = BrowserURL('paste', id=Field('id'))
+        obj_url = BrowserURL("paste", id=Field("id"))
 
         def validate(self, obj):
-            if obj.contents == u'%s not found.' % obj.id:
+            if obj.contents == "%s not found." % obj.id:
                 raise PasteNotFound()
             return True
 
 
 class SprungeBrowser(PagesBrowser):
-    BASEURL = 'http://sprunge.us/'
+    BASEURL = "http://sprunge.us/"
 
-    paste = URL(r'(?P<id>\w+)', PastePage)
-    post = URL(r'$')
+    paste = URL(r"(?P<id>\w+)", PastePage)
+    post = URL(r"$")
 
     @paste.id2url
     def get_paste(self, url):
         url = self.absurl(url, base=True)
         m = self.paste.match(url)
         if m:
-            return SprungePaste(m.groupdict()['id'])
+            return SprungePaste(m.groupdict()["id"])
 
     def fill_paste(self, paste):
         """
@@ -80,6 +80,6 @@ class SprungeBrowser(PagesBrowser):
         return self.paste.stay_or_go(id=paste.id).fill_paste(paste)
 
     def post_paste(self, paste):
-        url = self.post.open(data={'sprunge': paste.contents}).text.strip()
+        url = self.post.open(data={"sprunge": paste.contents}).text.strip()
         self.location(url)
         return self.page.fill_paste(paste)

@@ -19,4 +19,4 @@
 from .repos import AppWoobRepos
 
 
-__all__ = ['AppWoobRepos']
+__all__ = ["AppWoobRepos"]

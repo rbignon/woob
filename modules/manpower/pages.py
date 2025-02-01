@@ -34,22 +34,23 @@ class SearchPage(HTMLPage):
         class item(ItemElement):
             klass = BaseJobAdvert
 
-            obj_id = Regexp(CleanText('./div/a[@class="title-link"]/@href'),
-                            '/candidats/detail-offre-d-emploi/(.*).html')
+            obj_id = Regexp(
+                CleanText('./div/a[@class="title-link"]/@href'), "/candidats/detail-offre-d-emploi/(.*).html"
+            )
             obj_title = CleanText('./div/a[@class="title-link"]/h2')
 
             def obj_place(self):
-                content = CleanText('./div[2]')(self)
-                if len(content.split('|')) > 1:
-                    return content.split('|')[1]
-                return ''
+                content = CleanText("./div[2]")(self)
+                if len(content.split("|")) > 1:
+                    return content.split("|")[1]
+                return ""
 
             def obj_publication_date(self):
-                content = CleanText('./div[2]')(self)
-                split_date = content.split('|')[0].split('/')
+                content = CleanText("./div[2]")(self)
+                split_date = content.split("|")[0].split("/")
                 if len(split_date) == 3:
                     return date(int(split_date[2]) + 2000, int(split_date[1]), int(split_date[0]))
-                return ''
+                return ""
 
 
 class AdvertPage(HTMLPage):
@@ -57,19 +58,23 @@ class AdvertPage(HTMLPage):
     class get_job_advert(ItemElement):
         klass = BaseJobAdvert
 
-        obj_id = Env('_id')
-        obj_url = BrowserURL('advert_page', _id=Env('_id'))
+        obj_id = Env("_id")
+        obj_url = BrowserURL("advert_page", _id=Env("_id"))
         obj_title = CleanText('//div[@class="infos-lieu"]/h1')
         obj_place = CleanText('//div[@class="infos-lieu"]/h2')
-        obj_publication_date = Date(Regexp(CleanText('//div[@class="info-agency"]'), r'.*Date de l\'annonce :(.*)',
-                                           default=''))
+        obj_publication_date = Date(
+            Regexp(CleanText('//div[@class="info-agency"]'), r".*Date de l\'annonce :(.*)", default="")
+        )
         obj_job_name = CleanText('//div[@class="infos-lieu"]/h1')
-        obj_description = Format('\n%s%s',
-                                 CleanHTML('//article[@id="post-description"]/div'),
-                                 CleanHTML('//article[@id="poste"]'))
-        obj_contract_type = Regexp(CleanText('//article[@id="poste"]/div/ul/li'),
-                                   r'Contrat : (\w*)', default=NotAvailable)
-        obj_pay = Regexp(CleanText('//article[@id="poste"]/div/ul/li'),
-                         r'Salaire : (.*) par mois', default=NotAvailable)
-        obj_experience = Regexp(CleanText('//article[@id="poste"]/div/ul/li'),
-                                r'Expérience : (.* ans)', default=NotAvailable)
+        obj_description = Format(
+            "\n%s%s", CleanHTML('//article[@id="post-description"]/div'), CleanHTML('//article[@id="poste"]')
+        )
+        obj_contract_type = Regexp(
+            CleanText('//article[@id="poste"]/div/ul/li'), r"Contrat : (\w*)", default=NotAvailable
+        )
+        obj_pay = Regexp(
+            CleanText('//article[@id="poste"]/div/ul/li'), r"Salaire : (.*) par mois", default=NotAvailable
+        )
+        obj_experience = Regexp(
+            CleanText('//article[@id="poste"]/div/ul/li'), r"Expérience : (.* ans)", default=NotAvailable
+        )

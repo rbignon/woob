@@ -22,45 +22,45 @@ import datetime
 from woob.browser.browsers import APIBrowser
 
 
-__all__ = ['VelibBrowser']
+__all__ = ["VelibBrowser"]
 
 
 class VelibBrowser(APIBrowser):
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
 
-    API_KEY = '2282a34b49cf45d8129cdf93d88762914cece88b'
-    BASEURL = 'https://api.jcdecaux.com/vls/v1/'
+    API_KEY = "2282a34b49cf45d8129cdf93d88762914cece88b"
+    BASEURL = "https://api.jcdecaux.com/vls/v1/"
 
     def __init__(self, api_key, *a, **kw):
         super(VelibBrowser, self).__init__(*a, **kw)
         self.api_key = api_key or VelibBrowser.API_KEY
 
     def do_get(self, path, **query):
-        query['apiKey'] = self.api_key
+        query["apiKey"] = self.api_key
         return self.request(path, params=query)
 
     def get_contracts_list(self):
-        return self.do_get('contracts')
+        return self.do_get("contracts")
 
     def get_station_list(self, contract=None):
         if contract:
-            doc = self.do_get('stations', contract=contract)
+            doc = self.do_get("stations", contract=contract)
         else:
-            doc = self.do_get('stations')
+            doc = self.do_get("stations")
         for jgauge in doc:
             self._transform(jgauge)
         return doc
 
     def get_station_infos(self, gauge):
-        station_id, contract = gauge.split('.', 1)
-        doc = self.do_get('stations/%s' % station_id, contract=contract)
+        station_id, contract = gauge.split(".", 1)
+        doc = self.do_get("stations/%s" % station_id, contract=contract)
         return self._transform(doc)
 
     def _transform(self, jgauge):
-        jgauge['id'] = '%s.%s' % (jgauge['number'], jgauge['contract_name'])
-        jgauge['city'] = jgauge['contract_name']
-        jgauge['last_update'] = datetime.datetime.fromtimestamp(jgauge['last_update'] / 1000)
-        jgauge['latitude'] = '%s' % jgauge['position']['lat']
-        jgauge['longitude'] = '%s' % jgauge['position']['lng']
-        del jgauge['position']
+        jgauge["id"] = "%s.%s" % (jgauge["number"], jgauge["contract_name"])
+        jgauge["city"] = jgauge["contract_name"]
+        jgauge["last_update"] = datetime.datetime.fromtimestamp(jgauge["last_update"] / 1000)
+        jgauge["latitude"] = "%s" % jgauge["position"]["lat"]
+        jgauge["longitude"] = "%s" % jgauge["position"]["lng"]
+        del jgauge["position"]
         return jgauge

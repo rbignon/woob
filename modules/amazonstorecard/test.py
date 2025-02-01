@@ -23,7 +23,7 @@ from woob.tools.test import BackendTest
 
 
 class AmazonStoreCardTest(BackendTest):
-    MODULE = 'amazonstorecard'
+    MODULE = "amazonstorecard"
 
     def test_history(self):
         """

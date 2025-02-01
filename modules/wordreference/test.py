@@ -22,8 +22,8 @@ from woob.tools.test import BackendTest
 
 
 class WordReferenceTest(BackendTest):
-    MODULE = 'wordreference'
+    MODULE = "wordreference"
 
     def test_translate(self):
-        tr = list(self.backend.translate('fr', 'en', 'chat'))[0]
-        self.assertEqual(tr.text, u'cat')
+        tr = list(self.backend.translate("fr", "en", "chat"))[0]
+        self.assertEqual(tr.text, "cat")

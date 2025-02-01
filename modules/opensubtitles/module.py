@@ -26,16 +26,16 @@ from woob.tools.backend import Module
 from .browser import OpensubtitlesBrowser
 
 
-__all__ = ['OpensubtitlesModule']
+__all__ = ["OpensubtitlesModule"]
 
 
 class OpensubtitlesModule(Module, CapSubtitle):
-    NAME = 'opensubtitles'
-    MAINTAINER = u'Julien Veyssier'
-    EMAIL = 'julien.veyssier@aiur.fr'
-    VERSION = '3.7'
-    DESCRIPTION = 'Opensubtitles subtitle website'
-    LICENSE = 'AGPLv3+'
+    NAME = "opensubtitles"
+    MAINTAINER = "Julien Veyssier"
+    EMAIL = "julien.veyssier@aiur.fr"
+    VERSION = "3.7"
+    DESCRIPTION = "Opensubtitles subtitle website"
+    LICENSE = "AGPLv3+"
     BROWSER = OpensubtitlesBrowser
 
     def get_subtitle(self, id):
@@ -47,10 +47,10 @@ class OpensubtitlesModule(Module, CapSubtitle):
     def iter_subtitles(self, language, pattern):
         if language not in LANGUAGE_CONV.keys():
             raise LanguageNotSupported()
-        return self.browser.iter_subtitles(language, quote_plus(pattern.encode('utf-8')))
+        return self.browser.iter_subtitles(language, quote_plus(pattern.encode("utf-8")))
 
     def fill_subtitle(self, subtitle, fields):
-        if 'description' in fields:
+        if "description" in fields:
             sub = self.get_subtitle(subtitle.id)
             subtitle.description = sub.description
 

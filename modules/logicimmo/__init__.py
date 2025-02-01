@@ -21,4 +21,4 @@
 from .module import LogicimmoModule
 
 
-__all__ = ['LogicimmoModule']
+__all__ = ["LogicimmoModule"]

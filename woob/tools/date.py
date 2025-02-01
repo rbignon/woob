@@ -26,16 +26,20 @@ try:
     import dateutil.parser
     from dateutil import tz
 except ImportError:
-    raise ImportError('Please install python3-dateutil')
+    raise ImportError("Please install python3-dateutil")
 
 
 __all__ = [
-    'local2utc', 'utc2local',
-    'now_as_utc', 'now_as_tz',
-    'LinearDateGuesser',
-    'date', 'datetime',
-    'new_date', 'new_datetime',
-    'closest_date',
+    "local2utc",
+    "utc2local",
+    "now_as_utc",
+    "now_as_tz",
+    "LinearDateGuesser",
+    "date",
+    "datetime",
+    "new_date",
+    "new_datetime",
+    "closest_date",
 ]
 
 
@@ -86,7 +90,7 @@ class datetime(real_datetime):
 
 
 def new_date(d):
-    """ Generate a safe date from a datetime.date object """
+    """Generate a safe date from a datetime.date object"""
     return date(d.year, d.month, d.day)
 
 
@@ -114,7 +118,7 @@ def _findall(text, substr):
         if j == -1:
             break
         sites.append(j)
-        i = j+1
+        i = j + 1
     return sites
 
 
@@ -129,17 +133,17 @@ def strftime(dt, fmt):
     # For every non-leap year century, advance by
     # 6 years to get into the 28-year repeat cycle
     delta = 2000 - year
-    off = 6*(delta // 100 + delta // 400)
+    off = 6 * (delta // 100 + delta // 400)
     year = year + off
 
     # Move to around the year 2000
-    year = year + ((2000 - year)//28)*28
+    year = year + ((2000 - year) // 28) * 28
     timetuple = dt.timetuple()
     s1 = time.strftime(fmt, (year,) + timetuple[1:])
     sites1 = _findall(s1, str(year))
 
-    s2 = time.strftime(fmt, (year+28,) + timetuple[1:])
-    sites2 = _findall(s2, str(year+28))
+    s2 = time.strftime(fmt, (year + 28,) + timetuple[1:])
+    sites2 = _findall(s2, str(year + 28))
 
     sites = []
     for site in sites1:
@@ -149,7 +153,7 @@ def strftime(dt, fmt):
     s = s1
     syear = "%4d" % (dt.year,)
     for site in sites:
-        s = s[:site] + syear + s[site+4:]
+        s = s[:site] + syear + s[site + 4 :]
     return s
 
 
@@ -195,7 +199,7 @@ class LinearDateGuesser:
         self.current_date = current_date
 
     def guess_date(self, day, month, change_current_date=True):
-        """ Returns a date object built from a given day/month pair. """
+        """Returns a date object built from a given day/month pair."""
 
         today = self.current_date
         # The website only provides dates using the 'DD/MM' string, so we have to
@@ -207,19 +211,19 @@ class LinearDateGuesser:
         # date. (Please, kill me...)
         # We first try to keep the current year
         naively_parsed_date = self.try_assigning_year(day, month, today.year, today.year - 5)
-        if (naively_parsed_date.year != today.year):
+        if naively_parsed_date.year != today.year:
             # we most likely hit a 29/02 leading to a change of year
             if change_current_date:
                 self.set_current_date(naively_parsed_date)
             return naively_parsed_date
 
-        if (naively_parsed_date > today + self.date_max_bump):
+        if naively_parsed_date > today + self.date_max_bump:
             # if the date ends up too far in the future, consider it actually
             # belongs to the previous year
             parsed_date = date(today.year - 1, month, day)
             if change_current_date:
                 self.set_current_date(parsed_date)
-        elif (naively_parsed_date > today and naively_parsed_date <= today + self.date_max_bump):
+        elif naively_parsed_date > today and naively_parsed_date <= today + self.date_max_bump:
             # if the date is in the near future, consider it is a bump
             parsed_date = naively_parsed_date
             # do not keep it as current date though
@@ -253,46 +257,48 @@ class ChaoticDateGuesser(LinearDateGuesser):
             raise ValueError("%s is inferior to min_date %s" % (parsed_date, self.min_date))
 
 
-DATE_TRANSLATE_FR = [(re.compile(r'janvier', re.I),             'january'),
-                     (re.compile(r'f[eé]vrier', re.I | re.U),   'february'),
-                     (re.compile(r'mars', re.I),                'march'),
-                     (re.compile(r'avril', re.I),               'april'),
-                     (re.compile(r'mai', re.I),                 'may'),
-                     (re.compile(r'juin', re.I),                'june'),
-                     (re.compile(r'juillet', re.I),             'july'),
-                     (re.compile(r'ao[uû]t?', re.I | re.U),     'august'),
-                     (re.compile(r'septembre', re.I),           'september'),
-                     (re.compile(r'octobre', re.I),             'october'),
-                     (re.compile(r'novembre', re.I),            'november'),
-                     (re.compile(r'd[eé]cembre', re.I | re.U),  'december'),
-                     (re.compile(r'jan\.', re.I),               'january'),
-                     (re.compile(r'janv\.', re.I),              'january'),
-                     (re.compile(r'\bjan\b', re.I),             'january'),
-                     (re.compile(r'f[eé]v\.', re.I | re.U),     'february'),
-                     (re.compile(r'f[eé]vr\.', re.I | re.U),    'february'),
-                     (re.compile(r'\\bf[eé]v\b', re.I | re.U),  'february'),
-                     (re.compile(r'\\bf[eé]vr\b', re.I | re.U), 'february'),
-                     (re.compile(r'avr\.', re.I),               'april'),
-                     (re.compile(r'\bavr\b', re.I),             'april'),
-                     (re.compile(r'juil\.', re.I),              'july'),
-                     (re.compile(r'juill\.', re.I),             'july'),
-                     (re.compile(r'\bjuil\b', re.I),            'july'),
-                     (re.compile(r'sep\.', re.I),               'september'),
-                     (re.compile(r'sept\.', re.I),              'september'),
-                     (re.compile(r'\bsep\b', re.I),             'september'),
-                     (re.compile(r'oct\.', re.I),               'october'),
-                     (re.compile(r'\boct\b', re.I),             'october'),
-                     (re.compile(r'nov\.', re.I),               'november'),
-                     (re.compile(r'\bnov\b', re.I),             'november'),
-                     (re.compile(r'd[eé]c\.', re.I | re.U),     'december'),
-                     (re.compile(r'\bd[eé]c\b', re.I | re.U),   'december'),
-                     (re.compile(r'lundi', re.I),               'monday'),
-                     (re.compile(r'mardi', re.I),               'tuesday'),
-                     (re.compile(r'mercredi', re.I),            'wednesday'),
-                     (re.compile(r'jeudi', re.I),               'thursday'),
-                     (re.compile(r'vendredi', re.I),            'friday'),
-                     (re.compile(r'samedi', re.I),              'saturday'),
-                     (re.compile(r'dimanche', re.I),            'sunday')]
+DATE_TRANSLATE_FR = [
+    (re.compile(r"janvier", re.I), "january"),
+    (re.compile(r"f[eé]vrier", re.I | re.U), "february"),
+    (re.compile(r"mars", re.I), "march"),
+    (re.compile(r"avril", re.I), "april"),
+    (re.compile(r"mai", re.I), "may"),
+    (re.compile(r"juin", re.I), "june"),
+    (re.compile(r"juillet", re.I), "july"),
+    (re.compile(r"ao[uû]t?", re.I | re.U), "august"),
+    (re.compile(r"septembre", re.I), "september"),
+    (re.compile(r"octobre", re.I), "october"),
+    (re.compile(r"novembre", re.I), "november"),
+    (re.compile(r"d[eé]cembre", re.I | re.U), "december"),
+    (re.compile(r"jan\.", re.I), "january"),
+    (re.compile(r"janv\.", re.I), "january"),
+    (re.compile(r"\bjan\b", re.I), "january"),
+    (re.compile(r"f[eé]v\.", re.I | re.U), "february"),
+    (re.compile(r"f[eé]vr\.", re.I | re.U), "february"),
+    (re.compile(r"\\bf[eé]v\b", re.I | re.U), "february"),
+    (re.compile(r"\\bf[eé]vr\b", re.I | re.U), "february"),
+    (re.compile(r"avr\.", re.I), "april"),
+    (re.compile(r"\bavr\b", re.I), "april"),
+    (re.compile(r"juil\.", re.I), "july"),
+    (re.compile(r"juill\.", re.I), "july"),
+    (re.compile(r"\bjuil\b", re.I), "july"),
+    (re.compile(r"sep\.", re.I), "september"),
+    (re.compile(r"sept\.", re.I), "september"),
+    (re.compile(r"\bsep\b", re.I), "september"),
+    (re.compile(r"oct\.", re.I), "october"),
+    (re.compile(r"\boct\b", re.I), "october"),
+    (re.compile(r"nov\.", re.I), "november"),
+    (re.compile(r"\bnov\b", re.I), "november"),
+    (re.compile(r"d[eé]c\.", re.I | re.U), "december"),
+    (re.compile(r"\bd[eé]c\b", re.I | re.U), "december"),
+    (re.compile(r"lundi", re.I), "monday"),
+    (re.compile(r"mardi", re.I), "tuesday"),
+    (re.compile(r"mercredi", re.I), "wednesday"),
+    (re.compile(r"jeudi", re.I), "thursday"),
+    (re.compile(r"vendredi", re.I), "friday"),
+    (re.compile(r"samedi", re.I), "saturday"),
+    (re.compile(r"dimanche", re.I), "sunday"),
+]
 
 
 class FrenchParser(dateutil.parser.parserinfo):
@@ -322,8 +328,16 @@ class FrenchParser(dateutil.parser.parserinfo):
     ]
 
     JUMP = [
-        " ", ".", ",", ";", "-", "/", "'",
-        "à", "le", "er",
+        " ",
+        ".",
+        ",",
+        ";",
+        "-",
+        "/",
+        "'",
+        "à",
+        "le",
+        "er",
     ]
 
     def __init__(self, dayfirst=None, yearfirst=False):
@@ -355,7 +369,7 @@ class ItalianParser(dateutil.parser.parserinfo):
         ("giovedì", "giovedi"),
         ("venerdì", "venerdi"),
         ("sabato",),
-        ("domenica",)
+        ("domenica",),
     ]
 
 
@@ -390,21 +404,22 @@ def parse_french_date(date, **kwargs):
     return dateutil.parser.parse(date, parserinfo=FrenchParser(), **kwargs)
 
 
-WEEK   = {'MONDAY': 0,
-          'TUESDAY': 1,
-          'WEDNESDAY': 2,
-          'THURSDAY': 3,
-          'FRIDAY': 4,
-          'SATURDAY': 5,
-          'SUNDAY': 6,
-          'LUNDI': 0,
-          'MARDI': 1,
-          'MERCREDI': 2,
-          'JEUDI': 3,
-          'VENDREDI': 4,
-          'SAMEDI': 5,
-          'DIMANCHE': 6,
-          }
+WEEK = {
+    "MONDAY": 0,
+    "TUESDAY": 1,
+    "WEDNESDAY": 2,
+    "THURSDAY": 3,
+    "FRIDAY": 4,
+    "SATURDAY": 5,
+    "SUNDAY": 6,
+    "LUNDI": 0,
+    "MARDI": 1,
+    "MERCREDI": 2,
+    "JEUDI": 3,
+    "VENDREDI": 4,
+    "SAMEDI": 5,
+    "DIMANCHE": 6,
+}
 
 
 def get_date_from_day(day):
@@ -423,7 +438,7 @@ def get_date_from_day(day):
 
 
 def parse_date(string):
-    matches = re.search(r'\s*([012]?[0-9]|3[01])\s*/\s*(0?[1-9]|1[012])\s*/?(\d{2}|\d{4})?$', string)
+    matches = re.search(r"\s*([012]?[0-9]|3[01])\s*/\s*(0?[1-9]|1[012])\s*/?(\d{2}|\d{4})?$", string)
     if matches:
         year = matches.group(3)
         if not year:
@@ -450,8 +465,7 @@ def closest_date(date, date_from, date_to):
     if date_from <= date <= date_to:
         return date
 
-    dates = [real_datetime(year, date.month, date.day)
-             for year in range(date_from.year, date_to.year+1)]
+    dates = [real_datetime(year, date.month, date.day) for year in range(date_from.year, date_to.year + 1)]
 
     # Ideally, pick the date within given range.
     for d in dates:
@@ -459,4 +473,4 @@ def closest_date(date, date_from, date_to):
             return d
 
     # Otherwise, return the most recent date in the past.
-    return min(dates, key=lambda d: abs(d-date_from))
+    return min(dates, key=lambda d: abs(d - date_from))
