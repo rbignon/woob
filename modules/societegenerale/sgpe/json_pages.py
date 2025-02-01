@@ -131,7 +131,6 @@ class AccountsJsonPage(SGPEJsonPage):
 
                 obj__id = Dict("id")
                 obj_number = CleanText(Dict("iban"), replace=[(" ", "")])  # yes, IBAN is presented as number to user
-                obj_iban = Field("number")
                 obj_label = CleanText(Dict("libelle"))
                 obj__agency = Dict("agenceGestionnaire")
 
