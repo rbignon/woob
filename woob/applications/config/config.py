@@ -171,7 +171,9 @@ class AppConfig(ReplApplication):
                     (
                         "Configuration",
                         ", ".join(
-                            "{}={}".format(key, ("*****" if key in module.config and module.config[key].masked else value))
+                            "{}={}".format(
+                                key, ("*****" if key in module.config and module.config[key].masked else value)
+                            )
                             for key, value in params.items()
                         ),
                     ),

@@ -985,7 +985,9 @@ class CardHistoryPage(LoggedPage, CsvPage):
                     return Field("date")(self)
                 s = s.replace("/", "")
                 # Sometimes the user enters an invalid date 16/17/19 for example
-                return Date(dayfirst=True, default=NotAvailable).filter("{}{}{}{}{}".format(s[:2], "-", s[2:4], "-", s[4:]))
+                return Date(dayfirst=True, default=NotAvailable).filter(
+                    "{}{}{}{}{}".format(s[:2], "-", s[2:4], "-", s[4:])
+                )
 
             def obj_type(self):
                 if "CARTE" in self.obj.raw:

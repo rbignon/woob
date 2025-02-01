@@ -48,9 +48,7 @@ def time_buffer(since_seconds=None, last_run=True, logger=False):
             if since_seconds is None:
                 since_seconds = decorator_time_buffer.since_seconds
             if logger:
-                logger.debug(
-                    f"Time buffer for {func!r} of {since_seconds}. Last run {decorator_time_buffer.last_run}."
-                )
+                logger.debug(f"Time buffer for {func!r} of {since_seconds}. Last run {decorator_time_buffer.last_run}.")
             if since_seconds and decorator_time_buffer.last_run:
                 if (datetime.now() - decorator_time_buffer.last_run).seconds < since_seconds:
                     if logger:

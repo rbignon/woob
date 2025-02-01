@@ -1304,9 +1304,7 @@ class CreditMutuelBrowser(TwoFactorBrowser):
                 for category in self.page.iter_categories():
                     self.page.go_on_category(category["index"])
                     self.page.IS_PRO_PAGE = True
-                    yield from self.page.iter_recipients(
-                        origin_account=origin_account, category=category["name"]
-                    )
+                    yield from self.page.iter_recipients(origin_account=origin_account, category=category["name"])
             else:
                 yield from self.page.iter_recipients(origin_account=origin_account)
 

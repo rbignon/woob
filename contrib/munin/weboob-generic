@@ -300,7 +300,9 @@ class GenericMuninPlugin:
                     type = "AREA"
                     first = False
                 self.write_output(
-                    "{}.label {}".format(id.encode("iso-8859-15"), getattr(result, self.attriblabel).encode("iso-8859-15"))
+                    "{}.label {}".format(
+                        id.encode("iso-8859-15"), getattr(result, self.attriblabel).encode("iso-8859-15")
+                    )
                 )
                 if self.cumulate:
                     self.write_output(f"{id}.draw {type}")

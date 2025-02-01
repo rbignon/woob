@@ -337,7 +337,9 @@ class JsonPage(JsonPage):
     def get_current(self):
         if "current" in self.doc:
             person = self.doc["current"]["emission"]["titre"]
-            title = "{}: {}".format(self.doc["current"]["song"]["interpreteMorceau"], self.doc["current"]["song"]["titre"])
+            title = "{}: {}".format(
+                self.doc["current"]["song"]["interpreteMorceau"], self.doc["current"]["song"]["titre"]
+            )
             return person, title
         elif "diffusions" in self.doc:
             now = int(time.time())

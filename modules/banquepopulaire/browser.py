@@ -195,9 +195,7 @@ class BanquePopulaire(TwoFactorBrowser):
 
     def __init__(self, website, config, *args, **kwargs):
         self.config = config
-        super().__init__(
-            self.config, self.config["login"].get(), self.config["password"].get(), *args, **kwargs
-        )
+        super().__init__(self.config, self.config["login"].get(), self.config["password"].get(), *args, **kwargs)
         self.BASEURL = "https://%s" % website
         self.validation_id = None
         self.mfa_validation_data = None
@@ -871,7 +869,9 @@ class BanquePopulaire(TwoFactorBrowser):
                         and "balance" in identity
                         and "contractLabel" in identity
                     ):
-                        account.label = ("{} {}".format(identity["contractLabel"], identity["bankingClientLabel"])).strip()
+                        account.label = (
+                            "{} {}".format(identity["contractLabel"], identity["bankingClientLabel"])
+                        ).strip()
 
                         balance = identity["balance"]
                         if balance is not None and "value" in balance and "currencyCode" in balance:

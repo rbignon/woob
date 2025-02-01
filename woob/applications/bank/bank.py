@@ -653,7 +653,8 @@ class Appbank(CaptchaMixin, ReplApplication):
             )
         elif isinstance(error, TransferInvalidLabel):
             print(
-                "Error({}): {}".format(backend.name, to_unicode(error) or "The transfer label is invalid"), file=self.stderr
+                "Error({}): {}".format(backend.name, to_unicode(error) or "The transfer label is invalid"),
+                file=self.stderr,
             )
         elif isinstance(error, TransferInvalidEmitter):
             print(

@@ -85,4 +85,6 @@ class TicketsDetailsPage(CentQuatrePage, LoggedPage):
             obj_ticket = TICKET.AVAILABLE
 
             def obj_url(self):
-                return "{}{}".format(self.page.browser.BASEURL, Link('//*[@class="alternative_button mticket"]/a')(self))
+                return "{}{}".format(
+                    self.page.browser.BASEURL, Link('//*[@class="alternative_button mticket"]/a')(self)
+                )

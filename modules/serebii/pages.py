@@ -300,11 +300,13 @@ class XYTypePage(HTMLPage):
                 else:  # damage == '*0 Damage'
                     no_effect.append(type_id)
 
-        pkmn_type.description = "A Pokémon with the type {} undergoes\nWeakness: {}\nResistance: {}\nNo Effect: {}".format(
-            pkmn_type.name,
-            ", ".join(weaknesses),
-            ", ".join(resistances),
-            ", ".join(no_effect),
+        pkmn_type.description = (
+            "A Pokémon with the type {} undergoes\nWeakness: {}\nResistance: {}\nNo Effect: {}".format(
+                pkmn_type.name,
+                ", ".join(weaknesses),
+                ", ".join(resistances),
+                ", ".join(no_effect),
+            )
         )
 
         return pkmn_type

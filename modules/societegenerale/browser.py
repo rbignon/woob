@@ -230,7 +230,9 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
         else:
             self.logger.warning('Unknown sign method "%s" found', auth_method["type_proc"])
 
-        raise AssertionError('Unknown auth method "{}: {}" found'.format(auth_method["type_proc"], auth_method.get("mod")))
+        raise AssertionError(
+            'Unknown auth method "{}: {}" found'.format(auth_method["type_proc"], auth_method.get("mod"))
+        )
 
     def check_skippable_action_needed(self):
         if not self.login.is_here():

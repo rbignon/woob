@@ -90,5 +90,6 @@ class TestDistinctValues(TestCase):
 
     def test_that_different_values_are_successfully_returns_as_is(self):
         assert set(self.identity.xpath('distinct-values(//a[@class="book-3"]/text())')) == {
-            "Foundation's Edge", "Second Foundation"
+            "Foundation's Edge",
+            "Second Foundation",
         }

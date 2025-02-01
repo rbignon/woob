@@ -894,9 +894,7 @@ class ReplApplication(ConsoleApplication, Cmd):
                 self.enabled_backends.add(backend)
         elif action == "list":
             enabled_backends_names = {backend.name for backend in self.enabled_backends}
-            disabled_backends_names = (
-                {backend.name for backend in self.woob.iter_backends()} - enabled_backends_names
-            )
+            disabled_backends_names = {backend.name for backend in self.woob.iter_backends()} - enabled_backends_names
             print("Enabled: %s" % ", ".join(enabled_backends_names))
             if len(disabled_backends_names) > 0:
                 print("Disabled: %s" % ", ".join(disabled_backends_names))
@@ -1437,9 +1435,7 @@ class ReplApplication(ConsoleApplication, Cmd):
             locs["backend"] = next(iter(self.woob.backend_instances.values()))
             locs["browser"] = locs["backend"].browser
 
-        banner = "Woob debug shell\n\nAvailable variables:\n" + "\n".join(
-            [f"  {k}: {v}" for k, v in locs.items()]
-        )
+        banner = "Woob debug shell\n\nAvailable variables:\n" + "\n".join([f"  {k}: {v}" for k, v in locs.items()])
 
         funcs = [app.ipython, app.bpython, app.python]
         app.launch(funcs, locs, banner)

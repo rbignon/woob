@@ -81,7 +81,9 @@ class ItemDocument(ItemElement):
                 Dict("numeroCompteAnonymise")(self),
             )
         else:
-            return "{} {} N° {}".format(Dict("dateDoc")(self), Dict("libelleSousFamille")(self), Dict("idContrat")(self))
+            return "{} {} N° {}".format(
+                Dict("dateDoc")(self), Dict("libelleSousFamille")(self), Dict("idContrat")(self)
+            )
 
     def obj_url(self):
         keys_to_copy = {

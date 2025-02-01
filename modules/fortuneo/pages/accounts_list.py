@@ -750,7 +750,7 @@ class AccountsList(ActionNeededPage):
                         r"(m|mr|me|mme|mlle|mle|ml)\.? (.*)\bou (m|mr|me|mme|mlle|mle|ml)\b(.*)", label, re.IGNORECASE
                     ):
                         return AccountOwnership.CO_OWNER
-                    if re.search(fr"{gender} {name}", label, re.IGNORECASE):
+                    if re.search(rf"{gender} {name}", label, re.IGNORECASE):
                         return AccountOwnership.OWNER
                     return AccountOwnership.ATTORNEY
                 return NotAvailable

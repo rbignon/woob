@@ -1022,9 +1022,9 @@ class OldCaisseEpargneBrowser(CaisseEpargneLogin):
         if len([k for k in self.session.cookies.keys() if k == "CTX"]) > 1:
             del self.session.cookies["CTX"]
 
-        ctx = decode_utf8_cookie(self.session.cookies.get("CTX", ''))
+        ctx = decode_utf8_cookie(self.session.cookies.get("CTX", ""))
         # str() to make sure a native str is used as expected by decode_utf8_cookie
-        headerdei = decode_utf8_cookie(self.session.cookies.get("headerdei", ''))
+        headerdei = decode_utf8_cookie(self.session.cookies.get("headerdei", ""))
         if "username=" in ctx:
             profile.name = re.search("username=([^&]+)", ctx).group(1)
         elif "nomusager=" in headerdei:

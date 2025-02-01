@@ -85,9 +85,7 @@ class WeatherPage(JsonPage):
             return Precipitation.RA
 
         def obj_wind_direction(self):
-            return Direction[
-                CleanText(Dict(f"properties/forecast/{self.cpt}/wind_icon"), replace=[("O", "W")])(self)
-            ]
+            return Direction[CleanText(Dict(f"properties/forecast/{self.cpt}/wind_icon"), replace=[("O", "W")])(self)]
 
         def obj_wind_speed(self):
             return float(Dict(f"properties/forecast/{self.cpt}/wind_speed", default=0)(self))

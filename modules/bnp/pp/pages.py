@@ -507,9 +507,7 @@ class TransferInitPage(BNPPage):
             raise TransferAssertionError(f"{message_code[0]}, code={message_code[1]}")
 
     def get_ibans_dict(self, account_type):
-        return {
-            a["ibanCrypte"]: a["iban"] for a in self.path("data.infoVirement.listeComptes%s.*" % account_type)
-        }
+        return {a["ibanCrypte"]: a["iban"] for a in self.path("data.infoVirement.listeComptes%s.*" % account_type)}
 
     def get_pro_accounts(self, account_type):
         comptes = self.path("data.infoVirement.listeComptes%s.*" % account_type)

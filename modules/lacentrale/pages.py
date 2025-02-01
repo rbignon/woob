@@ -66,7 +66,9 @@ class AdvertPage(HTMLPage):
 
         obj_cost = CleanDecimal('//div[@class="mainInfos"]/div/p[@class="gpfzj"]')
         obj_currency = Regexp(
-            CleanText('//div[@class="mainInfos"]/div/p[@class="gpfzj"]'), ".*([{}{}{}])".format("€", "$", "£"), default="€"
+            CleanText('//div[@class="mainInfos"]/div/p[@class="gpfzj"]'),
+            ".*([{}{}{}])".format("€", "$", "£"),
+            default="€",
         )
         obj_message = Format(
             "%s %s", CleanText('//div[@class="mainInfos"]/div/div/h1'), CleanText('//div[@class="mainInfos"]/div/div/p')

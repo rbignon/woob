@@ -419,7 +419,7 @@ class BaseTransferItem(ItemElement):
         return url_params["idOpe"][0]
 
     obj_amount = CleanDecimal.French(TableCell("amount"))
-    obj_recipient_label = Regexp(CleanText(TableCell("recipient_label_iban")), fr"(.*) {IBAN_REGEXP}")
+    obj_recipient_label = Regexp(CleanText(TableCell("recipient_label_iban")), rf"(.*) {IBAN_REGEXP}")
     obj_account_label = Regexp(CleanText(TableCell("account_number_label")), r"N° \d+ (.*)")
 
 

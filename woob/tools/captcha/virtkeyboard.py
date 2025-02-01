@@ -495,7 +495,5 @@ class SimpleVirtualKeyboard:
             else:
                 # Dump file only if the symbol is not found
                 self.dump_tiles(self.path)
-                raise VirtKeyboardError(
-                    f"Symbol '{digit}' not found; all symbol hashes are available in {self.path}"
-                )
+                raise VirtKeyboardError(f"Symbol '{digit}' not found; all symbol hashes are available in {self.path}")
         return self.codesep.join(word)

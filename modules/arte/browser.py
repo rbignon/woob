@@ -53,7 +53,7 @@ class ArteBrowser(PagesBrowser):
 
     def search_videos(self, pattern):
         return self.webservice.go(
-            lang=self.lang["site"], method_name="listing_SEARCH", page=1, pattern=fr"query={pattern}"
+            lang=self.lang["site"], method_name="listing_SEARCH", page=1, pattern=rf"query={pattern}"
         ).iter_videos()
 
     def get_arte_guide_days(self, split_path):

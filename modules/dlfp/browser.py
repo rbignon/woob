@@ -240,9 +240,7 @@ class DLFP(LoginBrowser):
         if comment.relevance_token is None:
             return False
 
-        res = self.open(
-            f"{comment.relevance_url}{what}", data={"authenticity_token": comment.relevance_token}
-        ).content
+        res = self.open(f"{comment.relevance_url}{what}", data={"authenticity_token": comment.relevance_token}).content
 
         return res
 

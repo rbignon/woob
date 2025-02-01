@@ -177,7 +177,9 @@ class YomoniBrowser(APIBrowser):
     def iter_history(self, account):
         if account.id not in self.histories:
             histories = []
-            self.open("/user/{}/project/{}/activity".format(self.users["userId"], account._project_id), method="OPTIONS")
+            self.open(
+                "/user/{}/project/{}/activity".format(self.users["userId"], account._project_id), method="OPTIONS"
+            )
             for activity in [
                 acc
                 for acc in self.request(

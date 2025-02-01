@@ -82,9 +82,7 @@ class HourPage(WeatherPage):
         return CleanText(f'//table[@id="meteoHour"]/tr[{row + 1}]/td[{col + 1}]')(self.doc)
 
     def get_img_cell(self, row, col):
-        return CleanText(f'//table[@id="meteoHour"]/tr[{row + 1}]/td[{col + 1}]/img/@alt')(
-            self.doc
-        )
+        return CleanText(f'//table[@id="meteoHour"]/tr[{row + 1}]/td[{col + 1}]/img/@alt')(self.doc)
 
     def get_current(self):
         fore = next(iter(self.iter_forecast()))
@@ -121,14 +119,10 @@ class HourPage(WeatherPage):
 
 class Days5Page(WeatherPage):
     def get_cell(self, row, col):
-        return CleanText(f'//table[@id="meteo2"]/tr[2]/td[{col + 1}]/table/tr[{row + 1}]/td')(
-            self.doc
-        )
+        return CleanText(f'//table[@id="meteo2"]/tr[2]/td[{col + 1}]/table/tr[{row + 1}]/td')(self.doc)
 
     def get_img_cell(self, row, col):
-        return CleanText(
-            f'//table[@id="meteo2"]/tr[2]/td[{col + 1}]/table/tr[{row + 1}]/td//img/@alt'
-        )(self.doc)
+        return CleanText(f'//table[@id="meteo2"]/tr[2]/td[{col + 1}]/table/tr[{row + 1}]/td//img/@alt')(self.doc)
 
     def iter_forecast(self):
         d = date.today()
@@ -154,14 +148,10 @@ class Days5Page(WeatherPage):
 
 class Days10Page(WeatherPage):
     def get_cell(self, row, col):
-        return CleanText(f'(//table[@id="meteo2"]//td/table)[{col + 1}]/tr[{row + 1}]/td')(
-            self.doc
-        )
+        return CleanText(f'(//table[@id="meteo2"]//td/table)[{col + 1}]/tr[{row + 1}]/td')(self.doc)
 
     def get_img_cell(self, row, col):
-        return CleanText(
-            f'(//table[@id="meteo2"]//td/table)[{col + 1}]/tr[{row + 1}]/td//img/@alt'
-        )(self.doc)
+        return CleanText(f'(//table[@id="meteo2"]//td/table)[{col + 1}]/tr[{row + 1}]/td//img/@alt')(self.doc)
 
     def iter_forecast(self):
         d = date.today() + timedelta(5)

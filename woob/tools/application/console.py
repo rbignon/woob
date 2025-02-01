@@ -439,7 +439,11 @@ class ConsoleApplication(Application):
             if key not in params or edit:
                 params[key] = self.ask(value, default=params[key] if (key in params) else value.default)
             else:
-                print("[{}] {}: {}".format(key, value.description, "(masked)" if value.masked else to_unicode(params[key])))
+                print(
+                    "[{}] {}: {}".format(
+                        key, value.description, "(masked)" if value.masked else to_unicode(params[key])
+                    )
+                )
         if asked_config:
             print("-------------------------%s" % ("-" * len(module.name)))
 
@@ -453,9 +457,7 @@ class ConsoleApplication(Application):
             backend_name = backend_name.rstrip("0123456789")
             while self.woob.backends_config.backend_exists(f"{backend_name}{i}"):
                 i += 1
-            backend_name = self.ask(
-                "Please give new backend name", default=f"{backend_name}{i}", regexp=r"^[\w\-_]+$"
-            )
+            backend_name = self.ask("Please give new backend name", default=f"{backend_name}{i}", regexp=r"^[\w\-_]+$")
 
         if edit:
             self.woob.backends_config.edit_backend(backend_name, params)
