@@ -70,7 +70,6 @@ class MandateAccountsList(LoggedPage, HTMLPage):
             obj_currency = Currency(TableCell("valorisation"))
             obj_bank_name = "La Banque postale"
             obj_balance = CleanDecimal(TableCell("valorisation"), replace_dots=True)
-            obj_url = Link(TableCell("id"))
             obj_iban = NotAvailable
             obj__account_holder = Lower(CleanText(TableCell("name")))
 

@@ -32,8 +32,6 @@ class SearchPage(HTMLPage):
         class item(ItemElement):
             klass = SongLyrics
 
-            obj_id = CleanText("./@href", default=NotAvailable)
-
             def obj_id(self):
                 href = CleanText("./td[2]/a/@href", default=NotAvailable)(self)
                 spl = href.replace(".html", "").split("/")

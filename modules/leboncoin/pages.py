@@ -111,7 +111,6 @@ class HousingListPage(JsonPage):
 
             obj_id = Dict("list_id")
             obj_url = Dict("url")
-            obj_type = Env("query_type")
 
             obj_area = CleanDecimal(PopDetail("square", default=0), default=NotAvailable)
             obj_rooms = CleanDecimal(PopDetail("rooms", default=0), default=NotAvailable)
