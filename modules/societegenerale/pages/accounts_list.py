@@ -60,6 +60,7 @@ from woob.capabilities.profile import Person, ProfileMissing
 from woob.exceptions import BrowserUnavailable, BrowserUserBanned
 from woob.tools.capabilities.bank.investments import IsinCode, IsinType, create_french_liquidity
 from woob.tools.capabilities.bank.transactions import FrenchTransaction
+from woob.tools.log import getLogger
 
 
 class TemporaryBrowserUnavailable(BrowserUnavailable):
@@ -448,8 +449,13 @@ _OUTGOING_TRANSFER_TOKENS = ("POUR", "REF", "MOTIF", "CHEZ")
 _OUTGOING_TRANSFER_SPLIT_RE = f"({'|'.join(_OUTGOING_TRANSFER_TOKENS)}): (?!(?:{'|'.join(_OUTGOING_TRANSFER_TOKENS)}):)"
 
 
-def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBAN]:
+def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | BIC | IBAN]:
     """Extract transfer transaction data.
+
+    Maps transaction fields to respective dictionary keys.
+    The returned dictionary contains a BIC and IBAN entry with respective
+    bjects from schwifty package. They are provided on a best effort basis and
+    depend on the quality of data in schwifty.
 
     Examples:
         # Transfer to another account of the same bank
@@ -464,6 +470,7 @@ def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBA
          'REF': '1234567890123',
          'MOTIF': 'Epargne',
          'CHEZ': 'SOGEFRPP',
+         'BIC': <BIC=SOGEFRPP>,
          'IBAN': <IBAN=FR7630003012340001234567951>}
 
         # Euro zone transfer
@@ -477,6 +484,7 @@ def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBA
          'REF': '1234567890123',
          'MOTIF': NotAvailable,
          'CHEZ': 'NTSBDEB1',
+         'BIC': <BIC=NTSBDEB1XXX>,
          'IBAN': NotAvailable}
 
         # French bank transfer
@@ -492,6 +500,7 @@ def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBA
          'REF': '1234567890123',
          'MOTIF': 'Loyer',
          'CHEZ': 'BNPAFRPP',
+         'BIC': <BIC=BNPAFRPP>,
          'IBAN': <IBAN=FR133000401234N001234567806>}
 
         # French bank instant transfer
@@ -506,7 +515,8 @@ def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBA
          'REF': '1234567890123',
          'MOTIF': NotAvailable,
          'CHEZ': 'REVOFRP2XXX',
-         'IBAN': <IBAN=FR7628233000000001234567839>}
+         'BIC': <BIC=REVOFRP2XXX>,
+         'IBAN': <IBAN=FR7632501000000001234567839>}
     """
     # intraday tr have libOpeComplet set to None
     # future tr do not have libOpeComplet field
@@ -517,25 +527,41 @@ def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBA
     if res.count("POUR") == 0:
         return {}
 
+    logger = getLogger(f"{__name__}.parse_outgoing_transfer_transaction")
     tr_data = {token: NotAvailable for token in _OUTGOING_TRANSFER_TOKENS}
     tr_data.update({token: data.strip() for token, data in zip(res[1::2], res[2::2])})
+    tr_data["BIC"] = NotAvailable
+    tr_data["IBAN"] = NotAvailable
+
+    # Try to sanitize BIC (https://github.com/mdomke/schwifty/issues/242)
+    if not empty(tr_data["CHEZ"]):
+        bic = BIC(tr_data["CHEZ"])
+        if not bic.exists:
+            if len(bic) == 11 and bic.endswith("XXX"):  # BIC11 -> BIC8
+                bic = BIC(bic[:8])
+            else:
+                bic = BIC(bic + "XXX")  # BIC8 -> BIC11
+        if not bic.exists:
+            logger.error("Transaction %s refers to non-existing BIC %s", line, tr_data["CHEZ"])
+        tr_data["BIC"] = bic
 
     if m := re.search(
         r"(?P<recipient>.+) (?P<day>\d{2}) (?P<month>\d{2}) "
-        r"(?:SG (?P<branchid>\d+)|BQ (?P<bankid>\d+)) CPT (?P<acctid>\w+)",
+        r"(?:SG (?P<branchid>\d+)|BQ (?P<bankid>\d+|\w+)) CPT (?P<acctid>\w+)",
         tr_data["POUR"],
     ):
         tr_data["POUR"] = m["recipient"]
+        bankid = m["bankid"]
 
-        bic = BIC(tr_data["CHEZ"])
+        if bankid and not bankid.isnumeric():
+            bankid = bic.domestic_bank_codes[0]
+
         tr_data["IBAN"] = IBAN.generate(
             bic.country_code,
-            bic.country_bank_code if m["branchid"] else m["bankid"],
+            bic.domestic_bank_codes[0] if m["branchid"] else bankid,
             m["acctid"],
             m["branchid"] or "",
         )
-    else:
-        tr_data["IBAN"] = NotAvailable
 
     return tr_data
 
