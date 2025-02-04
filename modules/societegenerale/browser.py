@@ -604,6 +604,8 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             raise BrowserUnavailable()
 
         transfer_recipients = list(self.iter_recipients(account))
+        self.transfer_history.go()
+        transfer_history = list(self.page.iter_history(recipients=transfer_recipients))
 
         # get history for account on old website
         # request to get json is not available yet, old request to get html response
@@ -631,7 +633,9 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
             elif history_url:
                 self.location(self.absurl(history_url))
 
-            yield from self.page.iter_history(transfer_recipients=transfer_recipients)
+            yield from self.page.iter_history(
+                transfer_recipients=transfer_recipients, transfer_history=transfer_history
+            )
             return
 
         if account.type == account.TYPE_CARD:
@@ -657,7 +661,9 @@ class SocieteGenerale(SocieteGeneraleTwoFactorBrowser):
 
         next_page = True
         while next_page:
-            yield from self.page.iter_history(transfer_recipients=transfer_recipients)
+            yield from self.page.iter_history(
+                transfer_recipients=transfer_recipients, transfer_history=transfer_history
+            )
             next_page = self.next_page_retry("history")
 
     @need_login

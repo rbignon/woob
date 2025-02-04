@@ -623,15 +623,72 @@ class TransactionItemElement(ItemElement):
         # TODO: parse according to Field("type")
         m = parse_outgoing_transfer_transaction(Dict("libOpeComplet")(self))
         if m:
-            # Accounts managed by the owner automatically appear in transfer allow list.
+            self.env["recipient"] = NotAvailable
+
+            # 1. Find recipient in beneficiary list
             for recipient in self.env.get("transfer_recipients", []):
-                if recipient.label.casefold() == m["POUR"].casefold() or recipient.iban == m["IBAN"]:
-                    self.logger.info("Transaction is sending funds to %s", m["POUR"])
-                    self.env["transfer_account"] = recipient
+                # 1.1. Find by IBAN (regular national transfer)
+                if recipient.iban == m["IBAN"]:
+                    self.logger.debug("Found beneficiary via IBAN (%s->%s)", m["POUR"], recipient)
+                    self.env["recipient"] = recipient
                     break
-            else:
-                # Fallback for multi-owner accounts
-                self.logger.debug("Recipient %s not found in beneficiary list. (%s)", m["POUR"], el)
+
+                # 1.2. Find by BIC + account code (instant national transfer)
+                if (
+                    not empty(m["BIC"])
+                    and recipient.iban.bic == m["BIC"]
+                    and not empty(m["IBAN"])
+                    and recipient.iban.account_code == m["IBAN"].account_code
+                ):
+                    self.logger.debug("Found beneficiary via BIC/account code (%s->%s)", m["POUR"], recipient)
+                    self.env["recipient"] = recipient
+                    break
+
+                # 1.3. Find by BIC + beneficiary name (international transfers)
+                if (
+                    not empty(m["BIC"])
+                    and recipient.iban.bic == m["BIC"]
+                    and not empty(recipient._beneficiary_name)
+                    and recipient._beneficiary_name.casefold() == m["POUR"].casefold()
+                ):
+                    self.logger.debug("Found beneficiary via BIC + beneficiary name (%s->%s)", m["POUR"], recipient)
+                    self.env["recipient"] = recipient
+                    break
+
+            # 2. Find transaction in transfer history
+            if self.env["recipient"] is NotAvailable:
+                for transfer_tr in self.env.get("transfer_history", []):
+                    recipient = transfer_tr._recipient
+
+                    # 2.1 Find by IBAN (occasional and instant transfer)
+                    if m["IBAN"] == recipient.iban:
+                        self.logger.debug("Found beneficiary via transfer history IBAN: (%s->%s)", m["POUR"], recipient)
+                        self.env["recipient"] = transfer_tr._recipient
+                        break
+
+                    # 2.2 Find by label, amount and motive (memo)
+                    # Recurring transfer have a single entry in vupri-liste-ordres.
+                    # Past payments can be extracted from vupri-detail-ordre but it only contains 2 past payments dates
+                    # while operation history goes 183 days (~6 months) at the time of writing.
+                    if (
+                        m["POUR"] == transfer_tr.label
+                        and Field("amount")(self) == -transfer_tr.amount
+                        and Field("_memo")(self) == transfer_tr._memo
+                    ):
+                        self.logger.debug(
+                            "Found beneficiary via transfer history label + amount + memo: (%s->%s)",
+                            m["POUR"],
+                            recipient,
+                        )
+                        self.env["recipient"] = recipient
+                        break
+
+            # 3. Build recipient from available information (might not be accurate)
+            # Most likely a beneficiary known by a co-owner of the account
+            if self.env["recipient"] is NotAvailable:
+                self.logger.warning(
+                    "Creating recipient for %s as it was not found in beneficiary list or transfer history.", m["POUR"]
+                )
                 recipient = Recipient()
                 recipient.iban = m["IBAN"]
                 recipient.id = str(m["IBAN"])
@@ -640,7 +697,7 @@ class TransactionItemElement(ItemElement):
                 recipient.enabled_at = datetime.datetime.now().replace(microsecond=0)
                 recipient.currency = "EUR"
                 recipient.bank_name = recipient.iban.bank_name
-                self.env["transfer_account"] = recipient
+                self.env["recipient"] = recipient
 
         return
 
@@ -679,7 +736,13 @@ class TransactionItemElement(ItemElement):
     obj__loan = Env("loan", NotAvailable)  # Loan account. Used in browser.
     obj__loan_payment = Env("loan_payment", NotAvailable)  # Loan payment information.
     obj__ref = Env("ref", NotAvailable)
-    obj__transfer_account = Env("transfer_account", default=NotAvailable)
+
+    def obj__recipient(self) -> Recipient | NotAvailable:
+        """Outgoing transfer recipient."""
+        # XXX: Consider using Transaction.counterparty
+        if Field("type")(self) == Transaction.TYPE_TRANSFER and Field("amount")(self) < 0:
+            return Env("recipient")(self)
+        return NotAvailable
 
 
 class HistoryPage(JsonBasePage):
