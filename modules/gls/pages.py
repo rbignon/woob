@@ -22,6 +22,10 @@ from woob.capabilities.parcel import Event, Parcel
 
 
 STATUSES = {
+    "PREADVICE": Parcel.STATUS_PLANNED,
+    "INTRANSIT": Parcel.STATUS_IN_TRANSIT,
+    "INWAREHOUSE": Parcel.STATUS_IN_TRANSIT,
+    "INDELIVERY": Parcel.STATUS_IN_TRANSIT,
     "DELIVEREDPS": Parcel.STATUS_ARRIVED,
     "DELIVERED": Parcel.STATUS_ARRIVED,
 }
@@ -30,7 +34,8 @@ STATUSES = {
 class SearchPage(JsonPage):
     def get_info(self, _id):
         p = Parcel(_id)
-        events = self.doc["tuStatus"][0]["history"]
+        # TODO: temporary fix, history only available when we submit the recipient's postcode
+        events = self.doc["tuStatus"][0].get("history", [])
         p.history = [self.build_event(i, tr) for i, tr in enumerate(events)]
         p.status = self.guess_status(self.doc["tuStatus"][0]["progressBar"]["statusInfo"])
         p.info = self.doc["tuStatus"][0]["progressBar"]["statusText"]
