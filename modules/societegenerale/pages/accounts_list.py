@@ -493,6 +493,20 @@ def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBA
          'MOTIF': 'Loyer',
          'CHEZ': 'BNPAFRPP',
          'IBAN': <IBAN=FR133000401234N001234567806>}
+
+        # French bank instant transfer
+        >>> parse_outgoing_transfer_transaction(
+        ...     "000001 VIR INSTANTANE EMIS LOGITEL "
+        ...     "POUR: Jane Doe "
+        ...     "30 12 BQ REVO CPT 00012345678 "
+        ...     "REF: 1234567890123 "
+        ...     "CHEZ: REVOFRP2XXX"
+        ... )  # doctest: +NORMALIZE_WHITESPACE
+        {'POUR': 'Jane Doe',
+         'REF': '1234567890123',
+         'MOTIF': NotAvailable,
+         'CHEZ': 'REVOFRP2XXX',
+         'IBAN': <IBAN=FR7628233000000001234567839>}
     """
     # intraday tr have libOpeComplet set to None
     # future tr do not have libOpeComplet field
