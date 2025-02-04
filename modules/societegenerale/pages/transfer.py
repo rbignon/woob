@@ -21,6 +21,8 @@ import re
 from datetime import datetime
 from html import unescape
 
+from schwifty import IBAN
+
 from woob.browser.elements import DictElement, ItemElement, method
 from woob.browser.filters.html import Link
 from woob.browser.filters.json import Dict
@@ -35,7 +37,7 @@ from woob.capabilities.bank import (
     Transfer,
     TransferBankError,
 )
-from woob.capabilities.base import NotAvailable, NotLoaded
+from woob.capabilities.base import NotAvailable
 from woob.exceptions import ActionNeeded, BrowserUnavailable
 from woob.tools.capabilities.bank.iban import is_iban_valid
 from woob.tools.json import json
@@ -371,7 +373,22 @@ class TransferHistoryPage(LoggedPage, JsonPage):
             obj__memo = Dict("motifDuVirement")
 
             def obj__recipient(self) -> Recipient:
+                beneficiary_name = Dict("libelleBeneficiaireToDisplay")(self)
+                beneficiary_iban = IBAN(Dict("ibanBeneficiaire")(self))
+
                 for recipient in Env("recipients", [])(self):
-                    if recipient.iban == Dict("ibanBeneficiaire"):
-                        return recipient
-                return NotLoaded
+                    if recipient.iban == beneficiary_iban:
+                        break
+                else:
+                    # Multi-owner account may have recipients defined by one of the other holder
+                    self.logger.debug("Recipient %s not found in beneficiary list.", beneficiary_name)
+                    recipient = Recipient()
+                    recipient.iban = beneficiary_iban
+                    recipient.id = str(beneficiary_iban)
+                    recipient.label = Dict("libelleBeneficiaireToDisplay")(self)
+                    # On societe generale recipients are immediatly available.
+                    recipient.enabled_at = datetime.now().replace(microsecond=0)
+                    recipient.currency = Dict("montantVirement/codeDevise")(self)
+                    recipient.bank_name = beneficiary_iban.bank_name
+                    recipient._beneficiary_name = beneficiary_name
+                return recipient
