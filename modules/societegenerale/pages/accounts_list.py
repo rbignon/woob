@@ -740,7 +740,11 @@ class TransactionItemElement(ItemElement):
     def obj__recipient(self) -> Recipient | NotAvailable:
         """Outgoing transfer recipient."""
         # XXX: Consider using Transaction.counterparty
-        if Field("type")(self) == Transaction.TYPE_TRANSFER and Field("amount")(self) < 0:
+        if (
+            Field("coming")(self) is False
+            and Field("type")(self) == Transaction.TYPE_TRANSFER
+            and Field("amount")(self) < 0
+        ):
             return Env("recipient")(self)
         return NotAvailable
 
