@@ -574,7 +574,7 @@ class TransactionItemElement(ItemElement):
             loan.last_payment_amount = Field("amount")(self)
             loan.last_payment_date = Field("date")(self)
             loan.insurance_amount = loan_data["insurance_amount"]
-            loan.maturity_date = m["maturity_date"]
+            loan.maturity_date = Date().filter(m["maturity_date"])
 
             self.env["loan"] = loan
             self.env["loan_payment"] = loan_data
