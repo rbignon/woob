@@ -483,7 +483,7 @@ def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBA
         >>> parse_outgoing_transfer_transaction(
         ...     "000001 VIR EUROPEEN EMIS LOGITEL "
         ...     "POUR: RENT AGENCY "
-        ...     "30 12 BQ 3000401234 CPT 00012345678 "
+        ...     "30 12 BQ 3000401234 CPT N0012345678 "
         ...     "REF: 1234567890123 "
         ...     "MOTIF: Loyer "
         ...     "CHEZ: BNPAFRPP"
@@ -492,7 +492,7 @@ def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBA
          'REF': '1234567890123',
          'MOTIF': 'Loyer',
          'CHEZ': 'BNPAFRPP',
-         'IBAN': <IBAN=FR7630004012340001234567862>}
+         'IBAN': <IBAN=FR133000401234N001234567806>}
     """
     # intraday tr have libOpeComplet set to None
     # future tr do not have libOpeComplet field
@@ -508,7 +508,7 @@ def parse_outgoing_transfer_transaction(line: str | None) -> dict[str, str | IBA
 
     if m := re.search(
         r"(?P<recipient>.+) (?P<day>\d{2}) (?P<month>\d{2}) "
-        r"(?:SG (?P<branchid>\d+)|BQ (?P<bankid>\d+)) CPT (?P<acctid>\d+)",
+        r"(?:SG (?P<branchid>\d+)|BQ (?P<bankid>\d+)) CPT (?P<acctid>\w+)",
         tr_data["POUR"],
     ):
         tr_data["POUR"] = m["recipient"]
