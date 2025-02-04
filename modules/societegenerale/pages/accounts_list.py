@@ -621,6 +621,10 @@ class TransactionItemElement(ItemElement):
     def obj_coming(self) -> bool:
         return not Dict("enabled")(self)
 
+    def obj_type(self):
+        """Shortcut to Transaction.type."""
+        return self.obj.type
+
     def obj__memo(self):
         memo = Env("motive", NotAvailable)(self)
         sepa_mandate = Env("sepa_mandate", NotAvailable)(self)
