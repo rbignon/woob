@@ -21,6 +21,7 @@ import time
 from datetime import datetime
 from decimal import Decimal
 
+from dateutil import tz
 from dateutil.relativedelta import relativedelta
 
 from woob.browser import URL, need_login
@@ -93,6 +94,7 @@ __all__ = ["SocieteGenerale"]
 
 
 class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
+    TZ_PARIS = tz.gettz("Europe/Paris")
     HAS_CREDENTIALS_ONLY = True
 
     polling_transaction = None
@@ -189,11 +191,12 @@ class SocieteGeneraleTwoFactorBrowser(TwoFactorBrowser):
             self.polling_transaction = donnees["id-transaction"]
 
             if donnees.get("expiration_date_hh") and donnees.get("expiration_date_mm"):
-                now = datetime.now()
+                now = datetime.now(self.TZ_PARIS)
                 expiration_date = now.replace(
                     hour=int(donnees["expiration_date_hh"]), minute=int(donnees["expiration_date_mm"])
                 )
                 self.polling_duration = int((expiration_date - now).total_seconds())
+                assert self.polling_duration > 0, "polling duration computation issue"
 
             message = "Veuillez valider l'opération dans votre application"
             # several terminals can be associated with that user
