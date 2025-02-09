@@ -182,10 +182,10 @@ class AccountsPage(JsonBasePage):
             # There are more account type to find
             TYPES = {
                 "COMPTE_COURANT": Account.TYPE_CHECKING,
-                "PEL": Account.TYPE_SAVINGS,
-                "CEL": Account.TYPE_SAVINGS,
-                "LDD": Account.TYPE_SAVINGS,
-                "LIVRETA": Account.TYPE_SAVINGS,
+                "PEL": Account.TYPE_PEL,
+                "CEL": Account.TYPE_CEL,
+                "LDD": Account.TYPE_LDDS,
+                "LIVRETA": Account.TYPE_LIVRET_A,
                 "SOGEMONDE": Account.TYPE_SAVINGS,
                 "LIVRET_JEUNE": Account.TYPE_SAVINGS,
                 "LIVRET_EUROKID": Account.TYPE_SAVINGS,
