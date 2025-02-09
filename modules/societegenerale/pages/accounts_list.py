@@ -426,7 +426,7 @@ class Transaction(FrenchTransaction):
         (re.compile(r"^(?P<dd>\d{2})(?P<mm>\d{2})\/(?P<text>.*?)\/?(-[\d,]+)?$"), FrenchTransaction.TYPE_CARD),
         (
             re.compile(
-                r"^(?P<category>(COTISATION(?: MENSUELLE)?|PRELEVEMENT(?: EUROPEEN)?|TELEREGLEMENT|TIP)) (?P<text>.*)"
+                r"^(?P<category>(COTISATION(?: MENSUELLE)?|PRELEVEMENT(?: EUROPEEN)?|TELEREGLEMENT|TIP)) (?:POUR CPTE DE:|DE: )?(?P<text>.*)"
             ),
             FrenchTransaction.TYPE_ORDER,
         ),
@@ -434,7 +434,7 @@ class Transaction(FrenchTransaction):
             re.compile(r"^(\d+ )?VIR (PERM )?POUR: (.*?) (REF: \d+ )?MOTIF: (?P<text>.*)"),
             FrenchTransaction.TYPE_TRANSFER,
         ),
-        (re.compile(r"^(?P<category>VIR(EMEN)?T? \w+) (?P<text>.*)"), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r"^(?P<category>VIR(EMEN)?T? \w+) (?:DE: |POUR: )(?P<text>.*)"), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r"^(CHEQUE) (?P<text>.*)"), FrenchTransaction.TYPE_CHECK),
         (re.compile(r"^REMISE CHEQUE (?P<text>.*)"), FrenchTransaction.TYPE_CHECK),
         (re.compile(r"^(FRAIS) (?P<text>.*)"), FrenchTransaction.TYPE_BANK),
