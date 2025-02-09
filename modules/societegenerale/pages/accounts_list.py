@@ -438,7 +438,7 @@ class Transaction(FrenchTransaction):
         (re.compile(r"^(CHEQUE) (?P<text>.*)"), FrenchTransaction.TYPE_CHECK),
         (re.compile(r"^REMISE CHEQUE (?P<text>.*)"), FrenchTransaction.TYPE_CHECK),
         (re.compile(r"^(FRAIS) (?P<text>.*)"), FrenchTransaction.TYPE_BANK),
-        (re.compile(r"^(?P<category>ECHEANCEPRET)(?P<text>.*)"), FrenchTransaction.TYPE_LOAN_PAYMENT),
+        (re.compile(r"^(?P<category>ECHEANCE (?=PRET))(?P<text>.*)"), FrenchTransaction.TYPE_LOAN_PAYMENT),
         (re.compile(r"^(?P<category>REMISE CHEQUES)(?P<text>.*)"), FrenchTransaction.TYPE_DEPOSIT),
         (re.compile(r"^CARTE RETRAIT (?P<text>.*)"), FrenchTransaction.TYPE_WITHDRAWAL),
         (re.compile(r"^TOTAL DES FACTURES (?P<text>.*)"), FrenchTransaction.TYPE_CARD_SUMMARY),
