@@ -440,6 +440,12 @@ class Transaction(FrenchTransaction):
             ),
             FrenchTransaction.TYPE_TRANSFER,
         ),
+        (
+            re.compile(
+                r"VIR INST RE (?P<_ref>\d+) DE: (?P<text>.*?) DATE: (?P<dd>\d{2})\/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<HH>\d{2}):(?P<MM>\d{2})"
+            ),
+            FrenchTransaction.TYPE_TRANSFER,
+        ),
         (re.compile(r"^(?P<category>VIR(EMEN)?T? \w+) (?:DE: |POUR: )(?P<text>.*)"), FrenchTransaction.TYPE_TRANSFER),
         (re.compile(r"^(CHEQUE) (?P<text>.*)"), FrenchTransaction.TYPE_CHECK),
         (re.compile(r"^REMISE CHEQUE (?P<text>.*)"), FrenchTransaction.TYPE_CHECK),
