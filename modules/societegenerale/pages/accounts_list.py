@@ -426,7 +426,7 @@ class Transaction(FrenchTransaction):
         (re.compile(r"^(?P<dd>\d{2})(?P<mm>\d{2})\/(?P<text>.*?)\/?(-[\d,]+)?$"), FrenchTransaction.TYPE_CARD),
         (
             re.compile(
-                r"^(?P<category>(COTISATION(?: MENSUELLE)?|PRELEVEMENT(?: EUROPEEN)?|TELEREGLEMENT|TIP)) (?:POUR CPTE DE:|DE: )?(?P<text>.*)"
+                r"^(?P<category>(COTISATION(?: MENSUELLE)?|PRELEVEMENT(?: EUROPEEN)?|PRLV EUROP PONCTUEL|TELEREGLEMENT|TIP))(?: (?P<_ref>\d+))? (?:POUR CPTE DE:|DE: )?(?P<text>.*)"
             ),
             FrenchTransaction.TYPE_ORDER,
         ),
