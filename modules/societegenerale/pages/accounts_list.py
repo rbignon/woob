@@ -624,6 +624,10 @@ class TransactionItemElement(ItemElement):
         m = parse_outgoing_transfer_transaction(Dict("libOpeComplet")(self))
         if m:
             self.env["recipient"] = NotAvailable
+            if m["MOTIF"]:
+                self.env["motive"] = m["MOTIF"]
+            if m["REF"]:
+                self.env["ref"] = m["REF"]
 
             # 1. Find recipient in beneficiary list
             for recipient in self.env.get("transfer_recipients", []):
