@@ -445,6 +445,54 @@ class Transaction(FrenchTransaction):
     ]
 
 
+# DATE is present in instant transfer only
+_INCOMING_TRANSFER_TOKENS = ("DE", "DATE", "MOTIF", "REF")
+_INCOMING_TRANSFER_SPLIT_RE = f"({'|'.join(_INCOMING_TRANSFER_TOKENS)}): (?!(?:{'|'.join(_INCOMING_TRANSFER_TOKENS)}):)"
+
+
+def parse_incoming_transfer_transaction(line: str | None) -> dict[str, str]:
+    """Extract transfer transaction data.
+
+    Examples:
+        # Normal transfer
+        >>> parse_incoming_transfer_transaction(
+        ...     "VIR RECU 1234567890Z "
+        ...     "DE: ACME INC "
+        ...     "MOTIF: MR JOHN DOE "
+        ...     "REF: August salary"
+        ... )  # doctest: +NORMALIZE_WHITESPACE
+        {'DE': 'ACME INC',
+         'DATE': NotAvailable,
+         'MOTIF': 'MR JOHN DOE',
+         'REF': 'August salary'}
+
+        # Instant transfer
+        >>> parse_incoming_transfer_transaction(
+        ...     "VIR INST RE 123456789012 "
+        ...     "DE: M JOHN DOE "
+        ...     "DATE: 31/12/2024 15:42 "
+        ...     "MOTIF: DEPOSIT REMIMBURSEMENT "
+        ...     "REF: TRANSFER FROM M JOHN DOE"
+        ... )  # doctest: +NORMALIZE_WHITESPACE
+        {'DE': 'M JOHN DOE',
+         'DATE': '31/12/2024 15:42',
+         'MOTIF': 'DEPOSIT REMIMBURSEMENT',
+         'REF': 'TRANSFER FROM M JOHN DOE'}
+    """
+    # intraday tr have libOpeComplet set to None
+    # future tr do not have libOpeComplet field
+    if line is None:
+        return {}
+
+    res = re.split(_INCOMING_TRANSFER_SPLIT_RE, line)
+    if res.count("DE") == 0:
+        return {}
+
+    tr_data = {token: NotAvailable for token in _INCOMING_TRANSFER_TOKENS}
+    tr_data.update({token: data.strip() for token, data in zip(res[1::2], res[2::2])})
+    return tr_data
+
+
 _OUTGOING_TRANSFER_TOKENS = ("POUR", "REF", "MOTIF", "CHEZ")
 _OUTGOING_TRANSFER_SPLIT_RE = f"({'|'.join(_OUTGOING_TRANSFER_TOKENS)}): (?!(?:{'|'.join(_OUTGOING_TRANSFER_TOKENS)}):)"
 
@@ -618,6 +666,13 @@ class TransactionItemElement(ItemElement):
 
             self.env["loan"] = loan
             self.env["loan_payment"] = loan_data
+
+        m = parse_incoming_transfer_transaction(Dict("libOpeComplet")(self))
+        if m:
+            if m["MOTIF"]:
+                self.env["motive"] = m["MOTIF"]
+            if m["REF"]:
+                self.env["ref"] = m["REF"]
 
         # Extract transfer account data. To be used in OFX export.
         # TODO: parse according to Field("type")
