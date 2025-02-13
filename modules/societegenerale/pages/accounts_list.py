@@ -444,14 +444,15 @@ class Transaction(FrenchTransaction):
             re.compile(
                 r"VIR INST RE (?P<_ref>\d+) DE: (?P<text>.*?) DATE: (?P<dd>\d{2})\/(?P<mm>\d{2})/(?P<yy>\d{4}) (?P<HH>\d{2}):(?P<MM>\d{2})"
             ),
-            FrenchTransaction.TYPE_TRANSFER,
+            FrenchTransaction.TYPE_DEPOSIT,
         ),
-        (re.compile(r"^(?P<category>VIR(EMEN)?T? \w+) (?:DE: |POUR: )(?P<text>.*)"), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r"^(?P<category>VIR(EMEN)?T? \w+) (?:POUR: )(?P<text>.*)"), FrenchTransaction.TYPE_TRANSFER),
+        (re.compile(r"^(?P<category>VIR(EMEN)?T? \w+) (?:DE: )(?P<text>.*)"), FrenchTransaction.TYPE_DEPOSIT),
         (re.compile(r"^(CHEQUE) (?P<text>.*)"), FrenchTransaction.TYPE_CHECK),
         (re.compile(r"^REMISE CHEQUE (?P<text>.*)"), FrenchTransaction.TYPE_CHECK),
         (re.compile(r"^(FRAIS) (?P<text>.*)"), FrenchTransaction.TYPE_BANK),
         (re.compile(r"^(?P<category>ECHEANCE (?=PRET))(?P<text>.*)"), FrenchTransaction.TYPE_LOAN_PAYMENT),
-        (re.compile(r"^(?P<category>REMISE CHEQUES)(?P<text>.*)"), FrenchTransaction.TYPE_DEPOSIT),
+        (re.compile(r"^(?P<category>REMISE CHEQUES)(?P<text>.*)"), FrenchTransaction.TYPE_CHECK),
         (re.compile(r"^CARTE RETRAIT (?P<text>.*)"), FrenchTransaction.TYPE_WITHDRAWAL),
         (re.compile(r"^TOTAL DES FACTURES (?P<text>.*)"), FrenchTransaction.TYPE_CARD_SUMMARY),
         (re.compile(r"^DEBIT MENSUEL CARTE (?P<text>.*)"), FrenchTransaction.TYPE_CARD_SUMMARY),
