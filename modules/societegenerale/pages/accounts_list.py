@@ -420,7 +420,7 @@ class Transaction(FrenchTransaction):
             FrenchTransaction.TYPE_PAYBACK,
         ),
         (
-            re.compile(r"^(?P<category>CARTE) (?P<card>\w+) (?P<dd>\d{2})\/(?P<mm>(0[1-9]|1[0-2])) (?P<text>.*)"),
+            re.compile(r"^(?P<category>CARTE (?P<card>\w+)) (?P<dd>\d{2})\/(?P<mm>(0[1-9]|1[0-2])) (?P<text>.*)"),
             FrenchTransaction.TYPE_CARD,
         ),
         (re.compile(r"^(?P<dd>\d{2})(?P<mm>\d{2})\/(?P<text>.*?)\/?(-[\d,]+)?$"), FrenchTransaction.TYPE_CARD),
