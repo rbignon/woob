@@ -27,6 +27,7 @@ def test_account_type_ofx_mapping():
     account = Account()
     buffer = io.StringIO()
     formatter = OfxFormatter(outfile=buffer)
+    formatter.termrows = 0
 
     account.type = Account.TYPE_CHECKING
     formatter.start_format(account=account)
@@ -43,6 +44,7 @@ def test_account_type_default_ofx_mapping(caplog):
     account = Account()
     buffer = io.StringIO()
     formatter = OfxFormatter(outfile=buffer)
+    formatter.termrows = 0
 
     account.type = -1
     with caplog.at_level(logging.ERROR, logger="woob.applications.bank.bank"):
