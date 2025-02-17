@@ -96,11 +96,22 @@ def test_ofx_tr_posted_simple_format():
     tr.amount = Decimal("-15.42")
     formatter.format(tr)
 
+    tr = Transaction()
+    tr.date = today - datetime.timedelta(days=1)
+    tr.type = -1  # Test default transaction type mapping
+    tr.label = "JENKINS GROUP"
+    tr.amount = Decimal("-42.15")
+    formatter.format(tr)
+
     formatter.flush()
     output = re.findall(r"<STMTTRN>.+?</STMTTRN>", buffer.getvalue(), re.DOTALL)
-    assert "<TRNTYPE>POS</TRNTYPE>" in output
-    assert "<TRNAMT>-15.42</TRNAMT>" in output
-    assert "<NAME>ACME INC</NAME>" in output
+    assert "<TRNTYPE>POS</TRNTYPE>" in output[0]
+    assert "<TRNAMT>-15.42</TRNAMT>" in output[0]
+    assert "<NAME>ACME INC</NAME>" in output[0]
+
+    assert "<TRNTYPE>DEBIT</TRNTYPE>" in output[1]
+    assert "<TRNAMT>-42.15</TRNAMT>" in output[1]
+    assert "<NAME>JENKINS GROUP</NAME>" in output[1]
 
 
 def test_ofx_tr_with_memo():
