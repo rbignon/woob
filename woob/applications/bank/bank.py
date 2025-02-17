@@ -67,7 +67,7 @@ class OfxFormatter(IFormatter):
         Account.TYPE_CARD: "CARD",
     }
     TYPES_TRANS = {
-        Transaction.TYPE_TRANSFER: "DIRECTDEP",
+        Transaction.TYPE_TRANSFER: "XFER",
         Transaction.TYPE_ORDER: "PAYMENT",
         Transaction.TYPE_CHECK: "CHECK",
         Transaction.TYPE_DEPOSIT: "DEP",

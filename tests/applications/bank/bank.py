@@ -134,6 +134,7 @@ def test_ofx_tr_posted_transfer_format():
 
     formatter.flush()
     output = re.findall(r"<STMTTRN>.+?</STMTTRN>", buffer.getvalue(), re.DOTALL)
+    assert "<TRNTYPE>XFER" in output[0]
     assert "<TRNAMT>-1000.00" in output[0]
     assert "<NAME>John Doe" in output[0]
     assert "<BRANCHID><" in output[0]
