@@ -20,7 +20,7 @@
 from urllib.parse import urlparse
 
 from woob.browser import URL, LoginBrowser
-from woob.exceptions import BrowserIncorrectPassword, BrowserUserBanned
+from woob.exceptions import BrowserIncorrectPassword, BrowserUnavailable, BrowserUserBanned
 
 from .pages import (
     AmeliLoginPage,
@@ -86,6 +86,13 @@ class FranceConnectBrowser(LoginBrowser):
         if fc_redirection:
             self.fc_call("dgfip", "https://idp.impots.gouv.fr")
             auth_type = "idp"
+
+        if not self.impot_login_page.is_here():
+            if self.authorize.is_here():
+                errmsg = self.page.get_error_message()
+            if not errmsg:
+                errmsg = "Erreur inconnue - veuillez ré-essayer"
+            raise BrowserUnavailable(errmsg)
 
         context_url = self.page.get_url_context()
         url_login_password = self.page.get_url_login_password()
