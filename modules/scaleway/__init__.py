@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2022      Jeremy Demange (scrapfast.io)
 #
 # This file is part of a woob module.
@@ -20,4 +18,4 @@
 from .module import ScalewayModule
 
 
-__all__ = ['ScalewayModule']
+__all__ = ["ScalewayModule"]

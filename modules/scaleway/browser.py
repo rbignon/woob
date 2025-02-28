@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright(C) 2022      Jeremy Demange (scrapfast.io)
 #
 # This file is part of a woob module.
@@ -17,30 +15,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this woob module. If not, see <http://www.gnu.org/licenses/>.
 
-from woob.browser import LoginBrowser, StatesMixin, URL
-from woob.capabilities.bill import Subscription, Bill
-
-from datetime import datetime
 import base64
-import requests
 import decimal
+from datetime import datetime
+
+import requests
+
+from woob.browser import URL, LoginBrowser, StatesMixin
+from woob.capabilities.bill import Bill, Subscription
+
 
 class ScalewayBrowser(LoginBrowser, StatesMixin):
-    BASEURL = 'https://api.scaleway.com'
+    BASEURL = "https://api.scaleway.com"
     TIMEOUT = 60
 
-    login = URL(r'/account/v1/jwt')
-    apikey = URL(r'iam/v1alpha1/api-keys/(?P<accessKey>*)')
-    invoices = URL(r'/billing/v2beta1/invoices\?page=1&per_page=10')
+    login = URL(r"/account/v1/jwt")
+    apikey = URL(r"iam/v1alpha1/api-keys/(?P<accessKey>*)")
+    invoices = URL(r"/billing/v2beta1/invoices\?page=1&per_page=10")
 
     def __init__(self, config, *args, **kwargs):
         super().__init__("login", "password", *args, **kwargs)
         self.config = config
-        self.access_key = self.config['access_key'].get()
-        self.secret_key = self.config['secret_key'].get()
+        self.access_key = self.config["access_key"].get()
+        self.secret_key = self.config["secret_key"].get()
 
     def build_request(self, *args, **kwargs) -> requests.Request:
-        kwargs.setdefault('headers', {})['X-Auth-Token'] = self.secret_key
+        kwargs.setdefault("headers", {})["X-Auth-Token"] = self.secret_key
         return super().build_request(*args, **kwargs)
 
     def get_subscription_list(self):
@@ -52,11 +52,11 @@ class ScalewayBrowser(LoginBrowser, StatesMixin):
         sub.subscriber = sub.label = result["description"]
         yield sub
 
-    def iter_documents(self, subscription=''):
+    def iter_documents(self, subscription=""):
         self.invoices.go()
         result = self.response.json()
-        for invoice in result['invoices']:
-            if invoice["state"]in ["draft", "outdated"]:
+        for invoice in result["invoices"]:
+            if invoice["state"] in ["draft", "outdated"]:
                 continue
             ctx = decimal.getcontext()
             decimal.getcontext().prec = 6
@@ -69,18 +69,30 @@ class ScalewayBrowser(LoginBrowser, StatesMixin):
             bouleEt.id = invoice["id"]
             # Cf https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go/scw#Money for detail on expressing amounts
             # NB: using `decimal` to remove rounding errors etc...
-            bouleEt.total_price = decimal.Decimal(invoice["total_taxed"]["units"]) + decimal.Decimal(invoice["total_taxed"]["nanos"]) /  decimal.Decimal('1000000000')
-            bouleEt.vat = decimal.Decimal(invoice["total_tax"]["units"]) + decimal.Decimal(invoice["total_tax"]["nanos"]) /  decimal.Decimal('1000000000')
-            bouleEt.pre_tax_price = decimal.Decimal(invoice["total_untaxed"]["units"]) + decimal.Decimal(invoice["total_untaxed"]["nanos"]) /  decimal.Decimal('1000000000')
+            bouleEt.total_price = decimal.Decimal(invoice["total_taxed"]["units"]) + decimal.Decimal(
+                invoice["total_taxed"]["nanos"]
+            ) / decimal.Decimal("1000000000")
+            bouleEt.vat = decimal.Decimal(invoice["total_tax"]["units"]) + decimal.Decimal(
+                invoice["total_tax"]["nanos"]
+            ) / decimal.Decimal("1000000000")
+            bouleEt.pre_tax_price = decimal.Decimal(invoice["total_untaxed"]["units"]) + decimal.Decimal(
+                invoice["total_untaxed"]["nanos"]
+            ) / decimal.Decimal("1000000000")
             bouleEt.url = f"https://api.scaleway.com/billing/v2beta1/invoices/{bouleEt.id}/download"
-            bouleEt.format = 'pdf'
-            bouleEt.label = '%s invoice %s #%s - %s - %s' % (bouleEt.date.strftime('%Y%m%d'), invoice["seller_name"], invoice["number"], invoice["organization_name"], bouleEt.startdate.strftime('%Y-%m'))
+            bouleEt.format = "pdf"
+            bouleEt.label = "{} invoice {} #{} - {} - {}".format(
+                bouleEt.date.strftime("%Y%m%d"),
+                invoice["seller_name"],
+                invoice["number"],
+                invoice["organization_name"],
+                bouleEt.startdate.strftime("%Y-%m"),
+            )
             decimal.setcontext(ctx)
             yield bouleEt
 
     def download_document(self, document):
         json_doc = self.open(document.url).json()
-        b64_content = json_doc.get('content', None)
+        b64_content = json_doc.get("content", None)
         content = None
         if b64_content:
             content = base64.b64decode(b64_content)
