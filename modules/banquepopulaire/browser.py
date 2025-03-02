@@ -17,13 +17,13 @@
 
 # flake8: compatible
 
-import json
 import base64
+import json
 import os
 from datetime import datetime, timedelta
 from functools import wraps
-from uuid import uuid4
 from hashlib import sha256
+from uuid import uuid4
 
 from woob.browser import URL, need_login
 from woob.browser.exceptions import ClientError, HTTPNotFound, ServerError
@@ -61,9 +61,9 @@ from .pages import (
     LoggedOut,
     LoginPage,
     LoginTokensPage,
-    RootDashBoardPage,
     NewLoginPage,
     RedirectErrorPage,
+    RootDashBoardPage,
     SynthesePage,
     TransactionPage,
     UnavailablePage,
@@ -139,18 +139,18 @@ class BanquePopulaireAccount(Account):
 class BanquePopulaire(TwoFactorBrowser):
     TWOFA_DURATION = 90 * 24 * 60
 
-    first_login_page = URL(r'/$')
-    new_first_login_page = URL(r'/se-connecter/sso')
-    login_page = URL(r'https://[^/]+/auth/UI/Login.*', LoginPage)
-    new_login = URL(r'https://www.icgauth.banquepopulaire.fr/se-connecter/sso', NewLoginPage)
-    js_file = URL(r'https://[^/]+/.*se-connecter/main\..*.js$', JsFilePage)
-    js_espaceclient_file = URL(r'/espace-client/main.*.js', JsFilePageEspaceClient)
-    js_espaceclient_chunk = URL(r'/espace-client/chunk-.*.js', JsFilePageEspaceClientChunk)
-    root_clientdashboard_page = URL(r'/espace-client/', RootDashBoardPage)
-    authorize = URL(r'https://www.as-ext-bad-ib.banquepopulaire.fr/api/oauth/v2/authorize', AuthorizePage)
-    login_tokens = URL(r'https://www.as-ext-bad-ib.banquepopulaire.fr/api/oauth/v2/consume', LoginTokensPage)
-    info_tokens = URL(r'https://www.as-ano-bad-ib.banquepopulaire.fr/api/oauth/v2/token', InfoTokensPage)
-    account_pass_tokens = URL(r'https://www.as-ext-bad-ib.banquepopulaire.fr/api/oauth/v2/token', InfoTokensPage)
+    first_login_page = URL(r"/$")
+    new_first_login_page = URL(r"/se-connecter/sso")
+    login_page = URL(r"https://[^/]+/auth/UI/Login.*", LoginPage)
+    new_login = URL(r"https://www.icgauth.banquepopulaire.fr/se-connecter/sso", NewLoginPage)
+    js_file = URL(r"https://[^/]+/.*se-connecter/main\..*.js$", JsFilePage)
+    js_espaceclient_file = URL(r"/espace-client/main.*.js", JsFilePageEspaceClient)
+    js_espaceclient_chunk = URL(r"/espace-client/chunk-.*.js", JsFilePageEspaceClientChunk)
+    root_clientdashboard_page = URL(r"/espace-client/", RootDashBoardPage)
+    authorize = URL(r"https://www.as-ext-bad-ib.banquepopulaire.fr/api/oauth/v2/authorize", AuthorizePage)
+    login_tokens = URL(r"https://www.as-ext-bad-ib.banquepopulaire.fr/api/oauth/v2/consume", LoginTokensPage)
+    info_tokens = URL(r"https://www.as-ano-bad-ib.banquepopulaire.fr/api/oauth/v2/token", InfoTokensPage)
+    account_pass_tokens = URL(r"https://www.as-ext-bad-ib.banquepopulaire.fr/api/oauth/v2/token", InfoTokensPage)
 
     authentication_step = URL(
         r"https://www.icgauth.banquepopulaire.fr/dacsrest/api/v1u0/transaction/(?P<validation_id>[^/]+)/step",
@@ -167,8 +167,8 @@ class BanquePopulaire(TwoFactorBrowser):
     app_validation = URL(r"https://www.icgauth.banquepopulaire.fr/dacsrest/WaitingCallbackHandler", AppValidationPage)
 
     synthesis_views = URL(
-        r"https://www.rs-ext-bad-ib.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews",
-        SynthesePage)
+        r"https://www.rs-ext-bad-ib.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews", SynthesePage
+    )
 
     transactions = URL(r"https://www.rs-ext-bad-ib.banquepopulaire.fr/pfm/user/v1.1/transactions", TransactionPage)
 
@@ -192,10 +192,7 @@ class BanquePopulaire(TwoFactorBrowser):
 
     home_page = URL(r"https://[^/]+/.*espace-client", HomePage)
 
-    last_connect = URL(
-        r"https://www.rs-ext-bad-ib.banquepopulaire.fr/bapi/user/v1/user/lastConnect",
-        LastConnectPage
-    )
+    last_connect = URL(r"https://www.rs-ext-bad-ib.banquepopulaire.fr/bapi/user/v1/user/lastConnect", LastConnectPage)
 
     redirect_uri = URL(r"https://www.ibps.bpgo.banquepopulaire.fr/callbackleg")
 
@@ -272,7 +269,7 @@ class BanquePopulaire(TwoFactorBrowser):
             self.term_id = str(uuid4())
 
         try:
-            self.new_first_login_page.go(params={'service': 'cyber'})
+            self.new_first_login_page.go(params={"service": "cyber"})
         except (ClientError, HTTPNotFound) as e:
             if e.response.status_code in (403, 404):
                 # Sometimes the website makes some redirections that leads
@@ -470,17 +467,17 @@ class BanquePopulaire(TwoFactorBrowser):
         nonce = str(uuid4())  # Not found anymore
 
         headers = {
-            'Accept': 'application/json, text/plain, */*',  # Mandatory, else you've got an HTML page.
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Referer': 'https://www.icgauth.banquepopulaire.fr/se-connecter/sso?service=cyber',
-            'Origin': 'https://www.icgauth.banquepopulaire.fr',
+            "Accept": "application/json, text/plain, */*",  # Mandatory, else you've got an HTML page.
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Referer": "https://www.icgauth.banquepopulaire.fr/se-connecter/sso?service=cyber",
+            "Origin": "https://www.icgauth.banquepopulaire.fr",
         }
 
         data = {
-            'grant_type': "client_credentials",
-            'client_id': self.page.get_user_info_client_id(),
-            'scope': ' ',
-            'cdetab': self.cdetab,
+            "grant_type": "client_credentials",
+            "client_id": self.page.get_user_info_client_id(),
+            "scope": " ",
+            "cdetab": self.cdetab,
         }
 
         self.info_tokens.go(headers=headers, data=data)
@@ -737,12 +734,12 @@ class BanquePopulaire(TwoFactorBrowser):
         self.access_token_expire = expire_dt.strftime("%m/%d/%Y %H:%M:%S")
         self.access_token = token
 
-#   #Generate a sha256 from the verifier.
+    #   #Generate a sha256 from the verifier.
     def code_challenge(self, verifier):
-        digest = sha256(verifier.encode('utf8')).digest()
-        return base64.urlsafe_b64encode(digest).decode('ascii').rstrip("=")
+        digest = sha256(verifier.encode("utf8")).digest()
+        return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
 
-#  #Generate a sized 128 random string
+    #  #Generate a sized 128 random string
     def code_verifier(self):
         return os.urandom(32).hex()
 
@@ -760,21 +757,21 @@ class BanquePopulaire(TwoFactorBrowser):
 
         main_js_file, chunk_version = self.page.get_main_js_file_url_and_version()
 
-        self.location(main_js_file, params={'v': chunk_version})
+        self.location(main_js_file, params={"v": chunk_version})
 
         client_id: str = ""
         chunk_list_urls = self.page.getChunkList()
 
-#      #Retrieve the ids hidden in JS chunks
+        #      #Retrieve the ids hidden in JS chunks
         for chunk_url in chunk_list_urls:
-            self.location(chunk_url, params={'v': chunk_version})
+            self.location(chunk_url, params={"v": chunk_version})
             if self.page.contains_client_id():
                 client_id = self.page.get_client_id()
                 break
 
         if client_id == "":
-            self.logger.debug('No client_id found in chunks')
-            raise BrowserUnavailable('No client_id found in chunks')
+            self.logger.debug("No client_id found in chunks")
+            raise BrowserUnavailable("No client_id found in chunks")
 
         bpcesta = self.get_bpcesta_SSO()
         claims = {
@@ -800,17 +797,17 @@ class BanquePopulaire(TwoFactorBrowser):
         }
 
         params = {
-            'cdetab': self.cdetab,
-            'client_id': client_id,
-            'response_type': 'code',
-            'nonce': str(uuid4()),
-            'response_mode': 'form_post',
-            'claims': json.dumps(claims),
-            'bpcesta': json.dumps(bpcesta),
-            'login_hint': self.user_code,
-            'display': 'page',
-            'code_challenge': self.login_challenge,
-            'code_challenge_method': 'S256',
+            "cdetab": self.cdetab,
+            "client_id": client_id,
+            "response_type": "code",
+            "nonce": str(uuid4()),
+            "response_mode": "form_post",
+            "claims": json.dumps(claims),
+            "bpcesta": json.dumps(bpcesta),
+            "login_hint": self.user_code,
+            "display": "page",
+            "code_challenge": self.login_challenge,
+            "code_challenge_method": "S256",
         }
 
         headers = {
@@ -822,9 +819,9 @@ class BanquePopulaire(TwoFactorBrowser):
         }
         self.authorize.go(params=params, method="POST", headers=headers)
 
-        #Authorize response gave a SAML request in the payload
-        #Play it by "do_redirect" will give us a json with a samlResponse and the response consumer :
-        #{
+        # Authorize response gave a SAML request in the payload
+        # Play it by "do_redirect" will give us a json with a samlResponse and the response consumer :
+        # {
         #    "id":"blahblah",
         #    "locale":"en",
         #    "response":{
@@ -835,7 +832,7 @@ class BanquePopulaire(TwoFactorBrowser):
         #            "method":"POST"
         #        }
         #    }
-        #}
+        # }
         headers = {
             "Accept": "application/json, text/plain, */*",  # Mandatory, else you've got an HTML page.
             "Content-Type": "application/x-www-form-urlencoded",
@@ -843,32 +840,32 @@ class BanquePopulaire(TwoFactorBrowser):
         }
         self.do_redirect("SAMLRequest", headers=headers)
 
-#       we have to call the v2/consume with the SAML Response and that will provide us a strange code:
-#       ##{
-#       ##    "method" : "POST",
-#       ##    "enctype" : "application/x-www-form-urlencoded",
-#       ##    "action" : "https://www.banquepopulaire.fr/espace-client/implicit/callback",
-#       ##    "parameters" : {
-#       ##        "code" : "0Ylr9f5RxYGBQCAeOxh2....."
+        #       we have to call the v2/consume with the SAML Response and that will provide us a strange code:
+        #       ##{
+        #       ##    "method" : "POST",
+        #       ##    "enctype" : "application/x-www-form-urlencoded",
+        #       ##    "action" : "https://www.banquepopulaire.fr/espace-client/implicit/callback",
+        #       ##    "parameters" : {
+        #       ##        "code" : "0Ylr9f5RxYGBQCAeOxh2....."
         self.do_redirect("SAMLResponse", headers=headers)
         what_the_hell_is_this_code = self.page.get_code()
 
-        #Now we produce the PKCE expected content and we send a token request to have the token :)
+        # Now we produce the PKCE expected content and we send a token request to have the token :)
         headers = {
-            'Accept': 'application/json, text/plain, */*',  # Mandatory, else you've got an HTML page.
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Referer': 'https://www.banquepopulaire.fr/',  # Mandatory, otherwise you get a 430 error
+            "Accept": "application/json, text/plain, */*",  # Mandatory, else you've got an HTML page.
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Referer": "https://www.banquepopulaire.fr/",  # Mandatory, otherwise you get a 430 error
         }
 
         data = {
-            'grant_type': 'authorization_code',
-            'client_id': client_id,
-            'code': what_the_hell_is_this_code,
-            'code_verifier': self.login_verifier,
+            "grant_type": "authorization_code",
+            "client_id": client_id,
+            "code": what_the_hell_is_this_code,
+            "code_verifier": self.login_verifier,
         }
         self.account_pass_tokens.go(headers=headers, data=data)
 
-        #Wonderfull in this json we have the acces_token mandatory to reach user data (like balances)
+        # Wonderfull in this json we have the acces_token mandatory to reach user data (like balances)
         self.saveSSOBearer(token=self.page.get_access_token(), expire=self.page.get_access_expire())
         self.access_token = self.page.get_access_token()
 
@@ -891,7 +888,8 @@ class BanquePopulaire(TwoFactorBrowser):
         #       Let see with other users if they have the same IDs and, if necessary, how to dynamically retrieve it...
         self.location(
             "https://www.rs-ext-bad-ib.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews?productFamilyPFM=1,2,3,4,6,7,17,18&pfmCharacteristicsIndicator=true",
-            headers=headers)
+            headers=headers,
+        )
         raw_json_data = self.page.get_raw_json()
         accounts_data = json.loads(raw_json_data)
         accounts = []
@@ -997,7 +995,7 @@ class BanquePopulaire(TwoFactorBrowser):
             }
             headers = {
                 "Accept": "application/json, text/plain, */*",  # Mandatory, else you've got an HTML page.
-                "Authorization": 'Bearer %s' % self.access_token,
+                "Authorization": "Bearer %s" % self.access_token,
                 "Origin": "https://www.banquepopulaire.fr",
                 "Referer": "https://www.banquepopulaire.fr/",
                 "Host": "www.rs-ext-bad-ib.banquepopulaire.fr",

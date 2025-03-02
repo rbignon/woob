@@ -139,7 +139,7 @@ class JsFilePage(_JsFilePage):
 
 class RootDashBoardPage(HTMLPage):
     def get_main_js_file_url_and_version(self):
-        match = re.search(r'main-[A-Z0-9]{8}\.js\?v=\d+\.\d+\.\d+', self.text).group(0)
+        match = re.search(r"main-[A-Z0-9]{8}\.js\?v=\d+\.\d+\.\d+", self.text).group(0)
         if match:
             left_part, right_part = match.split("?v=")
             return left_part, right_part
@@ -148,16 +148,16 @@ class RootDashBoardPage(HTMLPage):
 
 class JsFilePageEspaceClient(_JsFilePage):
     def getChunkList(self):
-        return re.findall(r'chunk-[A-Z0-9]{8}.js', self.text)
+        return re.findall(r"chunk-[A-Z0-9]{8}.js", self.text)
 
 
 class JsFilePageEspaceClientChunk(_JsFilePage):
     def contains_client_id(self):
-        return bool(re.search(r'[xXzZ]E=\"[a-z0-9-]{36}\"', self.text))
+        return bool(re.search(r"[xXzZ]E=\"[a-z0-9-]{36}\"", self.text))
 
     def get_client_id(self):
-        match_e = re.search(r'[xXzZ]E=\"[a-z0-9-]{36}\"', self.text).group(0)
-        client_id = re.search(r'[a-z0-9-]{36}', match_e).group(0)
+        match_e = re.search(r"[xXzZ]E=\"[a-z0-9-]{36}\"", self.text).group(0)
+        client_id = re.search(r"[a-z0-9-]{36}", match_e).group(0)
 
         return client_id
 
@@ -202,11 +202,11 @@ class LoginTokensPage(_LoginTokensPage):
 
 class InfoTokensPage(JsonPage):
     def get_access_token(self):
-        value = Dict('access_token', default=None)(self.doc)
+        value = Dict("access_token", default=None)(self.doc)
         return value
 
     def get_access_expire(self):
-        value = Dict('expires_in', default=None)(self.doc)
+        value = Dict("expires_in", default=None)(self.doc)
         return value
 
 
