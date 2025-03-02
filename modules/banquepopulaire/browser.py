@@ -839,7 +839,7 @@ class BanquePopulaire(TwoFactorBrowser):
         headers = {
             "Accept": "application/json, text/plain, */*",  # Mandatory, else you've got an HTML page.
             "Content-Type": "application/x-www-form-urlencoded",
-            "Referer": "https://www.banquepopulaire.fr/se-connecter/identifier(redirect:authentifier)"  # Mandatory, otherwise you get a 430 error
+            "Referer": "https://www.banquepopulaire.fr/se-connecter/identifier(redirect:authentifier)",  # Mandatory, otherwise you get a 430 error
         }
         self.do_redirect("SAMLRequest", headers=headers)
 
