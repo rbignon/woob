@@ -840,13 +840,13 @@ class BanquePopulaire(TwoFactorBrowser):
         }
         self.do_redirect("SAMLRequest", headers=headers)
 
-        #       we have to call the v2/consume with the SAML Response and that will provide us a strange code:
-        #       ##{
-        #       ##    "method" : "POST",
-        #       ##    "enctype" : "application/x-www-form-urlencoded",
-        #       ##    "action" : "https://www.banquepopulaire.fr/espace-client/implicit/callback",
-        #       ##    "parameters" : {
-        #       ##        "code" : "0Ylr9f5RxYGBQCAeOxh2....."
+        # we have to call the v2/consume with the SAML Response and that will provide us a strange code:
+        # {
+        #    "method" : "POST",
+        #    "enctype" : "application/x-www-form-urlencoded",
+        #    "action" : "https://www.banquepopulaire.fr/espace-client/implicit/callback",
+        #    "parameters" : {
+        #        "code" : "0Ylr9f5RxYGBQCAeOxh2....."
         self.do_redirect("SAMLResponse", headers=headers)
         what_the_hell_is_this_code = self.page.get_code()
 
