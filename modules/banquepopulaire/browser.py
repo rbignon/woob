@@ -734,12 +734,12 @@ class BanquePopulaire(TwoFactorBrowser):
         self.access_token_expire = expire_dt.strftime("%m/%d/%Y %H:%M:%S")
         self.access_token = token
 
-    #   #Generate a sha256 from the verifier.
+    # Generate a sha256 from the verifier.
     def code_challenge(self, verifier):
         digest = sha256(verifier.encode("utf8")).digest()
         return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
 
-    #  #Generate a sized 128 random string
+    # Generate a sized 128 random string
     def code_verifier(self):
         return os.urandom(32).hex()
 
@@ -762,7 +762,7 @@ class BanquePopulaire(TwoFactorBrowser):
         client_id: str = ""
         chunk_list_urls = self.page.getChunkList()
 
-        #      #Retrieve the ids hidden in JS chunks
+        # Retrieve the ids hidden in JS chunks
         for chunk_url in chunk_list_urls:
             self.location(chunk_url, params={"v": chunk_version})
             if self.page.contains_client_id():
@@ -884,8 +884,8 @@ class BanquePopulaire(TwoFactorBrowser):
             "Sec-Fetch-Mode": "cors",
             "Sec-Fetch-Site": "same-site",
         }
-        #       This is a new API. I still don't know how is built the field productFamilyPFM=1,2,3,4,6,7,17,18.
-        #       Let see with other users if they have the same IDs and, if necessary, how to dynamically retrieve it...
+        # This is a new API. I still don't know how is built the field productFamilyPFM=1,2,3,4,6,7,17,18.
+        # Let see with other users if they have the same IDs and, if necessary, how to dynamically retrieve it...
         self.location(
             "https://www.rs-ext-bad-ib.banquepopulaire.fr/bapi/contract/v2/augmentedSynthesisViews?productFamilyPFM=1,2,3,4,6,7,17,18&pfmCharacteristicsIndicator=true",
             headers=headers,
@@ -963,7 +963,7 @@ class BanquePopulaire(TwoFactorBrowser):
 
         else:
             self.logger.warning("Miss /items/ in accounts provided by the bank : couldn't do anything...")
-        #       No Yield here, no more account to process
+        # No Yield here, no more account to process
         return accounts
 
     @retry(LoggedOut)
@@ -1008,7 +1008,7 @@ class BanquePopulaire(TwoFactorBrowser):
             raw_json_data = self.page.get_raw_json()
             transactions_data = json.loads(raw_json_data)
 
-            #           If nothing in transaction_data, we reached the end of the operations in this account
+            # If nothing in transaction_data, we reached the end of the operations in this account
             if not transactions_data["data"]:
                 return
 
@@ -1029,7 +1029,7 @@ class BanquePopulaire(TwoFactorBrowser):
                         transaction.label += parsedData["label3"]
 
                 transaction.amount = element["amount"]
-                #               transaction.category  ####Must be done with a correlation with json content of www.rs-ex-ath-groupe.banquepopulaire.fr/pfm/user/v1.1/categories
+                # transaction.category  ####Must be done with a correlation with json content of www.rs-ex-ath-groupe.banquepopulaire.fr/pfm/user/v1.1/categories
 
                 yield transaction
 
